@@ -1,0 +1,61 @@
+import { motion } from "framer-motion";
+
+const skillGroups = [
+  {
+    category: "Frontend",
+    skills: ["React", "TypeScript", "Next.js", "Tailwind CSS", "Framer Motion"],
+  },
+  {
+    category: "Backend",
+    skills: ["Node.js", "Python", "PostgreSQL", "Redis", "GraphQL"],
+  },
+  {
+    category: "DevOps & Tools",
+    skills: ["Docker", "AWS", "CI/CD", "Git", "Terraform"],
+  },
+];
+
+const Skills = () => {
+  return (
+    <section id="skills" className="py-32 px-6 bg-secondary/30">
+      <div className="max-w-5xl mx-auto">
+        <motion.h2
+          className="text-3xl sm:text-4xl font-bold mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          Tech <span className="text-gradient">Stack</span>
+        </motion.h2>
+
+        <div className="grid md:grid-cols-3 gap-10">
+          {skillGroups.map((group, gi) => (
+            <motion.div
+              key={group.category}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: gi * 0.15 }}
+            >
+              <h3 className="font-mono text-sm text-muted-foreground uppercase tracking-widest mb-6">
+                {group.category}
+              </h3>
+              <div className="space-y-3">
+                {group.skills.map((skill) => (
+                  <div
+                    key={skill}
+                    className="px-4 py-3 bg-card rounded-xl border text-sm font-medium shadow-card hover:shadow-elegant transition-shadow duration-300"
+                  >
+                    {skill}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default Skills;
