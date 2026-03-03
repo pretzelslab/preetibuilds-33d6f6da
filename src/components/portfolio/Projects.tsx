@@ -3,12 +3,12 @@ import { ExternalLink, Github } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const projects = [
-  {
-    title: "Cloud Infrastructure Dashboard",
-    description: "Real-time monitoring platform for cloud services with alerting and analytics.",
-    tags: ["React", "TypeScript", "AWS", "D3.js"],
-    color: "from-primary to-primary/60",
-  },
+  // {
+  //   title: "Cloud Infrastructure Dashboard",
+  //   description: "Real-time monitoring platform for cloud services with alerting and analytics.",
+  //   tags: ["React", "TypeScript", "AWS", "D3.js"],
+  //   color: "from-primary to-primary/60",
+  // },
   {
     title: "AI Content Pipeline",
     description: "Automated content generation and curation system powered by machine learning.",
@@ -21,12 +21,12 @@ const projects = [
     tags: ["React", "TypeScript", "Supabase", "Tailwind"],
     color: "from-primary/80 to-accent/80",
   },
-  {
-    title: "E-Commerce Platform",
-    description: "Full-stack marketplace with real-time inventory, payments, and analytics.",
-    tags: ["Next.js", "Stripe", "PostgreSQL", "Tailwind"],
-    color: "from-primary to-accent",
-  },
+  // {
+  //   title: "E-Commerce Platform",
+  //   description: "Full-stack marketplace with real-time inventory, payments, and analytics.",
+  //   tags: ["Next.js", "Stripe", "PostgreSQL", "Tailwind"],
+  //   color: "from-primary to-accent",
+  // },
 ];
 
 const Projects = () => {
