@@ -17,6 +17,12 @@ const projects = [
   },
   {
     title: "Pet Project #1 - Medlog",
+    description: "A personal medical logging application for tracking health records and appointments.",
+    tags: ["React", "TypeScript", "Supabase", "Tailwind"],
+    color: "from-primary/80 to-accent/80",
+  },
+  {
+    title: "E-Commerce Platform",
     description: "Full-stack marketplace with real-time inventory, payments, and analytics.",
     tags: ["Next.js", "Stripe", "PostgreSQL", "Tailwind"],
     color: "from-primary to-accent",
