@@ -16,7 +16,7 @@ const projects = [
     color: "from-accent to-accent/60",
   },
   {
-    title: "E-Commerce Platform",
+    title: "Pet Project #1 - Medlog",
     description: "Full-stack marketplace with real-time inventory, payments, and analytics.",
     tags: ["Next.js", "Stripe", "PostgreSQL", "Tailwind"],
     color: "from-primary to-accent",
