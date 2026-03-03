@@ -28,21 +28,21 @@ const About = () => {
           </h2>
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>
-              I'm a passionate software engineer with a love for building clean, 
-              scalable, and user-centric applications. With experience across the 
-              full stack, I thrive at the intersection of design and engineering.
+              Strategic SaaS platform & product operations leader with 22+ years 
+              of experience driving 0→1 launches and 1→N scaling across HR technology, 
+              CRM, BI, and AI platforms. Based in Vancouver, BC.
             </p>
             <p>
-              When I'm not coding, you'll find me exploring new technologies, 
-              contributing to open-source, or sharing knowledge through writing 
-              and mentoring.
+              Proven track record in enterprise product commercialization, cross-functional 
+              execution, and translating ambiguity into structured, high-impact programs 
+              that accelerate growth, adoption, and revenue.
             </p>
           </div>
           <div className="mt-8 grid grid-cols-3 gap-6">
             {[
-              { value: "5+", label: "Years Exp." },
-              { value: "30+", label: "Projects" },
-              { value: "10+", label: "Open Source" },
+              { value: "22+", label: "Years Exp." },
+              { value: "4K+", label: "Customers" },
+              { value: "3×", label: "Revenue Growth" },
             ].map((stat) => (
               <div key={stat.label}>
                 <p className="text-2xl font-bold text-gradient">{stat.value}</p>
