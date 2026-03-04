@@ -101,6 +101,11 @@ const MedLog = () => {
         {activeView === "analysis" && <AnalysisView />}
         {activeView === "family" && <FamilyView />}
       </main>
+
+      {/* Fixed watermark footer */}
+      <footer className="fixed bottom-0 left-0 right-0 z-30 text-center py-2 text-[0.7rem] tracking-wide" style={{ background: "#1a1a2e", color: "rgba(255,255,255,0.35)" }}>
+        © 2026 MedLog · All rights reserved · Private & Confidential · Unauthorised reproduction prohibited
+      </footer>
     </div>
   );
 };
