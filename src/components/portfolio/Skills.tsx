@@ -2,16 +2,16 @@ import { motion } from "framer-motion";
 
 const skillGroups = [
   {
-    category: "Frontend",
-    skills: ["React", "TypeScript", "Next.js", "Tailwind CSS", "Framer Motion"],
+    category: "Leadership & Strategy",
+    skills: ["Enterprise GTM & Commercialization", "AI Product Strategy & Monetization", "Subscription & Revenue Transformation", "Executive Advisory & Governance", "Cross-functional Operating Models"],
   },
   {
-    category: "Backend",
-    skills: ["Node.js", "Python", "PostgreSQL", "Redis", "GraphQL"],
+    category: "Platforms & Tools",
+    skills: ["Salesforce CRM / CPQ / CLM", "Microsoft Dynamics CRM", "Dayforce HCM", "Power BI & SQL Server", "Zendesk · Zapier · Notion"],
   },
   {
-    category: "DevOps & Tools",
-    skills: ["Docker", "AWS", "CI/CD", "Git", "Terraform"],
+    category: "Certifications",
+    skills: ["AI for Everyone — DeepLearning.AI", "ML for Product Managers — Duke", "PMP — PMI", "PSM I — Scrum.org", "Salesforce Certified Admin"],
   },
 ];
 
