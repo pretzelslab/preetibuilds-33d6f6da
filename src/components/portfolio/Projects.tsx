@@ -1,32 +1,23 @@
 import { motion } from "framer-motion";
-import { ExternalLink, Github } from "lucide-react";
+import { ExternalLink, Github, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 
 const projects = [
-  // {
-  //   title: "Cloud Infrastructure Dashboard",
-  //   description: "Real-time monitoring platform for cloud services with alerting and analytics.",
-  //   tags: ["React", "TypeScript", "AWS", "D3.js"],
-  //   color: "from-primary to-primary/60",
-  // },
-  {
-    title: "AI Content Pipeline",
-    description: "Automated content generation and curation system powered by machine learning.",
-    tags: ["Python", "FastAPI", "OpenAI", "Redis"],
-    color: "from-accent to-accent/60",
-  },
   {
     title: "Pet Project #1 - Medlog",
     description: "A personal medical logging application for tracking health records and appointments.",
     tags: ["React", "TypeScript", "Supabase", "Tailwind"],
     color: "from-primary/80 to-accent/80",
+    link: "/medlog",
   },
-  // {
-  //   title: "E-Commerce Platform",
-  //   description: "Full-stack marketplace with real-time inventory, payments, and analytics.",
-  //   tags: ["Next.js", "Stripe", "PostgreSQL", "Tailwind"],
-  //   color: "from-primary to-accent",
-  // },
+  {
+    title: "AI Ethics Framework",
+    description: "A comprehensive framework for evaluating and ensuring ethical AI deployment across enterprise systems. Covers bias detection, transparency reporting, and responsible governance.",
+    tags: ["Python", "FastAPI", "OpenAI", "Redis"],
+    color: "from-accent to-accent/60",
+    upcoming: true,
+  },
 ];
 
 const Projects = () => {
@@ -73,13 +64,17 @@ const Projects = () => {
                       </Badge>
                     ))}
                   </div>
-                  <div className="flex gap-4">
-                    <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                      <Github className="w-4 h-4" />
-                    </a>
-                    <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
+                  <div className="flex gap-4 items-center">
+                    {(project as any).upcoming && (
+                      <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted px-3 py-1 rounded-full">
+                        <Clock className="w-3 h-3" /> Upcoming
+                      </span>
+                    )}
+                    {(project as any).link && (
+                      <Link to={(project as any).link} className="text-sm font-medium text-primary hover:underline">
+                        View Project →
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>
