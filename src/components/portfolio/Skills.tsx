@@ -25,7 +25,7 @@ const Skills = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          Tech <span className="text-gradient">Stack</span>
+          Skills & <span className="text-gradient">Expertise</span>
         </motion.h2>
 
         <div className="grid md:grid-cols-3 gap-10">
