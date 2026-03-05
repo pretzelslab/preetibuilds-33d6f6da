@@ -16,7 +16,7 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b">
       <div className="max-w-5xl mx-auto flex items-center justify-between px-6 h-16">
         <a href="#" className="font-bold text-lg tracking-tight">
-          <span className="text-gradient">YN</span>
+          <span className="text-gradient">Preethi R.</span>
         </a>
 
         {/* Desktop */}
