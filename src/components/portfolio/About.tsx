@@ -3,20 +3,7 @@ import { motion } from "framer-motion";
 const About = () => {
   return (
     <section id="about" className="py-32 px-6">
-      <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-        <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="aspect-[4/5] rounded-2xl bg-gradient-primary opacity-80 relative overflow-hidden">
-            <div className="absolute inset-0 bg-card/20 backdrop-blur-sm flex items-end p-8">
-              <p className="font-mono text-sm text-primary-foreground/80">// your photo here</p>
-            </div>
-          </div>
-        </motion.div>
-
+      <div className="max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, x: 30 }}
           whileInView={{ opacity: 1, x: 0 }}
