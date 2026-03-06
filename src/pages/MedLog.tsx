@@ -87,7 +87,7 @@ const MedLog = () => {
               <div key={i} className="flex gap-16 whitespace-nowrap">
                 {Array.from({ length: 6 }).map((_, j) => (
                   <span key={j} className="text-lg font-bold uppercase tracking-[0.3em] select-none" style={{ color: "rgba(26,26,46,0.06)" }}>
-                    © MedLog · Confidential
+                    © MedLog · Copyrighted
                   </span>
                 ))}
               </div>
