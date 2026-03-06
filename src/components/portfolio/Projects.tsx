@@ -9,7 +9,7 @@ const projects = [
     title: "Pet Project #1 - Medlog",
     description: "A personal medical logging application for tracking health records and appointments.",
     tags: ["React", "TypeScript", "Supabase", "Tailwind"],
-    color: "from-primary/80 to-accent/80",
+    color: "from-primary/30 to-accent/30",
     link: "/medlog",
     preview: medlogPreview,
   },
@@ -24,13 +24,13 @@ const projects = [
 
 const Projects = () => {
   return (
-    <section id="projects" className="py-20 px-6">
+    <section id="projects" className="py-12 px-6">
       <div className="max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mb-16"
+          className="mb-10"
         >
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             Featured <span className="text-gradient">Projects</span>
