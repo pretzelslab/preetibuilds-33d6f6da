@@ -79,7 +79,21 @@ const MedLog = () => {
       </header>
 
       {/* Main Content with Coming Soon Overlay */}
-      <main className="max-w-[1100px] mx-auto px-6 py-8 relative">
+      <main className="max-w-[1100px] mx-auto px-6 py-8 relative overflow-hidden">
+        {/* Diagonal watermark */}
+        <div className="pointer-events-none absolute inset-0 z-30 overflow-hidden">
+          <div className="absolute inset-0 flex flex-col justify-center items-center gap-24" style={{ transform: "rotate(-35deg)", transformOrigin: "center center" }}>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="flex gap-16 whitespace-nowrap">
+                {Array.from({ length: 6 }).map((_, j) => (
+                  <span key={j} className="text-lg font-bold uppercase tracking-[0.3em] select-none" style={{ color: "rgba(26,26,46,0.06)" }}>
+                    © MedLog · Confidential
+                  </span>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
         {/* Semi-transparent overlay for bottom half */}
         <div className="pointer-events-none absolute inset-0 z-40" style={{
           background: "linear-gradient(to bottom, transparent 40%, rgba(247,244,239,0.7) 55%, rgba(247,244,239,0.95) 75%, #f7f4ef 100%)",
