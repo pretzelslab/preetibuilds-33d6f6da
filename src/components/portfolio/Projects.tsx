@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { ExternalLink, Github, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
+import medlogPreview from "@/assets/medlog-preview.jpg";
 
 const projects = [
   {
@@ -10,6 +11,7 @@ const projects = [
     tags: ["React", "TypeScript", "Supabase", "Tailwind"],
     color: "from-primary/80 to-accent/80",
     link: "/medlog",
+    preview: medlogPreview,
   },
   {
     title: "AI Ethics Framework",
@@ -50,7 +52,11 @@ const Projects = () => {
             >
               <div className="grid md:grid-cols-5 gap-0">
                 <div className={`md:col-span-2 bg-gradient-to-br ${project.color} min-h-[200px] flex items-center justify-center`}>
-                  <span className="font-mono text-primary-foreground/60 text-sm">// preview</span>
+                  {project.preview ? (
+                    <img src={project.preview} alt={project.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="font-mono text-primary-foreground/60 text-sm">// preview</span>
+                  )}
                 </div>
                 <div className="md:col-span-3 p-8 flex flex-col justify-center">
                   <h3 className="text-xl font-semibold mb-2">{project.title}</h3>
