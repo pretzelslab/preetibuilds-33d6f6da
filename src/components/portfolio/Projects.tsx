@@ -20,6 +20,13 @@ const projects = [
     color: "from-accent to-accent/60",
     upcoming: true,
   },
+  {
+    title: "GTM Tech Stack",
+    description: "An integrated go-to-market technology stack powering sales enablement, pipeline analytics, and revenue operations across the full customer lifecycle.",
+    tags: ["Salesforce", "HubSpot", "Power BI", "Zapier"],
+    color: "from-primary/20 to-secondary/40",
+    upcoming: true,
+  },
 ];
 
 const Projects = () => {
