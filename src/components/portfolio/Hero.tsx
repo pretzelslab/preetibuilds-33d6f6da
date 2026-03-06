@@ -11,7 +11,7 @@ const Hero = () => {
         <div className="absolute bottom-20 right-[10%] w-96 h-96 rounded-full bg-accent/10 blur-3xl" />
       </div>
 
-      <div className="relative z-10 max-w-4xl w-full">
+      <div className="relative z-10 max-w-5xl mx-auto w-full">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
