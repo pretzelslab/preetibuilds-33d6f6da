@@ -407,7 +407,7 @@ const GTMTechStack = () => {
             ))}
           </div>
 
-          <h3 className="text-base font-semibold text-[hsl(210,50%,15%)] mb-4">Alternatives</h3>
+          <h3 className="text-base font-semibold text-white mb-4">Alternatives</h3>
           <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${borderClr}` }}>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
