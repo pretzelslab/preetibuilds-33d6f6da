@@ -64,12 +64,9 @@ const Projects = () => {
           className="mb-6"
         >
           <div className="bg-card rounded-2xl border overflow-hidden shadow-card">
-            <div className="bg-gradient-to-br from-primary/20 to-secondary/40 px-6 py-5 flex items-center gap-3">
+             <div className="bg-gradient-to-br from-primary/20 to-secondary/40 px-6 py-5 flex items-center gap-3">
               <Briefcase className="w-5 h-5 text-primary" />
               <h3 className="text-lg font-semibold">Business AI Solutions</h3>
-              <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-background/60 px-3 py-1 rounded-full ml-auto">
-                <Clock className="w-3 h-3" /> Upcoming
-              </span>
             </div>
             <div className="p-4 grid sm:grid-cols-2 gap-4">
               {businessAIUseCases.map((useCase, i) => (
