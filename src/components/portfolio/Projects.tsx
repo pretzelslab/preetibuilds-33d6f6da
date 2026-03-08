@@ -83,13 +83,22 @@ const Projects = () => {
                   <p className="text-muted-foreground text-xs leading-relaxed mb-3">
                     {useCase.description}
                   </p>
-                  <div className="flex flex-wrap gap-1.5 mb-3">
+                  <div className="flex flex-wrap gap-1.5 mb-2">
                     {useCase.tags.map((tag) => (
                       <Badge key={tag} variant="secondary" className="font-mono text-[10px] rounded-full px-2 py-0.5">
                         {tag}
                       </Badge>
                     ))}
                   </div>
+                  {useCase.applicationLayer && (
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {useCase.applicationLayer.map((tag) => (
+                        <Badge key={tag} variant="outline" className="font-mono text-[10px] rounded-full px-2 py-0.5 text-muted-foreground">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                   {useCase.link && (
                     <Link to={useCase.link} className="text-sm font-medium text-primary hover:underline mr-4">
                       View Project →
