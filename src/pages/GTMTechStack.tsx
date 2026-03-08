@@ -511,8 +511,8 @@ const GTMTechStack = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: "hsl(210,20%,96%)" }}>
-                    <th className={tableHead}>Component</th>
-                    <th className={tableHead}>Effort</th>
+                    <th className={tableHead} style={txMuted}>Component</th>
+                    <th className={tableHead} style={txMuted}>Effort</th>
                   </tr>
                 </thead>
                 <tbody>
