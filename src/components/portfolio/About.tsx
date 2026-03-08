@@ -25,10 +25,9 @@ const About = () => {
               that accelerate growth, adoption, and revenue.
             </p>
           </div>
-          <div className="mt-8 grid grid-cols-3 gap-6">
+          <div className="mt-8 grid grid-cols-2 gap-6">
             {[
               { value: "22+", label: "Years Exp." },
-              { value: "4K+", label: "Customers" },
               { value: "3×", label: "Revenue Growth" },
             ].map((stat) => (
               <div key={stat.label}>
