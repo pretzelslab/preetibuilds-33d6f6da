@@ -9,6 +9,7 @@ const businessAIUseCases: Array<{
   description: string;
   tags: string[];
   applicationLayer?: string[];
+  upcoming?: boolean;
   link?: string;
   externalLink?: string;
 }> = [
@@ -23,6 +24,7 @@ const businessAIUseCases: Array<{
     title: "AI Ethics & Governance",
     description: "Framework for evaluating ethical AI deployment — bias detection, transparency reporting, and responsible governance.",
     tags: ["Python", "FastAPI", "OpenAI", "Redis"],
+    upcoming: true,
   },
 ];
 
@@ -62,12 +64,9 @@ const Projects = () => {
           className="mb-6"
         >
           <div className="bg-card rounded-2xl border overflow-hidden shadow-card">
-            <div className="bg-gradient-to-br from-primary/20 to-secondary/40 px-6 py-5 flex items-center gap-3">
+             <div className="bg-gradient-to-br from-primary/20 to-secondary/40 px-6 py-5 flex items-center gap-3">
               <Briefcase className="w-5 h-5 text-primary" />
               <h3 className="text-lg font-semibold">Business AI Solutions</h3>
-              <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-background/60 px-3 py-1 rounded-full ml-auto">
-                <Clock className="w-3 h-3" /> Upcoming
-              </span>
             </div>
             <div className="p-4 grid sm:grid-cols-2 gap-4">
               {businessAIUseCases.map((useCase, i) => (
@@ -79,8 +78,15 @@ const Projects = () => {
                   transition={{ delay: i * 0.1 }}
                   className="bg-muted/40 border border-border/50 rounded-xl p-5 hover:bg-muted/60 transition-colors"
                 >
-                  <h4 className="text-sm font-semibold mb-2">{useCase.title}</h4>
-                  <p className="text-muted-foreground text-xs leading-relaxed mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-semibold text-foreground">{useCase.title}</h4>
+                    {useCase.upcoming && (
+                      <span className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground bg-background/60 px-2 py-0.5 rounded-full">
+                        <Clock className="w-3 h-3" /> Upcoming
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-foreground/70 text-xs leading-relaxed mb-3">
                     {useCase.description}
                   </p>
                   <div className="flex flex-wrap gap-1.5 mb-2">
