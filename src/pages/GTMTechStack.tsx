@@ -447,7 +447,7 @@ const GTMTechStack = () => {
 
         {/* ══════ SLIDE 15 — Maintenance ══════ */}
         <SlideCard slideNumber={15}>
-          <h2 className={h2Style}>Maintenance &amp; Operational Considerations</h2>
+          <h2 className={h2Style} style={tx1}>Maintenance &amp; Operational Considerations</h2>
           <div className="grid sm:grid-cols-2 gap-4 mt-6">
             {[
               { icon: Lock, title: "API & Credentials", desc: "Rotate keys periodically, never commit to version control, monitor rate limits" },
