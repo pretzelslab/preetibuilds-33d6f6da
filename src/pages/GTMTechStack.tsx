@@ -181,7 +181,7 @@ const GTMTechStack = () => {
                     <tr key={fn} style={{ background: i % 2 === 0 ? "hsl(210,30%,99%)" : "hsl(210,30%,97%)", borderTop: `1px solid ${borderClr}` }}>
                       <td className={tableCellBold}>{fn}</td>
                       <td className={tableCell}>{ent}</td>
-                      <td className="p-3 text-xs font-medium" style={{ color: "hsl(145,50%,55%)" }}>{alt}</td>
+                      <td className="p-3 text-xs font-medium" style={{ color: "hsl(145,45%,38%)" }}>{alt}</td>
                     </tr>
                   ))}
                 </tbody>
