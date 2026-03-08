@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 const skillGroups = [
   {
     category: "Leadership & Strategy",
-    skills: ["Enterprise GTM & Commercialization", "AI Workflow Build", "Subscription & Revenue Transformation", "Executive Advisory & Governance", "Cross-functional Operating Models"],
+    skills: ["Enterprise GTM & Commercialization", "AI Workflow Build", "Revenue Transformation", "Executive Advisory & Governance", "Cross-functional Operating Models"],
   },
   {
     category: "Platforms & Tools",
