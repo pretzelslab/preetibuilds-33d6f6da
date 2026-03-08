@@ -64,7 +64,7 @@ const Projects = () => {
           className="mb-6"
         >
           <div className="bg-card rounded-2xl border overflow-hidden shadow-card">
-             <div className="bg-gradient-to-br from-primary/20 to-secondary/40 px-6 py-5 flex items-center gap-3">
+             <div className="bg-gradient-to-br from-primary/30 to-accent/30 px-6 py-5 flex items-center gap-3">
               <Briefcase className="w-5 h-5 text-primary" />
               <h3 className="text-lg font-semibold">Business AI Solutions</h3>
             </div>
