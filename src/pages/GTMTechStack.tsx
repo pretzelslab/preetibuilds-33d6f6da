@@ -244,7 +244,7 @@ const GTMTechStack = () => {
                     <p className="text-[10px] text-[hsl(210,15%,35%)]">{stage.label}</p>
                     <p className="text-[9px] mt-1.5 font-mono" style={{ color: muted }}>→ {stage.output}</p>
                   </motion.div>
-                  {i < 5 && <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: "hsl(210,30%,35%)" }} />}
+                  {i < 5 && <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: "hsl(210,20%,75%)" }} />}
                 </div>
               ))}
             </div>
