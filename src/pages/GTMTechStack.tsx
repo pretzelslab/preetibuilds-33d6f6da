@@ -39,21 +39,10 @@ const GTMTechStack = () => {
     <div className="min-h-screen relative select-none" style={{ background: "linear-gradient(180deg, #f5f7fa 0%, #e8ecf1 100%)", color: "#1a2332" }}>
       {/* Diagonal watermark */}
       <div className="fixed inset-0 z-[60] pointer-events-none overflow-hidden" aria-hidden="true">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `repeating-linear-gradient(
-            -45deg,
-            transparent,
-            transparent 300px,
-            rgba(0,58,110,0.06) 300px,
-            rgba(0,58,110,0.06) 302px
-          )`,
-        }} />
-        <div className="absolute w-[200%] h-[200%] -left-1/2 -top-1/2 flex flex-wrap items-center justify-center gap-40" style={{ transform: "rotate(-35deg)" }}>
-          {Array.from({ length: 20 }).map((_, i) => (
-             <p key={i} className="text-[28px] font-medium whitespace-nowrap select-none" style={{ color: "rgba(0,58,110,0.06)" }}>
-               Copyrighted
-             </p>
-          ))}
+        <div className="absolute bottom-8 right-8">
+          <p className="text-[14px] font-medium whitespace-nowrap select-none" style={{ color: "rgba(0,58,110,0.12)", transform: "rotate(-35deg)" }}>
+            Copyrighted
+          </p>
         </div>
       </div>
 
