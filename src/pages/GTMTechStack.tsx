@@ -197,9 +197,9 @@ const GTMTechStack = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: "hsl(210,20%,96%)" }}>
-                    <th className={tableHead}>Function</th>
-                    <th className={tableHead}><span className="flex items-center gap-1.5"><XCircle className="w-3 h-3" style={{ color: "hsl(0,60%,55%)" }} /> Enterprise (Subscription)</span></th>
-                    <th className={tableHead}><span className="flex items-center gap-1.5"><CheckCircle className="w-3 h-3" style={{ color: "hsl(145,50%,50%)" }} /> Alternative (Non-Subscription)</span></th>
+                    <th className={tableHead} style={txMuted}>Function</th>
+                    <th className={tableHead} style={txMuted}><span className="flex items-center gap-1.5"><XCircle className="w-3 h-3" style={{ color: "hsl(0,60%,55%)" }} /> Enterprise (Subscription)</span></th>
+                    <th className={tableHead} style={txMuted}><span className="flex items-center gap-1.5"><CheckCircle className="w-3 h-3" style={{ color: "hsl(145,50%,40%)" }} /> Alternative (Non-Subscription)</span></th>
                   </tr>
                 </thead>
                 <tbody>
