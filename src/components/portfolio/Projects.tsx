@@ -51,7 +51,7 @@ const Projects = () => {
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             Featured <span className="text-gradient">Projects</span>
           </h2>
-          <p className="text-muted-foreground max-w-lg">
+          <p className="text-muted-foreground">
             A selection of projects I've worked on — from concept to deployment.
           </p>
         </motion.div>
