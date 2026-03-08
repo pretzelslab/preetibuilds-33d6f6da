@@ -23,7 +23,7 @@ const GTMTechStack = () => {
   return (
     <div className="min-h-screen text-[hsl(210,50%,15%)]" style={{ background: `linear-gradient(180deg, hsl(210,30%,96%) 0%, hsl(210,25%,90%) 100%)` }}>
       {/* Nav */}
-      <nav className="sticky top-0 z-50 backdrop-blur-md border-b" style={{ borderColor: borderClr, background: `${navy}dd` }}>
+      <nav className="sticky top-0 z-50 backdrop-blur-md border-b" style={{ borderColor: borderClr, background: "hsla(210,30%,98%,0.9)" }}>
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/#projects" className="inline-flex items-center gap-2 text-sm hover:text-white transition-colors" style={{ color: accentLight }}>
             <ArrowLeft className="w-4 h-4" /> Back to Portfolio
