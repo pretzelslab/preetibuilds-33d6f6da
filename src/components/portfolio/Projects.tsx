@@ -78,8 +78,15 @@ const Projects = () => {
                   transition={{ delay: i * 0.1 }}
                   className="bg-muted/40 border border-border/50 rounded-xl p-5 hover:bg-muted/60 transition-colors"
                 >
-                  <h4 className="text-sm font-semibold mb-2">{useCase.title}</h4>
-                  <p className="text-muted-foreground text-xs leading-relaxed mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-semibold text-foreground">{useCase.title}</h4>
+                    {useCase.upcoming && (
+                      <span className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground bg-background/60 px-2 py-0.5 rounded-full">
+                        <Clock className="w-3 h-3" /> Upcoming
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-foreground/70 text-xs leading-relaxed mb-3">
                     {useCase.description}
                   </p>
                   <div className="flex flex-wrap gap-1.5 mb-2">
