@@ -355,7 +355,7 @@ const GTMTechStack = () => {
               >
                 <p className="text-3xl sm:text-4xl font-bold" style={{ color: m.color }}>{m.value}</p>
                 {m.sub && <p className="text-xs font-mono mt-0.5" style={{ color: m.color }}>{m.sub}</p>}
-                <p className="text-[11px] mt-2" style={{ color: muted }}>{m.label}</p>
+                <p className="text-[11px] mt-2" style={txMuted}>{m.label}</p>
               </motion.div>
             ))}
           </div>
