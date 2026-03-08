@@ -182,7 +182,7 @@ const Projects = () => {
                       </Badge>
                     ))}
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mt-auto pt-2">
                     {project.link && (
                       <Link to={project.link} className="text-sm font-medium text-primary hover:underline">
                         View Project →
