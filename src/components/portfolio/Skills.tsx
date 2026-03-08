@@ -48,7 +48,7 @@ const Skills = () => {
                 {group.skills.map((skill) => (
                   <div
                     key={skill}
-                    className="px-4 py-3 bg-card rounded-xl border text-sm font-medium shadow-card hover:shadow-elegant transition-shadow duration-300"
+                    className="px-3 py-2 bg-card rounded-xl border text-xs font-medium shadow-card hover:shadow-elegant transition-shadow duration-300"
                   >
                     {skill}
                   </div>
