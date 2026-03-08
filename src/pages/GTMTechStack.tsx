@@ -81,7 +81,7 @@ const GTMTechStack = () => {
               </span>{" "}
               with Python
             </h1>
-            <p className="text-lg sm:text-xl max-w-3xl" style={{ color: textSecondary }}>
+            <p className="text-lg sm:text-xl max-w-3xl" style={{ color: "#3d4f5f" }}>
               From Lead Generation to CRM — A Real-World Sales Pipeline, Built from Scratch
             </p>
           </div>
