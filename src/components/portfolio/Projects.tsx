@@ -84,9 +84,14 @@ const Projects = () => {
                     ))}
                   </div>
                   {useCase.link && (
-                    <Link to={useCase.link} className="text-sm font-medium text-primary hover:underline">
+                    <Link to={useCase.link} className="text-sm font-medium text-primary hover:underline mr-4">
                       View Project →
                     </Link>
+                  )}
+                  {useCase.externalLink && (
+                    <a href={useCase.externalLink} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-primary hover:underline">
+                      GitHub ↗
+                    </a>
                   )}
                 </motion.div>
               ))}
