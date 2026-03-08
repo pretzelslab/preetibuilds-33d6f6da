@@ -1,24 +1,23 @@
 import { motion } from "framer-motion";
-import { ExternalLink, Github, Clock } from "lucide-react";
+import { Clock, Briefcase } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import medlogPreview from "@/assets/medlog-preview.jpg";
 
-const projects = [
+const businessAIUseCases = [
   {
-    title: "Business AI Solutions",
-    description: "Real-world AI applications across business functions — from GTM tech stacks powering sales enablement and pipeline analytics, to revenue operations and customer lifecycle optimization.",
-    tags: ["GTM Tech Stack", "Sales Enablement", "Pipeline Analytics", "Revenue Ops"],
-    color: "from-primary/20 to-secondary/40",
-    upcoming: true,
+    title: "GTM Tech Stack",
+    description: "Integrated go-to-market technology powering sales enablement, pipeline analytics, and revenue operations.",
+    tags: ["Salesforce", "HubSpot", "Power BI", "Zapier"],
   },
   {
-    title: "AI Ethics Framework",
-    description: "A comprehensive framework for evaluating and ensuring ethical AI deployment across enterprise systems. Covers bias detection, transparency reporting, and responsible governance.",
+    title: "AI Ethics & Governance",
+    description: "Framework for evaluating ethical AI deployment — bias detection, transparency reporting, and responsible governance.",
     tags: ["Python", "FastAPI", "OpenAI", "Redis"],
-    color: "from-accent to-accent/60",
-    upcoming: true,
   },
+];
+
+const standaloneProjects = [
   {
     title: "Pet Project #1 - Medlog",
     description: "A personal medical logging application for tracking health records and appointments.",
@@ -47,8 +46,51 @@ const Projects = () => {
           </p>
         </motion.div>
 
+        {/* Business AI Solutions — parent header with sub-cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-6"
+        >
+          <div className="bg-card rounded-2xl border overflow-hidden shadow-card">
+            <div className="bg-gradient-to-br from-primary/20 to-secondary/40 px-6 py-5 flex items-center gap-3">
+              <Briefcase className="w-5 h-5 text-primary" />
+              <h3 className="text-lg font-semibold">Business AI Solutions</h3>
+              <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-background/60 px-3 py-1 rounded-full ml-auto">
+                <Clock className="w-3 h-3" /> Upcoming
+              </span>
+            </div>
+            <div className="p-4 grid sm:grid-cols-2 gap-4">
+              {businessAIUseCases.map((useCase, i) => (
+                <motion.div
+                  key={useCase.title}
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="bg-muted/40 border border-border/50 rounded-xl p-5 hover:bg-muted/60 transition-colors"
+                >
+                  <h4 className="text-sm font-semibold mb-2">{useCase.title}</h4>
+                  <p className="text-muted-foreground text-xs leading-relaxed mb-3">
+                    {useCase.description}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {useCase.tags.map((tag) => (
+                      <Badge key={tag} variant="secondary" className="font-mono text-[10px] rounded-full px-2 py-0.5">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Standalone projects */}
         <div className="grid md:grid-cols-3 gap-6">
-          {projects.map((project, i) => (
+          {standaloneProjects.map((project, i) => (
             <motion.div
               key={project.title}
               initial={{ opacity: 0, y: 30 }}
@@ -76,18 +118,11 @@ const Projects = () => {
                     </Badge>
                   ))}
                 </div>
-                <div className="flex gap-4 items-center">
-                  {(project as any).upcoming && (
-                    <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted px-3 py-1 rounded-full">
-                      <Clock className="w-3 h-3" /> Upcoming
-                    </span>
-                  )}
-                  {(project as any).link && (
-                    <Link to={(project as any).link} className="text-sm font-medium text-primary hover:underline">
-                      View Project →
-                    </Link>
-                  )}
-                </div>
+                {project.link && (
+                  <Link to={project.link} className="text-sm font-medium text-primary hover:underline">
+                    View Project →
+                  </Link>
+                )}
               </div>
             </motion.div>
           ))}
