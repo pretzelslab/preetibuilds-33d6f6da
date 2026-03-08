@@ -124,7 +124,7 @@ const GTMTechStack = () => {
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.1 }}
-                    className="flex-1 rounded-lg border border-[hsl(215,25%,26%)] bg-gradient-to-b from-[hsl(215,22%,21%)] to-[hsl(220,22%,19%)] p-4 text-center"
+                    className="flex-1 rounded-lg border border-[hsl(215,18%,32%)] bg-gradient-to-b from-[hsl(215,18%,27%)] to-[hsl(220,18%,25%)] p-4 text-center"
                   >
                     <stage.icon className="w-5 h-5 mx-auto mb-2 text-[hsl(215,70%,60%)]" />
                     <p className="text-xs font-semibold mb-1">{stage.label}</p>
