@@ -190,7 +190,7 @@ const GTMTechStack = () => {
                 </thead>
                 <tbody>
                   {enterpriseStack.map((row, i) => (
-                    <tr key={row.category} className={`border-t border-[hsl(215,20%,15%)] ${i % 2 === 0 ? "bg-[hsl(220,30%,10%)]" : "bg-[hsl(220,28%,11%)]"}`}>
+                    <tr key={row.category} className={`border-t border-[hsl(215,20%,21%)] ${i % 2 === 0 ? "bg-[hsl(220,25%,16%)]" : "bg-[hsl(220,23%,17%)]"}`}>
                       <td className="p-4 font-medium text-xs">{row.category}</td>
                       <td className="p-4 text-xs text-[hsl(215,15%,50%)]">{row.enterprise}</td>
                       <td className="p-4 text-xs text-[hsl(165,40%,55%)]">{row.replacement}</td>
