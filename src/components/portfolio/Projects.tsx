@@ -112,16 +112,27 @@ const Projects = () => {
                       ))}
                     </div>
                   )}
-                  {useCase.link && (
-                    <Link to={useCase.link} className="text-sm font-medium text-primary hover:underline mr-4">
-                      View Project →
-                    </Link>
-                  )}
-                  {useCase.externalLink && (
-                    <a href={useCase.externalLink} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-primary hover:underline">
-                      GitHub ↗
-                    </a>
-                  )}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {useCase.link && (
+                        <Link to={useCase.link} className="text-sm font-medium text-primary hover:underline">
+                          View Project →
+                        </Link>
+                      )}
+                      {useCase.externalLink && (
+                        <a href={useCase.externalLink} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-primary hover:underline">
+                          GitHub ↗
+                        </a>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleThumb(useCase.title)}
+                      className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <ThumbsUp className="w-4 h-4" />
+                      <span className="text-xs font-mono">{thumbs[useCase.title] || 0}</span>
+                    </button>
+                  </div>
                 </motion.div>
               ))}
             </div>
