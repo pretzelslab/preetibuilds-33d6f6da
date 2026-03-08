@@ -504,7 +504,7 @@ const GTMTechStack = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ background: "hsl(210,55%,15%)" }}>
+                  <tr style={{ background: "hsl(210,20%,96%)" }}>
                     <th className={tableHead}>Component</th>
                     <th className={tableHead}>Effort</th>
                   </tr>
