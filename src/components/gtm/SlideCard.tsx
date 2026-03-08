@@ -13,9 +13,9 @@ const SlideCard = ({ children, slideNumber, className = "" }: SlideCardProps) =>
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, margin: "-50px" }}
     transition={{ duration: 0.5 }}
-    className={`relative rounded-2xl border border-[hsl(210,60%,20%)] bg-[hsl(210,70%,12%)] p-8 sm:p-12 overflow-hidden ${className}`}
+    className={`relative rounded-2xl border border-[hsl(210,25%,85%)] bg-white p-8 sm:p-12 overflow-hidden shadow-sm ${className}`}
   >
-    <span className="absolute top-4 right-5 text-[11px] font-mono text-[hsl(210,40%,35%)]">
+    <span className="absolute top-4 right-5 text-[11px] font-mono text-[hsl(210,20%,70%)]">
       {String(slideNumber).padStart(2, "0")} / 16
     </span>
     {children}
