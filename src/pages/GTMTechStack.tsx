@@ -114,8 +114,8 @@ const GTMTechStack = () => {
 
         {/* ══════ SLIDE 3 — The Problem ══════ */}
         <SlideCard slideNumber={3}>
-          <h2 className={h2Style}>The Problem: Fragmented GTM Systems</h2>
-          <p className={`${pMuted} max-w-3xl mb-8`}>
+          <h2 className={h2Style} style={tx1}>The Problem: Fragmented GTM Systems</h2>
+          <p className={`${pMuted} max-w-3xl mb-8`} style={tx2}>
             Modern GTM teams operate across a fragmented landscape of disconnected tools. The result is not just operational friction — it is measurable, compounding revenue loss.
           </p>
 
