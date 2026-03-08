@@ -38,20 +38,22 @@ const GTMTechStack = () => {
   return (
     <div className="min-h-screen relative select-none" style={{ background: "linear-gradient(180deg, #f5f7fa 0%, #e8ecf1 100%)", color: "#1a2332" }}>
       {/* Diagonal watermark */}
-      <div className="fixed inset-0 z-[1] pointer-events-none overflow-hidden" aria-hidden="true">
+      <div className="fixed inset-0 z-[60] pointer-events-none overflow-hidden" aria-hidden="true">
         <div className="absolute inset-0" style={{
           backgroundImage: `repeating-linear-gradient(
             -45deg,
             transparent,
-            transparent 180px,
-            rgba(255,255,255,0.03) 180px,
-            rgba(255,255,255,0.03) 182px
+            transparent 300px,
+            rgba(0,58,110,0.06) 300px,
+            rgba(0,58,110,0.06) 302px
           )`,
         }} />
-        <div className="absolute inset-0 flex items-center justify-center" style={{ transform: "rotate(-35deg)" }}>
-          <p className="text-[120px] font-bold whitespace-nowrap opacity-[0.04] select-none" style={{ color: "hsl(210,20%,60%)" }}>
-            PREETI BUILDS · PREETI BUILDS · PREETI BUILDS
-          </p>
+        <div className="absolute w-[200%] h-[200%] -left-1/2 -top-1/2 flex flex-wrap items-center justify-center gap-40" style={{ transform: "rotate(-35deg)" }}>
+          {Array.from({ length: 20 }).map((_, i) => (
+            <p key={i} className="text-[80px] font-bold whitespace-nowrap select-none" style={{ color: "rgba(0,58,110,0.06)" }}>
+              PREETI BUILDS
+            </p>
+          ))}
         </div>
       </div>
 
