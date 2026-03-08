@@ -174,7 +174,7 @@ const GTMTechStack = () => {
           className="space-y-6"
         >
           <h2 className="text-2xl font-bold">Tech Stack Comparison</h2>
-          <div className="rounded-xl border border-[hsl(215,20%,18%)] overflow-hidden">
+          <div className="rounded-xl border border-[hsl(215,20%,24%)] overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
