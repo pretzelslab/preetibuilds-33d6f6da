@@ -87,45 +87,52 @@ const Projects = () => {
           </div>
         </motion.div>
 
-        {/* Standalone projects */}
-        <div className="grid md:grid-cols-3 gap-6">
-          {standaloneProjects.map((project, i) => (
-            <motion.div
-              key={project.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.15 }}
-              className="group relative bg-card rounded-2xl border overflow-hidden shadow-card hover:shadow-elegant transition-shadow duration-500 flex flex-col"
-            >
-              <div className={`bg-gradient-to-br ${project.color} h-48 flex items-center justify-center`}>
-                {project.preview ? (
-                  <img src={project.preview} alt={project.title} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="font-mono text-primary-foreground/60 text-sm">// preview</span>
-                )}
-              </div>
-              <div className="p-6 flex flex-col flex-1">
-                <h3 className="text-lg font-semibold mb-2">{project.title}</h3>
-                <p className="text-muted-foreground mb-4 text-sm leading-relaxed flex-1">
-                  {project.description}
-                </p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {project.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="font-mono text-xs rounded-full">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-                {project.link && (
-                  <Link to={project.link} className="text-sm font-medium text-primary hover:underline">
-                    View Project →
-                  </Link>
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        {/* Pet Projects — same parent header style */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-6"
+        >
+          <div className="bg-card rounded-2xl border overflow-hidden shadow-card">
+            <div className="bg-gradient-to-br from-primary/30 to-accent/30 px-6 py-5 flex items-center gap-3">
+              <span className="text-lg">🧪</span>
+              <h3 className="text-lg font-semibold">Pet Projects</h3>
+            </div>
+            <div className="p-4 grid sm:grid-cols-2 gap-4">
+              {petProjects.map((project, i) => (
+                <motion.div
+                  key={project.title}
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  className="bg-muted/40 border border-border/50 rounded-xl p-5 hover:bg-muted/60 transition-colors"
+                >
+                  {project.preview && (
+                    <img src={project.preview} alt={project.title} className="w-full h-32 object-cover rounded-lg mb-3" />
+                  )}
+                  <h4 className="text-sm font-semibold mb-2">{project.title}</h4>
+                  <p className="text-muted-foreground text-xs leading-relaxed mb-3">
+                    {project.description}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {project.tags.map((tag) => (
+                      <Badge key={tag} variant="secondary" className="font-mono text-[10px] rounded-full px-2 py-0.5">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                  {project.link && (
+                    <Link to={project.link} className="text-sm font-medium text-primary hover:underline">
+                      View Project →
+                    </Link>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
