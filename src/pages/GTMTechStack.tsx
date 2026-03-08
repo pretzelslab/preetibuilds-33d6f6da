@@ -94,9 +94,9 @@ const GTMTechStack = () => {
               { b: "Inability to see the big picture", d: "Metrics scattered across platforms make it impossible to pinpoint where leads drop off" },
               { b: "Manual error-prone processes", d: "Every stage depends on human action, introducing delays and invisible gaps" },
             ].map((item, i) => (
-              <div key={i} className="flex gap-3 text-sm" style={{ color: "hsl(210,25%,62%)" }}>
+              <div key={i} className="flex gap-3 text-sm" style={{ color: "hsl(210,15%,40%)" }}>
                 <XCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "hsl(0,60%,55%)" }} />
-                <span><strong className="text-white">{item.b}</strong> — {item.d}</span>
+                <span><strong className="text-[hsl(210,50%,15%)]">{item.b}</strong> — {item.d}</span>
               </div>
             ))}
           </div>
