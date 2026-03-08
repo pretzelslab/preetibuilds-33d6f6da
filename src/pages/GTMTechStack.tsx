@@ -398,7 +398,7 @@ const GTMTechStack = () => {
         <SlideCard slideNumber={14}>
           <h2 className={h2Style} style={tx1}>Next Steps &amp; Alternative Approaches</h2>
 
-          <h3 className="text-base font-semibold text-[hsl(210,30%,12%)] mt-6 mb-4">Immediate Extensions</h3>
+          <h3 className="text-base font-semibold mt-6 mb-4" style={tx1}>Immediate Extensions</h3>
           <div className="grid sm:grid-cols-2 gap-3 mb-8">
             {[
               "Email automation via Gmail API for MQL nurturing",
