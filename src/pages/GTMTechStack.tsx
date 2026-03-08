@@ -476,8 +476,8 @@ const GTMTechStack = () => {
 
         {/* ══════ SLIDE 16 — Real-World Integration ══════ */}
         <SlideCard slideNumber={16}>
-          <h2 className={h2Style}>Pathways to Real-World Integration</h2>
-          <p className={`${pMuted} max-w-3xl mb-8`}>
+          <h2 className={h2Style} style={tx1}>Pathways to Real-World Integration</h2>
+          <p className={`${pMuted} max-w-3xl mb-8`} style={tx2}>
             The business logic does not need to be rewritten. It needs to be re-plumbed.
           </p>
 
