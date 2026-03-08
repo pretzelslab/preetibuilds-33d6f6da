@@ -25,7 +25,7 @@ const GTMTechStack = () => {
       {/* Nav */}
       <nav className="sticky top-0 z-50 backdrop-blur-md border-b" style={{ borderColor: borderClr, background: "hsla(210,30%,98%,0.9)" }}>
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/#projects" className="inline-flex items-center gap-2 text-sm hover:text-white transition-colors" style={{ color: accentLight }}>
+          <Link to="/#projects" className="inline-flex items-center gap-2 text-sm hover:text-[hsl(210,50%,15%)] transition-colors" style={{ color: accentLight }}>
             <ArrowLeft className="w-4 h-4" /> Back to Portfolio
           </Link>
           <span className="text-[11px] font-mono" style={{ color: muted }}>16 slides</span>
