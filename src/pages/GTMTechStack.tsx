@@ -403,7 +403,7 @@ const GTMTechStack = () => {
                     <tr key={comp} style={{ background: i % 2 === 0 ? "hsl(210,30%,99%)" : "hsl(210,30%,97%)", borderTop: `1px solid ${borderClr}` }}>
                       <td className={tableCellBold}>{comp}</td>
                       <td className={tableCell}>{curr}</td>
-                      <td className="p-3 text-xs font-medium" style={{ color: "hsl(145,50%,55%)" }}>{prod}</td>
+                      <td className="p-3 text-xs font-medium" style={{ color: "hsl(145,45%,38%)" }}>{prod}</td>
                     </tr>
                   ))}
                 </tbody>
