@@ -467,7 +467,7 @@ const GTMTechStack = () => {
                 style={{ background: cardBg, border: `1px solid ${borderClr}` }}
               >
                 <span className="text-[11px] font-mono font-semibold" style={{ color: accent }}>{item.stage}</span>
-                <p className="text-xs leading-relaxed mt-2" style={{ color: "hsl(210,25%,65%)" }}>{item.desc}</p>
+                <p className="text-xs leading-relaxed mt-2" style={{ color: "hsl(210,15%,40%)" }}>{item.desc}</p>
               </motion.div>
             ))}
           </div>
