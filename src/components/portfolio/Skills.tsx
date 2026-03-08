@@ -7,7 +7,8 @@ const skillGroups = [
   },
   {
     category: "Platforms & Tools",
-    skills: ["Salesforce CRM / CPQ / CLM", "Zendesk", "Microsoft Dynamics CRM", "Dayforce HCM", "Power BI", "SQL Server", "Operational Reporting & KPI Dashboards", "Smartsheet", "Jira", "Confluence", "GitHub", "Notion", "Zapier", "NotebookLM", "Granola"],
+    wrap: true,
+    skills: ["Salesforce CRM / CPQ / CLM", "Zendesk", "Microsoft Dynamics CRM", "Dayforce HCM", "Power BI", "SQL Server", "KPI Dashboards", "Smartsheet", "Jira", "Confluence", "GitHub", "Notion", "Zapier", "NotebookLM", "Granola"],
   },
   {
     category: "AI & Dev Tools",
