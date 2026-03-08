@@ -213,7 +213,7 @@ const GTMTechStack = () => {
           <p className="text-sm text-[hsl(215,15%,55%)] max-w-2xl">
             Each component of the stack is designed for transferability — adaptable across industries and GTM motions with minimal rework.
           </p>
-          <div className="rounded-xl border border-[hsl(215,20%,24%)] overflow-hidden">
+          <div className="rounded-xl border border-[hsl(215,18%,30%)] overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
