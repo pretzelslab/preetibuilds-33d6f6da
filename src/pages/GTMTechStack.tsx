@@ -155,7 +155,7 @@ const GTMTechStack = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08 }}
-                className="rounded-xl border border-[hsl(215,20%,18%)] bg-[hsl(220,30%,11%)] p-5 text-center"
+                className="rounded-xl border border-[hsl(215,20%,24%)] bg-[hsl(220,25%,17%)] p-5 text-center"
               >
                 <p className={`text-2xl sm:text-3xl font-bold bg-gradient-to-b ${m.color} bg-clip-text text-transparent`}>
                   {m.value}
