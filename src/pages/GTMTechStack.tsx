@@ -178,7 +178,7 @@ const GTMTechStack = () => {
                     ["Analytics", "Tableau / Looker", "Streamlit + Plotly"],
                     ["Pipeline Orchestration", "Segment", "Python ETL scripts"],
                   ].map(([fn, ent, alt], i) => (
-                    <tr key={fn} style={{ background: i % 2 === 0 ? "hsl(210,50%,12%)" : "hsl(210,50%,13%)", borderTop: `1px solid ${borderClr}` }}>
+                    <tr key={fn} style={{ background: i % 2 === 0 ? "hsl(210,30%,99%)" : "hsl(210,30%,97%)", borderTop: `1px solid ${borderClr}` }}>
                       <td className={tableCellBold}>{fn}</td>
                       <td className={tableCell}>{ent}</td>
                       <td className="p-3 text-xs font-medium" style={{ color: "hsl(145,50%,55%)" }}>{alt}</td>
