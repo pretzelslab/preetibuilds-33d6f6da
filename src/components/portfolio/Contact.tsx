@@ -25,6 +25,17 @@ const Contact = () => {
             <Mail className="w-5 h-5" />
             chinmayipriti@gmail.com
           </a>
+          <p className="mt-6 text-sm text-muted-foreground/60">
+            Worked together?{" "}
+            <a
+              href="https://forms.gle/ei18MZAb1Aqnwe5cA"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-4 hover:text-primary transition-colors"
+            >
+              Leave a recommendation
+            </a>
+          </p>
         </motion.div>
       </div>
     </section>
