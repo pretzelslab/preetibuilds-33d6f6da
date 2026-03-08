@@ -9,6 +9,7 @@ const businessAIUseCases: Array<{
   description: string;
   tags: string[];
   applicationLayer?: string[];
+  upcoming?: boolean;
   link?: string;
   externalLink?: string;
 }> = [
