@@ -15,12 +15,18 @@ const textPrimary = "hsl(210,30%,12%)";
 const textSecondary = "hsl(210,15%,35%)";
 
 /* ───── shared styles ───── */
-const h2Style = `text-2xl sm:text-3xl font-bold text-[hsl(210,30%,12%)] mb-2`;
-const pMuted = `text-sm leading-relaxed text-[hsl(210,15%,35%)]`;
-const statCard = `rounded-xl border border-[hsl(210,20%,85%)] bg-white p-5 text-center`;
-const tableHead = "text-left p-3 text-[11px] font-semibold uppercase tracking-wider text-[hsl(210,15%,45%)]";
-const tableCell = `p-3 text-xs text-[hsl(210,15%,35%)]`;
-const tableCellBold = `p-3 text-xs font-medium text-[hsl(210,30%,12%)]`;
+const h2Style = "text-2xl sm:text-3xl font-bold mb-2";
+const pMuted = "text-sm leading-relaxed";
+const statCard = "rounded-xl border bg-white p-5 text-center";
+const tableHead = "text-left p-3 text-[11px] font-semibold uppercase tracking-wider";
+const tableCell = "p-3 text-xs";
+const tableCellBold = "p-3 text-xs font-medium";
+
+/* inline color objects for reliable rendering */
+const tx1 = { color: "#1a2332" }; // primary dark text
+const tx2 = { color: "#3d4f5f" }; // secondary text  
+const txMuted = { color: "#5c6b7a" }; // muted text
+const border1 = { borderColor: "#d0d7e0" };
 
 const GTMTechStack = () => {
   useEffect(() => {
