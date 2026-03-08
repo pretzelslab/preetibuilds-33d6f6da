@@ -5,20 +5,22 @@ import { Link } from "react-router-dom";
 import SlideCard from "@/components/gtm/SlideCard";
 
 /* ───── colour tokens ───── */
-const navy = "hsl(210,40%,92%)";
+const navy = "#003A6E";
 const accent = "#0070F3";
-const accentLight = "#0060d6";
-const muted = "hsl(210,20%,45%)";
-const cardBg = "hsl(210,30%,97%)";
-const borderClr = "hsl(210,25%,85%)";
+const accentLight = "#5ba3f5";
+const muted = "hsl(210,30%,65%)";
+const cardBg = "hsl(210,55%,15%)";
+const borderClr = "hsl(210,40%,25%)";
+const textPrimary = "hsl(210,20%,95%)";
+const textSecondary = "hsl(210,20%,75%)";
 
 /* ───── shared styles ───── */
-const h2Style = "text-2xl sm:text-3xl font-bold text-[hsl(210,50%,15%)] mb-2";
-const pMuted = "text-sm leading-relaxed text-[hsl(210,15%,45%)]";
-const statCard = "rounded-xl border border-[hsl(210,25%,85%)] bg-white p-5 text-center";
-const tableHead = "text-left p-3 text-[11px] font-semibold uppercase tracking-wider text-[hsl(210,20%,50%)]";
-const tableCell = "p-3 text-xs text-[hsl(210,15%,45%)]";
-const tableCellBold = "p-3 text-xs font-medium text-[hsl(210,50%,15%)]";
+const h2Style = `text-2xl sm:text-3xl font-bold text-[${textPrimary}] mb-2`;
+const pMuted = `text-sm leading-relaxed text-[${textSecondary}]`;
+const statCard = `rounded-xl border border-[hsl(210,40%,25%)] bg-[hsl(210,55%,13%)] p-5 text-center`;
+const tableHead = "text-left p-3 text-[11px] font-semibold uppercase tracking-wider text-[hsl(210,30%,65%)]";
+const tableCell = `p-3 text-xs text-[${textSecondary}]`;
+const tableCellBold = `p-3 text-xs font-medium text-[${textPrimary}]`;
 
 const GTMTechStack = () => {
   return (
