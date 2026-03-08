@@ -39,9 +39,9 @@ const transferabilityTable = [
 
 const GTMTechStack = () => {
   return (
-    <div className="min-h-screen bg-[hsl(220,25%,14%)] text-[hsl(215,20%,90%)]">
+    <div className="min-h-screen bg-[hsl(220,20%,20%)] text-[hsl(215,20%,90%)]">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-[hsl(220,25%,14%)]/90 backdrop-blur-md border-b border-[hsl(215,20%,22%)]">
+      <nav className="sticky top-0 z-50 bg-[hsl(220,20%,20%)]/90 backdrop-blur-md border-b border-[hsl(215,18%,28%)]">
         <div className="max-w-5xl mx-auto px-6 py-4">
           <Link to="/#projects" className="inline-flex items-center gap-2 text-sm text-[hsl(215,60%,65%)] hover:text-[hsl(215,70%,75%)] transition-colors">
             <ArrowLeft className="w-4 h-4" /> Back to Portfolio
