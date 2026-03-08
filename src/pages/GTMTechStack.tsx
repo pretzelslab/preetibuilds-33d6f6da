@@ -21,7 +21,7 @@ const tableCellBold = "p-3 text-xs font-medium text-[hsl(210,50%,15%)]";
 
 const GTMTechStack = () => {
   return (
-    <div className="min-h-screen text-white" style={{ background: `linear-gradient(180deg, ${navy} 0%, hsl(210,60%,8%) 100%)` }}>
+    <div className="min-h-screen text-[hsl(210,50%,15%)]" style={{ background: `linear-gradient(180deg, hsl(210,30%,96%) 0%, hsl(210,25%,90%) 100%)` }}>
       {/* Nav */}
       <nav className="sticky top-0 z-50 backdrop-blur-md border-b" style={{ borderColor: borderClr, background: `${navy}dd` }}>
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
