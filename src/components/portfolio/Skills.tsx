@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-const skillGroups = [
+const skillGroups: { category: string; skills: string[]; wrap?: boolean }[] = [
   {
     category: "Leadership & Impact",
     skills: ["Technical Program Management", "Strategic Program Leadership", "Product and Business Portfolio Strategy", "Product and Operational Strategy", "Engineering Program Delivery", "Executive Stakeholder Collaboration", "Cross-Functional Operating Models", "Commercial Launch Excellence"],
