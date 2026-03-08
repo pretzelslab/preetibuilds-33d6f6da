@@ -23,7 +23,7 @@ const About = () => {
           </div>
           <div className="mt-8 grid grid-cols-2 gap-6">
             {[
-              { value: "22+", label: "Years Exp." },
+              { value: "18+", label: "Years Exp." },
               { value: "3×", label: "Revenue Growth" },
             ].map((stat) => (
               <div key={stat.label}>
