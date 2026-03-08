@@ -434,9 +434,9 @@ const GTMTechStack = () => {
                     ["CRM Sync", "One-directional", "Bi-directional sync"],
                   ].map(([comp, curr, prod], i) => (
                     <tr key={comp} style={{ background: i % 2 === 0 ? "white" : "hsl(210,20%,97%)", borderTop: `1px solid ${borderClr}` }}>
-                      <td className={tableCellBold}>{comp}</td>
-                      <td className={tableCell}>{curr}</td>
-                      <td className="p-3 text-xs font-medium" style={{ color: "hsl(145,50%,55%)" }}>{prod}</td>
+                      <td className={tableCellBold} style={tx1}>{comp}</td>
+                      <td className={tableCell} style={tx2}>{curr}</td>
+                      <td className="p-3 text-xs font-medium" style={{ color: "hsl(145,50%,35%)" }}>{prod}</td>
                     </tr>
                   ))}
                 </tbody>
