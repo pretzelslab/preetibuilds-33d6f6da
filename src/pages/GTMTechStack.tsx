@@ -338,7 +338,7 @@ const GTMTechStack = () => {
               </h3>
               <ul className="space-y-2">
                 {["REST API communication", "pandas data manipulation", "try/except error handling", "Streamlit web apps", "subprocess pipeline orchestration"].map((s) => (
-                  <li key={s} className="text-sm flex gap-2" style={{ color: "hsl(210,25%,65%)" }}>
+                  <li key={s} className="text-sm flex gap-2" style={{ color: "hsl(210,15%,40%)" }}>
                     <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: accent }} />
                     {s}
                   </li>
