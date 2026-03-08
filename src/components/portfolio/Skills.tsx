@@ -45,7 +45,7 @@ const Skills = () => {
               <h3 className="font-mono text-sm text-muted-foreground uppercase tracking-widest mb-6">
                 {group.category}
               </h3>
-              <div className="space-y-3">
+              <div className={group.wrap ? "flex flex-wrap gap-2" : "space-y-3"}>
                 {group.skills.map((skill) => (
                   <div
                     key={skill}
