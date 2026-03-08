@@ -15,12 +15,18 @@ const textPrimary = "hsl(210,30%,12%)";
 const textSecondary = "hsl(210,15%,35%)";
 
 /* ───── shared styles ───── */
-const h2Style = `text-2xl sm:text-3xl font-bold text-[hsl(210,30%,12%)] mb-2`;
-const pMuted = `text-sm leading-relaxed text-[hsl(210,15%,35%)]`;
-const statCard = `rounded-xl border border-[hsl(210,20%,85%)] bg-white p-5 text-center`;
-const tableHead = "text-left p-3 text-[11px] font-semibold uppercase tracking-wider text-[hsl(210,15%,45%)]";
-const tableCell = `p-3 text-xs text-[hsl(210,15%,35%)]`;
-const tableCellBold = `p-3 text-xs font-medium text-[hsl(210,30%,12%)]`;
+const h2Style = "text-2xl sm:text-3xl font-bold mb-2";
+const pMuted = "text-sm leading-relaxed";
+const statCard = "rounded-xl border bg-white p-5 text-center";
+const tableHead = "text-left p-3 text-[11px] font-semibold uppercase tracking-wider";
+const tableCell = "p-3 text-xs";
+const tableCellBold = "p-3 text-xs font-medium";
+
+/* inline color objects for reliable rendering */
+const tx1 = { color: "#1a2332" }; // primary dark text
+const tx2 = { color: "#3d4f5f" }; // secondary text  
+const txMuted = { color: "#5c6b7a" }; // muted text
+const border1 = { borderColor: "#d0d7e0" };
 
 const GTMTechStack = () => {
   useEffect(() => {
@@ -30,7 +36,7 @@ const GTMTechStack = () => {
   }, []);
 
   return (
-    <div className="min-h-screen relative select-none" style={{ background: `linear-gradient(180deg, hsl(210,20%,97%) 0%, hsl(210,15%,92%) 100%)`, color: textPrimary }}>
+    <div className="min-h-screen relative select-none" style={{ background: "linear-gradient(180deg, #f5f7fa 0%, #e8ecf1 100%)", color: "#1a2332" }}>
       {/* Diagonal watermark */}
       <div className="fixed inset-0 z-[1] pointer-events-none overflow-hidden" aria-hidden="true">
         <div className="absolute inset-0" style={{
@@ -68,14 +74,14 @@ const GTMTechStack = () => {
             <span className="inline-block text-xs font-mono px-3 py-1 rounded-full mb-6" style={{ background: `${accent}22`, color: accentLight, border: `1px solid ${accent}44` }}>
               Revenue Operations · Python · Full Pipeline
             </span>
-            <h1 className="text-3xl sm:text-5xl font-bold leading-tight mb-4 text-[hsl(210,30%,12%)]">
+            <h1 className="text-3xl sm:text-5xl font-bold leading-tight mb-4" style={{ color: "#1a2332" }}>
               Building an End-to-End{" "}
               <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(135deg, ${accent}, ${accentLight})` }}>
                 Go-to-Market Tech Stack
               </span>{" "}
               with Python
             </h1>
-            <p className="text-lg sm:text-xl max-w-3xl" style={{ color: textSecondary }}>
+            <p className="text-lg sm:text-xl max-w-3xl" style={{ color: "#3d4f5f" }}>
               From Lead Generation to CRM — A Real-World Sales Pipeline, Built from Scratch
             </p>
           </div>
@@ -85,7 +91,7 @@ const GTMTechStack = () => {
         <SlideCard slideNumber={2}>
           <div className="flex items-center gap-3 mb-6">
             <AlertTriangle className="w-6 h-6" style={{ color: "hsl(40,85%,55%)" }} />
-            <h2 className={h2Style}>For Demonstration &amp; Educational Purposes Only</h2>
+            <h2 className={h2Style} style={tx1}>For Demonstration &amp; Educational Purposes Only</h2>
           </div>
           <ul className="space-y-3">
             {[
@@ -98,7 +104,7 @@ const GTMTechStack = () => {
               "No copyrighted code or intellectual property belonging to third parties has been used",
               "Built independently using public documentation — in full compliance with applicable IP laws",
             ].map((text, i) => (
-              <li key={i} className="flex gap-3 text-sm leading-relaxed" style={{ color: textSecondary }}>
+              <li key={i} className="flex gap-3 text-sm leading-relaxed" style={tx2}>
                 <span className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "hsl(40,85%,55%)" }} />
                 {text}
               </li>
@@ -108,8 +114,8 @@ const GTMTechStack = () => {
 
         {/* ══════ SLIDE 3 — The Problem ══════ */}
         <SlideCard slideNumber={3}>
-          <h2 className={h2Style}>The Problem: Fragmented GTM Systems</h2>
-          <p className={`${pMuted} max-w-3xl mb-8`}>
+          <h2 className={h2Style} style={tx1}>The Problem: Fragmented GTM Systems</h2>
+          <p className={`${pMuted} max-w-3xl mb-8`} style={tx2}>
             Modern GTM teams operate across a fragmented landscape of disconnected tools. The result is not just operational friction — it is measurable, compounding revenue loss.
           </p>
 
@@ -121,14 +127,14 @@ const GTMTechStack = () => {
               { b: "Inability to see the big picture", d: "Metrics scattered across platforms make it impossible to pinpoint where leads drop off" },
               { b: "Manual error-prone processes", d: "Every stage depends on human action, introducing delays and invisible gaps" },
             ].map((item, i) => (
-              <div key={i} className="flex gap-3 text-sm" style={{ color: textSecondary }}>
+              <div key={i} className="flex gap-3 text-sm" style={tx2}>
                 <XCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "hsl(0,60%,55%)" }} />
-                <span><strong className="text-[hsl(210,30%,12%)]">{item.b}</strong> — {item.d}</span>
+                <span><strong style={tx1}>{item.b}</strong> — {item.d}</span>
               </div>
             ))}
           </div>
 
-          <h3 className="text-lg font-semibold text-[hsl(210,30%,12%)] mb-4">Revenue Impact</h3>
+          <h3 className="text-lg font-semibold mb-4" style={tx1}>Revenue Impact</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
             {[
               { source: "Gartner", stat: "$12.9M", desc: "average annual cost of poor data quality" },
@@ -136,22 +142,22 @@ const GTMTechStack = () => {
               { source: "HubSpot / LinkedIn", stat: "79%", desc: "of marketing leads never convert to sales" },
               { source: "IDC", stat: "$3.1T", desc: "lost annually from bad data" },
             ].map((card, i) => (
-              <div key={i} className={statCard}>
+              <div key={i} className={statCard} style={border1}>
                 <p className="text-2xl font-bold mb-1" style={{ color: accent }}>{card.stat}</p>
-                <p className="text-[10px] font-medium text-[hsl(210,30%,12%)] mb-1">{card.source}</p>
-                <p className="text-[10px]" style={{ color: muted }}>{card.desc}</p>
+                <p className="text-[10px] font-medium mb-1" style={tx1}>{card.source}</p>
+                <p className="text-[10px]" style={txMuted}>{card.desc}</p>
               </div>
             ))}
           </div>
 
-          <p className={pMuted}>
+          <p className={pMuted} style={tx2}>
             Revenue teams fly blind, act on incomplete data, and lose leads in the cracks between systems never designed to work together.
           </p>
         </SlideCard>
 
         {/* ══════ SLIDE 4 — The Solution ══════ */}
         <SlideCard slideNumber={4}>
-          <h2 className={h2Style}>The Solution: A Unified Python GTM Pipeline</h2>
+          <h2 className={h2Style} style={tx1}>The Solution: A Unified Python GTM Pipeline</h2>
           <div className="my-6 rounded-xl p-5" style={{ background: `${accent}11`, border: `1px solid ${accent}33` }}>
             <p className="text-sm italic" style={{ color: accentLight }}>
               "Build the same pipeline using Python — with full control over every layer of the stack."
@@ -176,8 +182,8 @@ const GTMTechStack = () => {
                 style={{ background: cardBg, border: `1px solid ${borderClr}` }}
               >
                 <item.icon className="w-5 h-5 mb-3" style={{ color: accent }} />
-                <h3 className="text-sm font-semibold text-[hsl(210,30%,12%)] mb-1">{item.title}</h3>
-                <p className="text-xs leading-relaxed" style={{ color: muted }}>{item.desc}</p>
+                <h3 className="text-sm font-semibold mb-1" style={tx1}>{item.title}</h3>
+                <p className="text-xs leading-relaxed" style={txMuted}>{item.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -185,15 +191,15 @@ const GTMTechStack = () => {
 
         {/* ══════ SLIDE 5 — Tech Stack Comparison ══════ */}
         <SlideCard slideNumber={5}>
-          <h2 className={h2Style}>Tech Stack Comparison</h2>
+          <h2 className={h2Style} style={tx1}>Tech Stack Comparison</h2>
           <div className="rounded-xl overflow-hidden mt-6" style={{ border: `1px solid ${borderClr}` }}>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: "hsl(210,20%,96%)" }}>
-                    <th className={tableHead}>Function</th>
-                    <th className={tableHead}><span className="flex items-center gap-1.5"><XCircle className="w-3 h-3" style={{ color: "hsl(0,60%,55%)" }} /> Enterprise (Subscription)</span></th>
-                    <th className={tableHead}><span className="flex items-center gap-1.5"><CheckCircle className="w-3 h-3" style={{ color: "hsl(145,50%,50%)" }} /> Alternative (Non-Subscription)</span></th>
+                    <th className={tableHead} style={txMuted}>Function</th>
+                    <th className={tableHead} style={txMuted}><span className="flex items-center gap-1.5"><XCircle className="w-3 h-3" style={{ color: "hsl(0,60%,55%)" }} /> Enterprise (Subscription)</span></th>
+                    <th className={tableHead} style={txMuted}><span className="flex items-center gap-1.5"><CheckCircle className="w-3 h-3" style={{ color: "hsl(145,50%,40%)" }} /> Alternative (Non-Subscription)</span></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -206,9 +212,9 @@ const GTMTechStack = () => {
                     ["Pipeline Orchestration", "Segment", "Python ETL scripts"],
                   ].map(([fn, ent, alt], i) => (
                     <tr key={fn} style={{ background: i % 2 === 0 ? "white" : "hsl(210,20%,97%)", borderTop: `1px solid ${borderClr}` }}>
-                      <td className={tableCellBold}>{fn}</td>
-                      <td className={tableCell}>{ent}</td>
-                      <td className="p-3 text-xs font-medium" style={{ color: "hsl(145,50%,55%)" }}>{alt}</td>
+                      <td className={tableCellBold} style={tx1}>{fn}</td>
+                      <td className={tableCell} style={tx2}>{ent}</td>
+                      <td className="p-3 text-xs font-medium" style={{ color: "hsl(145,50%,35%)" }}>{alt}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -219,7 +225,7 @@ const GTMTechStack = () => {
 
         {/* ══════ SLIDE 6 — Pipeline Architecture ══════ */}
         <SlideCard slideNumber={6}>
-          <h2 className={h2Style}>Pipeline Architecture — 6 Stages</h2>
+          <h2 className={h2Style} style={tx1}>Pipeline Architecture — 6 Stages</h2>
           <div className="mt-8 overflow-x-auto">
             <div className="flex items-center gap-2 min-w-[750px]">
               {[
@@ -240,9 +246,9 @@ const GTMTechStack = () => {
                     style={{ background: cardBg, border: `1px solid ${borderClr}` }}
                   >
                     <stage.icon className="w-5 h-5 mx-auto mb-2" style={{ color: accent }} />
-                    <p className="text-[11px] font-semibold text-[hsl(210,30%,12%)] mb-1">Stage {i + 1}</p>
-                    <p className="text-[10px] text-[hsl(210,15%,35%)]">{stage.label}</p>
-                    <p className="text-[9px] mt-1.5 font-mono" style={{ color: muted }}>→ {stage.output}</p>
+                    <p className="text-[11px] font-semibold mb-1" style={tx1}>Stage {i + 1}</p>
+                    <p className="text-[10px]" style={tx2}>{stage.label}</p>
+                    <p className="text-[9px] mt-1.5 font-mono" style={txMuted}>→ {stage.output}</p>
                   </motion.div>
                   {i < 5 && <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: "hsl(210,20%,75%)" }} />}
                 </div>
@@ -307,21 +313,21 @@ const GTMTechStack = () => {
           },
         ] as const).map((stage) => (
           <SlideCard key={stage.num} slideNumber={stage.num}>
-            <h2 className={h2Style}>{stage.title}</h2>
+            <h2 className={h2Style} style={tx1}>{stage.title}</h2>
             <span className="inline-block text-[11px] font-mono px-3 py-1 rounded-full mb-6" style={{ background: `${accent}18`, color: accentLight, border: `1px solid ${accent}33` }}>
               {stage.script}
             </span>
             <ul className="space-y-3 mb-6">
               {stage.bullets.map((b, i) => (
-                <li key={i} className="flex gap-3 text-sm" style={{ color: textSecondary }}>
+                <li key={i} className="flex gap-3 text-sm" style={tx2}>
                   <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "hsl(145,50%,50%)" }} />
                   {b}
                 </li>
               ))}
             </ul>
             <div className="rounded-lg px-4 py-3" style={{ background: "hsl(210,20%,96%)", border: `1px solid ${borderClr}` }}>
-              <p className="text-[11px]" style={{ color: muted }}>
-                <strong className="text-[hsl(210,30%,12%)]">Python concepts:</strong> {stage.concepts}
+              <p className="text-[11px]" style={txMuted}>
+                <strong style={tx1}>Python concepts:</strong> {stage.concepts}
               </p>
             </div>
           </SlideCard>
@@ -329,7 +335,7 @@ const GTMTechStack = () => {
 
         {/* ══════ SLIDE 12 — Results ══════ */}
         <SlideCard slideNumber={12}>
-          <h2 className={h2Style}>Results</h2>
+          <h2 className={h2Style} style={tx1}>Results</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-6">
             {[
               { label: "Total leads generated", value: "200", color: accent },
@@ -345,11 +351,11 @@ const GTMTechStack = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.07 }}
-                className={statCard}
+                className={statCard} style={border1}
               >
                 <p className="text-3xl sm:text-4xl font-bold" style={{ color: m.color }}>{m.value}</p>
                 {m.sub && <p className="text-xs font-mono mt-0.5" style={{ color: m.color }}>{m.sub}</p>}
-                <p className="text-[11px] mt-2" style={{ color: muted }}>{m.label}</p>
+                <p className="text-[11px] mt-2" style={txMuted}>{m.label}</p>
               </motion.div>
             ))}
           </div>
@@ -357,7 +363,7 @@ const GTMTechStack = () => {
 
         {/* ══════ SLIDE 13 — Key Learnings ══════ */}
         <SlideCard slideNumber={13}>
-          <h2 className={h2Style}>Key Learnings</h2>
+          <h2 className={h2Style} style={tx1}>Key Learnings</h2>
           <div className="grid sm:grid-cols-2 gap-6 mt-6">
             <div className="rounded-xl p-6" style={{ background: cardBg, border: `1px solid ${borderClr}` }}>
               <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: accent }}>
@@ -365,7 +371,7 @@ const GTMTechStack = () => {
               </h3>
               <ul className="space-y-2">
                 {["REST API communication", "pandas data manipulation", "try/except error handling", "Streamlit web apps", "subprocess pipeline orchestration"].map((s) => (
-                  <li key={s} className="text-sm flex gap-2" style={{ color: textSecondary }}>
+                  <li key={s} className="text-sm flex gap-2" style={tx2}>
                     <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: accent }} />
                     {s}
                   </li>
@@ -378,7 +384,7 @@ const GTMTechStack = () => {
               </h3>
               <ul className="space-y-2">
                 {["ICP design and scoring logic", "Lead classification methodology", "CRM data management", "Sales funnel analytics"].map((s) => (
-                  <li key={s} className="text-sm flex gap-2" style={{ color: textSecondary }}>
+                  <li key={s} className="text-sm flex gap-2" style={tx2}>
                     <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: accentLight }} />
                     {s}
                   </li>
@@ -390,9 +396,9 @@ const GTMTechStack = () => {
 
         {/* ══════ SLIDE 14 — Next Steps ══════ */}
         <SlideCard slideNumber={14}>
-          <h2 className={h2Style}>Next Steps &amp; Alternative Approaches</h2>
+          <h2 className={h2Style} style={tx1}>Next Steps &amp; Alternative Approaches</h2>
 
-          <h3 className="text-base font-semibold text-[hsl(210,30%,12%)] mt-6 mb-4">Immediate Extensions</h3>
+          <h3 className="text-base font-semibold mt-6 mb-4" style={tx1}>Immediate Extensions</h3>
           <div className="grid sm:grid-cols-2 gap-3 mb-8">
             {[
               "Email automation via Gmail API for MQL nurturing",
@@ -400,22 +406,22 @@ const GTMTechStack = () => {
               "Connect real lead sources — website forms, LinkedIn, webhooks",
               "Upgrade to ML scoring with scikit-learn or XGBoost",
             ].map((item, i) => (
-              <div key={i} className="flex gap-3 text-sm rounded-lg p-3" style={{ background: cardBg, border: `1px solid ${borderClr}`, color: textSecondary }}>
+              <div key={i} className="flex gap-3 text-sm rounded-lg p-3" style={{ background: cardBg, border: `1px solid ${borderClr}`, color: "#3d4f5f" }}>
                 <ArrowRight className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: accent }} />
                 {item}
               </div>
             ))}
           </div>
 
-          <h3 className="text-base font-semibold text-[hsl(210,30%,12%)] mb-4">Alternatives</h3>
+          <h3 className="text-base font-semibold mb-4" style={tx1}>Alternatives</h3>
           <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${borderClr}` }}>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: "hsl(210,20%,96%)" }}>
-                    <th className={tableHead}>Component</th>
-                    <th className={tableHead}>This Project</th>
-                    <th className={tableHead}>Production Alternative</th>
+                    <th className={tableHead} style={txMuted}>Component</th>
+                    <th className={tableHead} style={txMuted}>This Project</th>
+                    <th className={tableHead} style={txMuted}>Production Alternative</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -428,9 +434,9 @@ const GTMTechStack = () => {
                     ["CRM Sync", "One-directional", "Bi-directional sync"],
                   ].map(([comp, curr, prod], i) => (
                     <tr key={comp} style={{ background: i % 2 === 0 ? "white" : "hsl(210,20%,97%)", borderTop: `1px solid ${borderClr}` }}>
-                      <td className={tableCellBold}>{comp}</td>
-                      <td className={tableCell}>{curr}</td>
-                      <td className="p-3 text-xs font-medium" style={{ color: "hsl(145,50%,55%)" }}>{prod}</td>
+                      <td className={tableCellBold} style={tx1}>{comp}</td>
+                      <td className={tableCell} style={tx2}>{curr}</td>
+                      <td className="p-3 text-xs font-medium" style={{ color: "hsl(145,50%,35%)" }}>{prod}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -441,7 +447,7 @@ const GTMTechStack = () => {
 
         {/* ══════ SLIDE 15 — Maintenance ══════ */}
         <SlideCard slideNumber={15}>
-          <h2 className={h2Style}>Maintenance &amp; Operational Considerations</h2>
+          <h2 className={h2Style} style={tx1}>Maintenance &amp; Operational Considerations</h2>
           <div className="grid sm:grid-cols-2 gap-4 mt-6">
             {[
               { icon: Lock, title: "API & Credentials", desc: "Rotate keys periodically, never commit to version control, monitor rate limits" },
@@ -461,8 +467,8 @@ const GTMTechStack = () => {
                 style={{ background: cardBg, border: `1px solid ${borderClr}` }}
               >
                 <item.icon className="w-5 h-5 mb-3" style={{ color: accent }} />
-                <h3 className="text-sm font-semibold text-[hsl(210,30%,12%)] mb-1">{item.title}</h3>
-                <p className="text-xs leading-relaxed" style={{ color: muted }}>{item.desc}</p>
+                <h3 className="text-sm font-semibold mb-1" style={tx1}>{item.title}</h3>
+                <p className="text-xs leading-relaxed" style={txMuted}>{item.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -470,8 +476,8 @@ const GTMTechStack = () => {
 
         {/* ══════ SLIDE 16 — Real-World Integration ══════ */}
         <SlideCard slideNumber={16}>
-          <h2 className={h2Style}>Pathways to Real-World Integration</h2>
-          <p className={`${pMuted} max-w-3xl mb-8`}>
+          <h2 className={h2Style} style={tx1}>Pathways to Real-World Integration</h2>
+          <p className={`${pMuted} max-w-3xl mb-8`} style={tx2}>
             The business logic does not need to be rewritten. It needs to be re-plumbed.
           </p>
 
@@ -494,19 +500,19 @@ const GTMTechStack = () => {
                 style={{ background: cardBg, border: `1px solid ${borderClr}` }}
               >
                 <span className="text-[11px] font-mono font-semibold" style={{ color: accent }}>{item.stage}</span>
-                <p className="text-xs leading-relaxed mt-2" style={{ color: textSecondary }}>{item.desc}</p>
+                <p className="text-xs leading-relaxed mt-2" style={tx2}>{item.desc}</p>
               </motion.div>
             ))}
           </div>
 
-          <h3 className="text-base font-semibold text-[hsl(210,30%,12%)] mb-4">Transferability</h3>
+          <h3 className="text-base font-semibold mb-4" style={tx1}>Transferability</h3>
           <div className="rounded-xl overflow-hidden mb-8" style={{ border: `1px solid ${borderClr}` }}>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: "hsl(210,20%,96%)" }}>
-                    <th className={tableHead}>Component</th>
-                    <th className={tableHead}>Effort</th>
+                    <th className={tableHead} style={txMuted}>Component</th>
+                    <th className={tableHead} style={txMuted}>Effort</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -521,7 +527,7 @@ const GTMTechStack = () => {
                     ["Event-driven triggers", "High"],
                   ].map(([comp, effort], i) => (
                     <tr key={comp} style={{ background: i % 2 === 0 ? "white" : "hsl(210,20%,97%)", borderTop: `1px solid ${borderClr}` }}>
-                      <td className={tableCellBold}>{comp}</td>
+                      <td className={tableCellBold} style={tx1}>{comp}</td>
                       <td className="p-3">
                         <span className="text-[10px] font-mono px-2 py-1 rounded-full" style={{
                           background: effort === "Low" ? "hsl(145,50%,45%,0.15)" : effort === "Medium" ? "hsl(40,70%,50%,0.15)" : effort === "High" ? "hsl(0,60%,50%,0.15)" : "hsl(25,70%,50%,0.15)",
@@ -539,7 +545,7 @@ const GTMTechStack = () => {
 
           {/* Closing */}
           <div className="rounded-xl p-6" style={{ background: `linear-gradient(135deg, ${accent}18, ${accent}08)`, border: `1px solid ${accent}33` }}>
-            <p className="text-sm font-medium text-[hsl(210,30%,12%)]">
+            <p className="text-sm font-medium" style={tx1}>
               This project is the blueprint. Production is the same blueprint, built with industrial-grade materials.
             </p>
           </div>
@@ -547,7 +553,7 @@ const GTMTechStack = () => {
 
         {/* Footer */}
         <div className="text-center py-8">
-          <p className="text-xs font-mono" style={{ color: muted }}>
+          <p className="text-xs font-mono" style={txMuted}>
             Built with Python · HubSpot CRM · Hunter.io · Streamlit · Plotly
           </p>
         </div>
