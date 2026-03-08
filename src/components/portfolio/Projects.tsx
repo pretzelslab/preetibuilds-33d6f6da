@@ -23,6 +23,7 @@ const businessAIUseCases: Array<{
     title: "AI Ethics & Governance",
     description: "Framework for evaluating ethical AI deployment — bias detection, transparency reporting, and responsible governance.",
     tags: ["Python", "FastAPI", "OpenAI", "Redis"],
+    upcoming: true,
   },
 ];
 
