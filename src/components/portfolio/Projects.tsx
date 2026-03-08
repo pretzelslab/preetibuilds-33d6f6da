@@ -7,8 +7,9 @@ import medlogPreview from "@/assets/medlog-preview.jpg";
 const businessAIUseCases = [
   {
     title: "GTM Tech Stack",
-    description: "Integrated go-to-market technology powering sales enablement, pipeline analytics, and revenue operations.",
-    tags: ["Salesforce", "HubSpot", "Power BI", "Zapier"],
+    description: "End-to-end go-to-market pipeline replacing $400K+ enterprise SaaS with Python — lead scoring, nurture sequences, and CRM sync.",
+    tags: ["Python", "HubSpot", "Scikit-learn", "SendGrid"],
+    link: "/gtm-techstack",
   },
   {
     title: "AI Ethics & Governance",
@@ -74,13 +75,18 @@ const Projects = () => {
                   <p className="text-muted-foreground text-xs leading-relaxed mb-3">
                     {useCase.description}
                   </p>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-1.5 mb-3">
                     {useCase.tags.map((tag) => (
                       <Badge key={tag} variant="secondary" className="font-mono text-[10px] rounded-full px-2 py-0.5">
                         {tag}
                       </Badge>
                     ))}
                   </div>
+                  {useCase.link && (
+                    <Link to={useCase.link} className="text-sm font-medium text-primary hover:underline">
+                      View Project →
+                    </Link>
+                  )}
                 </motion.div>
               ))}
             </div>
