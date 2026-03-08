@@ -319,7 +319,7 @@ const GTMTechStack = () => {
             </span>
             <ul className="space-y-3 mb-6">
               {stage.bullets.map((b, i) => (
-                <li key={i} className="flex gap-3 text-sm" style={{ color: textSecondary }}>
+                <li key={i} className="flex gap-3 text-sm" style={tx2}>
                   <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "hsl(145,50%,50%)" }} />
                   {b}
                 </li>
