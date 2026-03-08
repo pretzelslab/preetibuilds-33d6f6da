@@ -150,7 +150,7 @@ const GTMTechStack = () => {
             ))}
           </div>
 
-          <p className={pMuted}>
+          <p className={pMuted} style={tx2}>
             Revenue teams fly blind, act on incomplete data, and lose leads in the cracks between systems never designed to work together.
           </p>
         </SlideCard>
