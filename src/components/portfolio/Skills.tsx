@@ -3,11 +3,15 @@ import { motion } from "framer-motion";
 const skillGroups = [
   {
     category: "Leadership & Strategy",
-    skills: ["Enterprise GTM & Commercialization", "AI Product Strategy & Monetization", "Subscription & Revenue Transformation", "Executive Advisory & Governance", "Cross-functional Operating Models"],
+    skills: ["Enterprise GTM & Commercialization", "AI Workflow Build", "Subscription & Revenue Transformation", "Executive Advisory & Governance", "Cross-functional Operating Models"],
   },
   {
     category: "Platforms & Tools",
-    skills: ["Salesforce CRM / CPQ / CLM", "Microsoft Dynamics CRM", "Dayforce HCM", "Power BI & SQL Server", "Zendesk · Zapier · Notion"],
+    skills: ["Salesforce CRM / CPQ / CLM", "Microsoft Dynamics CRM", "Dayforce HCM", "Power BI & SQL Server", "Zendesk · Zapier · Notion", "Google Analytics · Granola"],
+  },
+  {
+    category: "AI & Dev Tools",
+    skills: ["Claude Code", "Lovable", "GitHub"],
   },
   {
     category: "Certifications",
