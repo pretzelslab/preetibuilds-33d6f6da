@@ -191,7 +191,7 @@ const GTMTechStack = () => {
 
         {/* ══════ SLIDE 5 — Tech Stack Comparison ══════ */}
         <SlideCard slideNumber={5}>
-          <h2 className={h2Style}>Tech Stack Comparison</h2>
+          <h2 className={h2Style} style={tx1}>Tech Stack Comparison</h2>
           <div className="rounded-xl overflow-hidden mt-6" style={{ border: `1px solid ${borderClr}` }}>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
