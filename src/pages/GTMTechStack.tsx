@@ -41,7 +41,7 @@ const GTMTechStack = () => {
             <span className="inline-block text-xs font-mono px-3 py-1 rounded-full mb-6" style={{ background: `${accent}22`, color: accentLight, border: `1px solid ${accent}44` }}>
               Revenue Operations · Python · Full Pipeline
             </span>
-            <h1 className="text-3xl sm:text-5xl font-bold leading-tight mb-4">
+            <h1 className="text-3xl sm:text-5xl font-bold leading-tight mb-4 text-[hsl(210,50%,15%)]">
               Building an End-to-End{" "}
               <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(135deg, ${accent}, ${accentLight})` }}>
                 Go-to-Market Tech Stack
