@@ -21,7 +21,7 @@ const skillGroups = [
 
 const Skills = () => {
   return (
-    <section id="skills" className="py-32 px-6 bg-secondary/30">
+    <section id="skills" className="py-16 px-6 bg-secondary/30">
       <div className="max-w-5xl mx-auto">
         <motion.h2
           className="text-3xl sm:text-4xl font-bold mb-16"

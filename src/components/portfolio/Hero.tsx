@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 const Hero = () => {
   return (
-    <section className="relative flex items-center justify-center overflow-hidden px-6 pt-32 pb-16">
+    <section className="relative flex items-center justify-center overflow-hidden px-6 pt-24 pb-10">
       {/* Ambient background shapes */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-20 left-[10%] w-72 h-72 rounded-full bg-primary/10 blur-3xl" />
