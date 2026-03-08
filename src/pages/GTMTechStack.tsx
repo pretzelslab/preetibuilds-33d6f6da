@@ -419,9 +419,9 @@ const GTMTechStack = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: "hsl(210,20%,96%)" }}>
-                    <th className={tableHead}>Component</th>
-                    <th className={tableHead}>This Project</th>
-                    <th className={tableHead}>Production Alternative</th>
+                    <th className={tableHead} style={txMuted}>Component</th>
+                    <th className={tableHead} style={txMuted}>This Project</th>
+                    <th className={tableHead} style={txMuted}>Production Alternative</th>
                   </tr>
                 </thead>
                 <tbody>
