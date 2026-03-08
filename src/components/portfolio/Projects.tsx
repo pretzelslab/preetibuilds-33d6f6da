@@ -159,7 +159,7 @@ const Projects = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  className="bg-muted/40 border border-border/50 rounded-xl p-5 hover:bg-muted/60 transition-colors"
+                  className="bg-muted/40 border border-border/50 rounded-xl p-5 hover:bg-muted/60 transition-colors flex flex-col"
                 >
                   {project.preview && (
                     <div className="relative w-full h-32 rounded-lg mb-3 overflow-hidden">
