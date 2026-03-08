@@ -44,7 +44,7 @@ const Skills = () => {
               Platforms & Tools
             </h3>
             <div className="space-y-3">
-              {["Salesforce CRM / CPQ / CLM", "Zendesk", "Microsoft Dynamics CRM", "Dayforce HCM", "Power BI", "SQL Server", "KPI Dashboards", "Smartsheet", "Jira", "Confluence", "GitHub", "Notion", "Zapier", "NotebookLM", "Granola"].map((skill) => (
+              {["Salesforce CRM / CPQ / CLM", "Zendesk", "Microsoft Dynamics CRM", "Dayforce HCM", "Power BI, KPI Dashboards", "SQL Server", "Smartsheet, Jira, Confluence", "Zapier, Notion, Granola, NotebookLM", "GitHub"].map((skill) => (
                 <div key={skill} className="px-3 py-2 bg-card rounded-xl border text-[11px] font-medium text-muted-foreground shadow-card hover:shadow-elegant transition-shadow duration-300">
                   {skill}
                 </div>
