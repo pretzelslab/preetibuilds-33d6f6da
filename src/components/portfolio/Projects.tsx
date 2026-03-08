@@ -182,11 +182,20 @@ const Projects = () => {
                       </Badge>
                     ))}
                   </div>
-                  {project.link && (
-                    <Link to={project.link} className="text-sm font-medium text-primary hover:underline">
-                      View Project →
-                    </Link>
-                  )}
+                  <div className="flex items-center justify-between">
+                    {project.link && (
+                      <Link to={project.link} className="text-sm font-medium text-primary hover:underline">
+                        View Project →
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => handleThumb(project.title)}
+                      className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <ThumbsUp className="w-4 h-4" />
+                      <span className="text-xs font-mono">{thumbs[project.title] || 0}</span>
+                    </button>
+                  </div>
                 </motion.div>
               ))}
             </div>
