@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { Clock, Briefcase } from "lucide-react";
+import { Clock, Briefcase, ThumbsUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import medlogPreview from "@/assets/medlog-preview.jpg";
 
 const businessAIUseCases: Array<{
