@@ -39,9 +39,9 @@ const transferabilityTable = [
 
 const GTMTechStack = () => {
   return (
-    <div className="min-h-screen bg-[hsl(220,30%,8%)] text-[hsl(215,20%,90%)]">
+    <div className="min-h-screen bg-[hsl(220,25%,14%)] text-[hsl(215,20%,90%)]">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-[hsl(220,30%,8%)]/90 backdrop-blur-md border-b border-[hsl(215,20%,18%)]">
+      <nav className="sticky top-0 z-50 bg-[hsl(220,25%,14%)]/90 backdrop-blur-md border-b border-[hsl(215,20%,22%)]">
         <div className="max-w-5xl mx-auto px-6 py-4">
           <Link to="/#projects" className="inline-flex items-center gap-2 text-sm text-[hsl(215,60%,65%)] hover:text-[hsl(215,70%,75%)] transition-colors">
             <ArrowLeft className="w-4 h-4" /> Back to Portfolio
@@ -54,7 +54,7 @@ const GTMTechStack = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-2xl border border-[hsl(215,20%,18%)] bg-gradient-to-br from-[hsl(220,35%,12%)] to-[hsl(215,30%,16%)] p-8 sm:p-12"
+          className="relative overflow-hidden rounded-2xl border border-[hsl(215,20%,24%)] bg-gradient-to-br from-[hsl(220,30%,18%)] to-[hsl(215,25%,22%)] p-8 sm:p-12"
         >
           <div className="absolute top-0 right-0 w-64 h-64 bg-[hsl(215,80%,55%)]/5 rounded-full blur-3xl" />
           <div className="relative">
@@ -97,7 +97,7 @@ const GTMTechStack = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="rounded-xl border border-[hsl(215,20%,18%)] bg-[hsl(220,30%,11%)] p-5"
+                className="rounded-xl border border-[hsl(215,20%,24%)] bg-[hsl(220,25%,17%)] p-5"
               >
                 <item.icon className="w-5 h-5 text-[hsl(40,80%,55%)] mb-3" />
                 <h3 className="text-sm font-semibold mb-1">{item.title}</h3>
@@ -115,7 +115,7 @@ const GTMTechStack = () => {
           className="space-y-6"
         >
           <h2 className="text-2xl font-bold">Pipeline Architecture</h2>
-          <div className="rounded-xl border border-[hsl(215,20%,18%)] bg-[hsl(220,30%,11%)] p-6 overflow-x-auto">
+          <div className="rounded-xl border border-[hsl(215,20%,24%)] bg-[hsl(220,25%,17%)] p-6 overflow-x-auto">
             <div className="flex items-center gap-2 min-w-[700px]">
               {pipelineStages.map((stage, i) => (
                 <div key={stage.label} className="flex items-center gap-2 flex-1">
@@ -124,7 +124,7 @@ const GTMTechStack = () => {
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.1 }}
-                    className="flex-1 rounded-lg border border-[hsl(215,30%,22%)] bg-gradient-to-b from-[hsl(215,25%,15%)] to-[hsl(220,25%,13%)] p-4 text-center"
+                    className="flex-1 rounded-lg border border-[hsl(215,25%,26%)] bg-gradient-to-b from-[hsl(215,22%,21%)] to-[hsl(220,22%,19%)] p-4 text-center"
                   >
                     <stage.icon className="w-5 h-5 mx-auto mb-2 text-[hsl(215,70%,60%)]" />
                     <p className="text-xs font-semibold mb-1">{stage.label}</p>
@@ -155,7 +155,7 @@ const GTMTechStack = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08 }}
-                className="rounded-xl border border-[hsl(215,20%,18%)] bg-[hsl(220,30%,11%)] p-5 text-center"
+                className="rounded-xl border border-[hsl(215,20%,24%)] bg-[hsl(220,25%,17%)] p-5 text-center"
               >
                 <p className={`text-2xl sm:text-3xl font-bold bg-gradient-to-b ${m.color} bg-clip-text text-transparent`}>
                   {m.value}
@@ -174,11 +174,11 @@ const GTMTechStack = () => {
           className="space-y-6"
         >
           <h2 className="text-2xl font-bold">Tech Stack Comparison</h2>
-          <div className="rounded-xl border border-[hsl(215,20%,18%)] overflow-hidden">
+          <div className="rounded-xl border border-[hsl(215,20%,24%)] overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-[hsl(215,25%,14%)]">
+                  <tr className="bg-[hsl(215,22%,20%)]">
                     <th className="text-left p-4 text-xs font-semibold text-[hsl(215,15%,55%)] uppercase tracking-wider">Category</th>
                     <th className="text-left p-4 text-xs font-semibold text-[hsl(0,50%,60%)] uppercase tracking-wider flex items-center gap-2">
                       <XCircle className="w-3.5 h-3.5" /> Enterprise
@@ -190,7 +190,7 @@ const GTMTechStack = () => {
                 </thead>
                 <tbody>
                   {enterpriseStack.map((row, i) => (
-                    <tr key={row.category} className={`border-t border-[hsl(215,20%,15%)] ${i % 2 === 0 ? "bg-[hsl(220,30%,10%)]" : "bg-[hsl(220,28%,11%)]"}`}>
+                    <tr key={row.category} className={`border-t border-[hsl(215,20%,21%)] ${i % 2 === 0 ? "bg-[hsl(220,25%,16%)]" : "bg-[hsl(220,23%,17%)]"}`}>
                       <td className="p-4 font-medium text-xs">{row.category}</td>
                       <td className="p-4 text-xs text-[hsl(215,15%,50%)]">{row.enterprise}</td>
                       <td className="p-4 text-xs text-[hsl(165,40%,55%)]">{row.replacement}</td>
@@ -213,11 +213,11 @@ const GTMTechStack = () => {
           <p className="text-sm text-[hsl(215,15%,55%)] max-w-2xl">
             Each component of the stack is designed for transferability — adaptable across industries and GTM motions with minimal rework.
           </p>
-          <div className="rounded-xl border border-[hsl(215,20%,18%)] overflow-hidden">
+          <div className="rounded-xl border border-[hsl(215,20%,24%)] overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-[hsl(215,25%,14%)]">
+                  <tr className="bg-[hsl(215,22%,20%)]">
                     <th className="text-left p-4 text-xs font-semibold text-[hsl(215,15%,55%)] uppercase tracking-wider">Component</th>
                     <th className="text-left p-4 text-xs font-semibold text-[hsl(215,15%,55%)] uppercase tracking-wider">Industry Fit</th>
                     <th className="text-left p-4 text-xs font-semibold text-[hsl(215,15%,55%)] uppercase tracking-wider">Adaptation</th>
@@ -226,7 +226,7 @@ const GTMTechStack = () => {
                 </thead>
                 <tbody>
                   {transferabilityTable.map((row, i) => (
-                    <tr key={row.component} className={`border-t border-[hsl(215,20%,15%)] ${i % 2 === 0 ? "bg-[hsl(220,30%,10%)]" : "bg-[hsl(220,28%,11%)]"}`}>
+                    <tr key={row.component} className={`border-t border-[hsl(215,20%,21%)] ${i % 2 === 0 ? "bg-[hsl(220,25%,16%)]" : "bg-[hsl(220,23%,17%)]"}`}>
                       <td className="p-4 font-medium text-xs">{row.component}</td>
                       <td className="p-4 text-xs text-[hsl(215,15%,50%)]">{row.industry}</td>
                       <td className="p-4 text-xs text-[hsl(215,15%,50%)]">{row.adaptation}</td>
