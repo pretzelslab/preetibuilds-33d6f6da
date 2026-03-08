@@ -246,9 +246,9 @@ const GTMTechStack = () => {
                     style={{ background: cardBg, border: `1px solid ${borderClr}` }}
                   >
                     <stage.icon className="w-5 h-5 mx-auto mb-2" style={{ color: accent }} />
-                    <p className="text-[11px] font-semibold text-[hsl(210,30%,12%)] mb-1">Stage {i + 1}</p>
-                    <p className="text-[10px] text-[hsl(210,15%,35%)]">{stage.label}</p>
-                    <p className="text-[9px] mt-1.5 font-mono" style={{ color: muted }}>→ {stage.output}</p>
+                    <p className="text-[11px] font-semibold mb-1" style={tx1}>Stage {i + 1}</p>
+                    <p className="text-[10px]" style={tx2}>{stage.label}</p>
+                    <p className="text-[9px] mt-1.5 font-mono" style={txMuted}>→ {stage.output}</p>
                   </motion.div>
                   {i < 5 && <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: "hsl(210,20%,75%)" }} />}
                 </div>
