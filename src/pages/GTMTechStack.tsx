@@ -553,7 +553,7 @@ const GTMTechStack = () => {
 
         {/* Footer */}
         <div className="text-center py-8">
-          <p className="text-xs font-mono" style={{ color: muted }}>
+          <p className="text-xs font-mono" style={txMuted}>
             Built with Python · HubSpot CRM · Hunter.io · Streamlit · Plotly
           </p>
         </div>
