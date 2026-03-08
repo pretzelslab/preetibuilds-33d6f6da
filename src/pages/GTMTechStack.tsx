@@ -217,7 +217,7 @@ const GTMTechStack = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-[hsl(215,22%,20%)]">
+                  <tr className="bg-[hsl(215,18%,26%)]">
                     <th className="text-left p-4 text-xs font-semibold text-[hsl(215,15%,55%)] uppercase tracking-wider">Component</th>
                     <th className="text-left p-4 text-xs font-semibold text-[hsl(215,15%,55%)] uppercase tracking-wider">Industry Fit</th>
                     <th className="text-left p-4 text-xs font-semibold text-[hsl(215,15%,55%)] uppercase tracking-wider">Adaptation</th>
