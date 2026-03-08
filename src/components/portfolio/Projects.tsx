@@ -7,8 +7,9 @@ import medlogPreview from "@/assets/medlog-preview.jpg";
 const businessAIUseCases = [
   {
     title: "GTM Tech Stack",
-    description: "Integrated go-to-market technology powering sales enablement, pipeline analytics, and revenue operations.",
-    tags: ["Salesforce", "HubSpot", "Power BI", "Zapier"],
+    description: "End-to-end go-to-market pipeline replacing $400K+ enterprise SaaS with Python — lead scoring, nurture sequences, and CRM sync.",
+    tags: ["Python", "HubSpot", "Scikit-learn", "SendGrid"],
+    link: "/gtm-techstack",
   },
   {
     title: "AI Ethics & Governance",
