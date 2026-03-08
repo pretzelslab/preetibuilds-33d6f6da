@@ -545,7 +545,7 @@ const GTMTechStack = () => {
 
           {/* Closing */}
           <div className="rounded-xl p-6" style={{ background: `linear-gradient(135deg, ${accent}18, ${accent}08)`, border: `1px solid ${accent}33` }}>
-            <p className="text-sm font-medium text-[hsl(210,30%,12%)]">
+            <p className="text-sm font-medium" style={tx1}>
               This project is the blueprint. Production is the same blueprint, built with industrial-grade materials.
             </p>
           </div>
