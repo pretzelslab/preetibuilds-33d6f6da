@@ -12,12 +12,12 @@ const cardBg = "hsl(210,30%,97%)";
 const borderClr = "hsl(210,25%,85%)";
 
 /* ───── shared styles ───── */
-const h2Style = "text-2xl sm:text-3xl font-bold text-white mb-2";
-const pMuted = "text-sm leading-relaxed text-[hsl(210,25%,60%)]";
-const statCard = "rounded-xl border border-[hsl(210,40%,22%)] bg-[hsl(210,50%,16%)] p-5 text-center";
-const tableHead = "text-left p-3 text-[11px] font-semibold uppercase tracking-wider text-[hsl(210,30%,55%)]";
-const tableCell = "p-3 text-xs text-[hsl(210,25%,60%)]";
-const tableCellBold = "p-3 text-xs font-medium text-white";
+const h2Style = "text-2xl sm:text-3xl font-bold text-[hsl(210,50%,15%)] mb-2";
+const pMuted = "text-sm leading-relaxed text-[hsl(210,15%,45%)]";
+const statCard = "rounded-xl border border-[hsl(210,25%,85%)] bg-white p-5 text-center";
+const tableHead = "text-left p-3 text-[11px] font-semibold uppercase tracking-wider text-[hsl(210,20%,50%)]";
+const tableCell = "p-3 text-xs text-[hsl(210,15%,45%)]";
+const tableCellBold = "p-3 text-xs font-medium text-[hsl(210,50%,15%)]";
 
 const GTMTechStack = () => {
   return (
