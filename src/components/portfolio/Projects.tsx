@@ -8,6 +8,7 @@ const businessAIUseCases: Array<{
   title: string;
   description: string;
   tags: string[];
+  applicationLayer?: string[];
   link?: string;
   externalLink?: string;
 }> = [
