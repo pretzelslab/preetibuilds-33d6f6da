@@ -378,7 +378,7 @@ const GTMTechStack = () => {
               </h3>
               <ul className="space-y-2">
                 {["ICP design and scoring logic", "Lead classification methodology", "CRM data management", "Sales funnel analytics"].map((s) => (
-                  <li key={s} className="text-sm flex gap-2" style={{ color: "hsl(210,15%,40%)" }}>
+                  <li key={s} className="text-sm flex gap-2" style={{ color: textSecondary }}>
                     <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: accentLight }} />
                     {s}
                   </li>
