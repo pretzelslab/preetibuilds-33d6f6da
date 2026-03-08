@@ -335,7 +335,7 @@ const GTMTechStack = () => {
 
         {/* ══════ SLIDE 12 — Results ══════ */}
         <SlideCard slideNumber={12}>
-          <h2 className={h2Style}>Results</h2>
+          <h2 className={h2Style} style={tx1}>Results</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-6">
             {[
               { label: "Total leads generated", value: "200", color: accent },
