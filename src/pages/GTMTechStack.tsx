@@ -212,9 +212,9 @@ const GTMTechStack = () => {
                     ["Pipeline Orchestration", "Segment", "Python ETL scripts"],
                   ].map(([fn, ent, alt], i) => (
                     <tr key={fn} style={{ background: i % 2 === 0 ? "white" : "hsl(210,20%,97%)", borderTop: `1px solid ${borderClr}` }}>
-                      <td className={tableCellBold}>{fn}</td>
-                      <td className={tableCell}>{ent}</td>
-                      <td className="p-3 text-xs font-medium" style={{ color: "hsl(145,50%,55%)" }}>{alt}</td>
+                      <td className={tableCellBold} style={tx1}>{fn}</td>
+                      <td className={tableCell} style={tx2}>{ent}</td>
+                      <td className="p-3 text-xs font-medium" style={{ color: "hsl(145,50%,35%)" }}>{alt}</td>
                     </tr>
                   ))}
                 </tbody>
