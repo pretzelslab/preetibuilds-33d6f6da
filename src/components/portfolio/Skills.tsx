@@ -3,11 +3,15 @@ import { motion } from "framer-motion";
 const skillGroups = [
   {
     category: "Leadership & Strategy",
-    skills: ["Enterprise GTM & Commercialization", "AI Product Strategy & Monetization", "Subscription & Revenue Transformation", "Executive Advisory & Governance", "Cross-functional Operating Models"],
+    skills: ["Enterprise GTM & Commercialization", "AI Workflow Build", "Subscription & Revenue Transformation", "Executive Advisory & Governance", "Cross-functional Operating Models"],
   },
   {
     category: "Platforms & Tools",
-    skills: ["Salesforce CRM / CPQ / CLM", "Microsoft Dynamics CRM", "Dayforce HCM", "Power BI & SQL Server", "Zendesk · Zapier · Notion"],
+    skills: ["Salesforce CRM / CPQ / CLM", "Microsoft Dynamics CRM", "Dayforce HCM", "Power BI & SQL Server", "Zendesk · Zapier · Notion", "Google Analytics · Granola"],
+  },
+  {
+    category: "AI & Dev Tools",
+    skills: ["Claude Code", "Lovable", "GitHub"],
   },
   {
     category: "Certifications",
@@ -17,7 +21,7 @@ const skillGroups = [
 
 const Skills = () => {
   return (
-    <section id="skills" className="py-32 px-6 bg-secondary/30">
+    <section id="skills" className="py-16 px-6 bg-secondary/30">
       <div className="max-w-5xl mx-auto">
         <motion.h2
           className="text-3xl sm:text-4xl font-bold mb-16"
@@ -28,7 +32,7 @@ const Skills = () => {
           Skills & <span className="text-gradient">Expertise</span>
         </motion.h2>
 
-        <div className="grid md:grid-cols-3 gap-10">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10">
           {skillGroups.map((group, gi) => (
             <motion.div
               key={group.category}
