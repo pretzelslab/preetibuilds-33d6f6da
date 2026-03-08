@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Zap, Database, Mail, Globe, Target, TrendingUp, BarChart3, AlertTriangle, DollarSign, Users, CheckCircle, XCircle, Settings, FileText, RefreshCw, Shield, Code, Layers, GitBranch, Activity, Server, Lock, Clock, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
