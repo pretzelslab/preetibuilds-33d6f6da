@@ -24,7 +24,7 @@ const Hero = () => {
             <span className="text-gradient">Preethi Raghuveeran</span>
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-5xl mb-10 leading-relaxed tracking-wide">
-            22+ years driving 0→1 launches and 1→N scaling across HR tech, CRM, BI, and AI platforms.<br />
+            18+ years turning early product ideas into programs that scale across B2B SaaS.<br />
             Currently leading enterprise AI &amp; SaaS commercialization.
           </p>
         </motion.div>
