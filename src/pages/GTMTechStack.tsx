@@ -427,7 +427,7 @@ const GTMTechStack = () => {
                     ["Event Triggers", "Scheduled runs", "Webhook-driven architecture"],
                     ["CRM Sync", "One-directional", "Bi-directional sync"],
                   ].map(([comp, curr, prod], i) => (
-                    <tr key={comp} style={{ background: i % 2 === 0 ? "hsl(210,55%,11%)" : "hsl(210,55%,13%)", borderTop: `1px solid ${borderClr}` }}>
+                    <tr key={comp} style={{ background: i % 2 === 0 ? "white" : "hsl(210,20%,97%)", borderTop: `1px solid ${borderClr}` }}>
                       <td className={tableCellBold}>{comp}</td>
                       <td className={tableCell}>{curr}</td>
                       <td className="p-3 text-xs font-medium" style={{ color: "hsl(145,50%,55%)" }}>{prod}</td>
