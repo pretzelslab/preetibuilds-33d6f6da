@@ -115,7 +115,7 @@ const GTMTechStack = () => {
           className="space-y-6"
         >
           <h2 className="text-2xl font-bold">Pipeline Architecture</h2>
-          <div className="rounded-xl border border-[hsl(215,20%,18%)] bg-[hsl(220,30%,11%)] p-6 overflow-x-auto">
+          <div className="rounded-xl border border-[hsl(215,20%,24%)] bg-[hsl(220,25%,17%)] p-6 overflow-x-auto">
             <div className="flex items-center gap-2 min-w-[700px]">
               {pipelineStages.map((stage, i) => (
                 <div key={stage.label} className="flex items-center gap-2 flex-1">
