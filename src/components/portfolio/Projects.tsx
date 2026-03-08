@@ -17,12 +17,11 @@ const businessAIUseCases = [
   },
 ];
 
-const standaloneProjects = [
+const petProjects = [
   {
-    title: "Pet Project #1 - Medlog",
+    title: "Medlog",
     description: "A personal medical logging application for tracking health records and appointments.",
     tags: ["React", "TypeScript", "Supabase", "Tailwind"],
-    color: "from-primary/30 to-accent/30",
     link: "/medlog",
     preview: medlogPreview,
   },
