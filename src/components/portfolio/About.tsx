@@ -17,7 +17,7 @@ const About = () => {
             <p>
               Strategic SaaS platform & product operations leader with 22+ years 
               of experience driving 0→1 launches and 1→N scaling across HR technology, 
-              CRM, BI, and AI platforms. Based in Vancouver, BC.
+              CRM, BI, and AI platforms.
             </p>
             <p>
               Proven track record in enterprise product commercialization, cross-functional 

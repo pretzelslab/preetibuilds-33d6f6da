@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 const skillGroups = [
   {
     category: "Leadership & Strategy",
-    skills: ["Enterprise GTM & Commercialization", "AI Workflow Build", "Subscription & Revenue Transformation", "Executive Advisory & Governance", "Cross-functional Operating Models"],
+    skills: ["Enterprise GTM & Commercialization", "AI Workflow Build", "Revenue Transformation", "Executive Advisory & Governance", "Cross-functional Operating Models"],
   },
   {
     category: "Platforms & Tools",
@@ -48,7 +48,7 @@ const Skills = () => {
                 {group.skills.map((skill) => (
                   <div
                     key={skill}
-                    className="px-4 py-3 bg-card rounded-xl border text-sm font-medium shadow-card hover:shadow-elegant transition-shadow duration-300"
+                    className="px-3 py-2 bg-card rounded-xl border text-xs font-medium shadow-card hover:shadow-elegant transition-shadow duration-300"
                   >
                     {skill}
                   </div>
