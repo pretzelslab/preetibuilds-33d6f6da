@@ -37,6 +37,7 @@ const Skills = () => {
           {skillGroups.map((group, gi) => (
             <motion.div
               key={group.category}
+              className={group.wrap ? "lg:col-span-2" : ""}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
