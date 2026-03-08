@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Linkedin, Mail } from "lucide-react";
+import { Linkedin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Hero = () => {

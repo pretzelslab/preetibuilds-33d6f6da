@@ -40,6 +40,12 @@ const petProjects = [
 ];
 
 const Projects = () => {
+  const [thumbs, setThumbs] = useState<Record<string, number>>({});
+
+  const handleThumb = (title: string) => {
+    setThumbs((prev) => ({ ...prev, [title]: (prev[title] || 0) + 1 }));
+  };
+
   return (
     <section id="projects" className="py-6 px-6">
       <div className="max-w-5xl mx-auto">
