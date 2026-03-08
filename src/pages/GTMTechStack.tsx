@@ -104,7 +104,7 @@ const GTMTechStack = () => {
               "No copyrighted code or intellectual property belonging to third parties has been used",
               "Built independently using public documentation — in full compliance with applicable IP laws",
             ].map((text, i) => (
-              <li key={i} className="flex gap-3 text-sm leading-relaxed" style={{ color: textSecondary }}>
+              <li key={i} className="flex gap-3 text-sm leading-relaxed" style={tx2}>
                 <span className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "hsl(40,85%,55%)" }} />
                 {text}
               </li>
