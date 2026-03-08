@@ -1,13 +1,14 @@
 import { motion } from "framer-motion";
 
-const skillGroups = [
+const skillGroups: { category: string; skills: string[]; wrap?: boolean }[] = [
   {
     category: "Leadership & Impact",
     skills: ["Technical Program Management", "Strategic Program Leadership", "Product and Business Portfolio Strategy", "Product and Operational Strategy", "Engineering Program Delivery", "Executive Stakeholder Collaboration", "Cross-Functional Operating Models", "Commercial Launch Excellence"],
   },
   {
     category: "Platforms & Tools",
-    skills: ["Salesforce CRM / CPQ / CLM", "Zendesk", "Microsoft Dynamics CRM", "Dayforce HCM", "Power BI", "SQL Server", "Operational Reporting & KPI Dashboards", "Smartsheet", "Jira", "Confluence", "GitHub", "Notion", "Zapier", "NotebookLM", "Granola"],
+    wrap: true,
+    skills: ["Salesforce CRM / CPQ / CLM", "Zendesk", "Microsoft Dynamics CRM", "Dayforce HCM", "Power BI", "SQL Server", "KPI Dashboards", "Smartsheet", "Jira", "Confluence", "GitHub", "Notion", "Zapier", "NotebookLM", "Granola"],
   },
   {
     category: "AI & Dev Tools",
@@ -36,6 +37,7 @@ const Skills = () => {
           {skillGroups.map((group, gi) => (
             <motion.div
               key={group.category}
+              className={group.wrap ? "lg:col-span-2" : ""}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -44,7 +46,7 @@ const Skills = () => {
               <h3 className="font-mono text-sm text-muted-foreground uppercase tracking-widest mb-6">
                 {group.category}
               </h3>
-              <div className="space-y-3">
+              <div className={group.wrap ? "flex flex-wrap gap-2" : "space-y-3"}>
                 {group.skills.map((skill) => (
                   <div
                     key={skill}
