@@ -4,13 +4,18 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import medlogPreview from "@/assets/medlog-preview.jpg";
 
-const businessAIUseCases = [
+const businessAIUseCases: Array<{
+  title: string;
+  description: string;
+  tags: string[];
+  link?: string;
+  externalLink?: string;
+}> = [
   {
     title: "GTM Tech Stack",
-    description: "An end-to-end Go-to-Market pipeline built in Python — covering lead generation, email verification, ICP-based lead scoring, HubSpot CRM integration, and a live Streamlit analytics dashboard. 6 modular stages orchestrated via a single pipeline script.",
-    tags: ["Python", "HubSpot", "Streamlit", "Hunter.io"],
+    description: "A lean Python-powered GTM system replacing expensive enterprise tooling with one pipeline for lead capture, enrichment, scoring, nurture, HubSpot sync, and reporting.",
+    tags: ["Python", "HubSpot", "Streamlit", "Revenue Ops"],
     link: "/gtm-techstack",
-    externalLink: "https://github.com/pretzelslab/GTM-Techstack",
   },
   {
     title: "AI Ethics & Governance",
