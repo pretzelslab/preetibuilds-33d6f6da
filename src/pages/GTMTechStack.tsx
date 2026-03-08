@@ -226,7 +226,7 @@ const GTMTechStack = () => {
                 </thead>
                 <tbody>
                   {transferabilityTable.map((row, i) => (
-                    <tr key={row.component} className={`border-t border-[hsl(215,20%,21%)] ${i % 2 === 0 ? "bg-[hsl(220,25%,16%)]" : "bg-[hsl(220,23%,17%)]"}`}>
+                    <tr key={row.component} className={`border-t border-[hsl(215,18%,27%)] ${i % 2 === 0 ? "bg-[hsl(220,20%,22%)]" : "bg-[hsl(220,18%,23%)]"}`}>
                       <td className="p-4 font-medium text-xs">{row.component}</td>
                       <td className="p-4 text-xs text-[hsl(215,15%,50%)]">{row.industry}</td>
                       <td className="p-4 text-xs text-[hsl(215,15%,50%)]">{row.adaptation}</td>
