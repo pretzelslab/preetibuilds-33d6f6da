@@ -39,10 +39,16 @@ const GTMTechStack = () => {
     <div className="min-h-screen relative select-none" style={{ background: "linear-gradient(180deg, #f5f7fa 0%, #e8ecf1 100%)", color: "#1a2332" }}>
       {/* Diagonal watermark */}
       <div className="fixed inset-0 z-[60] pointer-events-none overflow-hidden" aria-hidden="true">
-        <div className="absolute bottom-8 right-8">
-          <p className="text-[14px] font-medium whitespace-nowrap select-none" style={{ color: "rgba(0,58,110,0.12)", transform: "rotate(-35deg)" }}>
-            Copyrighted
-          </p>
+        <div className="absolute inset-0 flex flex-col justify-center items-center gap-24" style={{ transform: "rotate(-35deg)", transformOrigin: "center center" }}>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="flex gap-16 whitespace-nowrap">
+              {Array.from({ length: 6 }).map((_, j) => (
+                <span key={j} className="text-lg font-bold uppercase tracking-[0.3em] select-none" style={{ color: "rgba(0,58,110,0.06)" }}>
+                  © GTM Tech Stack · Copyrighted
+                </span>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
 
