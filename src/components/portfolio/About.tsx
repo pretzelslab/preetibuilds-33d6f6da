@@ -15,14 +15,10 @@ const About = () => {
           </h2>
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>
-              Strategic SaaS platform & product operations leader with 22+ years 
-              of experience driving 0→1 launches and 1→N scaling across HR technology, 
-              CRM, BI, and AI platforms.
+              Product and program leader with 18+ years across B2B SaaS — HR tech, CRM, BI, and AI-driven platforms. I specialize in turning early product ideas into structured programs that product, engineering, and GTM teams can execute on.
             </p>
             <p>
-              Proven track record in enterprise product commercialization, cross-functional 
-              execution, and translating ambiguity into structured, high-impact programs 
-              that accelerate growth, adoption, and revenue.
+              I've partnered with leadership teams to shape program structures, streamline operations, and move products from launch to scaled global adoption.
             </p>
           </div>
           <div className="mt-8 grid grid-cols-2 gap-6">
