@@ -7,9 +7,10 @@ import medlogPreview from "@/assets/medlog-preview.jpg";
 const businessAIUseCases = [
   {
     title: "GTM Tech Stack",
-    description: "End-to-end go-to-market pipeline replacing $400K+ enterprise SaaS with Python — lead scoring, nurture sequences, and CRM sync.",
-    tags: ["Python", "HubSpot", "Scikit-learn", "SendGrid"],
+    description: "An end-to-end Go-to-Market pipeline built in Python — covering lead generation, email verification, ICP-based lead scoring, HubSpot CRM integration, and a live Streamlit analytics dashboard. 6 modular stages orchestrated via a single pipeline script.",
+    tags: ["Python", "HubSpot", "Streamlit", "Hunter.io"],
     link: "/gtm-techstack",
+    externalLink: "https://github.com/pretzelslab/GTM-Techstack",
   },
   {
     title: "AI Ethics & Governance",
