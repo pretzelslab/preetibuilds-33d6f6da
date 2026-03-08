@@ -363,7 +363,7 @@ const GTMTechStack = () => {
 
         {/* ══════ SLIDE 13 — Key Learnings ══════ */}
         <SlideCard slideNumber={13}>
-          <h2 className={h2Style}>Key Learnings</h2>
+          <h2 className={h2Style} style={tx1}>Key Learnings</h2>
           <div className="grid sm:grid-cols-2 gap-6 mt-6">
             <div className="rounded-xl p-6" style={{ background: cardBg, border: `1px solid ${borderClr}` }}>
               <h3 className="text-sm font-semibold mb-4 flex items-center gap-2" style={{ color: accent }}>
