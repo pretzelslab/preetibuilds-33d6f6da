@@ -123,7 +123,7 @@ const GTMTechStack = () => {
             ].map((item, i) => (
               <div key={i} className="flex gap-3 text-sm" style={{ color: textSecondary }}>
                 <XCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "hsl(0,60%,55%)" }} />
-                <span><strong className="text-white">{item.b}</strong> — {item.d}</span>
+                <span><strong className="text-[hsl(210,30%,12%)]">{item.b}</strong> — {item.d}</span>
               </div>
             ))}
           </div>
