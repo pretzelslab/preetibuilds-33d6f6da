@@ -225,7 +225,7 @@ const GTMTechStack = () => {
 
         {/* ══════ SLIDE 6 — Pipeline Architecture ══════ */}
         <SlideCard slideNumber={6}>
-          <h2 className={h2Style}>Pipeline Architecture — 6 Stages</h2>
+          <h2 className={h2Style} style={tx1}>Pipeline Architecture — 6 Stages</h2>
           <div className="mt-8 overflow-x-auto">
             <div className="flex items-center gap-2 min-w-[750px]">
               {[
