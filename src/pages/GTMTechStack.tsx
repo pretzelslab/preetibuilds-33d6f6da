@@ -326,8 +326,8 @@ const GTMTechStack = () => {
               ))}
             </ul>
             <div className="rounded-lg px-4 py-3" style={{ background: "hsl(210,20%,96%)", border: `1px solid ${borderClr}` }}>
-              <p className="text-[11px]" style={{ color: muted }}>
-                <strong className="text-[hsl(210,30%,12%)]">Python concepts:</strong> {stage.concepts}
+              <p className="text-[11px]" style={txMuted}>
+                <strong style={tx1}>Python concepts:</strong> {stage.concepts}
               </p>
             </div>
           </SlideCard>
