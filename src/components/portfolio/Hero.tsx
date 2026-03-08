@@ -35,11 +35,8 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
         >
-          <Button size="lg" className="bg-gradient-primary text-primary-foreground hover:opacity-90 rounded-full px-8">
+          <Button size="lg" className="rounded-full px-8 bg-primary text-primary-foreground hover:bg-primary/80 transition-colors duration-200">
             View My Work
-          </Button>
-          <Button variant="outline" size="lg" className="rounded-full px-8">
-            Get in Touch
           </Button>
           <div className="flex gap-3 ml-2">
             <a href="mailto:preeti.raghuveer@gmail.com" className="text-muted-foreground hover:text-foreground transition-colors">
