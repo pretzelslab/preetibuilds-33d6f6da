@@ -83,7 +83,7 @@ const Projects = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  className="bg-muted/40 border border-border/50 rounded-xl p-5 hover:bg-muted/60 transition-colors"
+                  className="bg-muted/40 border border-border/50 rounded-xl p-5 hover:bg-muted/60 transition-colors flex flex-col"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="text-sm font-semibold text-foreground">{useCase.title}</h4>
