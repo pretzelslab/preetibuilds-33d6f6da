@@ -4,7 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import medlogPreview from "@/assets/medlog-preview.jpg";
 
-const businessAIUseCases = [
+const businessAIUseCases: Array<{
+  title: string;
+  description: string;
+  tags: string[];
+  link?: string;
+  externalLink?: string;
+}> = [
   {
     title: "GTM Tech Stack",
     description: "A lean Python-powered GTM system replacing expensive enterprise tooling with one pipeline for lead capture, enrichment, scoring, nurture, HubSpot sync, and reporting.",
