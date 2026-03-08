@@ -36,7 +36,7 @@ const GTMTechStack = () => {
   }, []);
 
   return (
-    <div className="min-h-screen relative select-none" style={{ background: "linear-gradient(180deg, #f5f7fa 0%, #e8ecf1 100%)", color: "#1a2332" }}>
+    <div className="min-h-screen relative select-none" style={{ background: "linear-gradient(180deg, #eaecf0 0%, #dce0e6 100%)", color: "#111820" }}>
       {/* Diagonal watermark */}
       <div className="fixed inset-0 z-[60] pointer-events-none overflow-hidden" aria-hidden="true">
         <div className="absolute w-[200%] h-[200%] -left-1/2 -top-1/2 flex flex-col justify-center items-center gap-24" style={{ transform: "rotate(-35deg)", transformOrigin: "center center" }}>
