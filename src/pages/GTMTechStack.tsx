@@ -23,12 +23,36 @@ const tableCell = `p-3 text-xs text-[${textSecondary}]`;
 const tableCellBold = `p-3 text-xs font-medium text-[${textPrimary}]`;
 
 const GTMTechStack = () => {
+  useEffect(() => {
+    const handler = (e: MouseEvent) => e.preventDefault();
+    document.addEventListener("contextmenu", handler);
+    return () => document.removeEventListener("contextmenu", handler);
+  }, []);
+
   return (
-    <div className="min-h-screen text-[hsl(210,50%,15%)]" style={{ background: `linear-gradient(180deg, hsl(210,30%,96%) 0%, hsl(210,25%,90%) 100%)` }}>
+    <div className="min-h-screen relative select-none" style={{ background: `linear-gradient(180deg, ${navy} 0%, hsl(210,60%,8%) 100%)`, color: textPrimary }}>
+      {/* Diagonal watermark */}
+      <div className="fixed inset-0 z-[1] pointer-events-none overflow-hidden" aria-hidden="true">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `repeating-linear-gradient(
+            -45deg,
+            transparent,
+            transparent 180px,
+            rgba(255,255,255,0.03) 180px,
+            rgba(255,255,255,0.03) 182px
+          )`,
+        }} />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <p className="text-[120px] font-bold whitespace-nowrap opacity-[0.03] rotate-[-35deg] select-none" style={{ color: "white" }}>
+            PREETI BUILDS · PREETI BUILDS · PREETI BUILDS
+          </p>
+        </div>
+      </div>
+
       {/* Nav */}
-      <nav className="sticky top-0 z-50 backdrop-blur-md border-b" style={{ borderColor: borderClr, background: "hsla(210,30%,98%,0.9)" }}>
+      <nav className="sticky top-0 z-50 backdrop-blur-md border-b" style={{ borderColor: borderClr, background: `${navy}dd` }}>
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/#projects" className="inline-flex items-center gap-2 text-sm hover:text-[hsl(210,50%,15%)] transition-colors" style={{ color: accentLight }}>
+          <Link to="/#projects" className="inline-flex items-center gap-2 text-sm hover:text-white transition-colors" style={{ color: accentLight }}>
             <ArrowLeft className="w-4 h-4" /> Back to Portfolio
           </Link>
           <span className="text-[11px] font-mono" style={{ color: muted }}>16 slides</span>
