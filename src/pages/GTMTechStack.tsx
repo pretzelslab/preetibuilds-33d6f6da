@@ -142,10 +142,10 @@ const GTMTechStack = () => {
               { source: "HubSpot / LinkedIn", stat: "79%", desc: "of marketing leads never convert to sales" },
               { source: "IDC", stat: "$3.1T", desc: "lost annually from bad data" },
             ].map((card, i) => (
-              <div key={i} className={statCard}>
+              <div key={i} className={statCard} style={border1}>
                 <p className="text-2xl font-bold mb-1" style={{ color: accent }}>{card.stat}</p>
-                <p className="text-[10px] font-medium text-[hsl(210,30%,12%)] mb-1">{card.source}</p>
-                <p className="text-[10px]" style={{ color: muted }}>{card.desc}</p>
+                <p className="text-[10px] font-medium mb-1" style={tx1}>{card.source}</p>
+                <p className="text-[10px]" style={txMuted}>{card.desc}</p>
               </div>
             ))}
           </div>
