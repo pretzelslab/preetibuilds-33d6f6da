@@ -43,7 +43,7 @@ const GTMTechStack = () => {
           )`,
         }} />
         <div className="absolute inset-0 flex items-center justify-center" style={{ transform: "rotate(-35deg)" }}>
-          <p className="text-[120px] font-bold whitespace-nowrap opacity-[0.03] rotate-[-35deg] select-none" style={{ color: "white" }}>
+          <p className="text-[120px] font-bold whitespace-nowrap opacity-[0.04] select-none" style={{ color: "hsl(210,20%,60%)" }}>
             PREETI BUILDS · PREETI BUILDS · PREETI BUILDS
           </p>
         </div>
