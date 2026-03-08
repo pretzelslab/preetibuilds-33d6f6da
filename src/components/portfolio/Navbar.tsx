@@ -29,14 +29,17 @@ const Navbar = () => {
           ))}
         </div>
 
-        <a
-          href="mailto:chinmayipriti@gmail.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hidden md:inline-flex text-sm font-mono px-4 py-2 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-        >
-          Get in Touch
-        </a>
+        <div className="hidden md:flex items-center gap-2">
+          <ThemeToggle />
+          <a
+            href="mailto:chinmayipriti@gmail.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-mono px-4 py-2 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+          >
+            Get in Touch
+          </a>
+        </div>
 
         {/* Mobile toggle */}
         <button className="md:hidden text-foreground" onClick={() => setOpen(!open)}>
