@@ -110,7 +110,14 @@ const Projects = () => {
                   className="bg-muted/40 border border-border/50 rounded-xl p-5 hover:bg-muted/60 transition-colors"
                 >
                   {project.preview && (
-                    <img src={project.preview} alt={project.title} className="w-full h-32 object-cover rounded-lg mb-3" />
+                    <div className="relative w-full h-32 rounded-lg mb-3 overflow-hidden">
+                      <img src={project.preview} alt={project.title} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+                        <span className="text-[10px] font-mono text-foreground/30 rotate-[-20deg] whitespace-nowrap tracking-widest">
+                          © MedLog · Copyrighted
+                        </span>
+                      </div>
+                    </div>
                   )}
                   <h4 className="text-sm font-semibold mb-2">{project.title}</h4>
                   <p className="text-muted-foreground text-xs leading-relaxed mb-3">
