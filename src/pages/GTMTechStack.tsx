@@ -157,7 +157,7 @@ const GTMTechStack = () => {
 
         {/* ══════ SLIDE 4 — The Solution ══════ */}
         <SlideCard slideNumber={4}>
-          <h2 className={h2Style}>The Solution: A Unified Python GTM Pipeline</h2>
+          <h2 className={h2Style} style={tx1}>The Solution: A Unified Python GTM Pipeline</h2>
           <div className="my-6 rounded-xl p-5" style={{ background: `${accent}11`, border: `1px solid ${accent}33` }}>
             <p className="text-sm italic" style={{ color: accentLight }}>
               "Build the same pipeline using Python — with full control over every layer of the stack."
