@@ -6,9 +6,9 @@ import medlogPreview from "@/assets/medlog-preview.jpg";
 
 const projects = [
   {
-    title: "GTM Tech Stack",
-    description: "An integrated go-to-market technology stack powering sales enablement, pipeline analytics, and revenue operations across the full customer lifecycle.",
-    tags: ["Salesforce", "HubSpot", "Power BI", "Zapier"],
+    title: "Business AI Solutions",
+    description: "Real-world AI applications across business functions — from GTM tech stacks powering sales enablement and pipeline analytics, to revenue operations and customer lifecycle optimization.",
+    tags: ["GTM Tech Stack", "Sales Enablement", "Pipeline Analytics", "Revenue Ops"],
     color: "from-primary/20 to-secondary/40",
     upcoming: true,
   },
