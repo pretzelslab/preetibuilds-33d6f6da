@@ -97,7 +97,7 @@ const GTMTechStack = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="rounded-xl border border-[hsl(215,20%,24%)] bg-[hsl(220,25%,17%)] p-5"
+                className="rounded-xl border border-[hsl(215,18%,30%)] bg-[hsl(220,20%,23%)] p-5"
               >
                 <item.icon className="w-5 h-5 text-[hsl(40,80%,55%)] mb-3" />
                 <h3 className="text-sm font-semibold mb-1">{item.title}</h3>
