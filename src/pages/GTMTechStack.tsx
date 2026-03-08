@@ -178,7 +178,7 @@ const GTMTechStack = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-[hsl(215,22%,20%)]">
+                  <tr className="bg-[hsl(215,18%,26%)]">
                     <th className="text-left p-4 text-xs font-semibold text-[hsl(215,15%,55%)] uppercase tracking-wider">Category</th>
                     <th className="text-left p-4 text-xs font-semibold text-[hsl(0,50%,60%)] uppercase tracking-wider flex items-center gap-2">
                       <XCircle className="w-3.5 h-3.5" /> Enterprise
