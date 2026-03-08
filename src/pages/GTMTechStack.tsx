@@ -36,7 +36,7 @@ const GTMTechStack = () => {
   }, []);
 
   return (
-    <div className="min-h-screen relative select-none" style={{ background: `linear-gradient(180deg, hsl(210,20%,97%) 0%, hsl(210,15%,92%) 100%)`, color: textPrimary }}>
+    <div className="min-h-screen relative select-none" style={{ background: "linear-gradient(180deg, #f5f7fa 0%, #e8ecf1 100%)", color: "#1a2332" }}>
       {/* Diagonal watermark */}
       <div className="fixed inset-0 z-[1] pointer-events-none overflow-hidden" aria-hidden="true">
         <div className="absolute inset-0" style={{
