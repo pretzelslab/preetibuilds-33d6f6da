@@ -313,7 +313,7 @@ const GTMTechStack = () => {
           },
         ] as const).map((stage) => (
           <SlideCard key={stage.num} slideNumber={stage.num}>
-            <h2 className={h2Style}>{stage.title}</h2>
+            <h2 className={h2Style} style={tx1}>{stage.title}</h2>
             <span className="inline-block text-[11px] font-mono px-3 py-1 rounded-full mb-6" style={{ background: `${accent}18`, color: accentLight, border: `1px solid ${accent}33` }}>
               {stage.script}
             </span>
