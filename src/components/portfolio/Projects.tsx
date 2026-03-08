@@ -83,7 +83,7 @@ const Projects = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  className="bg-muted/40 border border-border/50 rounded-xl p-5 hover:bg-muted/60 transition-colors"
+                  className="bg-muted/40 border border-border/50 rounded-xl p-5 hover:bg-muted/60 transition-colors flex flex-col"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="text-sm font-semibold text-foreground">{useCase.title}</h4>
@@ -112,7 +112,7 @@ const Projects = () => {
                       ))}
                     </div>
                   )}
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mt-auto pt-2">
                     <div className="flex items-center gap-3">
                       {useCase.link && (
                         <Link to={useCase.link} className="text-sm font-medium text-primary hover:underline">
@@ -159,7 +159,7 @@ const Projects = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  className="bg-muted/40 border border-border/50 rounded-xl p-5 hover:bg-muted/60 transition-colors"
+                  className="bg-muted/40 border border-border/50 rounded-xl p-5 hover:bg-muted/60 transition-colors flex flex-col"
                 >
                   {project.preview && (
                     <div className="relative w-full h-32 rounded-lg mb-3 overflow-hidden">
@@ -182,7 +182,7 @@ const Projects = () => {
                       </Badge>
                     ))}
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mt-auto pt-2">
                     {project.link && (
                       <Link to={project.link} className="text-sm font-medium text-primary hover:underline">
                         View Project →
