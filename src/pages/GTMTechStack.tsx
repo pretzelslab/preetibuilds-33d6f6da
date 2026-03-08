@@ -7,20 +7,20 @@ import SlideCard from "@/components/gtm/SlideCard";
 /* ───── colour tokens ───── */
 const navy = "#003A6E";
 const accent = "#0070F3";
-const accentLight = "#5ba3f5";
-const muted = "hsl(210,30%,65%)";
-const cardBg = "hsl(210,55%,15%)";
-const borderClr = "hsl(210,40%,25%)";
-const textPrimary = "hsl(210,20%,95%)";
-const textSecondary = "hsl(210,20%,75%)";
+const accentLight = "#0060d6";
+const muted = "hsl(210,15%,45%)";
+const cardBg = "hsl(210,20%,96%)";
+const borderClr = "hsl(210,20%,85%)";
+const textPrimary = "hsl(210,30%,12%)";
+const textSecondary = "hsl(210,15%,35%)";
 
 /* ───── shared styles ───── */
-const h2Style = `text-2xl sm:text-3xl font-bold text-[${textPrimary}] mb-2`;
-const pMuted = `text-sm leading-relaxed text-[${textSecondary}]`;
-const statCard = `rounded-xl border border-[hsl(210,40%,25%)] bg-[hsl(210,55%,13%)] p-5 text-center`;
-const tableHead = "text-left p-3 text-[11px] font-semibold uppercase tracking-wider text-[hsl(210,30%,65%)]";
-const tableCell = `p-3 text-xs text-[${textSecondary}]`;
-const tableCellBold = `p-3 text-xs font-medium text-[${textPrimary}]`;
+const h2Style = `text-2xl sm:text-3xl font-bold text-[hsl(210,30%,12%)] mb-2`;
+const pMuted = `text-sm leading-relaxed text-[hsl(210,15%,35%)]`;
+const statCard = `rounded-xl border border-[hsl(210,20%,85%)] bg-white p-5 text-center`;
+const tableHead = "text-left p-3 text-[11px] font-semibold uppercase tracking-wider text-[hsl(210,15%,45%)]";
+const tableCell = `p-3 text-xs text-[hsl(210,15%,35%)]`;
+const tableCellBold = `p-3 text-xs font-medium text-[hsl(210,30%,12%)]`;
 
 const GTMTechStack = () => {
   useEffect(() => {
@@ -30,7 +30,7 @@ const GTMTechStack = () => {
   }, []);
 
   return (
-    <div className="min-h-screen relative select-none" style={{ background: `linear-gradient(180deg, ${navy} 0%, hsl(210,60%,8%) 100%)`, color: textPrimary }}>
+    <div className="min-h-screen relative select-none" style={{ background: `linear-gradient(180deg, hsl(210,20%,97%) 0%, hsl(210,15%,92%) 100%)`, color: textPrimary }}>
       {/* Diagonal watermark */}
       <div className="fixed inset-0 z-[1] pointer-events-none overflow-hidden" aria-hidden="true">
         <div className="absolute inset-0" style={{
@@ -42,17 +42,17 @@ const GTMTechStack = () => {
             rgba(255,255,255,0.03) 182px
           )`,
         }} />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <p className="text-[120px] font-bold whitespace-nowrap opacity-[0.03] rotate-[-35deg] select-none" style={{ color: "white" }}>
+        <div className="absolute inset-0 flex items-center justify-center" style={{ transform: "rotate(-35deg)" }}>
+          <p className="text-[120px] font-bold whitespace-nowrap opacity-[0.04] select-none" style={{ color: "hsl(210,20%,60%)" }}>
             PREETI BUILDS · PREETI BUILDS · PREETI BUILDS
           </p>
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="sticky top-0 z-50 backdrop-blur-md border-b" style={{ borderColor: borderClr, background: `${navy}dd` }}>
+      <nav className="sticky top-0 z-50 backdrop-blur-md border-b" style={{ borderColor: borderClr, background: "hsla(210,20%,98%,0.9)" }}>
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/#projects" className="inline-flex items-center gap-2 text-sm hover:text-white transition-colors" style={{ color: accentLight }}>
+          <Link to="/#projects" className="inline-flex items-center gap-2 text-sm hover:text-[hsl(210,30%,12%)] transition-colors" style={{ color: accentLight }}>
             <ArrowLeft className="w-4 h-4" /> Back to Portfolio
           </Link>
           <span className="text-[11px] font-mono" style={{ color: muted }}>16 slides</span>
@@ -68,7 +68,7 @@ const GTMTechStack = () => {
             <span className="inline-block text-xs font-mono px-3 py-1 rounded-full mb-6" style={{ background: `${accent}22`, color: accentLight, border: `1px solid ${accent}44` }}>
               Revenue Operations · Python · Full Pipeline
             </span>
-            <h1 className="text-3xl sm:text-5xl font-bold leading-tight mb-4 text-white">
+            <h1 className="text-3xl sm:text-5xl font-bold leading-tight mb-4 text-[hsl(210,30%,12%)]">
               Building an End-to-End{" "}
               <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(135deg, ${accent}, ${accentLight})` }}>
                 Go-to-Market Tech Stack
@@ -123,12 +123,12 @@ const GTMTechStack = () => {
             ].map((item, i) => (
               <div key={i} className="flex gap-3 text-sm" style={{ color: textSecondary }}>
                 <XCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "hsl(0,60%,55%)" }} />
-                <span><strong className="text-white">{item.b}</strong> — {item.d}</span>
+                <span><strong className="text-[hsl(210,30%,12%)]">{item.b}</strong> — {item.d}</span>
               </div>
             ))}
           </div>
 
-          <h3 className="text-lg font-semibold text-white mb-4">Revenue Impact</h3>
+          <h3 className="text-lg font-semibold text-[hsl(210,30%,12%)] mb-4">Revenue Impact</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
             {[
               { source: "Gartner", stat: "$12.9M", desc: "average annual cost of poor data quality" },
@@ -138,7 +138,7 @@ const GTMTechStack = () => {
             ].map((card, i) => (
               <div key={i} className={statCard}>
                 <p className="text-2xl font-bold mb-1" style={{ color: accent }}>{card.stat}</p>
-                <p className="text-[10px] font-medium text-white mb-1">{card.source}</p>
+                <p className="text-[10px] font-medium text-[hsl(210,30%,12%)] mb-1">{card.source}</p>
                 <p className="text-[10px]" style={{ color: muted }}>{card.desc}</p>
               </div>
             ))}
@@ -176,7 +176,7 @@ const GTMTechStack = () => {
                 style={{ background: cardBg, border: `1px solid ${borderClr}` }}
               >
                 <item.icon className="w-5 h-5 mb-3" style={{ color: accent }} />
-                <h3 className="text-sm font-semibold text-white mb-1">{item.title}</h3>
+                <h3 className="text-sm font-semibold text-[hsl(210,30%,12%)] mb-1">{item.title}</h3>
                 <p className="text-xs leading-relaxed" style={{ color: muted }}>{item.desc}</p>
               </motion.div>
             ))}
@@ -190,7 +190,7 @@ const GTMTechStack = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ background: "hsl(210,55%,15%)" }}>
+                  <tr style={{ background: "hsl(210,20%,96%)" }}>
                     <th className={tableHead}>Function</th>
                     <th className={tableHead}><span className="flex items-center gap-1.5"><XCircle className="w-3 h-3" style={{ color: "hsl(0,60%,55%)" }} /> Enterprise (Subscription)</span></th>
                     <th className={tableHead}><span className="flex items-center gap-1.5"><CheckCircle className="w-3 h-3" style={{ color: "hsl(145,50%,50%)" }} /> Alternative (Non-Subscription)</span></th>
@@ -205,7 +205,7 @@ const GTMTechStack = () => {
                     ["Analytics", "Tableau / Looker", "Streamlit + Plotly"],
                     ["Pipeline Orchestration", "Segment", "Python ETL scripts"],
                   ].map(([fn, ent, alt], i) => (
-                    <tr key={fn} style={{ background: i % 2 === 0 ? "hsl(210,55%,11%)" : "hsl(210,55%,13%)", borderTop: `1px solid ${borderClr}` }}>
+                    <tr key={fn} style={{ background: i % 2 === 0 ? "white" : "hsl(210,20%,97%)", borderTop: `1px solid ${borderClr}` }}>
                       <td className={tableCellBold}>{fn}</td>
                       <td className={tableCell}>{ent}</td>
                       <td className="p-3 text-xs font-medium" style={{ color: "hsl(145,50%,55%)" }}>{alt}</td>
@@ -240,11 +240,11 @@ const GTMTechStack = () => {
                     style={{ background: cardBg, border: `1px solid ${borderClr}` }}
                   >
                     <stage.icon className="w-5 h-5 mx-auto mb-2" style={{ color: accent }} />
-                    <p className="text-[11px] font-semibold text-white mb-1">Stage {i + 1}</p>
-                    <p className="text-[10px] text-white/80">{stage.label}</p>
+                    <p className="text-[11px] font-semibold text-[hsl(210,30%,12%)] mb-1">Stage {i + 1}</p>
+                    <p className="text-[10px] text-[hsl(210,15%,35%)]">{stage.label}</p>
                     <p className="text-[9px] mt-1.5 font-mono" style={{ color: muted }}>→ {stage.output}</p>
                   </motion.div>
-                  {i < 5 && <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: "hsl(210,30%,35%)" }} />}
+                  {i < 5 && <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: "hsl(210,20%,75%)" }} />}
                 </div>
               ))}
             </div>
@@ -319,9 +319,9 @@ const GTMTechStack = () => {
                 </li>
               ))}
             </ul>
-            <div className="rounded-lg px-4 py-3" style={{ background: "hsl(210,55%,15%)", border: `1px solid ${borderClr}` }}>
+            <div className="rounded-lg px-4 py-3" style={{ background: "hsl(210,20%,96%)", border: `1px solid ${borderClr}` }}>
               <p className="text-[11px]" style={{ color: muted }}>
-                <strong className="text-white">Python concepts:</strong> {stage.concepts}
+                <strong className="text-[hsl(210,30%,12%)]">Python concepts:</strong> {stage.concepts}
               </p>
             </div>
           </SlideCard>
@@ -392,7 +392,7 @@ const GTMTechStack = () => {
         <SlideCard slideNumber={14}>
           <h2 className={h2Style}>Next Steps &amp; Alternative Approaches</h2>
 
-          <h3 className="text-base font-semibold text-white mt-6 mb-4">Immediate Extensions</h3>
+          <h3 className="text-base font-semibold text-[hsl(210,30%,12%)] mt-6 mb-4">Immediate Extensions</h3>
           <div className="grid sm:grid-cols-2 gap-3 mb-8">
             {[
               "Email automation via Gmail API for MQL nurturing",
@@ -407,12 +407,12 @@ const GTMTechStack = () => {
             ))}
           </div>
 
-          <h3 className="text-base font-semibold text-white mb-4">Alternatives</h3>
+          <h3 className="text-base font-semibold text-[hsl(210,30%,12%)] mb-4">Alternatives</h3>
           <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${borderClr}` }}>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ background: "hsl(210,55%,15%)" }}>
+                  <tr style={{ background: "hsl(210,20%,96%)" }}>
                     <th className={tableHead}>Component</th>
                     <th className={tableHead}>This Project</th>
                     <th className={tableHead}>Production Alternative</th>
@@ -427,7 +427,7 @@ const GTMTechStack = () => {
                     ["Event Triggers", "Scheduled runs", "Webhook-driven architecture"],
                     ["CRM Sync", "One-directional", "Bi-directional sync"],
                   ].map(([comp, curr, prod], i) => (
-                    <tr key={comp} style={{ background: i % 2 === 0 ? "hsl(210,55%,11%)" : "hsl(210,55%,13%)", borderTop: `1px solid ${borderClr}` }}>
+                    <tr key={comp} style={{ background: i % 2 === 0 ? "white" : "hsl(210,20%,97%)", borderTop: `1px solid ${borderClr}` }}>
                       <td className={tableCellBold}>{comp}</td>
                       <td className={tableCell}>{curr}</td>
                       <td className="p-3 text-xs font-medium" style={{ color: "hsl(145,50%,55%)" }}>{prod}</td>
@@ -461,7 +461,7 @@ const GTMTechStack = () => {
                 style={{ background: cardBg, border: `1px solid ${borderClr}` }}
               >
                 <item.icon className="w-5 h-5 mb-3" style={{ color: accent }} />
-                <h3 className="text-sm font-semibold text-white mb-1">{item.title}</h3>
+                <h3 className="text-sm font-semibold text-[hsl(210,30%,12%)] mb-1">{item.title}</h3>
                 <p className="text-xs leading-relaxed" style={{ color: muted }}>{item.desc}</p>
               </motion.div>
             ))}
@@ -499,12 +499,12 @@ const GTMTechStack = () => {
             ))}
           </div>
 
-          <h3 className="text-base font-semibold text-white mb-4">Transferability</h3>
+          <h3 className="text-base font-semibold text-[hsl(210,30%,12%)] mb-4">Transferability</h3>
           <div className="rounded-xl overflow-hidden mb-8" style={{ border: `1px solid ${borderClr}` }}>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ background: "hsl(210,55%,15%)" }}>
+                  <tr style={{ background: "hsl(210,20%,96%)" }}>
                     <th className={tableHead}>Component</th>
                     <th className={tableHead}>Effort</th>
                   </tr>
@@ -520,7 +520,7 @@ const GTMTechStack = () => {
                     ["Scoring model", "High"],
                     ["Event-driven triggers", "High"],
                   ].map(([comp, effort], i) => (
-                    <tr key={comp} style={{ background: i % 2 === 0 ? "hsl(210,55%,11%)" : "hsl(210,55%,13%)", borderTop: `1px solid ${borderClr}` }}>
+                    <tr key={comp} style={{ background: i % 2 === 0 ? "white" : "hsl(210,20%,97%)", borderTop: `1px solid ${borderClr}` }}>
                       <td className={tableCellBold}>{comp}</td>
                       <td className="p-3">
                         <span className="text-[10px] font-mono px-2 py-1 rounded-full" style={{
@@ -539,7 +539,7 @@ const GTMTechStack = () => {
 
           {/* Closing */}
           <div className="rounded-xl p-6" style={{ background: `linear-gradient(135deg, ${accent}18, ${accent}08)`, border: `1px solid ${accent}33` }}>
-            <p className="text-sm font-medium text-white">
+            <p className="text-sm font-medium text-[hsl(210,30%,12%)]">
               This project is the blueprint. Production is the same blueprint, built with industrial-grade materials.
             </p>
           </div>
