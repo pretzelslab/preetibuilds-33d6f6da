@@ -400,7 +400,7 @@ const GTMTechStack = () => {
               "Connect real lead sources — website forms, LinkedIn, webhooks",
               "Upgrade to ML scoring with scikit-learn or XGBoost",
             ].map((item, i) => (
-              <div key={i} className="flex gap-3 text-sm rounded-lg p-3" style={{ background: cardBg, border: `1px solid ${borderClr}`, color: "hsl(210,15%,40%)" }}>
+              <div key={i} className="flex gap-3 text-sm rounded-lg p-3" style={{ background: cardBg, border: `1px solid ${borderClr}`, color: textSecondary }}>
                 <ArrowRight className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: accent }} />
                 {item}
               </div>
