@@ -16,7 +16,7 @@ const businessAIUseCases: Array<{
     title: "GTM Tech Stack",
     description: "A lean Python-powered GTM system replacing expensive enterprise tooling with one pipeline for lead capture, enrichment, scoring, nurture, CRM sync, and reporting.",
     tags: ["Python", "Pandas", "Faker", "Streamlit", "Plotly"],
-    applicationLayer: ["Hunter.io API", "HubSpot CRM", "REST/JSON", "CSV Pipeline"],
+    applicationLayer: ["Hunter.io API", "HubSpot CRM", "CSV Pipeline"],
     link: "/gtm-techstack",
   },
   {
