@@ -30,6 +30,8 @@ const Navbar = () => {
 
         <a
           href="mailto:chinmayipriti@gmail.com"
+          target="_blank"
+          rel="noopener noreferrer"
           className="hidden md:inline-flex text-sm font-mono px-4 py-2 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
         >
           Get in Touch

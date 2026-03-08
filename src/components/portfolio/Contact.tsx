@@ -18,6 +18,8 @@ const Contact = () => {
           </p>
           <a
             href="mailto:chinmayipriti@gmail.com"
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-3 text-lg sm:text-xl font-medium text-primary hover:opacity-80 transition-opacity"
           >
             <Mail className="w-5 h-5" />
