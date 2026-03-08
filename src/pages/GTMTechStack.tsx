@@ -54,7 +54,7 @@ const GTMTechStack = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-2xl border border-[hsl(215,20%,18%)] bg-gradient-to-br from-[hsl(220,35%,12%)] to-[hsl(215,30%,16%)] p-8 sm:p-12"
+          className="relative overflow-hidden rounded-2xl border border-[hsl(215,20%,24%)] bg-gradient-to-br from-[hsl(220,30%,18%)] to-[hsl(215,25%,22%)] p-8 sm:p-12"
         >
           <div className="absolute top-0 right-0 w-64 h-64 bg-[hsl(215,80%,55%)]/5 rounded-full blur-3xl" />
           <div className="relative">
