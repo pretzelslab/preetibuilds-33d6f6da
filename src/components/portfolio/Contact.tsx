@@ -1,7 +1,5 @@
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Mail } from "lucide-react";
 
 const Contact = () => {
   return (
@@ -15,29 +13,17 @@ const Contact = () => {
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             Let's <span className="text-gradient">Connect</span>
           </h2>
-          <p className="text-muted-foreground mb-12">
+          <p className="text-muted-foreground mb-8">
             Have a project in mind or just want to chat? Drop me a message.
           </p>
+          <a
+            href="mailto:chinmayipriti@gmail.com"
+            className="inline-flex items-center gap-3 text-lg sm:text-xl font-medium text-primary hover:opacity-80 transition-opacity"
+          >
+            <Mail className="w-5 h-5" />
+            chinmayipriti@gmail.com
+          </a>
         </motion.div>
-
-        <motion.form
-          className="space-y-5 text-left"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
-          onSubmit={(e) => e.preventDefault()}
-        >
-          <div className="grid sm:grid-cols-2 gap-5">
-            <Input placeholder="Name" className="rounded-xl h-12" />
-            <Input placeholder="Email" type="email" className="rounded-xl h-12" />
-          </div>
-          <Input placeholder="Subject" className="rounded-xl h-12" />
-          <Textarea placeholder="Your message..." className="rounded-xl min-h-[150px] resize-none" />
-          <Button size="lg" className="w-full bg-gradient-primary text-primary-foreground hover:opacity-90 rounded-full">
-            Send Message
-          </Button>
-        </motion.form>
       </div>
     </section>
   );
