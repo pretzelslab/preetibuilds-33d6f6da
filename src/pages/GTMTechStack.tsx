@@ -4,12 +4,12 @@ import { Link } from "react-router-dom";
 import SlideCard from "@/components/gtm/SlideCard";
 
 /* ───── colour tokens ───── */
-const navy = "#003A6E";
+const navy = "hsl(210,40%,92%)";
 const accent = "#0070F3";
-const accentLight = "#3d9aff";
-const muted = "hsl(210,30%,50%)";
-const cardBg = "hsl(210,50%,14%)";
-const borderClr = "hsl(210,40%,22%)";
+const accentLight = "#0060d6";
+const muted = "hsl(210,20%,45%)";
+const cardBg = "hsl(210,30%,97%)";
+const borderClr = "hsl(210,25%,85%)";
 
 /* ───── shared styles ───── */
 const h2Style = "text-2xl sm:text-3xl font-bold text-white mb-2";
