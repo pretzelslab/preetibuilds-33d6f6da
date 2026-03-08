@@ -20,10 +20,10 @@ const Hero = () => {
           <p className="font-mono text-sm text-muted-foreground mb-4 tracking-widest uppercase">
             SaaS Platform & Product Operations Leader
           </p>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-[0.95] tracking-tight mb-6">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-[0.95] tracking-tight mb-6">
             <span className="text-gradient">Preethi Raghuveeran</span>
           </h1>
-          <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mb-10 leading-relaxed">
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mb-10 leading-relaxed tracking-wide">
             22+ years driving 0→1 launches and 1→N scaling across HR tech, CRM, BI, and AI platforms. 
             Currently leading enterprise AI & SaaS commercialization.
           </p>
