@@ -11,7 +11,7 @@ const skillGroups = [
   },
   {
     category: "AI & Dev Tools",
-    skills: ["Claude Code", "Lovable", "GitHub", "Cursor", "V0"],
+    skills: ["Claude Code", "Lovable"],
   },
   {
     category: "Certifications",
