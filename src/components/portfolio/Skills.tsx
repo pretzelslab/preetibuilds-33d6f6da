@@ -7,11 +7,11 @@ const skillGroups = [
   },
   {
     category: "Platforms & Tools",
-    skills: ["Salesforce CRM, CPQ, CLM, Zendesk, Microsoft Dynamics CRM, Dayforce HCM", "Power BI, SQL Server, operational reporting and KPI dashboards", "Smartsheet, Jira, Confluence, GitHub, Notion, Zapier, NotebookLM, Granola"],
+    skills: ["Salesforce CRM / CPQ / CLM", "Zendesk", "Microsoft Dynamics CRM", "Dayforce HCM", "Power BI", "SQL Server", "Operational Reporting & KPI Dashboards", "Smartsheet", "Jira", "Confluence", "GitHub", "Notion", "Zapier", "NotebookLM", "Granola"],
   },
   {
     category: "AI & Dev Tools",
-    skills: ["Claude Code", "Lovable", "GitHub"],
+    skills: ["Claude Code", "Lovable", "GitHub", "Cursor", "V0"],
   },
   {
     category: "Certifications",
