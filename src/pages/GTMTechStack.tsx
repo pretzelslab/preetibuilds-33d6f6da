@@ -134,7 +134,7 @@ const GTMTechStack = () => {
             ))}
           </div>
 
-          <h3 className="text-lg font-semibold text-[hsl(210,30%,12%)] mb-4">Revenue Impact</h3>
+          <h3 className="text-lg font-semibold mb-4" style={tx1}>Revenue Impact</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
             {[
               { source: "Gartner", stat: "$12.9M", desc: "average annual cost of poor data quality" },
