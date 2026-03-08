@@ -49,7 +49,7 @@ const Projects = () => {
           className="mb-10"
         >
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Featured <span className="text-gradient">Projects</span>
+            The <span className="text-gradient">Portfolio</span>
           </h2>
           <p className="text-muted-foreground">
             A selection of projects I've worked on — from concept to deployment.
