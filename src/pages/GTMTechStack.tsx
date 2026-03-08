@@ -527,7 +527,7 @@ const GTMTechStack = () => {
                     ["Event-driven triggers", "High"],
                   ].map(([comp, effort], i) => (
                     <tr key={comp} style={{ background: i % 2 === 0 ? "white" : "hsl(210,20%,97%)", borderTop: `1px solid ${borderClr}` }}>
-                      <td className={tableCellBold}>{comp}</td>
+                      <td className={tableCellBold} style={tx1}>{comp}</td>
                       <td className="p-3">
                         <span className="text-[10px] font-mono px-2 py-1 rounded-full" style={{
                           background: effort === "Low" ? "hsl(145,50%,45%,0.15)" : effort === "Medium" ? "hsl(40,70%,50%,0.15)" : effort === "High" ? "hsl(0,60%,50%,0.15)" : "hsl(25,70%,50%,0.15)",
