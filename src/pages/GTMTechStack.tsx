@@ -91,7 +91,7 @@ const GTMTechStack = () => {
         <SlideCard slideNumber={2}>
           <div className="flex items-center gap-3 mb-6">
             <AlertTriangle className="w-6 h-6" style={{ color: "hsl(40,85%,55%)" }} />
-            <h2 className={h2Style}>For Demonstration &amp; Educational Purposes Only</h2>
+            <h2 className={h2Style} style={tx1}>For Demonstration &amp; Educational Purposes Only</h2>
           </div>
           <ul className="space-y-3">
             {[
