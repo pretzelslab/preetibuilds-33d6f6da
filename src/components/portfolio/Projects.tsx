@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { Clock, Briefcase } from "lucide-react";
+import { Clock, Briefcase, ThumbsUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import medlogPreview from "@/assets/medlog-preview.jpg";
 
 const businessAIUseCases: Array<{
@@ -39,6 +40,12 @@ const petProjects = [
 ];
 
 const Projects = () => {
+  const [thumbs, setThumbs] = useState<Record<string, number>>({});
+
+  const handleThumb = (title: string) => {
+    setThumbs((prev) => ({ ...prev, [title]: (prev[title] || 0) + 1 }));
+  };
+
   return (
     <section id="projects" className="py-6 px-6">
       <div className="max-w-5xl mx-auto">
@@ -49,7 +56,7 @@ const Projects = () => {
           className="mb-10"
         >
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            The <span className="text-gradient">Portfolio</span>
+            <span className="text-gradient">Portfolio</span>
           </h2>
           <p className="text-muted-foreground">
             A selection of projects I've worked on — from concept to deployment.
@@ -105,16 +112,27 @@ const Projects = () => {
                       ))}
                     </div>
                   )}
-                  {useCase.link && (
-                    <Link to={useCase.link} className="text-sm font-medium text-primary hover:underline mr-4">
-                      View Project →
-                    </Link>
-                  )}
-                  {useCase.externalLink && (
-                    <a href={useCase.externalLink} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-primary hover:underline">
-                      GitHub ↗
-                    </a>
-                  )}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {useCase.link && (
+                        <Link to={useCase.link} className="text-sm font-medium text-primary hover:underline">
+                          View Project →
+                        </Link>
+                      )}
+                      {useCase.externalLink && (
+                        <a href={useCase.externalLink} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-primary hover:underline">
+                          GitHub ↗
+                        </a>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleThumb(useCase.title)}
+                      className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <ThumbsUp className="w-4 h-4" />
+                      <span className="text-xs font-mono">{thumbs[useCase.title] || 0}</span>
+                    </button>
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -164,11 +182,20 @@ const Projects = () => {
                       </Badge>
                     ))}
                   </div>
-                  {project.link && (
-                    <Link to={project.link} className="text-sm font-medium text-primary hover:underline">
-                      View Project →
-                    </Link>
-                  )}
+                  <div className="flex items-center justify-between">
+                    {project.link && (
+                      <Link to={project.link} className="text-sm font-medium text-primary hover:underline">
+                        View Project →
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => handleThumb(project.title)}
+                      className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <ThumbsUp className="w-4 h-4" />
+                      <span className="text-xs font-mono">{thumbs[project.title] || 0}</span>
+                    </button>
+                  </div>
                 </motion.div>
               ))}
             </div>

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Linkedin, Mail } from "lucide-react";
+import { Linkedin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Hero = () => {
@@ -41,9 +41,6 @@ const Hero = () => {
             </Button>
           </a>
           <div className="flex gap-3 ml-2">
-            <a href="mailto:preeti.raghuveer@gmail.com" className="text-muted-foreground hover:text-foreground transition-colors">
-              <Mail className="w-5 h-5" />
-            </a>
             <a href="https://www.linkedin.com/in/preetiraghuveer/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
               <Linkedin className="w-5 h-5" />
             </a>
