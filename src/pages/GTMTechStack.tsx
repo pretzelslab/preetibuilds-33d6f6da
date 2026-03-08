@@ -50,9 +50,9 @@ const GTMTechStack = () => {
         }} />
         <div className="absolute w-[200%] h-[200%] -left-1/2 -top-1/2 flex flex-wrap items-center justify-center gap-40" style={{ transform: "rotate(-35deg)" }}>
           {Array.from({ length: 20 }).map((_, i) => (
-            <p key={i} className="text-[80px] font-bold whitespace-nowrap select-none" style={{ color: "rgba(0,58,110,0.06)" }}>
-              PREETI BUILDS
-            </p>
+             <p key={i} className="text-[28px] font-medium whitespace-nowrap select-none" style={{ color: "rgba(0,58,110,0.06)" }}>
+               Copyrighted
+             </p>
           ))}
         </div>
       </div>
