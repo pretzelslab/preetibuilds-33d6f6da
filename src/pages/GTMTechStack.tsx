@@ -351,7 +351,7 @@ const GTMTechStack = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.07 }}
-                className={statCard}
+                className={statCard} style={border1}
               >
                 <p className="text-3xl sm:text-4xl font-bold" style={{ color: m.color }}>{m.value}</p>
                 {m.sub && <p className="text-xs font-mono mt-0.5" style={{ color: m.color }}>{m.sub}</p>}
