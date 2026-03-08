@@ -112,7 +112,7 @@ const Projects = () => {
                       ))}
                     </div>
                   )}
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mt-auto pt-2">
                     <div className="flex items-center gap-3">
                       {useCase.link && (
                         <Link to={useCase.link} className="text-sm font-medium text-primary hover:underline">
