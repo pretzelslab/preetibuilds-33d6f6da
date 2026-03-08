@@ -11,12 +11,13 @@ const skillGroups: { category: string; skills: string[]; wrap?: boolean }[] = [
     skills: ["Salesforce CRM / CPQ / CLM", "Zendesk", "Microsoft Dynamics CRM", "Dayforce HCM", "Power BI", "SQL Server", "KPI Dashboards", "Smartsheet", "Jira", "Confluence", "GitHub", "Notion", "Zapier", "NotebookLM", "Granola"],
   },
   {
-    category: "Certifications",
-    skills: ["AI for Everyone — DeepLearning.AI", "ML for Product Managers — Duke", "PMP — PMI", "PSM I — Scrum.org", "Salesforce Certified Admin"],
+    category: "AI & Dev Tools",
+    wrap: true,
+    skills: ["Claude Code", "Lovable"],
   },
   {
-    category: "AI & Dev Tools",
-    skills: ["Claude Code", "Lovable"],
+    category: "Certifications",
+    skills: ["AI for Everyone — DeepLearning.AI", "ML for Product Managers — Duke", "PMP — PMI", "PSM I — Scrum.org", "Salesforce Certified Admin"],
   },
 ];
 
