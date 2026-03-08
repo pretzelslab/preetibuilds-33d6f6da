@@ -190,7 +190,7 @@ const GTMTechStack = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ background: "hsl(210,55%,15%)" }}>
+                  <tr style={{ background: "hsl(210,20%,96%)" }}>
                     <th className={tableHead}>Function</th>
                     <th className={tableHead}><span className="flex items-center gap-1.5"><XCircle className="w-3 h-3" style={{ color: "hsl(0,60%,55%)" }} /> Enterprise (Subscription)</span></th>
                     <th className={tableHead}><span className="flex items-center gap-1.5"><CheckCircle className="w-3 h-3" style={{ color: "hsl(145,50%,50%)" }} /> Alternative (Non-Subscription)</span></th>
