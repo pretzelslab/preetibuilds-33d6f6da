@@ -14,17 +14,17 @@ const projects = [
     preview: medlogPreview,
   },
   {
-    title: "AI Ethics Framework",
-    description: "A comprehensive framework for evaluating and ensuring ethical AI deployment across enterprise systems. Covers bias detection, transparency reporting, and responsible governance.",
-    tags: ["Python", "FastAPI", "OpenAI", "Redis"],
-    color: "from-accent to-accent/60",
-    upcoming: true,
-  },
-  {
     title: "GTM Tech Stack",
     description: "An integrated go-to-market technology stack powering sales enablement, pipeline analytics, and revenue operations across the full customer lifecycle.",
     tags: ["Salesforce", "HubSpot", "Power BI", "Zapier"],
     color: "from-primary/20 to-secondary/40",
+    upcoming: true,
+  },
+  {
+    title: "AI Ethics Framework",
+    description: "A comprehensive framework for evaluating and ensuring ethical AI deployment across enterprise systems. Covers bias detection, transparency reporting, and responsible governance.",
+    tags: ["Python", "FastAPI", "OpenAI", "Redis"],
+    color: "from-accent to-accent/60",
     upcoming: true,
   },
 ];
