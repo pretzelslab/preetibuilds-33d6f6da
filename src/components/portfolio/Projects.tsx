@@ -141,7 +141,7 @@ const Projects = () => {
           </div>
         </motion.div>
 
-        {/* Pet Projects — hidden for now, set showPetProjects to true to re-enable
+        {SHOW_PET_PROJECTS && (
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -203,4 +203,9 @@ const Projects = () => {
             </div>
           </div>
         </motion.div>
-        */}
+        )}
+      </div>
+    </section>
+  );
+};
+export default Projects;
