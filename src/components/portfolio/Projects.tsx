@@ -39,6 +39,8 @@ const petProjects = [
   },
 ];
 
+const SHOW_PET_PROJECTS = false; // Set to true to re-enable Pet Projects section
+
 const Projects = () => {
   const [thumbs, setThumbs] = useState<Record<string, number>>({});
 
@@ -139,7 +141,7 @@ const Projects = () => {
           </div>
         </motion.div>
 
-        {/* Pet Projects — same parent header style */}
+        {SHOW_PET_PROJECTS && (
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -201,6 +203,7 @@ const Projects = () => {
             </div>
           </div>
         </motion.div>
+        )}
       </div>
     </section>
   );
