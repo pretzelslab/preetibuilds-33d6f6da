@@ -39,6 +39,8 @@ const petProjects = [
   },
 ];
 
+const SHOW_PET_PROJECTS = false; // Set to true to re-enable Pet Projects section
+
 const Projects = () => {
   const [thumbs, setThumbs] = useState<Record<string, number>>({});
 
