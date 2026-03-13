@@ -127,7 +127,7 @@ const Research = () => {
         </section>
 
         {/* Chart 3 */}
-        <section ref={(el) => { chartRefs.current["chart-states"] = el; }} className="scroll-mt-8 space-y-4">
+        <section ref={(el: HTMLDivElement | null) => { chartRefs.current["chart-states"] = el; }} className="scroll-mt-8 space-y-4">
           <div>
             <h2 className="text-lg font-semibold text-foreground">Top States by Reported Cases (2022)</h2>
             <p className="text-sm text-muted-foreground">Ten highest-reporting states/UTs.</p>
