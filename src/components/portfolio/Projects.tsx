@@ -11,6 +11,7 @@ const businessAIUseCases: Array<{
   tags: string[];
   applicationLayer?: string[];
   upcoming?: boolean;
+  inProgress?: boolean;
   link?: string;
   externalLink?: string;
 }> = [
@@ -20,6 +21,12 @@ const businessAIUseCases: Array<{
     tags: ["Python", "Pandas", "Faker", "Streamlit", "Plotly"],
     applicationLayer: ["Hunter.io API", "HubSpot CRM", "CSV Pipeline"],
     link: "/gtm-techstack",
+  },
+  {
+    title: "Product Intelligence Pipeline",
+    description: "Built an AI-powered pipeline integrating Salesforce Cases with Claude to surface product insights at scale. Focused on Fintech and Healthtech verticals. Stack: React, Python, Claude Sonnet API.",
+    tags: ["AI", "Python", "Salesforce", "React"],
+    inProgress: true,
   },
   {
     title: "AI Ethics & Governance",
@@ -92,6 +99,11 @@ const Projects = () => {
                     {useCase.upcoming && (
                       <span className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground bg-background/60 px-2 py-0.5 rounded-full">
                         <Clock className="w-3 h-3" /> Upcoming
+                      </span>
+                    )}
+                    {useCase.inProgress && (
+                      <span className="flex items-center gap-1.5 text-[10px] font-medium text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 rounded-full">
+                        <Clock className="w-3 h-3" /> In Progress
                       </span>
                     )}
                   </div>
