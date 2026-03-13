@@ -11,6 +11,7 @@ const businessAIUseCases: Array<{
   tags: string[];
   applicationLayer?: string[];
   upcoming?: boolean;
+  inProgress?: boolean;
   link?: string;
   externalLink?: string;
 }> = [
