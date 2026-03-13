@@ -22,6 +22,12 @@ const businessAIUseCases: Array<{
     link: "/gtm-techstack",
   },
   {
+    title: "Product Intelligence Pipeline",
+    description: "Built an AI-powered pipeline integrating Salesforce Cases with Claude to surface product insights at scale. Focused on Fintech and Healthtech verticals. Stack: React, Python, Claude Sonnet API.",
+    tags: ["AI", "Python", "Salesforce", "React"],
+    upcoming: true,
+  },
+  {
     title: "AI Ethics & Governance",
     description: "Framework for evaluating ethical AI deployment — bias detection, transparency reporting, and responsible governance.",
     tags: ["Python", "FastAPI", "OpenAI", "Redis"],
