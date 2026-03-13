@@ -83,7 +83,7 @@ const Research = () => {
         </div>
 
         {/* Chart 1 */}
-        <section ref={(el) => { chartRefs.current["chart-trend"] = el; }} className="scroll-mt-8 space-y-4">
+        <section ref={(el: HTMLDivElement | null) => { chartRefs.current["chart-trend"] = el; }} className="scroll-mt-8 space-y-4">
           <div>
             <h2 className="text-lg font-semibold text-foreground">National Trend 2013–2022</h2>
             <p className="text-sm text-muted-foreground">Reported rape cases per year across India.</p>
