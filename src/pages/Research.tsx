@@ -105,7 +105,7 @@ const Research = () => {
         </section>
 
         {/* Chart 2 */}
-        <section ref={(el) => { chartRefs.current["chart-backlog"] = el; }} className="scroll-mt-8 space-y-4">
+        <section ref={(el: HTMLDivElement | null) => { chartRefs.current["chart-backlog"] = el; }} className="scroll-mt-8 space-y-4">
           <div>
             <h2 className="text-lg font-semibold text-foreground">Justice Pipeline: Trial Backlog Growth</h2>
             <p className="text-sm text-muted-foreground">Cumulative pending rape trials at end of year.</p>
