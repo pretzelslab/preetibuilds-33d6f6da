@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import MedLog from "./pages/MedLog";
 import GTMTechStack from "./pages/GTMTechStack";
 import NotFound from "./pages/NotFound";
+import Research from "./pages/Research";
 
 const queryClient = new QueryClient();
 
