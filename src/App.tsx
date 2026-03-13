@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import MedLog from "./pages/MedLog";
 import GTMTechStack from "./pages/GTMTechStack";
 import NotFound from "./pages/NotFound";
+import Research from "./pages/Research";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/medlog" element={<MedLog />} />
             <Route path="/gtm-techstack" element={<GTMTechStack />} />
+            <Route path="/research" element={<Research />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
