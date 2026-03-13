@@ -101,6 +101,11 @@ const Projects = () => {
                         <Clock className="w-3 h-3" /> Upcoming
                       </span>
                     )}
+                    {useCase.inProgress && (
+                      <span className="flex items-center gap-1.5 text-[10px] font-medium text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 rounded-full">
+                        <Clock className="w-3 h-3" /> In Progress
+                      </span>
+                    )}
                   </div>
                   <p className="text-foreground/70 text-xs leading-relaxed mb-3">
                     {useCase.description}
