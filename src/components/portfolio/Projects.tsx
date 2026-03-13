@@ -26,7 +26,7 @@ const businessAIUseCases: Array<{
     title: "Product Intelligence Pipeline",
     description: "Built an AI-powered pipeline integrating Salesforce Cases with Claude to surface product insights at scale. Focused on Fintech and Healthtech verticals. Stack: React, Python, Claude Sonnet API.",
     tags: ["AI", "Python", "Salesforce", "React"],
-    upcoming: true,
+    inProgress: true,
   },
   {
     title: "AI Ethics & Governance",
