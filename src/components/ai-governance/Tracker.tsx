@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
+import * as XLSX from "xlsx";
 
 // ─── IMPLEMENTATION GUIDE DATA (discovery questions per policy) ───────────────
 const IMPLEMENTATION_GUIDES = {
@@ -720,6 +721,124 @@ function exportDetailToCSV(policy) {
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${policy.id}-detail.csv`; a.click();
 }
 
+// ─── EXCEL EXPORT ─────────────────────────────────────────────────────────────
+function exportDiscoveryToExcel(policy, guide) {
+  const wb = XLSX.utils.book_new();
+
+  // ── Cover sheet ──
+  const coverData = [
+    ["AI Governance Client Discovery Document"],
+    [],
+    ["Policy", policy.name],
+    ["Type", policy.type],
+    ["Geography", policy.geography],
+    ["Year Released", policy.yearReleased],
+    ["Last Updated", policy.latestUpdateDate],
+    [],
+    ["Purpose", guide.intro],
+    [],
+    ["KEY COMPLIANCE DEADLINES"],
+    ["Date", "Requirement"],
+    ...(guide.complianceDeadlines || []).map(d => [d.date, d.requirement]),
+    [],
+    ["HOW TO USE THIS DOCUMENT"],
+    ["1. Complete the 'Discovery' sheet with your stakeholders"],
+    ["2. For each question, set Current Status: Not Started | In Progress | Complete"],
+    ["3. Add notes and evidence references in the Notes/Evidence column"],
+    ["4. Complete the 'Assessment Summary' sheet with maturity ratings"],
+    ["5. Upload this file back to the tracker to generate a solution document"],
+  ];
+  const coverWs = XLSX.utils.aoa_to_sheet(coverData);
+  coverWs["!cols"] = [{ wch: 22 }, { wch: 80 }];
+  XLSX.utils.book_append_sheet(wb, coverWs, "Cover");
+
+  // ── Discovery sheet ──
+  const headers = ["Discovery Area", "Pillar", "Stakeholder", "Q#", "Discovery Question", "Current Status", "Notes / Evidence", "Evidence to Collect", "Maturity — Not Started", "Maturity — Developing", "Maturity — Defined", "Maturity — Optimised"];
+  const rows = [];
+  guide.areas.forEach(area => {
+    area.questions.forEach((q, qi) => {
+      rows.push([
+        area.area,
+        area.pillar,
+        area.stakeholder,
+        qi + 1,
+        q,
+        "Not Started",
+        "",
+        area.evidenceToCollect.join("\n"),
+        area.maturityIndicators.notStarted,
+        area.maturityIndicators.developing,
+        area.maturityIndicators.defined,
+        area.maturityIndicators.optimised,
+      ]);
+    });
+  });
+  const discoveryWs = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  discoveryWs["!cols"] = [
+    { wch: 32 }, { wch: 14 }, { wch: 28 }, { wch: 4 }, { wch: 60 },
+    { wch: 16 }, { wch: 36 }, { wch: 36 }, { wch: 28 }, { wch: 28 }, { wch: 28 }, { wch: 28 }
+  ];
+  // Data validation for Status column (F = index 5)
+  if (!discoveryWs["!dataValidation"]) discoveryWs["!dataValidation"] = [];
+  rows.forEach((_, ri) => {
+    discoveryWs["!dataValidation"].push({
+      sqref: `F${ri + 2}`,
+      type: "list",
+      formula1: '"Not Started,In Progress,Complete"',
+      showDropDown: false,
+    });
+  });
+  XLSX.utils.book_append_sheet(wb, discoveryWs, "Discovery");
+
+  // ── Assessment Summary sheet ──
+  const summaryHeaders = ["Discovery Area", "Pillar", "Stakeholder", "Maturity Rating", "Key Gaps Identified", "Priority Actions", "Owner", "Target Date"];
+  const summaryRows = guide.areas.map(area => [
+    area.area, area.pillar, area.stakeholder, "Not Started", "", "", "", ""
+  ]);
+  const summaryWs = XLSX.utils.aoa_to_sheet([summaryHeaders, ...summaryRows]);
+  summaryWs["!cols"] = [{ wch: 32 }, { wch: 14 }, { wch: 28 }, { wch: 18 }, { wch: 40 }, { wch: 40 }, { wch: 20 }, { wch: 14 }];
+  summaryRows.forEach((_, ri) => {
+    if (!summaryWs["!dataValidation"]) summaryWs["!dataValidation"] = [];
+    summaryWs["!dataValidation"].push({
+      sqref: `D${ri + 2}`,
+      type: "list",
+      formula1: '"Not Started,Developing,Defined,Optimised"',
+      showDropDown: false,
+    });
+  });
+  XLSX.utils.book_append_sheet(wb, summaryWs, "Assessment Summary");
+
+  XLSX.writeFile(wb, `${policy.id}-client-discovery.xlsx`);
+}
+
+// ─── PARSE UPLOADED DISCOVERY EXCEL → SOLUTION DOC ────────────────────────────
+function parseDiscoveryExcel(file, policy, guide, onResult) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const wb = XLSX.read(e.target.result, { type: "array" });
+    const ws = wb.Sheets["Discovery"];
+    if (!ws) { onResult({ error: "Could not find 'Discovery' sheet in uploaded file." }); return; }
+    const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
+
+    // Group by area
+    const areaMap = {};
+    rows.forEach(row => {
+      const area = row["Discovery Area"] || "";
+      if (!areaMap[area]) areaMap[area] = { pillar: row["Pillar"], stakeholder: row["Stakeholder"], questions: [] };
+      areaMap[area].questions.push({ q: row["Discovery Question"], status: row["Current Status"] || "Not Started", notes: row["Notes / Evidence"] || "" });
+    });
+
+    // Parse summary sheet
+    const sumWs = wb.Sheets["Assessment Summary"];
+    const summaryRows = sumWs ? XLSX.utils.sheet_to_json(sumWs, { defval: "" }) : [];
+    const summaryMap = {};
+    summaryRows.forEach(r => { summaryMap[r["Discovery Area"]] = { maturity: r["Maturity Rating"], gaps: r["Key Gaps Identified"], actions: r["Priority Actions"], owner: r["Owner"], targetDate: r["Target Date"] }; });
+
+    onResult({ areaMap, summaryMap, policy, guide });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
 // ─── PILLAR BADGE ────────────────────────────────────────────────────────────
 function PillarBadge({ pillarId }) {
   const p = PILLAR_LOOKUP[pillarId];
@@ -736,29 +855,175 @@ function RiskBadge({ level }) {
   return <span style={{ background: c.bg, color: c.text, border: `1px solid ${c.border}`, borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 600 }}>{level}</span>;
 }
 
+// ─── SOLUTION DOCUMENT ────────────────────────────────────────────────────────
+function SolutionDoc({ result, onBack }) {
+  const { areaMap, summaryMap, policy, guide } = result;
+  const STATUS_COLOR = { "Complete": "#15803d", "In Progress": "#a16207", "Not Started": "#dc2626" };
+  const STATUS_BG = { "Complete": "#f0fdf4", "In Progress": "#fefce8", "Not Started": "#fef2f2" };
+
+  const allQs = Object.entries(areaMap).flatMap(([area, data]) => data.questions.map(q => ({ ...q, area })));
+  const complete = allQs.filter(q => q.status === "Complete").length;
+  const inProgress = allQs.filter(q => q.status === "In Progress").length;
+  const notStarted = allQs.filter(q => q.status === "Not Started").length;
+  const pct = Math.round((complete / allQs.length) * 100);
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#fff", fontFamily: "'Inter','Segoe UI',sans-serif" }}>
+      <div className="no-print" style={{ background: "#0f172a", padding: "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <button onClick={onBack} style={{ color: "#a5b4fc", background: "none", border: "1px solid #334155", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>← Back to Discovery</button>
+        <button onClick={() => window.print()} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Print / Save as PDF</button>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto", padding: "40px 32px" }}>
+        {/* Header */}
+        <div style={{ borderBottom: "3px solid #0f172a", paddingBottom: 24, marginBottom: 32 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Governance Solution Document</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+            <span style={{ fontSize: 32 }}>{policy.emoji}</span>
+            <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, color: "#0f172a" }}>{policy.name} — Readiness Report</h1>
+          </div>
+          <div style={{ fontSize: 13, color: "#64748b" }}>Generated from completed discovery · {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</div>
+        </div>
+
+        {/* Readiness summary */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 32 }}>
+          {[
+            { label: "Overall Readiness", value: `${pct}%`, color: pct >= 70 ? "#15803d" : pct >= 40 ? "#a16207" : "#dc2626", bg: pct >= 70 ? "#f0fdf4" : pct >= 40 ? "#fefce8" : "#fef2f2" },
+            { label: "Complete", value: complete, color: "#15803d", bg: "#f0fdf4" },
+            { label: "In Progress", value: inProgress, color: "#a16207", bg: "#fefce8" },
+            { label: "Not Started", value: notStarted, color: "#dc2626", bg: "#fef2f2" },
+          ].map(s => (
+            <div key={s.label} style={{ background: s.bg, borderRadius: 10, padding: "14px 16px", textAlign: "center" }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: s.color }}>{s.value}</div>
+              <div style={{ fontSize: 11, color: "#64748b", marginTop: 4 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Per-area breakdown */}
+        {Object.entries(areaMap).map(([area, data], ai) => {
+          const sum = summaryMap[area] || {};
+          const areaComplete = data.questions.filter(q => q.status === "Complete").length;
+          const areaTotal = data.questions.length;
+          const pillar = PILLAR_LOOKUP[data.pillar];
+          return (
+            <div key={ai} style={{ marginBottom: 32, pageBreakInside: "avoid" }}>
+              <div style={{ background: pillar?.color.bg || "#f8fafc", border: `1px solid ${pillar?.color.border || "#e2e8f0"}`, borderRadius: "10px 10px 0 0", padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: pillar?.color.text || "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>{pillar?.emoji} {pillar?.label} · {data.stakeholder}</div>
+                  <h2 style={{ margin: "2px 0 0", fontSize: 14, fontWeight: 700, color: "#0f172a" }}>{area}</h2>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: areaComplete === areaTotal ? "#15803d" : areaComplete > 0 ? "#a16207" : "#dc2626" }}>{areaComplete}/{areaTotal}</div>
+                  <div style={{ fontSize: 10, color: "#64748b" }}>complete</div>
+                </div>
+              </div>
+              <div style={{ border: `1px solid ${pillar?.color.border || "#e2e8f0"}`, borderTop: "none", borderRadius: "0 0 10px 10px", overflow: "hidden" }}>
+                {data.questions.map((q, qi) => (
+                  <div key={qi} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, padding: "10px 16px", borderTop: qi > 0 ? "1px solid #f1f5f9" : "none", background: qi % 2 === 0 ? "#fff" : "#fafafa", alignItems: "start" }}>
+                    <div>
+                      <div style={{ fontSize: 12, color: "#334155", lineHeight: 1.6 }}>{q.q}</div>
+                      {q.notes && <div style={{ fontSize: 11, color: "#64748b", marginTop: 4, fontStyle: "italic" }}>Notes: {q.notes}</div>}
+                    </div>
+                    <span style={{ background: STATUS_BG[q.status] || "#f8fafc", color: STATUS_COLOR[q.status] || "#64748b", borderRadius: 6, padding: "3px 10px", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" }}>{q.status}</span>
+                  </div>
+                ))}
+                {/* Summary row if populated */}
+                {(sum.maturity || sum.actions || sum.gaps) && (
+                  <div style={{ padding: "12px 16px", background: "#f8fafc", borderTop: "1px solid #e2e8f0", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    {sum.maturity && <div><span style={{ fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Maturity Rating: </span><span style={{ fontSize: 12, color: "#334155", fontWeight: 600 }}>{sum.maturity}</span></div>}
+                    {sum.gaps && <div><span style={{ fontSize: 10, fontWeight: 700, color: "#dc2626", textTransform: "uppercase" }}>Key Gaps: </span><span style={{ fontSize: 12, color: "#334155" }}>{sum.gaps}</span></div>}
+                    {sum.actions && <div style={{ gridColumn: "1 / -1" }}><span style={{ fontSize: 10, fontWeight: 700, color: "#1d4ed8", textTransform: "uppercase" }}>Priority Actions: </span><span style={{ fontSize: 12, color: "#334155" }}>{sum.actions}</span></div>}
+                    {(sum.owner || sum.targetDate) && <div style={{ gridColumn: "1 / -1", fontSize: 11, color: "#64748b" }}>Owner: {sum.owner || "—"}  ·  Target: {sum.targetDate || "—"}</div>}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Recommendations */}
+        {notStarted > 0 && (
+          <div style={{ marginBottom: 32, background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 12, padding: 20 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#dc2626", marginBottom: 12 }}>🔴 Priority Gaps — Not Started ({notStarted} items)</div>
+            {Object.entries(areaMap).map(([area, data]) => {
+              const gaps = data.questions.filter(q => q.status === "Not Started");
+              if (!gaps.length) return null;
+              return (
+                <div key={area} style={{ marginBottom: 10 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>{area}</div>
+                  {gaps.map((q, i) => <div key={i} style={{ fontSize: 12, color: "#475569", paddingLeft: 12, marginBottom: 2 }}>• {q.q}</div>)}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <div style={{ marginTop: 40, paddingTop: 16, borderTop: "1px solid #e2e8f0", fontSize: 11, color: "#94a3b8", display: "flex", justifyContent: "space-between" }}>
+          <span>{policy.name} Solution Document · pretzelslab · {new Date().getFullYear()}</span>
+          <span>Confidential · For discussion purposes only</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── IMPLEMENTATION GUIDE VIEW ───────────────────────────────────────────────
 function PolicyGuide({ policy, onBack }) {
   const guide = IMPLEMENTATION_GUIDES[policy.id];
+  const uploadRef = useRef(null);
+  const [solutionResult, setSolutionResult] = useState(null);
+  const [uploadError, setUploadError] = useState("");
+  const [uploading, setUploading] = useState(false);
+
   if (!guide) return <div style={{ padding: 40, textAlign: "center", color: "#94a3b8" }}>No implementation guide available for this policy yet.</div>;
+  if (solutionResult) return <SolutionDoc result={solutionResult} onBack={() => setSolutionResult(null)} />;
+
+  const handleUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadError("");
+    parseDiscoveryExcel(file, policy, guide, (result) => {
+      setUploading(false);
+      if (result.error) { setUploadError(result.error); return; }
+      setSolutionResult(result);
+    });
+    e.target.value = "";
+  };
 
   return (
     <div style={{ minHeight: "100vh", background: "#fff", fontFamily: "'Inter','Segoe UI',sans-serif" }}>
       {/* Print-hide nav */}
-      <div className="no-print" style={{ background: "#0f172a", padding: "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <div className="no-print" style={{ background: "#0f172a", padding: "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         <button onClick={onBack} style={{ color: "#a5b4fc", background: "none", border: "1px solid #334155", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>
           ← Back
         </button>
-        <button onClick={() => window.print()} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
-          Print / Save as PDF
-        </button>
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <button onClick={() => exportDiscoveryToExcel(policy, guide)} style={{ background: "#f0fdf4", color: "#166534", border: "1px solid #bbf7d0", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+            ⬇ Download Excel
+          </button>
+          <label style={{ background: "#eff6ff", color: "#1d4ed8", border: "1px solid #bfdbfe", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+            {uploading ? "Processing…" : "⬆ Upload Completed Discovery"}
+            <input ref={uploadRef} type="file" accept=".xlsx,.xls" onChange={handleUpload} style={{ display: "none" }} />
+          </label>
+          <button onClick={() => window.print()} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+            Print / PDF
+          </button>
+        </div>
       </div>
+      {uploadError && (
+        <div style={{ background: "#fef2f2", borderBottom: "1px solid #fecaca", padding: "10px 32px", fontSize: 13, color: "#dc2626" }}>
+          ⚠ {uploadError}
+        </div>
+      )}
 
       {/* Document */}
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "40px 32px" }}>
 
         {/* Cover */}
         <div style={{ borderBottom: "3px solid #0f172a", paddingBottom: 24, marginBottom: 32 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Client Discovery & Implementation Guide</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Client Discovery Document</div>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
             <span style={{ fontSize: 32 }}>{policy.emoji}</span>
             <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, color: "#0f172a" }}>{policy.name}</h1>
@@ -910,7 +1175,7 @@ function PolicyGuide({ policy, onBack }) {
 
         {/* Footer */}
         <div style={{ marginTop: 40, paddingTop: 16, borderTop: "1px solid #e2e8f0", fontSize: 11, color: "#94a3b8", display: "flex", justifyContent: "space-between" }}>
-          <span>{policy.name} Implementation Guide · pretzelslab · March 2026</span>
+          <span>{policy.name} Client Discovery · pretzelslab · {new Date().getFullYear()}</span>
           <span>Confidential · For discussion purposes only</span>
         </div>
       </div>
@@ -1356,7 +1621,7 @@ export default function AIGovernanceTracker() {
                       <div style={{ display: "flex", gap: 8 }}>
                         {IMPLEMENTATION_GUIDES[p.id] && (
                           <button onClick={() => setSelectedGuide(p)} style={{ background: "#f0fdf4", color: "#166534", border: "1px solid #bbf7d0", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
-                            Client Guide →
+                            Client Discovery →
                           </button>
                         )}
                         <button onClick={() => setSelected(p)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
