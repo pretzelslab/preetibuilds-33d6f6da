@@ -63,7 +63,7 @@ const Skills = () => {
               AI & Dev Tools
             </h3>
             <div className="space-y-3">
-              {["Claude Code", "Lovable"].map((skill) => (
+              {["Python & SQL (Intermediate)", "Claude Code", "Lovable"].map((skill) => (
                 <div key={skill} className="px-3 py-2 bg-card rounded-xl border text-[11px] font-medium text-muted-foreground shadow-card hover:shadow-elegant transition-shadow duration-300">
                   {skill}
                 </div>
