@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef } from "react";
 import * as XLSX from "xlsx";
+import { POLICY_DIGESTS } from "./digests";
 
 // ─── IMPLEMENTATION GUIDE DATA (discovery questions per policy) ───────────────
 const IMPLEMENTATION_GUIDES = {
@@ -14,6 +15,8 @@ const IMPLEMENTATION_GUIDES = {
     areas: [
       {
         area: "AI System Inventory & Risk Classification",
+        regulatoryRef: "Art. 6–9, Annex III — Risk Classification",
+        dependencies: [],
         priority: "High",
         effort: "Medium",
         riskIfNotAddressed: "Non-compliance with foundational obligations; inability to demonstrate regulatory readiness; first target of supervisory authority review.",
@@ -30,6 +33,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Prohibited AI Uses — Identification & Cessation",
+        regulatoryRef: "Art. 5 — Prohibited Practices",
+        dependencies: [],
         priority: "High",
         effort: "Low",
         riskIfNotAddressed: "Fines up to €35M or 7% of global turnover; criminal liability; immediate market withdrawal if prohibited use confirmed.",
@@ -46,6 +51,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "High-Risk AI — Conformity Assessment",
+        regulatoryRef: "Art. 43, Annex IV — Conformity Assessment",
+        dependencies: ["AI System Inventory & Risk Classification"],
         priority: "High",
         effort: "High",
         riskIfNotAddressed: "Cannot legally place high-risk AI systems on the EU market; regulatory enforcement action and mandatory product withdrawal.",
@@ -62,6 +69,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Training Data Governance & Bias Examination",
+        regulatoryRef: "Art. 10 — Data & Data Governance",
+        dependencies: ["AI System Inventory & Risk Classification"],
         priority: "High",
         effort: "High",
         riskIfNotAddressed: "Discriminatory AI outputs at scale; enforcement action; discrimination litigation; severe reputational and brand damage.",
@@ -78,6 +87,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Human Oversight & Override Controls",
+        regulatoryRef: "Art. 14 — Human Oversight",
+        dependencies: ["High-Risk AI — Conformity Assessment"],
         priority: "Medium",
         effort: "Medium",
         riskIfNotAddressed: "Automated AI decisions deemed non-compliant; liability for harms caused by unmonitored outputs without human intervention.",
@@ -94,6 +105,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Fundamental Rights Impact Assessment",
+        regulatoryRef: "Art. 27 — FRIA",
+        dependencies: ["AI System Inventory & Risk Classification"],
         priority: "High",
         effort: "Medium",
         riskIfNotAddressed: "Deployment of AI that violates fundamental rights; supervisory authority enforcement; public interest litigation and reputational harm.",
@@ -119,6 +132,8 @@ const IMPLEMENTATION_GUIDES = {
     areas: [
       {
         area: "GOVERN — AI Risk Policy & Accountability",
+        regulatoryRef: "GOVERN 1.1–6.2 — Risk Culture & Policies",
+        dependencies: [],
         priority: "High",
         effort: "Low",
         riskIfNotAddressed: "AI risks are ungoverned and invisible until an incident occurs; no named accountability for outcomes across the organisation.",
@@ -135,6 +150,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "MAP — Identifying Affected Populations & Risks",
+        regulatoryRef: "MAP 1.1–5.2 — Risk Context & Classification",
+        dependencies: ["GOVERN — AI Risk Policy & Accountability"],
         priority: "High",
         effort: "Medium",
         riskIfNotAddressed: "Harms to vulnerable groups go undetected; regulatory scrutiny from sector regulators; legal and reputational exposure.",
@@ -151,6 +168,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "MEASURE — Fairness Metrics & Monitoring",
+        regulatoryRef: "MEASURE 1.1–4.2 — Metrics & Testing",
+        dependencies: ["MAP — Identifying Affected Populations & Risks"],
         priority: "Medium",
         effort: "High",
         riskIfNotAddressed: "Bias and fairness issues in production go undetected; discriminatory outcomes affect customers at scale before discovered.",
@@ -167,6 +186,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "MANAGE — Risk Treatment & Incident Response",
+        regulatoryRef: "MANAGE 1.1–4.2 — Risk Response & Recovery",
+        dependencies: ["GOVERN — AI Risk Policy & Accountability"],
         priority: "High",
         effort: "Medium",
         riskIfNotAddressed: "No ability to contain or respond to AI incidents; extended exposure window; regulatory breach notification failures.",
@@ -192,6 +213,8 @@ const IMPLEMENTATION_GUIDES = {
     areas: [
       {
         area: "GOVERN — AI Security Policy & Risk Strategy",
+        regulatoryRef: "GV.OC, GV.RM — Organisational Context & Risk Mgmt",
+        dependencies: [],
         priority: "High",
         effort: "Low",
         riskIfNotAddressed: "AI security risks ungoverned; no accountability for security outcomes; significant blind spots in threat landscape.",
@@ -208,6 +231,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "AI Asset Inventory & Supply Chain",
+        regulatoryRef: "ID.AM, ID.SC — Asset & Supply Chain",
+        dependencies: ["GOVERN — AI Security Policy & Risk Strategy"],
         priority: "High",
         effort: "Medium",
         riskIfNotAddressed: "Unknown AI attack surface; third-party components introduce unmanaged risk; supply chain compromise goes undetected.",
@@ -224,6 +249,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Training Data & Model Security",
+        regulatoryRef: "PR.DS, PR.AT — Data Security & Awareness",
+        dependencies: ["AI Asset Inventory & Supply Chain"],
         priority: "High",
         effort: "High",
         riskIfNotAddressed: "Model theft, poisoning, or data exfiltration; AI systems produce compromised outputs without detection or alerting.",
@@ -240,6 +267,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "AI Incident Detection & Response",
+        regulatoryRef: "DE.CM, RS.CO — Detect & Respond",
+        dependencies: ["GOVERN — AI Security Policy & Risk Strategy"],
         priority: "Medium",
         effort: "Medium",
         riskIfNotAddressed: "AI security incidents go undetected or are poorly contained; mandatory breach notification obligations breached.",
@@ -265,6 +294,8 @@ const IMPLEMENTATION_GUIDES = {
     areas: [
       {
         area: "Clause 4–5: Context, Leadership & AI Policy",
+        regulatoryRef: "ISO 42001 Clauses 4–5 — Context & Leadership",
+        dependencies: [],
         priority: "High",
         effort: "Low",
         riskIfNotAddressed: "ISO 42001 certification unachievable without leadership clause; no executive accountability for AI management system.",
@@ -281,6 +312,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Clause 6: AI Risk Assessment & Planning",
+        regulatoryRef: "ISO 42001 Clause 6 — Planning",
+        dependencies: ["Clause 4–5: Context, Leadership & AI Policy"],
         priority: "High",
         effort: "Medium",
         riskIfNotAddressed: "AI risks discovered reactively; no systematic treatment planning; major nonconformity at certification audit.",
@@ -297,6 +330,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Clause 8: AI System Impact Assessment & Operation",
+        regulatoryRef: "ISO 42001 Clause 8, Annex B — Operation & AIIA",
+        dependencies: ["Clause 6: AI Risk Assessment & Planning"],
         priority: "High",
         effort: "High",
         riskIfNotAddressed: "AI impacts on people and society unassessed; ethical failures reach customers; ISO 42001 major nonconformity.",
@@ -313,6 +348,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Clause 9–10: Internal Audit & Continual Improvement",
+        regulatoryRef: "ISO 42001 Clauses 9–10 — Performance & Improvement",
+        dependencies: ["Clause 8: AI System Impact Assessment & Operation"],
         priority: "Medium",
         effort: "Medium",
         riskIfNotAddressed: "No evidence of AIMS performance; certification suspended or not renewed; unresolved nonconformities accumulate.",
@@ -337,6 +374,8 @@ const IMPLEMENTATION_GUIDES = {
     areas: [
       {
         area: "Risk Taxonomy & Scenario Identification",
+        regulatoryRef: "FAIR Phase 1 — Scenario Identification",
+        dependencies: [],
         priority: "High",
         effort: "Low",
         riskIfNotAddressed: "Quantification is impossible without agreed taxonomy; risk conversations are inconsistent and results incomparable across teams.",
@@ -353,6 +392,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Quantitative Risk Modelling",
+        regulatoryRef: "FAIR Phase 2–3 — Risk Quantification",
+        dependencies: ["Risk Taxonomy & Scenario Identification"],
         priority: "Medium",
         effort: "High",
         riskIfNotAddressed: "AI risks expressed qualitatively only; unable to prioritise investments or set cyber insurance levels by financial impact.",
@@ -369,6 +410,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Threat & Vulnerability Analysis",
+        regulatoryRef: "FAIR Phase 2 — Threat Analysis",
+        dependencies: ["Risk Taxonomy & Scenario Identification"],
         priority: "Medium",
         effort: "Medium",
         riskIfNotAddressed: "Threat landscape not understood; risk models underestimate actual financial exposure; mispriced and underinsured risk.",
@@ -394,6 +437,8 @@ const IMPLEMENTATION_GUIDES = {
     areas: [
       {
         area: "Domain 1–2: Audit Charter & Risk-Based Planning",
+        regulatoryRef: "AAIA Domains 1–2 — Audit Foundation",
+        dependencies: [],
         priority: "High",
         effort: "Low",
         riskIfNotAddressed: "Internal audit has no mandate to assess AI; board has no independent assurance on AI risk; control failures go unreported.",
@@ -410,6 +455,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Domain 3: Algorithmic Bias Testing",
+        regulatoryRef: "AAIA Domain 3 — Algorithmic Bias Audit",
+        dependencies: ["Domain 1–2: Audit Charter & Risk-Based Planning"],
         priority: "High",
         effort: "High",
         riskIfNotAddressed: "Biased AI decisions not caught by audit; discriminatory outcomes reach customers; audit function not fit for purpose in AI era.",
@@ -426,6 +473,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Domain 5: Training Data Quality Audit",
+        regulatoryRef: "AAIA Domain 5 — Data Quality",
+        dependencies: ["Domain 1–2: Audit Charter & Risk-Based Planning"],
         priority: "Medium",
         effort: "High",
         riskIfNotAddressed: "Data quality issues in AI training unidentified by audit; model performance and fairness compromised without audit evidence.",
@@ -442,6 +491,8 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Domain 6–7: Governance Audit & Reporting",
+        regulatoryRef: "AAIA Domains 6–7 — Governance & Reporting",
+        dependencies: ["Domain 1–2: Audit Charter & Risk-Based Planning"],
         priority: "Medium",
         effort: "Medium",
         riskIfNotAddressed: "AI governance failures unreported to board; inadequate oversight of AI risk programme; board-level accountability gaps persist.",
@@ -828,12 +879,13 @@ function exportDiscoveryToExcel(policy, guide) {
   XLSX.utils.book_append_sheet(wb, coverWs, "Cover");
 
   // ── Discovery sheet ──
-  const headers = ["Discovery Area", "Priority", "Effort", "Pillar", "Stakeholder", "Q#", "Discovery Question", "Current Status", "Notes / Evidence", "Risk if Not Addressed", "Evidence to Collect", "Maturity — Not Started", "Maturity — Developing", "Maturity — Defined", "Maturity — Optimised"];
+  const headers = ["Discovery Area", "Regulatory Ref", "Priority", "Effort", "Pillar", "Stakeholder", "Q#", "Discovery Question", "Current Status", "Documentation Exists?", "Notes / Evidence", "Risk if Not Addressed", "Evidence to Collect", "Maturity — Not Started", "Maturity — Developing", "Maturity — Defined", "Maturity — Optimised"];
   const rows = [];
   guide.areas.forEach(area => {
     area.questions.forEach((q, qi) => {
       rows.push([
         area.area,
+        area.regulatoryRef || "",
         area.priority || "",
         area.effort || "",
         area.pillar,
@@ -841,6 +893,7 @@ function exportDiscoveryToExcel(policy, guide) {
         qi + 1,
         q,
         "Not Started",
+        "",
         "",
         area.riskIfNotAddressed || "",
         area.evidenceToCollect.join("\n"),
@@ -853,16 +906,22 @@ function exportDiscoveryToExcel(policy, guide) {
   });
   const discoveryWs = XLSX.utils.aoa_to_sheet([headers, ...rows]);
   discoveryWs["!cols"] = [
-    { wch: 32 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 28 }, { wch: 4 }, { wch: 60 },
-    { wch: 16 }, { wch: 36 }, { wch: 48 }, { wch: 36 }, { wch: 28 }, { wch: 28 }, { wch: 28 }, { wch: 28 }
+    { wch: 32 }, { wch: 28 }, { wch: 10 }, { wch: 12 }, { wch: 14 }, { wch: 28 }, { wch: 4 }, { wch: 60 },
+    { wch: 14 }, { wch: 18 }, { wch: 36 }, { wch: 48 }, { wch: 36 }, { wch: 28 }, { wch: 28 }, { wch: 28 }, { wch: 28 }
   ];
-  // Data validation for Status column (H = index 7, after Priority+Effort+Pillar+Stakeholder+Q#+Question)
+  // Data validation: Status (col I = index 8), Documentation Exists (col J = index 9)
   if (!discoveryWs["!dataValidation"]) discoveryWs["!dataValidation"] = [];
   rows.forEach((_, ri) => {
     discoveryWs["!dataValidation"].push({
-      sqref: `H${ri + 2}`,
+      sqref: `I${ri + 2}`,
       type: "list",
       formula1: '"Not Started,In Progress,Complete"',
+      showDropDown: false,
+    });
+    discoveryWs["!dataValidation"].push({
+      sqref: `J${ri + 2}`,
+      type: "list",
+      formula1: '"Yes,No,Partial"',
       showDropDown: false,
     });
   });
@@ -1168,6 +1227,16 @@ function PolicyGuide({ policy, onBack }) {
                       ⏱ {area.effort === "Low" ? "Quick Win" : area.effort === "Medium" ? "Medium Effort" : "Complex"} Effort
                     </span>
                   )}
+                  {area.regulatoryRef && (
+                    <span style={{ background: "#eef2ff", color: "#4338ca", border: "1px solid #c7d2fe", borderRadius: 20, padding: "2px 10px", fontSize: 10, fontWeight: 600 }}>
+                      📎 {area.regulatoryRef}
+                    </span>
+                  )}
+                  {area.dependencies?.length > 0 && (
+                    <span style={{ background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa", borderRadius: 20, padding: "2px 10px", fontSize: 10, fontWeight: 600 }}>
+                      🔗 Requires: {area.dependencies.join(", ")}
+                    </span>
+                  )}
                   {area.riskIfNotAddressed && (
                     <span style={{ fontSize: 11, color: "#64748b", fontStyle: "italic" }}>
                       ⚠ If not addressed: {area.riskIfNotAddressed}
@@ -1281,6 +1350,171 @@ function PolicyGuide({ policy, onBack }) {
           <span>{policy.name} Client Discovery · pretzelslab · {new Date().getFullYear()}</span>
           <span>Confidential · For discussion purposes only</span>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── POLICY DIGEST ────────────────────────────────────────────────────────────
+function PolicyDigestDetail({ policy, onBack }) {
+  const digest = POLICY_DIGESTS[policy.id];
+  if (!digest) return <div style={{ padding: 40, textAlign: "center", color: "#94a3b8" }}>No digest available for this policy yet.</div>;
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#fff", fontFamily: "'Inter','Segoe UI',sans-serif" }}>
+      <div className="no-print" style={{ background: "#0f172a", padding: "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <button onClick={onBack} style={{ color: "#a5b4fc", background: "none", border: "1px solid #334155", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>← All Digests</button>
+        <button onClick={() => window.print()} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Print / PDF</button>
+      </div>
+
+      <div style={{ maxWidth: 800, margin: "0 auto", padding: "40px 32px" }}>
+        {/* Header */}
+        <div style={{ borderBottom: "3px solid #0f172a", paddingBottom: 24, marginBottom: 32 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Policy Digest — Plain English Guide</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 10 }}>
+            <span style={{ fontSize: 36 }}>{policy.emoji}</span>
+            <div>
+              <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>{policy.name}</h1>
+              <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>{policy.type} · {policy.geography} · {policy.yearReleased}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* TL;DR */}
+        <div style={{ marginBottom: 32, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, padding: 22 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>The Short Version</div>
+          <p style={{ margin: 0, fontSize: 14, color: "#334155", lineHeight: 1.8 }}>{digest.tldr}</p>
+        </div>
+
+        {/* Critical Points */}
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 14 }}>What You Need to Understand</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {digest.criticalPoints.map((pt, i) => (
+              <div key={i} style={{
+                border: `1px solid ${pt.critical ? "#fecaca" : "#e2e8f0"}`,
+                borderLeft: `4px solid ${pt.critical ? "#dc2626" : "#94a3b8"}`,
+                borderRadius: 10,
+                padding: "14px 18px",
+                background: pt.critical ? "#fef2f2" : "#fff",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  {pt.critical && <span style={{ fontSize: 10, fontWeight: 700, color: "#dc2626", background: "#fee2e2", borderRadius: 4, padding: "2px 7px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Critical</span>}
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{pt.heading}</span>
+                </div>
+                <p style={{ margin: 0, fontSize: 13, color: "#334155", lineHeight: 1.75 }}>{pt.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Key Obligations */}
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 14 }}>Key Obligations</div>
+          <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, padding: 18 }}>
+            {digest.keyObligations.map((ob, i) => (
+              <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: i < digest.keyObligations.length - 1 ? 10 : 0 }}>
+                <span style={{ color: "#15803d", fontSize: 14, flexShrink: 0, marginTop: 1 }}>✓</span>
+                <span style={{ fontSize: 13, color: "#166534", lineHeight: 1.65 }}>{ob}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Who Needs to Act */}
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 12 }}>Who Needs to Act</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {digest.whoNeedsToAct.map((role, i) => (
+              <span key={i} style={{ background: "#0f172a", color: "#e2e8f0", borderRadius: 20, padding: "5px 14px", fontSize: 12, fontWeight: 600 }}>{role}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* Common Misconceptions */}
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 14 }}>Common Misconceptions</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {digest.commonMisconceptions.map((mc, i) => (
+              <div key={i} style={{ border: "1px solid #e2e8f0", borderRadius: 10, overflow: "hidden" }}>
+                <div style={{ background: "#fef2f2", padding: "10px 16px", display: "flex", gap: 8, alignItems: "flex-start" }}>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: "#dc2626", flexShrink: 0, marginTop: 1 }}>✗</span>
+                  <span style={{ fontSize: 13, color: "#7f1d1d", fontStyle: "italic", lineHeight: 1.6 }}>"{mc.myth}"</span>
+                </div>
+                <div style={{ background: "#f0fdf4", padding: "10px 16px", display: "flex", gap: 8, alignItems: "flex-start", borderTop: "1px solid #e2e8f0" }}>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: "#15803d", flexShrink: 0, marginTop: 1 }}>✓</span>
+                  <span style={{ fontSize: 13, color: "#166534", lineHeight: 1.6 }}>{mc.truth}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Practical Tip */}
+        <div style={{ background: "#fefce8", border: "1px solid #fef08a", borderRadius: 12, padding: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#a16207", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>💡 Where to Start</div>
+          <p style={{ margin: 0, fontSize: 13, color: "#713f12", lineHeight: 1.75 }}>{digest.practicalTip}</p>
+        </div>
+
+        <div style={{ marginTop: 40, paddingTop: 16, borderTop: "1px solid #e2e8f0", fontSize: 11, color: "#94a3b8", display: "flex", justifyContent: "space-between" }}>
+          <span>{policy.name} Digest · pretzelslab · {new Date().getFullYear()}</span>
+          <span>For informational purposes only — consult legal counsel for compliance decisions</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PolicyDigestGrid({ policies, onSelect }) {
+  return (
+    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 32px" }}>
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#0f172a" }}>Policy Digest Library</h2>
+        <p style={{ margin: "6px 0 0", fontSize: 14, color: "#64748b" }}>Plain-English guides to each AI governance policy — what it means, what it requires, and where to start. Includes critical points highlighted, common misconceptions corrected, and practical first steps.</p>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 20 }}>
+        {policies.map(p => {
+          const digest = POLICY_DIGESTS[p.id];
+          const criticalCount = digest?.criticalPoints.filter(c => c.critical).length || 0;
+          return (
+            <div key={p.id} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 16, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+              <div style={{ background: p.color.bg, borderBottom: `1px solid ${p.color.border}`, padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ fontSize: 28 }}>{p.emoji}</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#0f172a" }}>{p.name}</h3>
+                  <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{p.type} · {p.geography}</div>
+                </div>
+              </div>
+              <div style={{ padding: "14px 20px", flex: 1 }}>
+                <p style={{ margin: 0, fontSize: 13, color: "#475569", lineHeight: 1.65 }}>
+                  {digest?.tldr.slice(0, 160)}…
+                </p>
+                <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {criticalCount > 0 && (
+                    <span style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca", borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>
+                      {criticalCount} Critical Points
+                    </span>
+                  )}
+                  <span style={{ background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0", borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 600 }}>
+                    {digest?.keyObligations.length || 0} Obligations
+                  </span>
+                  <span style={{ background: "#f8fafc", color: "#64748b", border: "1px solid #e2e8f0", borderRadius: 6, padding: "2px 8px", fontSize: 11 }}>
+                    {digest?.commonMisconceptions.length || 0} Misconceptions Corrected
+                  </span>
+                </div>
+              </div>
+              <div style={{ padding: "12px 20px", borderTop: "1px solid #f1f5f9" }}>
+                {digest ? (
+                  <button onClick={() => onSelect(p)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 600, width: "100%" }}>
+                    Read Digest →
+                  </button>
+                ) : (
+                  <span style={{ fontSize: 12, color: "#94a3b8" }}>Digest coming soon</span>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -1571,9 +1805,10 @@ function PolicyDetail({ policy, onBack }) {
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function AIGovernanceTracker() {
-  const [view, setView] = useState("policies");   // "policies" | "topics"
+  const [view, setView] = useState("policies");   // "policies" | "topics" | "digests"
   const [selected, setSelected] = useState(null);
   const [selectedGuide, setSelectedGuide] = useState(null);
+  const [selectedDigest, setSelectedDigest] = useState(null);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("All");
   const [filterGeo, setFilterGeo] = useState("All");
@@ -1591,6 +1826,7 @@ export default function AIGovernanceTracker() {
 
   if (selectedGuide) return <PolicyGuide policy={selectedGuide} onBack={() => setSelectedGuide(null)} />;
   if (selected) return <PolicyDetail policy={selected} onBack={() => setSelected(null)} />;
+  if (selectedDigest) return <PolicyDigestDetail policy={selectedDigest} onBack={() => setSelectedDigest(null)} />;
 
   return (
     <div style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "'Inter','Segoe UI',sans-serif" }}>
@@ -1630,6 +1866,7 @@ export default function AIGovernanceTracker() {
             {[
               { id: "policies", label: "📋 Policy Grid" },
               { id: "topics",   label: "🧭 Topics Framework" },
+              { id: "digests",  label: "📖 Policy Digests" },
             ].map(tab => (
               <button
                 key={tab.id}
@@ -1643,7 +1880,9 @@ export default function AIGovernanceTracker() {
         </div>
       </div>
 
-      {view === "topics" ? (
+      {view === "digests" ? (
+        <PolicyDigestGrid policies={POLICIES} onSelect={pol => setSelectedDigest(pol)} />
+      ) : view === "topics" ? (
         <TopicsView onSelectPolicy={pol => setSelected(pol)} />
       ) : (
         <>
