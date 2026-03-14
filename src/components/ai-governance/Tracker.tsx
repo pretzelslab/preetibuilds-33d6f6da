@@ -1,5 +1,389 @@
 import { useState, useMemo } from "react";
 
+// ─── IMPLEMENTATION GUIDE DATA (discovery questions per policy) ───────────────
+const IMPLEMENTATION_GUIDES = {
+  "eu-ai-act": {
+    intro: "Use this discovery guide to assess a client organisation's current state of compliance with the EU AI Act. Work through each area with the relevant stakeholder — Legal, Product, Engineering, or Risk — and capture current state, evidence, and gaps.",
+    complianceDeadlines: [
+      { date: "Aug 2025", requirement: "Prohibitions on unacceptable-risk AI active" },
+      { date: "Aug 2025", requirement: "GPAI model obligations apply" },
+      { date: "Aug 2026", requirement: "High-risk AI system obligations fully apply" },
+      { date: "Aug 2027", requirement: "All remaining provisions" },
+    ],
+    areas: [
+      {
+        area: "AI System Inventory & Risk Classification",
+        pillar: "governance",
+        stakeholder: "CTO / Head of Product / Legal",
+        questions: [
+          "Do you have a complete inventory of all AI systems currently in use or development?",
+          "For each system, has a risk classification been assigned (Unacceptable / High / Limited / Minimal)?",
+          "Is there a documented process for classifying new AI systems before development begins?",
+          "Who is accountable for maintaining the AI system register and keeping classifications current?",
+        ],
+        evidenceToCollect: ["AI system inventory spreadsheet or register", "Risk classification methodology document", "RACI for AI governance"],
+        maturityIndicators: { notStarted: "No inventory exists. AI use cases are not tracked centrally.", developing: "Inventory exists but incomplete. No formal risk classification applied.", defined: "Complete inventory. Risk classification applied. Owner designated.", optimised: "Register is live, audited quarterly, integrated with change management." },
+      },
+      {
+        area: "Prohibited AI Uses — Identification & Cessation",
+        pillar: "ethics",
+        stakeholder: "Legal / CISO / CTO",
+        questions: [
+          "Has the organisation reviewed all current AI use cases against Article 5 prohibited practices?",
+          "Are any AI systems using real-time remote biometric identification in public spaces?",
+          "Are any AI systems used for social scoring, manipulation of vulnerable groups, or subliminal influence?",
+          "Is there a legal review process before any new biometric or emotion recognition AI is deployed?",
+        ],
+        evidenceToCollect: ["Legal review of current AI use cases against Article 5", "Written confirmation from business owners of no prohibited use", "Policy prohibiting future deployment without legal sign-off"],
+        maturityIndicators: { notStarted: "No review of current AI against prohibitions has taken place.", developing: "Review in progress. Some use cases flagged for further analysis.", defined: "Full review completed. No prohibited uses confirmed in writing.", optimised: "Ongoing pre-deployment screening process in place. Legal sign-off required." },
+      },
+      {
+        area: "High-Risk AI — Conformity Assessment",
+        pillar: "risk",
+        stakeholder: "Product / Legal / Engineering",
+        questions: [
+          "Which AI systems fall into Annex III high-risk categories (employment, education, credit, law enforcement, health)?",
+          "Has a conformity assessment been completed or planned for each high-risk AI system?",
+          "Is there technical documentation covering system design, training data, testing, and performance?",
+          "Has the system been registered in the EU AI Act database (required before market placement)?",
+        ],
+        evidenceToCollect: ["Conformity assessment reports", "Technical documentation packages", "EU AI database registration confirmations", "CE marking (where applicable)"],
+        maturityIndicators: { notStarted: "High-risk systems not identified. No conformity assessment underway.", developing: "High-risk systems identified. Assessments planned but not started.", defined: "Conformity assessments completed for all high-risk systems.", optimised: "Assessments completed, registered, and reviewed on every significant change." },
+      },
+      {
+        area: "Training Data Governance & Bias Examination",
+        pillar: "privacy",
+        stakeholder: "Data Engineering / ML / Legal / DPO",
+        questions: [
+          "Are training, validation, and test datasets documented with source, lineage, and collection date?",
+          "Has a bias examination been conducted on datasets used for high-risk AI systems?",
+          "Are gender, ethnicity, age, and other protected characteristics assessed for representativeness in training data?",
+          "Is there a process for detecting and correcting data quality issues before training begins?",
+        ],
+        evidenceToCollect: ["Data lineage documentation", "Bias examination reports", "Dataset cards or datasheets for datasets", "Data quality assessment outputs"],
+        maturityIndicators: { notStarted: "Training data is not documented. No bias examination has occurred.", developing: "Some datasets documented. Bias examination planned for priority systems.", defined: "All high-risk AI datasets documented and bias-examined.", optimised: "Automated dataset auditing in CI/CD pipeline. Bias reports version-controlled." },
+      },
+      {
+        area: "Human Oversight & Override Controls",
+        pillar: "governance",
+        stakeholder: "Product / Engineering / Operations",
+        questions: [
+          "Do high-risk AI systems allow a human operator to monitor, intervene, and override AI outputs?",
+          "Are override actions logged with timestamp, operator ID, and reason?",
+          "Are operators trained on when and how to exercise oversight?",
+          "Is there a process for escalating AI decisions that require human review before action is taken?",
+        ],
+        evidenceToCollect: ["UI/system documentation showing override controls", "Audit log samples", "Operator training records", "Escalation procedures"],
+        maturityIndicators: { notStarted: "AI outputs are fully automated. No override capability.", developing: "Override capability exists but not consistently implemented or logged.", defined: "Override controls on all high-risk AI. Logging and training in place.", optimised: "Override patterns reviewed monthly. Escalation triggers automated alerts." },
+      },
+      {
+        area: "Fundamental Rights Impact Assessment",
+        pillar: "ethics",
+        stakeholder: "Legal / DPO / Ethics Lead / Product",
+        questions: [
+          "Has a Fundamental Rights Impact Assessment (FRIA) been conducted for each high-risk AI deployment?",
+          "Does the FRIA explicitly cover impacts on gender, ethnicity, disability, age, and intersectional groups?",
+          "Is the FRIA completed before deployment, not after?",
+          "Who signs off the FRIA and what authority do they have to halt deployment if risks are unacceptable?",
+        ],
+        evidenceToCollect: ["Completed FRIA documents", "Sign-off records", "Evidence of FRIA informing deployment decisions"],
+        maturityIndicators: { notStarted: "No FRIA process exists.", developing: "FRIA template created. One or two assessments completed.", defined: "FRIA mandatory before all high-risk AI deployments. Results documented.", optimised: "FRIA integrated into product development gate. Published where required." },
+      },
+    ],
+  },
+  "nist-ai-rmf": {
+    intro: "Use this guide to assess a client's implementation of the NIST AI Risk Management Framework across all four core functions: Govern, Map, Measure, Manage. Suitable for US-regulated organisations and multinationals adopting the RMF as a baseline.",
+    complianceDeadlines: [
+      { date: "Ongoing", requirement: "Voluntary framework — no mandatory deadlines. Sector-specific regulators (OCC, SEC, HHS) increasingly reference it." },
+      { date: "2024", requirement: "NIST AI 600-1 (GenAI guidance) — assess all generative AI systems against additional risks." },
+    ],
+    areas: [
+      {
+        area: "GOVERN — AI Risk Policy & Accountability",
+        pillar: "governance",
+        stakeholder: "Board / CRO / General Counsel",
+        questions: [
+          "Is there a board-approved AI risk policy that defines the organisation's approach, risk appetite, and accountability?",
+          "Is a named executive accountable for AI risk management (e.g. Chief AI Officer, Chief Risk Officer)?",
+          "Are AI risk roles and responsibilities documented and communicated across the organisation?",
+          "Is AI risk reviewed at board or senior management level on a regular schedule?",
+        ],
+        evidenceToCollect: ["AI risk policy document", "Board minute approving policy", "RACI or role definitions", "Board/committee AI risk reporting pack"],
+        maturityIndicators: { notStarted: "No AI risk policy. AI risk not discussed at board level.", developing: "Draft policy exists. Ownership unclear. No board reporting.", defined: "Policy approved. Owner designated. Quarterly board reporting.", optimised: "Policy reviewed annually. AI risk is a standing board agenda item." },
+      },
+      {
+        area: "MAP — Identifying Affected Populations & Risks",
+        pillar: "ethics",
+        stakeholder: "Product / Data Science / Risk",
+        questions: [
+          "For each AI system, has the organisation documented who will be affected by its outputs (including indirectly)?",
+          "Have vulnerable or marginalised groups who may be disproportionately impacted been explicitly identified?",
+          "Is there a process to assess AI risks across societal, technical, and operational dimensions?",
+          "Are bias and fairness risks included as formal risk categories in the AI risk register?",
+        ],
+        evidenceToCollect: ["Stakeholder and affected population maps", "AI risk register showing bias/fairness risk categories", "Pre-deployment risk assessments"],
+        maturityIndicators: { notStarted: "No mapping of AI risks or affected populations.", developing: "Some systems have impact assessments. Not consistent.", defined: "All material AI systems mapped. Bias risk formally registered.", optimised: "Continuous impact monitoring. Feedback loops with affected communities." },
+      },
+      {
+        area: "MEASURE — Fairness Metrics & Monitoring",
+        pillar: "ethics",
+        stakeholder: "ML Engineering / Data Science / Product",
+        questions: [
+          "Are fairness metrics (demographic parity, equalised odds, calibration) defined and measured for AI systems?",
+          "Are model performance results disaggregated by gender, age, ethnicity, and other protected characteristics?",
+          "Is there a baseline established pre-deployment that ongoing production metrics are compared against?",
+          "Are measurement results reviewed by a person with authority to intervene if thresholds are breached?",
+        ],
+        evidenceToCollect: ["Fairness metric definitions", "Model cards or evaluation reports", "Disaggregated performance dashboards", "Threshold breach records and responses"],
+        maturityIndicators: { notStarted: "No fairness metrics defined or measured.", developing: "Metrics defined for some systems. Not consistently monitored.", defined: "Metrics defined, baselined, and monitored for all material systems.", optimised: "Automated alerts on threshold breach. Metrics trend-tracked over model versions." },
+      },
+      {
+        area: "MANAGE — Risk Treatment & Incident Response",
+        pillar: "risk",
+        stakeholder: "CRO / CISO / Product / Legal",
+        questions: [
+          "Is there a documented process for treating AI risks — covering mitigation, transfer, acceptance, and avoidance?",
+          "Is there a defined AI incident response playbook covering bias events, model failures, and harmful outputs?",
+          "Has the incident response playbook been tested via a tabletop exercise in the last 12 months?",
+          "Are AI-related incidents logged, investigated, root-caused, and tracked to resolution?",
+        ],
+        evidenceToCollect: ["AI risk treatment plans", "AI incident response playbook", "Tabletop exercise records", "AI incident log"],
+        maturityIndicators: { notStarted: "No AI-specific risk treatment or incident process.", developing: "Risk treatment ad-hoc. No AI incident playbook.", defined: "Treatment plans documented. Playbook exists and tested.", optimised: "Incident metrics reviewed monthly. Playbook updated after each incident." },
+      },
+    ],
+  },
+  "nist-csf": {
+    intro: "Use this guide to assess a client's implementation of NIST CSF 2.0 with specific focus on AI and ML system security controls, supply chain risk, and the new GOVERN function.",
+    complianceDeadlines: [
+      { date: "Ongoing", requirement: "Voluntary framework. CISA and sector regulators increasingly mandate CSF alignment." },
+      { date: "2024", requirement: "CSF 2.0 released — clients on v1.1 should plan migration including new GOVERN function." },
+    ],
+    areas: [
+      {
+        area: "GOVERN — AI Security Policy & Risk Strategy",
+        pillar: "governance",
+        stakeholder: "CISO / CRO / Board",
+        questions: [
+          "Has the organisation updated its cybersecurity risk strategy to explicitly include AI and ML systems?",
+          "Is there a defined risk tolerance for AI-specific threats (adversarial attacks, model poisoning, prompt injection)?",
+          "Are AI systems included in the organisation's enterprise risk register?",
+          "Who owns AI cybersecurity risk — and how does that role interact with the AI governance function?",
+        ],
+        evidenceToCollect: ["Updated risk strategy document", "Enterprise risk register showing AI risks", "AI-specific risk tolerance statements"],
+        maturityIndicators: { notStarted: "AI security risks not in scope of cybersecurity strategy.", developing: "AI risks informally considered. Not in formal risk strategy.", defined: "AI risks in risk strategy with defined tolerance. Owner designated.", optimised: "AI security risk reviewed quarterly at board level alongside cyber risk." },
+      },
+      {
+        area: "AI Asset Inventory & Supply Chain",
+        pillar: "governance",
+        stakeholder: "CISO / Procurement / CTO",
+        questions: [
+          "Are AI models, training datasets, and inference endpoints included in the organisation's asset inventory (CMDB)?",
+          "Are third-party AI model providers and data vendors assessed for security risk before onboarding?",
+          "Is there an AI-specific vendor risk questionnaire covering bias, security, and data governance?",
+          "Are vendor AI security attestations reviewed annually?",
+        ],
+        evidenceToCollect: ["CMDB extract showing AI assets", "Vendor risk assessment templates", "AI supplier contracts with security clauses"],
+        maturityIndicators: { notStarted: "No AI assets in CMDB. No vendor AI risk process.", developing: "Some AI assets tracked. Vendor process under development.", defined: "CMDB includes AI assets. Vendor AI questionnaire in use.", optimised: "Continuous asset discovery. Annual vendor attestations with right-to-audit." },
+      },
+      {
+        area: "Training Data & Model Security",
+        pillar: "privacy",
+        stakeholder: "CISO / Data Engineering / ML",
+        questions: [
+          "Are training datasets encrypted at rest and in transit with access controls and audit logging?",
+          "Is gender or other sensitive demographic data in training corpora classified as sensitive and access-restricted?",
+          "Are AI model weights and artefacts protected with the same rigour as source code?",
+          "Is there a process to detect and respond to training data tampering or model poisoning?",
+        ],
+        evidenceToCollect: ["Data classification policy", "Encryption standards documentation", "Access control configurations", "Anomaly detection runbooks"],
+        maturityIndicators: { notStarted: "Training data treated as generic data. No specific controls.", developing: "Encryption applied. Access controls inconsistent.", defined: "Training data classified. Encryption, access controls, and audit logging in place.", optimised: "Automated integrity checks on training data. Tampering triggers incident." },
+      },
+      {
+        area: "AI Incident Detection & Response",
+        pillar: "risk",
+        stakeholder: "CISO / SOC / Legal",
+        questions: [
+          "Is there an AI-specific anomaly detection capability covering adversarial inputs and biased output patterns?",
+          "Are AI systems included in the Security Operations Centre (SOC) monitoring scope?",
+          "Is there a defined notification process for AI-related incidents affecting customers or regulators?",
+          "Does the disaster recovery plan include AI model rollback and fairness re-validation procedures?",
+        ],
+        evidenceToCollect: ["SOC monitoring scope documentation", "AI anomaly detection playbooks", "Incident notification templates", "DR plan AI section"],
+        maturityIndicators: { notStarted: "AI not in SOC scope. No AI incident playbook.", developing: "AI in scope but limited detection rules. Playbook drafted.", defined: "AI-specific detection and playbook. Notification process defined.", optimised: "AI incidents auto-escalated. Recovery tested annually including rollback." },
+      },
+    ],
+  },
+  "iso-42001": {
+    intro: "Use this guide to assess a client's readiness for ISO 42001 certification or to identify gaps in their AI Management System (AIMS). Map findings to the clause structure for use in a formal gap assessment.",
+    complianceDeadlines: [
+      { date: "2023", requirement: "Standard published. Certification available from accredited bodies." },
+      { date: "Ongoing", requirement: "No mandatory deadline — client-driven. Some procurement and regulatory bodies beginning to require it." },
+    ],
+    areas: [
+      {
+        area: "Clause 4–5: Context, Leadership & AI Policy",
+        pillar: "governance",
+        stakeholder: "CEO / Board / General Counsel",
+        questions: [
+          "Has the organisation documented the internal and external issues relevant to its AI management system?",
+          "Is there a board-approved AI policy that commits to responsible AI, legal compliance, and continual improvement?",
+          "Does the AI policy explicitly address fairness, non-discrimination, and gender equity in AI outcomes?",
+          "Has top management assigned roles and responsibilities for the AI management system?",
+        ],
+        evidenceToCollect: ["Context analysis document", "Board-approved AI policy", "Role and responsibility matrix"],
+        maturityIndicators: { notStarted: "No AI policy. Context not documented.", developing: "Draft policy. Context analysis incomplete.", defined: "Policy approved. Context documented. Roles assigned.", optimised: "Policy reviewed annually. Context analysis feeds risk assessment." },
+      },
+      {
+        area: "Clause 6: AI Risk Assessment & Planning",
+        pillar: "risk",
+        stakeholder: "Risk / Product / Legal",
+        questions: [
+          "Is there a documented methodology for identifying, analysing, and evaluating AI risks?",
+          "Are AI risks assessed across the full lifecycle — design, development, deployment, and decommissioning?",
+          "Is bias risk formally assessed for each AI system using a documented methodology?",
+          "Are the results of risk assessments used to determine what controls and treatments are needed?",
+        ],
+        evidenceToCollect: ["AI risk assessment methodology", "Completed risk assessments for in-scope systems", "Risk treatment plan"],
+        maturityIndicators: { notStarted: "No AI risk assessment process.", developing: "Process defined but not consistently applied.", defined: "Methodology documented. Assessments completed for all in-scope systems.", optimised: "Assessments triggered automatically on significant change. Results feed board reporting." },
+      },
+      {
+        area: "Clause 8: AI System Impact Assessment & Operation",
+        pillar: "ethics",
+        stakeholder: "Product / Legal / DPO / Ethics Lead",
+        questions: [
+          "Is a pre-deployment AI impact assessment conducted for all in-scope AI systems?",
+          "Does the impact assessment include disparate impact analysis across demographic groups (gender, ethnicity, age)?",
+          "Are responsible AI use controls implemented — human oversight, data quality checks, transparency mechanisms?",
+          "Who has authority to halt deployment if the impact assessment identifies unacceptable risks?",
+        ],
+        evidenceToCollect: ["Impact assessment templates and completed assessments", "Deployment gate approval records", "Evidence of human oversight controls"],
+        maturityIndicators: { notStarted: "No impact assessment process.", developing: "Template created. One or two assessments done.", defined: "Mandatory pre-deployment. Disparate impact assessed. Gate approval required.", optimised: "Assessments automated where possible. Results tracked over model versions." },
+      },
+      {
+        area: "Clause 9–10: Internal Audit & Continual Improvement",
+        pillar: "risk",
+        stakeholder: "Internal Audit / CRO / Board",
+        questions: [
+          "Is there an annual internal audit programme for the AI management system?",
+          "Do internal audits cover fairness metrics, bias incidents, and data governance?",
+          "Are audit findings tracked as nonconformities with root cause analysis and corrective action?",
+          "Is the AI management system reviewed by top management at least annually?",
+        ],
+        evidenceToCollect: ["Internal audit plan and reports", "Nonconformity and corrective action register", "Management review minutes"],
+        maturityIndicators: { notStarted: "No AI internal audit. No management review.", developing: "Audit planned. Management review ad-hoc.", defined: "Annual audit completed. Findings tracked. Management review documented.", optimised: "Audit insights drive continual improvement cycle. Metrics trend upward year-on-year." },
+      },
+    ],
+  },
+  "fair": {
+    intro: "Use this guide to assess whether a client organisation has the capability to quantify AI risk in financial terms using the FAIR methodology. Most useful for financial services, insurance, and technology clients with mature risk management functions.",
+    complianceDeadlines: [
+      { date: "Ongoing", requirement: "Voluntary methodology. Increasingly referenced by financial regulators and insurance underwriters." },
+    ],
+    areas: [
+      {
+        area: "Risk Taxonomy & Scenario Identification",
+        pillar: "risk",
+        stakeholder: "CRO / Risk Analyst / CISO",
+        questions: [
+          "Has the organisation identified and documented AI-specific risk scenarios (model failure, data poisoning, bias at scale, adversarial attack)?",
+          "Are AI risk scenarios mapped to the FAIR taxonomy — Loss Event Frequency and Loss Magnitude?",
+          "Is gender discrimination / bias-related regulatory action included as a defined loss event scenario?",
+          "Who owns AI risk scenario development and how often are scenarios reviewed?",
+        ],
+        evidenceToCollect: ["AI risk scenario library", "FAIR taxonomy mapping document", "Risk scenario review records"],
+        maturityIndicators: { notStarted: "No AI risk scenarios defined.", developing: "Some scenarios identified. Not mapped to FAIR taxonomy.", defined: "Scenarios mapped to FAIR. Reviewed annually.", optimised: "Scenario library maintained. New scenarios added following industry events." },
+      },
+      {
+        area: "Quantitative Risk Modelling",
+        pillar: "risk",
+        stakeholder: "Risk / Finance / CRO",
+        questions: [
+          "Is the organisation using Monte Carlo simulation to quantify AI risk exposure in dollar terms?",
+          "Are EU AI Act and GDPR fine ranges incorporated into Secondary Loss Magnitude estimates?",
+          "Is there a tooling platform in use (e.g. RiskLens, FAIR-U) or are models built in-house?",
+          "Are FAIR risk model results presented to the board as financial exposure ranges, not heat map ratings?",
+        ],
+        evidenceToCollect: ["FAIR model outputs", "Board risk reports showing financial exposure", "Tooling platform access"],
+        maturityIndicators: { notStarted: "Risk quantified only as High/Medium/Low ratings.", developing: "FAIR methodology known. Pilot model built for one scenario.", defined: "FAIR models for all material AI risks. Results in board pack.", optimised: "Models updated quarterly. Risk reduction ROI calculated for control investments." },
+      },
+      {
+        area: "Threat & Vulnerability Analysis",
+        pillar: "risk",
+        stakeholder: "CISO / ML Engineering / Risk",
+        questions: [
+          "Have threat actors relevant to the organisation's AI systems been identified (adversarial, insider, vendor)?",
+          "Is the vulnerability of AI systems to adversarial attacks assessed and scored?",
+          "Are bias amplification and gender stereotype reinforcement modelled as exploitable vulnerabilities?",
+          "Is there a red team or penetration testing function that covers AI-specific attack vectors?",
+        ],
+        evidenceToCollect: ["Threat actor profiles", "AI vulnerability assessments", "Red team / pen test reports covering AI"],
+        maturityIndicators: { notStarted: "AI threat and vulnerability analysis not performed.", developing: "Threat actors identified. Vulnerability assessment ad-hoc.", defined: "Formal threat and vulnerability analysis. AI pen testing annual.", optimised: "Continuous threat intelligence. AI red team capability in-house." },
+      },
+    ],
+  },
+  "aaia": {
+    intro: "Use this guide to structure an AI audit engagement or to assess a client's readiness for an AAIA-aligned AI audit. Work through each domain with the internal audit, risk, or compliance function.",
+    complianceDeadlines: [
+      { date: "Ongoing", requirement: "No mandatory timeline. Increasing regulatory and procurement demand for AI audit evidence." },
+      { date: "2024", requirement: "CAAIA exam updated — ensure audit methodology aligns with EU AI Act conformity assessment." },
+    ],
+    areas: [
+      {
+        area: "Domain 1–2: Audit Charter & Risk-Based Planning",
+        pillar: "governance",
+        stakeholder: "Chief Audit Executive / Audit Committee",
+        questions: [
+          "Does the internal audit charter explicitly include AI systems, algorithmic bias, and fairness in scope?",
+          "Is there an annual AI audit plan that prioritises systems by risk level, regulatory exposure, and societal impact?",
+          "Are AI systems affecting employment, credit, healthcare, and education audited for gender equity as a priority?",
+          "Does the audit function have AI technical expertise — either in-house or through co-sourcing arrangements?",
+        ],
+        evidenceToCollect: ["Internal audit charter", "Annual AI audit plan", "Audit committee approval minutes", "AI competency matrix for audit team"],
+        maturityIndicators: { notStarted: "AI not in audit charter. No AI audit plan.", developing: "Charter updated. AI audit plan in draft.", defined: "Charter and plan approved. Risk-based prioritisation applied.", optimised: "AI audit integrated with enterprise risk. CAAIA-certified auditors on team." },
+      },
+      {
+        area: "Domain 3: Algorithmic Bias Testing",
+        pillar: "ethics",
+        stakeholder: "Internal Audit / ML Engineering / Data Science",
+        questions: [
+          "Is a structured bias testing methodology applied to AI systems — covering disparate impact and disparate treatment?",
+          "Are demographic parity, equalised odds, and calibration metrics measured and documented for audited systems?",
+          "Is gender treated as a mandatory protected characteristic in all bias audit engagements?",
+          "Is intersectional analysis conducted (e.g. gender × ethnicity, gender × age) where data permits?",
+        ],
+        evidenceToCollect: ["Bias testing methodology document", "Bias audit reports with metric outputs", "Evidence of gender and intersectional analysis"],
+        maturityIndicators: { notStarted: "No bias testing performed.", developing: "Bias testing done for one or two systems. Methodology informal.", defined: "Structured methodology. All material systems tested. Gender mandatory.", optimised: "Automated bias testing in deployment pipeline. Results published to affected stakeholders." },
+      },
+      {
+        area: "Domain 5: Training Data Quality Audit",
+        pillar: "privacy",
+        stakeholder: "Internal Audit / Data Engineering / DPO",
+        questions: [
+          "Are training datasets audited for representativeness, accuracy, and freedom from historical bias?",
+          "Is gender representation in training data measured and documented?",
+          "Is historical underrepresentation of gender groups flagged as an audit finding requiring remediation?",
+          "Is personal data in training datasets identified and subject to privacy controls?",
+        ],
+        evidenceToCollect: ["Data quality audit reports", "Dataset composition analysis", "Personal data inventory for training datasets"],
+        maturityIndicators: { notStarted: "Training data quality not audited.", developing: "Data quality checks informal. Gender representation not measured.", defined: "Structured data audit. Gender representation documented. PII controlled.", optimised: "Automated data quality gates. Representation metrics tracked over time." },
+      },
+      {
+        area: "Domain 6–7: Governance Audit & Reporting",
+        pillar: "governance",
+        stakeholder: "Internal Audit / Board / Risk Committee",
+        questions: [
+          "Does the governance audit assess whether bias incidents are escalated, investigated, and resolved systematically?",
+          "Is the diversity of the AI governance committee assessed as a quality indicator?",
+          "Are audit findings rated using a standardised severity scale with defined management response timelines?",
+          "Are gender equity findings tracked separately with their own follow-up timeline and owner?",
+        ],
+        evidenceToCollect: ["Governance audit reports", "AI committee membership records", "Finding remediation tracker", "Audit committee reporting pack"],
+        maturityIndicators: { notStarted: "No governance audit. Findings not formally tracked.", developing: "Governance reviewed informally. Tracking inconsistent.", defined: "Governance audit conducted. Findings rated and tracked to closure.", optimised: "Gender equity findings tracked separately. Audit committee reviews trend data." },
+      },
+    ],
+  },
+};
+
 // ─── FOUR PILLARS ─────────────────────────────────────────────────────────────
 const PILLARS = [
   {
@@ -352,6 +736,188 @@ function RiskBadge({ level }) {
   return <span style={{ background: c.bg, color: c.text, border: `1px solid ${c.border}`, borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 600 }}>{level}</span>;
 }
 
+// ─── IMPLEMENTATION GUIDE VIEW ───────────────────────────────────────────────
+function PolicyGuide({ policy, onBack }) {
+  const guide = IMPLEMENTATION_GUIDES[policy.id];
+  if (!guide) return <div style={{ padding: 40, textAlign: "center", color: "#94a3b8" }}>No implementation guide available for this policy yet.</div>;
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#fff", fontFamily: "'Inter','Segoe UI',sans-serif" }}>
+      {/* Print-hide nav */}
+      <div className="no-print" style={{ background: "#0f172a", padding: "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <button onClick={onBack} style={{ color: "#a5b4fc", background: "none", border: "1px solid #334155", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>
+          ← Back
+        </button>
+        <button onClick={() => window.print()} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+          Print / Save as PDF
+        </button>
+      </div>
+
+      {/* Document */}
+      <div style={{ maxWidth: 860, margin: "0 auto", padding: "40px 32px" }}>
+
+        {/* Cover */}
+        <div style={{ borderBottom: "3px solid #0f172a", paddingBottom: 24, marginBottom: 32 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Client Discovery & Implementation Guide</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+            <span style={{ fontSize: 32 }}>{policy.emoji}</span>
+            <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, color: "#0f172a" }}>{policy.name}</h1>
+          </div>
+          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "#475569", marginBottom: 12 }}>
+            <span><strong>Type:</strong> {policy.type}</span>
+            <span><strong>Geography:</strong> {policy.geography}</span>
+            <span><strong>Year:</strong> {policy.yearReleased}</span>
+            <span><strong>Last Updated:</strong> {policy.latestUpdateDate}</span>
+          </div>
+          <p style={{ margin: 0, fontSize: 13, color: "#475569", lineHeight: 1.7 }}>{guide.intro}</p>
+        </div>
+
+        {/* Compliance Deadlines */}
+        {guide.complianceDeadlines?.length > 0 && (
+          <div style={{ marginBottom: 32, background: "#fefce8", border: "1px solid #fef08a", borderRadius: 10, padding: 20 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#a16207", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Key Compliance Deadlines</div>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <tbody>
+                {guide.complianceDeadlines.map((d, i) => (
+                  <tr key={i} style={{ borderTop: i > 0 ? "1px solid #fef08a" : "none" }}>
+                    <td style={{ padding: "6px 12px 6px 0", fontSize: 12, fontWeight: 700, color: "#92400e", whiteSpace: "nowrap", width: 100 }}>{d.date}</td>
+                    <td style={{ padding: "6px 0", fontSize: 13, color: "#334155" }}>{d.requirement}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Discovery Areas */}
+        {guide.areas.map((area, aIdx) => {
+          const pillar = PILLAR_LOOKUP[area.pillar];
+          return (
+            <div key={aIdx} style={{ marginBottom: 36, pageBreakInside: "avoid" }}>
+              {/* Area Header */}
+              <div style={{ background: pillar?.color.bg || "#f8fafc", border: `1px solid ${pillar?.color.border || "#e2e8f0"}`, borderRadius: "10px 10px 0 0", padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: pillar?.color.text || "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>
+                    {pillar?.emoji} {pillar?.label} · Discovery Area {aIdx + 1}
+                  </div>
+                  <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#0f172a" }}>{area.area}</h2>
+                </div>
+                <div style={{ textAlign: "right", fontSize: 11, color: "#64748b" }}>
+                  <div style={{ fontWeight: 600 }}>Stakeholder</div>
+                  <div>{area.stakeholder}</div>
+                </div>
+              </div>
+
+              {/* Discovery Questions */}
+              <div style={{ border: `1px solid ${pillar?.color.border || "#e2e8f0"}`, borderTop: "none", borderRadius: "0 0 10px 10px", overflow: "hidden" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ background: "#f8fafc" }}>
+                      <th style={{ padding: "8px 14px", fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "left", width: 32 }}>#</th>
+                      <th style={{ padding: "8px 14px", fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "left" }}>Discovery Question</th>
+                      <th style={{ padding: "8px 14px", fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "center", width: 110 }}>Current State</th>
+                      <th style={{ padding: "8px 14px", fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", textAlign: "left", width: 180 }}>Notes / Evidence</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {area.questions.map((q, qIdx) => (
+                      <tr key={qIdx} style={{ borderTop: "1px solid #f1f5f9", background: qIdx % 2 === 0 ? "#fff" : "#fafafa" }}>
+                        <td style={{ padding: "10px 14px", fontSize: 12, color: "#94a3b8", fontWeight: 600 }}>{qIdx + 1}</td>
+                        <td style={{ padding: "10px 14px", fontSize: 13, color: "#334155", lineHeight: 1.6 }}>{q}</td>
+                        <td style={{ padding: "10px 14px", textAlign: "center" }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-start" }}>
+                            {["Not Started", "In Progress", "Complete"].map(s => (
+                              <label key={s} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#475569", cursor: "default" }}>
+                                <span style={{ width: 13, height: 13, border: "1.5px solid #cbd5e1", borderRadius: 3, display: "inline-block", flexShrink: 0 }} />
+                                {s}
+                              </label>
+                            ))}
+                          </div>
+                        </td>
+                        <td style={{ padding: "10px 14px", fontSize: 12, color: "#94a3b8", fontStyle: "italic", verticalAlign: "top" }}>
+                          <div style={{ minHeight: 40, borderBottom: "1px solid #e2e8f0" }} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Evidence & Maturity */}
+                <div style={{ padding: "14px 18px", background: "#f8fafc", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  <div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Evidence to Collect</div>
+                    {area.evidenceToCollect.map((e, i) => (
+                      <div key={i} style={{ display: "flex", gap: 6, alignItems: "flex-start", marginBottom: 4 }}>
+                        <span style={{ color: "#22c55e", fontSize: 12, flexShrink: 0, marginTop: 1 }}>☐</span>
+                        <span style={{ fontSize: 12, color: "#475569" }}>{e}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Maturity Indicators</div>
+                    {Object.entries(area.maturityIndicators).map(([level, desc]) => (
+                      <div key={level} style={{ marginBottom: 5 }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: level === "optimised" ? "#15803d" : level === "defined" ? "#1d4ed8" : level === "developing" ? "#a16207" : "#dc2626", textTransform: "capitalize" }}>{level}: </span>
+                        <span style={{ fontSize: 11, color: "#475569" }}>{desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Summary Table */}
+        <div style={{ marginTop: 40, pageBreakInside: "avoid" }}>
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: "#0f172a", marginBottom: 12 }}>Assessment Summary</h2>
+          <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #e2e8f0", borderRadius: 8, overflow: "hidden" }}>
+            <thead>
+              <tr style={{ background: "#0f172a", color: "#fff" }}>
+                <th style={{ padding: "10px 14px", fontSize: 11, fontWeight: 600, textAlign: "left" }}>Discovery Area</th>
+                <th style={{ padding: "10px 14px", fontSize: 11, fontWeight: 600, textAlign: "left" }}>Pillar</th>
+                <th style={{ padding: "10px 14px", fontSize: 11, fontWeight: 600, textAlign: "left" }}>Stakeholder</th>
+                <th style={{ padding: "10px 14px", fontSize: 11, fontWeight: 600, textAlign: "center", width: 120 }}>Maturity Rating</th>
+                <th style={{ padding: "10px 14px", fontSize: 11, fontWeight: 600, textAlign: "left" }}>Priority Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {guide.areas.map((area, i) => {
+                const pillar = PILLAR_LOOKUP[area.pillar];
+                return (
+                  <tr key={i} style={{ borderTop: "1px solid #f1f5f9", background: i % 2 === 0 ? "#fff" : "#f8fafc" }}>
+                    <td style={{ padding: "10px 14px", fontSize: 12, color: "#0f172a", fontWeight: 500 }}>{area.area}</td>
+                    <td style={{ padding: "10px 14px" }}>
+                      <span style={{ fontSize: 11, background: pillar?.color.badge, color: pillar?.color.text, borderRadius: 4, padding: "2px 8px", fontWeight: 600 }}>{pillar?.label}</span>
+                    </td>
+                    <td style={{ padding: "10px 14px", fontSize: 11, color: "#64748b" }}>{area.stakeholder}</td>
+                    <td style={{ padding: "10px 14px", textAlign: "center" }}>
+                      <div style={{ display: "flex", gap: 4, justifyContent: "center" }}>
+                        {["NS","Dev","Def","Opt"].map(l => (
+                          <span key={l} style={{ width: 22, height: 22, border: "1.5px solid #cbd5e1", borderRadius: 4, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 8, color: "#94a3b8", fontWeight: 600 }}>{l}</span>
+                        ))}
+                      </div>
+                    </td>
+                    <td style={{ padding: "10px 14px" }}>
+                      <div style={{ minHeight: 20, borderBottom: "1px solid #e2e8f0" }} />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Footer */}
+        <div style={{ marginTop: 40, paddingTop: 16, borderTop: "1px solid #e2e8f0", fontSize: 11, color: "#94a3b8", display: "flex", justifyContent: "space-between" }}>
+          <span>{policy.name} Implementation Guide · pretzelslab · March 2026</span>
+          <span>Confidential · For discussion purposes only</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── TOPICS VIEW ──────────────────────────────────────────────────────────────
 function TopicsView({ onSelectPolicy }) {
   const [expanded, setExpanded] = useState(null);
@@ -639,6 +1205,7 @@ function PolicyDetail({ policy, onBack }) {
 export default function AIGovernanceTracker() {
   const [view, setView] = useState("policies");   // "policies" | "topics"
   const [selected, setSelected] = useState(null);
+  const [selectedGuide, setSelectedGuide] = useState(null);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("All");
   const [filterGeo, setFilterGeo] = useState("All");
@@ -654,6 +1221,7 @@ export default function AIGovernanceTracker() {
     return matchSearch && matchType && matchGeo;
   }), [search, filterType, filterGeo]);
 
+  if (selectedGuide) return <PolicyGuide policy={selectedGuide} onBack={() => setSelectedGuide(null)} />;
   if (selected) return <PolicyDetail policy={selected} onBack={() => setSelected(null)} />;
 
   return (
@@ -783,11 +1351,18 @@ export default function AIGovernanceTracker() {
                       </div>
                     </div>
 
-                    <div style={{ padding: "12px 20px", borderTop: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ padding: "12px 20px", borderTop: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                       <span style={{ fontSize: 12, color: "#94a3b8" }}>{p.clauses.length} clauses with pillar, bias & gender detail</span>
-                      <button onClick={() => setSelected(p)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
-                        View Detail →
-                      </button>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        {IMPLEMENTATION_GUIDES[p.id] && (
+                          <button onClick={() => setSelectedGuide(p)} style={{ background: "#f0fdf4", color: "#166534", border: "1px solid #bbf7d0", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+                            Client Guide →
+                          </button>
+                        )}
+                        <button onClick={() => setSelected(p)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+                          View Detail →
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );

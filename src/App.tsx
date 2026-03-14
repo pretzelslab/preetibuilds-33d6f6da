@@ -10,6 +10,7 @@ import GTMTechStack from "./pages/GTMTechStack";
 import NotFound from "./pages/NotFound";
 import Research from "./pages/Research";
 import AIGovernance from "./pages/AIGovernance";
+import ProductIntelligence from "./pages/ProductIntelligence";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/gtm-techstack" element={<GTMTechStack />} />
             <Route path="/research" element={<Research />} />
             <Route path="/ai-governance" element={<AIGovernance />} />
+            <Route path="/product-intelligence" element={<ProductIntelligence />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
