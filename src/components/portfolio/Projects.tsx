@@ -1,9 +1,8 @@
 import { motion } from "framer-motion";
-import { Clock, Briefcase, ThumbsUp } from "lucide-react";
+import { Clock, Briefcase, ThumbsUp, Shield } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import medlogPreview from "@/assets/medlog-preview.jpg";
 
 type ProjectCard = {
   title: string;
@@ -41,17 +40,77 @@ const aiEthicsGovernance: ProjectCard[] = [
   },
 ];
 
-const petProjects = [
-  {
-    title: "Medlog",
-    description: "A personal medical logging application for tracking health records and appointments.",
-    tags: ["React", "TypeScript", "Supabase", "Tailwind"],
-    link: "/medlog",
-    preview: medlogPreview,
-  },
-];
-
-const SHOW_PET_PROJECTS = false; // Set to true to re-enable Pet Projects section
+const ProjectTile = ({
+  project,
+  index,
+  thumbs,
+  onThumb,
+}: {
+  project: ProjectCard;
+  index: number;
+  thumbs: Record<string, number>;
+  onThumb: (title: string) => void;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 15 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ delay: index * 0.1 }}
+    className="bg-muted/40 border border-border/50 rounded-xl p-5 hover:bg-muted/60 transition-colors flex flex-col"
+  >
+    <div className="flex items-center justify-between mb-2">
+      <h4 className="text-sm font-semibold text-foreground">{project.title}</h4>
+      {project.upcoming && (
+        <span className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground bg-background/60 px-2 py-0.5 rounded-full">
+          <Clock className="w-3 h-3" /> Upcoming
+        </span>
+      )}
+      {project.inProgress && (
+        <span className="flex items-center gap-1.5 text-[10px] font-medium text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 rounded-full">
+          <Clock className="w-3 h-3" /> In Progress
+        </span>
+      )}
+    </div>
+    <p className="text-foreground/70 text-xs leading-relaxed mb-3">{project.description}</p>
+    <div className="flex flex-wrap gap-1.5 mb-2">
+      {project.tags.map((tag) => (
+        <Badge key={tag} variant="secondary" className="font-mono text-[10px] rounded-full px-2 py-0.5">
+          {tag}
+        </Badge>
+      ))}
+    </div>
+    {project.applicationLayer && (
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        {project.applicationLayer.map((tag) => (
+          <Badge key={tag} variant="outline" className="font-mono text-[10px] rounded-full px-2 py-0.5 text-muted-foreground">
+            {tag}
+          </Badge>
+        ))}
+      </div>
+    )}
+    <div className="flex items-center justify-between mt-auto pt-2">
+      <div className="flex items-center gap-3">
+        {project.link && (
+          <Link to={project.link} className="text-sm font-medium text-primary hover:underline">
+            View Project →
+          </Link>
+        )}
+        {project.externalLink && (
+          <a href={project.externalLink} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-primary hover:underline">
+            GitHub ↗
+          </a>
+        )}
+      </div>
+      <button
+        onClick={() => onThumb(project.title)}
+        className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+      >
+        <ThumbsUp className="w-4 h-4" />
+        <span className="text-xs font-mono">{thumbs[project.title] || 0}</span>
+      </button>
+    </div>
+  </motion.div>
+);
 
 const Projects = () => {
   const [thumbs, setThumbs] = useState<Record<string, number>>({});
@@ -117,76 +176,9 @@ const Projects = () => {
             </div>
           </motion.div>
         </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
-        {SHOW_PET_PROJECTS && (
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mb-6"
-        >
-          <div className="bg-card rounded-2xl border overflow-hidden shadow-card">
-            <div className="bg-gradient-to-br from-primary/30 to-accent/30 px-6 py-5 flex items-center gap-3">
-              <span className="text-lg">🧪</span>
-              <h3 className="text-lg font-semibold">Pet Projects</h3>
-            </div>
-            <div className="p-4 grid sm:grid-cols-2 gap-4">
-              {petProjects.map((project, i) => (
-                <motion.div
-                  key={project.title}
-                  initial={{ opacity: 0, y: 15 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className="bg-muted/40 border border-border/50 rounded-xl p-5 hover:bg-muted/60 transition-colors flex flex-col"
-                >
-                  {project.preview && (
-                    <div className="relative w-full h-32 rounded-lg mb-3 overflow-hidden">
-                      <img src={project.preview} alt={project.title} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-                        <span className="text-[10px] font-mono text-foreground/30 rotate-[-20deg] whitespace-nowrap tracking-widest">
-                          © MedLog · Copyrighted
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                  <h4 className="text-sm font-semibold mb-2">{project.title}</h4>
-                  <p className="text-muted-foreground text-xs leading-relaxed mb-3">
-                    {project.description}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {project.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="font-mono text-[10px] rounded-full px-2 py-0.5">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between mt-auto pt-2">
-                    {project.link && (
-                      <Link to={project.link} className="text-sm font-medium text-primary hover:underline">
-                        View Project →
-                      </Link>
-                    )}
-                    <button
-                      onClick={() => handleThumb(project.title)}
-                      className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      <ThumbsUp className="w-4 h-4" />
-                      <span className="text-xs font-mono">{thumbs[project.title] || 0}</span>
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-        )}
       </div>
     </section>
   );
 };
+
 export default Projects;
