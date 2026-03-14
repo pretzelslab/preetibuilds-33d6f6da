@@ -34,9 +34,10 @@ const businessAIUseCases: ProjectCard[] = [
 const aiEthicsGovernance: ProjectCard[] = [
   {
     title: "AI Ethics & Governance",
-    description: "Framework for evaluating ethical AI deployment — bias detection, transparency reporting, and responsible governance.",
-    tags: ["Python", "FastAPI", "OpenAI", "Redis"],
-    upcoming: true,
+    description: "On-demand global AI policy tracker — EU AI Act, NIST AI RMF, ISO 42001, FAIR, AAIA — with clause-level detail, four-pillar framework (Governance, Ethics, Privacy, Risk), bias & gender analysis, and export.",
+    tags: ["React", "Policy Intelligence", "TypeScript"],
+    applicationLayer: ["EU AI Act", "NIST AI RMF", "ISO 42001", "FAIR · AAIA"],
+    link: "/ai-governance",
   },
 ];
 
