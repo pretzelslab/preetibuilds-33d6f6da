@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import medlogPreview from "@/assets/medlog-preview.jpg";
 
-const businessAIUseCases: Array<{
+type ProjectCard = {
   title: string;
   description: string;
   tags: string[];
@@ -14,7 +14,9 @@ const businessAIUseCases: Array<{
   inProgress?: boolean;
   link?: string;
   externalLink?: string;
-}> = [
+};
+
+const businessAIUseCases: ProjectCard[] = [
   {
     title: "GTM Tech Stack",
     description: "A lean Python-powered GTM system replacing expensive enterprise tooling with one pipeline for lead capture, enrichment, scoring, nurture, CRM sync, and reporting.",
@@ -28,6 +30,9 @@ const businessAIUseCases: Array<{
     tags: ["AI", "Python", "Salesforce", "React"],
     inProgress: true,
   },
+];
+
+const aiEthicsGovernance: ProjectCard[] = [
   {
     title: "AI Ethics & Governance",
     description: "Framework for evaluating ethical AI deployment — bias detection, transparency reporting, and responsible governance.",
