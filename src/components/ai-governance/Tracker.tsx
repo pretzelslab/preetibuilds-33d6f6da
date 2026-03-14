@@ -14,6 +14,9 @@ const IMPLEMENTATION_GUIDES = {
     areas: [
       {
         area: "AI System Inventory & Risk Classification",
+        priority: "High",
+        effort: "Medium",
+        riskIfNotAddressed: "Non-compliance with foundational obligations; inability to demonstrate regulatory readiness; first target of supervisory authority review.",
         pillar: "governance",
         stakeholder: "CTO / Head of Product / Legal",
         questions: [
@@ -27,6 +30,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Prohibited AI Uses — Identification & Cessation",
+        priority: "High",
+        effort: "Low",
+        riskIfNotAddressed: "Fines up to €35M or 7% of global turnover; criminal liability; immediate market withdrawal if prohibited use confirmed.",
         pillar: "ethics",
         stakeholder: "Legal / CISO / CTO",
         questions: [
@@ -40,6 +46,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "High-Risk AI — Conformity Assessment",
+        priority: "High",
+        effort: "High",
+        riskIfNotAddressed: "Cannot legally place high-risk AI systems on the EU market; regulatory enforcement action and mandatory product withdrawal.",
         pillar: "risk",
         stakeholder: "Product / Legal / Engineering",
         questions: [
@@ -53,6 +62,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Training Data Governance & Bias Examination",
+        priority: "High",
+        effort: "High",
+        riskIfNotAddressed: "Discriminatory AI outputs at scale; enforcement action; discrimination litigation; severe reputational and brand damage.",
         pillar: "privacy",
         stakeholder: "Data Engineering / ML / Legal / DPO",
         questions: [
@@ -66,6 +78,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Human Oversight & Override Controls",
+        priority: "Medium",
+        effort: "Medium",
+        riskIfNotAddressed: "Automated AI decisions deemed non-compliant; liability for harms caused by unmonitored outputs without human intervention.",
         pillar: "governance",
         stakeholder: "Product / Engineering / Operations",
         questions: [
@@ -79,6 +94,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Fundamental Rights Impact Assessment",
+        priority: "High",
+        effort: "Medium",
+        riskIfNotAddressed: "Deployment of AI that violates fundamental rights; supervisory authority enforcement; public interest litigation and reputational harm.",
         pillar: "ethics",
         stakeholder: "Legal / DPO / Ethics Lead / Product",
         questions: [
@@ -101,6 +119,9 @@ const IMPLEMENTATION_GUIDES = {
     areas: [
       {
         area: "GOVERN — AI Risk Policy & Accountability",
+        priority: "High",
+        effort: "Low",
+        riskIfNotAddressed: "AI risks are ungoverned and invisible until an incident occurs; no named accountability for outcomes across the organisation.",
         pillar: "governance",
         stakeholder: "Board / CRO / General Counsel",
         questions: [
@@ -114,6 +135,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "MAP — Identifying Affected Populations & Risks",
+        priority: "High",
+        effort: "Medium",
+        riskIfNotAddressed: "Harms to vulnerable groups go undetected; regulatory scrutiny from sector regulators; legal and reputational exposure.",
         pillar: "ethics",
         stakeholder: "Product / Data Science / Risk",
         questions: [
@@ -127,6 +151,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "MEASURE — Fairness Metrics & Monitoring",
+        priority: "Medium",
+        effort: "High",
+        riskIfNotAddressed: "Bias and fairness issues in production go undetected; discriminatory outcomes affect customers at scale before discovered.",
         pillar: "ethics",
         stakeholder: "ML Engineering / Data Science / Product",
         questions: [
@@ -140,6 +167,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "MANAGE — Risk Treatment & Incident Response",
+        priority: "High",
+        effort: "Medium",
+        riskIfNotAddressed: "No ability to contain or respond to AI incidents; extended exposure window; regulatory breach notification failures.",
         pillar: "risk",
         stakeholder: "CRO / CISO / Product / Legal",
         questions: [
@@ -162,6 +192,9 @@ const IMPLEMENTATION_GUIDES = {
     areas: [
       {
         area: "GOVERN — AI Security Policy & Risk Strategy",
+        priority: "High",
+        effort: "Low",
+        riskIfNotAddressed: "AI security risks ungoverned; no accountability for security outcomes; significant blind spots in threat landscape.",
         pillar: "governance",
         stakeholder: "CISO / CRO / Board",
         questions: [
@@ -175,6 +208,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "AI Asset Inventory & Supply Chain",
+        priority: "High",
+        effort: "Medium",
+        riskIfNotAddressed: "Unknown AI attack surface; third-party components introduce unmanaged risk; supply chain compromise goes undetected.",
         pillar: "governance",
         stakeholder: "CISO / Procurement / CTO",
         questions: [
@@ -188,6 +224,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Training Data & Model Security",
+        priority: "High",
+        effort: "High",
+        riskIfNotAddressed: "Model theft, poisoning, or data exfiltration; AI systems produce compromised outputs without detection or alerting.",
         pillar: "privacy",
         stakeholder: "CISO / Data Engineering / ML",
         questions: [
@@ -201,6 +240,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "AI Incident Detection & Response",
+        priority: "Medium",
+        effort: "Medium",
+        riskIfNotAddressed: "AI security incidents go undetected or are poorly contained; mandatory breach notification obligations breached.",
         pillar: "risk",
         stakeholder: "CISO / SOC / Legal",
         questions: [
@@ -223,6 +265,9 @@ const IMPLEMENTATION_GUIDES = {
     areas: [
       {
         area: "Clause 4–5: Context, Leadership & AI Policy",
+        priority: "High",
+        effort: "Low",
+        riskIfNotAddressed: "ISO 42001 certification unachievable without leadership clause; no executive accountability for AI management system.",
         pillar: "governance",
         stakeholder: "CEO / Board / General Counsel",
         questions: [
@@ -236,6 +281,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Clause 6: AI Risk Assessment & Planning",
+        priority: "High",
+        effort: "Medium",
+        riskIfNotAddressed: "AI risks discovered reactively; no systematic treatment planning; major nonconformity at certification audit.",
         pillar: "risk",
         stakeholder: "Risk / Product / Legal",
         questions: [
@@ -249,6 +297,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Clause 8: AI System Impact Assessment & Operation",
+        priority: "High",
+        effort: "High",
+        riskIfNotAddressed: "AI impacts on people and society unassessed; ethical failures reach customers; ISO 42001 major nonconformity.",
         pillar: "ethics",
         stakeholder: "Product / Legal / DPO / Ethics Lead",
         questions: [
@@ -262,6 +313,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Clause 9–10: Internal Audit & Continual Improvement",
+        priority: "Medium",
+        effort: "Medium",
+        riskIfNotAddressed: "No evidence of AIMS performance; certification suspended or not renewed; unresolved nonconformities accumulate.",
         pillar: "risk",
         stakeholder: "Internal Audit / CRO / Board",
         questions: [
@@ -283,6 +337,9 @@ const IMPLEMENTATION_GUIDES = {
     areas: [
       {
         area: "Risk Taxonomy & Scenario Identification",
+        priority: "High",
+        effort: "Low",
+        riskIfNotAddressed: "Quantification is impossible without agreed taxonomy; risk conversations are inconsistent and results incomparable across teams.",
         pillar: "risk",
         stakeholder: "CRO / Risk Analyst / CISO",
         questions: [
@@ -296,6 +353,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Quantitative Risk Modelling",
+        priority: "Medium",
+        effort: "High",
+        riskIfNotAddressed: "AI risks expressed qualitatively only; unable to prioritise investments or set cyber insurance levels by financial impact.",
         pillar: "risk",
         stakeholder: "Risk / Finance / CRO",
         questions: [
@@ -309,6 +369,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Threat & Vulnerability Analysis",
+        priority: "Medium",
+        effort: "Medium",
+        riskIfNotAddressed: "Threat landscape not understood; risk models underestimate actual financial exposure; mispriced and underinsured risk.",
         pillar: "risk",
         stakeholder: "CISO / ML Engineering / Risk",
         questions: [
@@ -331,6 +394,9 @@ const IMPLEMENTATION_GUIDES = {
     areas: [
       {
         area: "Domain 1–2: Audit Charter & Risk-Based Planning",
+        priority: "High",
+        effort: "Low",
+        riskIfNotAddressed: "Internal audit has no mandate to assess AI; board has no independent assurance on AI risk; control failures go unreported.",
         pillar: "governance",
         stakeholder: "Chief Audit Executive / Audit Committee",
         questions: [
@@ -344,6 +410,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Domain 3: Algorithmic Bias Testing",
+        priority: "High",
+        effort: "High",
+        riskIfNotAddressed: "Biased AI decisions not caught by audit; discriminatory outcomes reach customers; audit function not fit for purpose in AI era.",
         pillar: "ethics",
         stakeholder: "Internal Audit / ML Engineering / Data Science",
         questions: [
@@ -357,6 +426,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Domain 5: Training Data Quality Audit",
+        priority: "Medium",
+        effort: "High",
+        riskIfNotAddressed: "Data quality issues in AI training unidentified by audit; model performance and fairness compromised without audit evidence.",
         pillar: "privacy",
         stakeholder: "Internal Audit / Data Engineering / DPO",
         questions: [
@@ -370,6 +442,9 @@ const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Domain 6–7: Governance Audit & Reporting",
+        priority: "Medium",
+        effort: "Medium",
+        riskIfNotAddressed: "AI governance failures unreported to board; inadequate oversight of AI risk programme; board-level accountability gaps persist.",
         pillar: "governance",
         stakeholder: "Internal Audit / Board / Risk Committee",
         questions: [
@@ -753,18 +828,21 @@ function exportDiscoveryToExcel(policy, guide) {
   XLSX.utils.book_append_sheet(wb, coverWs, "Cover");
 
   // ── Discovery sheet ──
-  const headers = ["Discovery Area", "Pillar", "Stakeholder", "Q#", "Discovery Question", "Current Status", "Notes / Evidence", "Evidence to Collect", "Maturity — Not Started", "Maturity — Developing", "Maturity — Defined", "Maturity — Optimised"];
+  const headers = ["Discovery Area", "Priority", "Effort", "Pillar", "Stakeholder", "Q#", "Discovery Question", "Current Status", "Notes / Evidence", "Risk if Not Addressed", "Evidence to Collect", "Maturity — Not Started", "Maturity — Developing", "Maturity — Defined", "Maturity — Optimised"];
   const rows = [];
   guide.areas.forEach(area => {
     area.questions.forEach((q, qi) => {
       rows.push([
         area.area,
+        area.priority || "",
+        area.effort || "",
         area.pillar,
         area.stakeholder,
         qi + 1,
         q,
         "Not Started",
         "",
+        area.riskIfNotAddressed || "",
         area.evidenceToCollect.join("\n"),
         area.maturityIndicators.notStarted,
         area.maturityIndicators.developing,
@@ -775,14 +853,14 @@ function exportDiscoveryToExcel(policy, guide) {
   });
   const discoveryWs = XLSX.utils.aoa_to_sheet([headers, ...rows]);
   discoveryWs["!cols"] = [
-    { wch: 32 }, { wch: 14 }, { wch: 28 }, { wch: 4 }, { wch: 60 },
-    { wch: 16 }, { wch: 36 }, { wch: 36 }, { wch: 28 }, { wch: 28 }, { wch: 28 }, { wch: 28 }
+    { wch: 32 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 28 }, { wch: 4 }, { wch: 60 },
+    { wch: 16 }, { wch: 36 }, { wch: 48 }, { wch: 36 }, { wch: 28 }, { wch: 28 }, { wch: 28 }, { wch: 28 }
   ];
-  // Data validation for Status column (F = index 5)
+  // Data validation for Status column (H = index 7, after Priority+Effort+Pillar+Stakeholder+Q#+Question)
   if (!discoveryWs["!dataValidation"]) discoveryWs["!dataValidation"] = [];
   rows.forEach((_, ri) => {
     discoveryWs["!dataValidation"].push({
-      sqref: `F${ri + 2}`,
+      sqref: `H${ri + 2}`,
       type: "list",
       formula1: '"Not Started,In Progress,Complete"',
       showDropDown: false,
@@ -825,7 +903,7 @@ function parseDiscoveryExcel(file, policy, guide, onResult) {
     rows.forEach(row => {
       const area = row["Discovery Area"] || "";
       if (!areaMap[area]) areaMap[area] = { pillar: row["Pillar"], stakeholder: row["Stakeholder"], questions: [] };
-      areaMap[area].questions.push({ q: row["Discovery Question"], status: row["Current Status"] || "Not Started", notes: row["Notes / Evidence"] || "" });
+      areaMap[area].questions.push({ q: row["Discovery Question"], status: row["Current Status"] || "Not Started", notes: row["Notes / Evidence"] || "", priority: row["Priority"] || "", effort: row["Effort"] || "" });
     });
 
     // Parse summary sheet
@@ -1060,16 +1138,41 @@ function PolicyGuide({ policy, onBack }) {
           return (
             <div key={aIdx} style={{ marginBottom: 36, pageBreakInside: "avoid" }}>
               {/* Area Header */}
-              <div style={{ background: pillar?.color.bg || "#f8fafc", border: `1px solid ${pillar?.color.border || "#e2e8f0"}`, borderRadius: "10px 10px 0 0", padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: pillar?.color.text || "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>
-                    {pillar?.emoji} {pillar?.label} · Discovery Area {aIdx + 1}
+              <div style={{ background: pillar?.color.bg || "#f8fafc", border: `1px solid ${pillar?.color.border || "#e2e8f0"}`, borderRadius: "10px 10px 0 0", padding: "12px 18px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                  <div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: pillar?.color.text || "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>
+                      {pillar?.emoji} {pillar?.label} · Discovery Area {aIdx + 1}
+                    </div>
+                    <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#0f172a" }}>{area.area}</h2>
                   </div>
-                  <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#0f172a" }}>{area.area}</h2>
+                  <div style={{ textAlign: "right", fontSize: 11, color: "#64748b", flexShrink: 0, marginLeft: 16 }}>
+                    <div style={{ fontWeight: 600 }}>Stakeholder</div>
+                    <div>{area.stakeholder}</div>
+                  </div>
                 </div>
-                <div style={{ textAlign: "right", fontSize: 11, color: "#64748b" }}>
-                  <div style={{ fontWeight: 600 }}>Stakeholder</div>
-                  <div>{area.stakeholder}</div>
+                {/* Priority / Effort / Risk row */}
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                  {area.priority && (
+                    <span style={{
+                      background: area.priority === "High" ? "#fef2f2" : area.priority === "Medium" ? "#fefce8" : "#f0fdf4",
+                      color: area.priority === "High" ? "#dc2626" : area.priority === "Medium" ? "#a16207" : "#15803d",
+                      border: `1px solid ${area.priority === "High" ? "#fecaca" : area.priority === "Medium" ? "#fef08a" : "#bbf7d0"}`,
+                      borderRadius: 20, padding: "2px 10px", fontSize: 10, fontWeight: 700
+                    }}>
+                      ▲ {area.priority} Priority
+                    </span>
+                  )}
+                  {area.effort && (
+                    <span style={{ background: "#f8fafc", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 20, padding: "2px 10px", fontSize: 10, fontWeight: 600 }}>
+                      ⏱ {area.effort === "Low" ? "Quick Win" : area.effort === "Medium" ? "Medium Effort" : "Complex"} Effort
+                    </span>
+                  )}
+                  {area.riskIfNotAddressed && (
+                    <span style={{ fontSize: 11, color: "#64748b", fontStyle: "italic" }}>
+                      ⚠ If not addressed: {area.riskIfNotAddressed}
+                    </span>
+                  )}
                 </div>
               </div>
 
