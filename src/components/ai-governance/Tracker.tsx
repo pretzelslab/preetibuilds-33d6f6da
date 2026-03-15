@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
-import { POLICY_DIGESTS } from "./digests";
+import { POLICY_DIGESTS, type CriticalPoint, type Misconception } from "./digests";
 import { IMPLEMENTATION_GUIDES } from "./guides";
 import { useGateUnlocked } from "@/components/ui/PageGate";
 
