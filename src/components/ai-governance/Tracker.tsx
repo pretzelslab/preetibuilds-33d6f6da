@@ -848,35 +848,262 @@ function exportDetailToCSV(policy) {
 }
 
 // ─── EXCEL EXPORT ─────────────────────────────────────────────────────────────
-function exportDiscoveryToExcel(policy, guide) {
+function exportDiscoveryToExcel(policy, guide, clientName = "", industry = "") {
   const wb = XLSX.utils.book_new();
+  const today = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  const clientLabel = clientName || "[Client Name]";
+  const industryLabel = industry || "[Industry]";
 
-  // ── Cover sheet ──
+  // ── 1. COVER ──────────────────────────────────────────────────────────────
   const coverData = [
-    ["AI Governance Client Discovery Document"],
+    ["AI GOVERNANCE CLIENT DISCOVERY DOCUMENT"],
     [],
+    ["Client", clientLabel],
+    ["Industry", industryLabel],
     ["Policy", policy.name],
-    ["Type", policy.type],
+    ["Policy Type", policy.type],
     ["Geography", policy.geography],
-    ["Year Released", policy.yearReleased],
-    ["Last Updated", policy.latestUpdateDate],
+    ["Document Date", today],
+    ["Prepared by", "pretzelslab"],
+    ["Status", "Draft — In Progress"],
     [],
-    ["Purpose", guide.intro],
+    ["ABOUT THIS POLICY"],
+    [guide.intro],
     [],
     ["KEY COMPLIANCE DEADLINES"],
     ["Date", "Requirement"],
     ...(guide.complianceDeadlines || []).map(d => [d.date, d.requirement]),
     [],
-    ["HOW TO USE THIS DOCUMENT"],
-    ["1. Complete the 'Discovery' sheet with your stakeholders"],
-    ["2. For each question, set Current Status: Not Started | In Progress | Complete"],
-    ["3. Add notes and evidence references in the Notes/Evidence column"],
-    ["4. Complete the 'Assessment Summary' sheet with maturity ratings"],
-    ["5. Upload this file back to the tracker to generate a solution document"],
+    ["DOCUMENT STRUCTURE — COMPLETE IN ORDER"],
+    ["Sheet", "Purpose"],
+    ["1. Cover", "Policy overview and deadlines (this sheet)"],
+    ["2. Business Case", "Why pursue compliance — risk, cost, and strategic rationale"],
+    ["3. Scope & AI Register", "Which AI systems and business units are in scope"],
+    ["4. Stakeholder Map", "Who to interview, when, and what they own"],
+    ["5. Discovery", "Question-by-question gap assessment with status and notes"],
+    ["6. Evidence Tracker", "Documents reviewed and evidence collected"],
+    ["7. Risk Register", "Consolidated risk log from discovery findings"],
+    ["8. Assessment Summary", "Maturity ratings, gaps, and priority actions per area"],
+    ["9. Roadmap", "Prioritised actions across 0-30d / 30-90d / 90d+ horizons"],
+    ["10. Executive Summary", "Board-ready findings summary and recommendations"],
   ];
   const coverWs = XLSX.utils.aoa_to_sheet(coverData);
-  coverWs["!cols"] = [{ wch: 22 }, { wch: 80 }];
+  coverWs["!cols"] = [{ wch: 24 }, { wch: 90 }];
   XLSX.utils.book_append_sheet(wb, coverWs, "Cover");
+
+  // ── 2. BUSINESS CASE ──────────────────────────────────────────────────────
+  const bcData = [
+    ["BUSINESS CASE FOR COMPLIANCE"],
+    ["Client:", clientLabel, "", "Policy:", policy.name],
+    [],
+    ["SECTION A — STRATEGIC CONTEXT"],
+    ["Field", "Response"],
+    ["Problem Statement", "What specific AI risk or compliance challenge is the client facing?"],
+    ["Strategic Driver", "Regulation / Client demand / Board mandate / Competitive pressure / Incident"],
+    ["Compliance Deadline", "What is the most urgent deadline and what does it require?"],
+    ["AI Systems in Scope", "Which AI systems or use cases are affected?"],
+    [],
+    ["SECTION B — INDUSTRY USE CASES (Sample scenarios by industry)"],
+    ["Industry", "Sample AI Use Cases typically in scope"],
+    ["Financial Services / Fintech", "Credit scoring · KYC/AML automation · Fraud detection · Algorithmic trading · Robo-advisory · Loan underwriting"],
+    ["Banking & Lending", "Mortgage approval AI · Customer risk scoring · Collections prediction · Anti-money laundering screening"],
+    ["Insurtech", "Claims processing automation · Underwriting risk models · Fraud detection · Premium pricing AI"],
+    ["Wealth Management", "Portfolio recommendation engines · Client risk profiling · Automated rebalancing"],
+    ["Healthtech / EHR", "Clinical decision support · Diagnostic imaging AI · Patient risk stratification · Prior auth automation"],
+    ["Digital Health / Telehealth", "Symptom checkers · Mental health chatbots · Remote monitoring alerts · Care pathway AI"],
+    ["Medical Devices", "AI-assisted diagnostics · Surgical robotics · Wearable health AI · Drug discovery"],
+    ["Technology & SaaS", "AI-powered features in products · LLM integrations · Recommendation engines · Automated customer service"],
+    ["Public Sector", "Benefits eligibility determination · Predictive policing · Social care risk scoring · Document processing AI"],
+    ["Retail & E-commerce", "Dynamic pricing AI · Personalisation engines · Demand forecasting · Returns fraud detection"],
+    ["HR Technology", "CV screening AI · Interview scoring · Employee performance prediction · Workforce planning"],
+    [],
+    ["SECTION C — COST / BENEFIT ANALYSIS"],
+    ["Field", "Response", "Notes"],
+    ["Cost of Non-Compliance", "", "Regulatory fines, reputational damage, operational disruption"],
+    ["Maximum Regulatory Fine", policy.type === "Regulation" ? "See compliance deadlines above" : "Not applicable — voluntary framework", ""],
+    ["Reputational Risk if AI harm occurs", "", "Brand damage, client loss, press exposure"],
+    ["Cost of Compliance", "", "Estimated investment to meet requirements"],
+    ["Strategic Benefit", "", "Client trust, competitive differentiation, market access"],
+    ["Insurance Impact", "", "Effect on AI/cyber insurance premiums and coverage"],
+    ["Expected ROI Timeline", "", "When does compliance investment pay back?"],
+    [],
+    ["SECTION D — DECISION & SPONSORSHIP"],
+    ["Field", "Response"],
+    ["Executive Sponsor", "Name / Title of senior decision maker"],
+    ["Budget Holder", "Name / Title"],
+    ["Board Awareness", "Has the board discussed this compliance requirement?"],
+    ["Decision Timeline", "When does the organisation need to decide on an engagement?"],
+    ["Preferred Delivery Model", "Internal programme / External consultant / Hybrid"],
+  ];
+  const bcWs = XLSX.utils.aoa_to_sheet(bcData);
+  bcWs["!cols"] = [{ wch: 32 }, { wch: 60 }, { wch: 40 }];
+  XLSX.utils.book_append_sheet(wb, bcWs, "Business Case");
+
+  // ── 3. SCOPE & AI REGISTER ────────────────────────────────────────────────
+  const scopeHeaders = ["AI System / Use Case", "Business Unit", "System Owner", "Vendor / Provider", "In-house or 3rd Party", "Risk Tier", "Data Types Used", "Affected Populations", "Deployment Status", "In Scope for This Assessment?"];
+  const scopeRows = [
+    ["[Example: Credit Scoring Model]", "[Risk]", "[Name]", "[Internal / Vendor name]", "3rd Party", "High", "Financial data, Demographics", "Retail loan applicants", "Live in production", "Yes"],
+    ["[Example: CV Screening AI]", "[HR]", "[Name]", "", "In-house", "High", "CV text, Photos (if any)", "Job applicants", "Pilot", "Yes"],
+    ...Array(8).fill(["", "", "", "", "", "", "", "", "", ""]),
+  ];
+  const scopeWs = XLSX.utils.aoa_to_sheet([scopeHeaders, ...scopeRows]);
+  scopeWs["!cols"] = [{ wch: 30 }, { wch: 20 }, { wch: 20 }, { wch: 22 }, { wch: 16 }, { wch: 12 }, { wch: 28 }, { wch: 28 }, { wch: 20 }, { wch: 14 }];
+  XLSX.utils.book_append_sheet(wb, scopeWs, "Scope & AI Register");
+
+  // ── 4. STAKEHOLDER MAP ────────────────────────────────────────────────────
+  const shHeaders = ["Stakeholder Name", "Role / Title", "Department", "Pillar(s) Relevant", "Interview Scheduled?", "Interview Date", "Key Questions for This Person", "Availability / Notes"];
+  const shRows = [
+    ["", "CTO / VP Engineering", "Technology", "Governance, Risk", "", "", "AI system inventory, technical controls, model documentation", ""],
+    ["", "Chief Risk Officer / CRO", "Risk", "Risk, Governance", "", "", "Risk appetite, AI risk register, incident response", ""],
+    ["", "General Counsel / Legal", "Legal", "Governance, Ethics", "", "", "Prohibited use review, regulatory obligations, FRIA", ""],
+    ["", "DPO / Privacy Lead", "Legal / Compliance", "Privacy", "", "", "Training data, DPIA/AIIA, data minimisation", ""],
+    ["", "Head of Data Science / ML", "Technology", "Ethics, Privacy", "", "", "Model training, bias testing, fairness metrics", ""],
+    ["", "Head of Product", "Product", "Governance, Ethics", "", "", "AI features, user-facing AI, human oversight", ""],
+    ["", "CISO / Head of Security", "Security", "Risk", "", "", "Model security, data security, supply chain risk", ""],
+    ["", "Chief Audit Executive", "Audit", "Governance, Risk", "", "", "Audit charter, AI audit capability, board reporting", ""],
+    ["", "HR Director", "HR", "Ethics", "", "", "AI use in hiring, performance review, workforce planning", ""],
+    ...Array(5).fill(["", "", "", "", "", "", "", ""]),
+  ];
+  const shWs = XLSX.utils.aoa_to_sheet([shHeaders, ...shRows]);
+  shWs["!cols"] = [{ wch: 22 }, { wch: 26 }, { wch: 18 }, { wch: 22 }, { wch: 16 }, { wch: 16 }, { wch: 50 }, { wch: 28 }];
+  XLSX.utils.book_append_sheet(wb, shWs, "Stakeholder Map");
+
+  // ── 5. DISCOVERY (questions) ───────────────────────────────────────────────
+  const headers = ["Discovery Area", "Regulatory Ref", "Priority", "Effort", "Pillar", "Stakeholder", "Q#", "Discovery Question", "Current Status", "Documentation Exists?", "Notes / Evidence", "Risk if Not Addressed", "Evidence to Collect", "Maturity — Not Started", "Maturity — Developing", "Maturity — Defined", "Maturity — Optimised"];
+  const rows = [];
+  guide.areas.forEach(area => {
+    area.questions.forEach((q, qi) => {
+      rows.push([
+        area.area, area.regulatoryRef || "", area.priority || "", area.effort || "",
+        area.pillar, area.stakeholder, qi + 1, q,
+        "Not Started", "", "",
+        area.riskIfNotAddressed || "", area.evidenceToCollect.join("\n"),
+        area.maturityIndicators.notStarted, area.maturityIndicators.developing,
+        area.maturityIndicators.defined, area.maturityIndicators.optimised,
+      ]);
+    });
+  });
+  const discoveryWs = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  discoveryWs["!cols"] = [
+    { wch: 32 }, { wch: 28 }, { wch: 10 }, { wch: 12 }, { wch: 14 }, { wch: 28 }, { wch: 4 }, { wch: 60 },
+    { wch: 14 }, { wch: 18 }, { wch: 36 }, { wch: 48 }, { wch: 36 }, { wch: 28 }, { wch: 28 }, { wch: 28 }, { wch: 28 }
+  ];
+  if (!discoveryWs["!dataValidation"]) discoveryWs["!dataValidation"] = [];
+  rows.forEach((_, ri) => {
+    discoveryWs["!dataValidation"].push({ sqref: `I${ri + 2}`, type: "list", formula1: '"Not Started,In Progress,Complete"', showDropDown: false });
+    discoveryWs["!dataValidation"].push({ sqref: `J${ri + 2}`, type: "list", formula1: '"Yes,No,Partial"', showDropDown: false });
+  });
+  XLSX.utils.book_append_sheet(wb, discoveryWs, "Discovery");
+
+  // ── 6. EVIDENCE TRACKER ───────────────────────────────────────────────────
+  const evHeaders = ["Document / Artefact", "Expected Under", "Provided By", "Date Received", "Reviewed?", "Location / Reference", "Notes / Gaps Observed"];
+  const evRows = [
+    ["AI system inventory / register", "AI System Inventory & Risk Classification", "", "", "No", "", ""],
+    ["Board-approved AI risk policy", "Governance / GOVERN areas", "", "", "No", "", ""],
+    ["Risk classification methodology", "AI System Inventory & Risk Classification", "", "", "No", "", ""],
+    ["Training data documentation / datasheets", "Training Data areas", "", "", "No", "", ""],
+    ["Bias examination reports", "Training Data areas", "", "", "No", "", ""],
+    ["Conformity assessment reports", "High-Risk AI areas", "", "", "No", "", ""],
+    ["FRIA / AIIA documents", "Impact Assessment areas", "", "", "No", "", ""],
+    ["Audit logs / override records", "Human Oversight areas", "", "", "No", "", ""],
+    ["Incident response procedures", "Risk Management areas", "", "", "No", "", ""],
+    ["Internal audit AI charter", "Audit areas", "", "", "No", "", ""],
+    ...Array(10).fill(["", "", "", "", "No", "", ""]),
+  ];
+  const evWs = XLSX.utils.aoa_to_sheet([evHeaders, ...evRows]);
+  evWs["!cols"] = [{ wch: 40 }, { wch: 36 }, { wch: 20 }, { wch: 14 }, { wch: 12 }, { wch: 30 }, { wch: 44 }];
+  XLSX.utils.book_append_sheet(wb, evWs, "Evidence Tracker");
+
+  // ── 7. RISK REGISTER ──────────────────────────────────────────────────────
+  const rrHeaders = ["Risk ID", "Discovery Area", "Risk Description", "Root Cause", "Likelihood (1-5)", "Impact (1-5)", "Risk Score", "Priority", "Treatment", "Control Owner", "Target Date", "Status", "Residual Risk Notes"];
+  const rrRows = guide.areas.map((area, i) => [
+    `R${String(i + 1).padStart(3, "0")}`,
+    area.area,
+    area.riskIfNotAddressed || "",
+    "",
+    "", "", "",
+    area.priority || "",
+    "", "", "", "Open", ""
+  ]);
+  const rrWs = XLSX.utils.aoa_to_sheet([rrHeaders, ...rrRows]);
+  rrWs["!cols"] = [{ wch: 10 }, { wch: 32 }, { wch: 50 }, { wch: 30 }, { wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 30 }, { wch: 22 }, { wch: 14 }, { wch: 12 }, { wch: 36 }];
+  XLSX.utils.book_append_sheet(wb, rrWs, "Risk Register");
+
+  // ── 8. ASSESSMENT SUMMARY ─────────────────────────────────────────────────
+  const summaryHeaders = ["Discovery Area", "Pillar", "Stakeholder", "Maturity Rating", "Key Gaps Identified", "Priority Actions", "Owner", "Target Date"];
+  const summaryRows = guide.areas.map(area => [area.area, area.pillar, area.stakeholder, "Not Started", "", "", "", ""]);
+  const summaryWs = XLSX.utils.aoa_to_sheet([summaryHeaders, ...summaryRows]);
+  summaryWs["!cols"] = [{ wch: 32 }, { wch: 14 }, { wch: 28 }, { wch: 18 }, { wch: 40 }, { wch: 40 }, { wch: 20 }, { wch: 14 }];
+  summaryRows.forEach((_, ri) => {
+    if (!summaryWs["!dataValidation"]) summaryWs["!dataValidation"] = [];
+    summaryWs["!dataValidation"].push({ sqref: `D${ri + 2}`, type: "list", formula1: '"Not Started,Developing,Defined,Optimised"', showDropDown: false });
+  });
+  XLSX.utils.book_append_sheet(wb, summaryWs, "Assessment Summary");
+
+  // ── 9. ROADMAP ────────────────────────────────────────────────────────────
+  const rmHeaders = ["Horizon", "Action", "Discovery Area", "Priority", "Effort", "Owner", "Dependencies", "Target Date", "Status", "Notes"];
+  const rmData = [
+    ["0–30 days (Immediate / Quick Wins)", "Example: Complete AI system inventory", "", "High", "Low", "", "", "", "Not Started", ""],
+    ["0–30 days (Immediate / Quick Wins)", "Example: Legal review of prohibited AI uses (Art. 5)", "", "High", "Low", "", "", "", "Not Started", ""],
+    ["0–30 days (Immediate / Quick Wins)", "", "", "", "", "", "", "", "", ""],
+    ["30–90 days (Short-term)", "Example: Conduct conformity assessment for high-risk AI", "", "High", "High", "", "AI inventory complete", "", "Not Started", ""],
+    ["30–90 days (Short-term)", "Example: Implement bias testing on training datasets", "", "High", "High", "", "", "", "Not Started", ""],
+    ["30–90 days (Short-term)", "", "", "", "", "", "", "", "", ""],
+    ["90+ days (Strategic)", "Example: Achieve ISO 42001 certification", "", "Medium", "High", "", "All Clause 4–8 gaps addressed", "", "Not Started", ""],
+    ["90+ days (Strategic)", "Example: Build ongoing AI audit programme", "", "Medium", "Medium", "", "", "", "Not Started", ""],
+    ["90+ days (Strategic)", "", "", "", "", "", "", "", "", ""],
+  ];
+  const rmWs = XLSX.utils.aoa_to_sheet([rmHeaders, ...rmData]);
+  rmWs["!cols"] = [{ wch: 28 }, { wch: 50 }, { wch: 30 }, { wch: 12 }, { wch: 12 }, { wch: 20 }, { wch: 30 }, { wch: 14 }, { wch: 14 }, { wch: 36 }];
+  XLSX.utils.book_append_sheet(wb, rmWs, "Roadmap");
+
+  // ── 10. EXECUTIVE SUMMARY ─────────────────────────────────────────────────
+  const esData = [
+    ["EXECUTIVE SUMMARY — AI GOVERNANCE DISCOVERY FINDINGS"],
+    [],
+    ["Client", clientLabel, "", "Policy", policy.name],
+    ["Industry", industryLabel, "", "Assessment Date", today],
+    ["Prepared by", "pretzelslab", "", "Status", "Draft"],
+    [],
+    ["OVERALL READINESS"],
+    ["Overall Maturity Rating", "", "(Not Started / Developing / Defined / Optimised)"],
+    ["% Discovery Areas Complete", ""],
+    ["% Questions Answered", ""],
+    [],
+    ["KEY FINDINGS"],
+    ["Finding 1 — Strengths", "What is already in place and working"],
+    ["Finding 2 — Critical Gaps", "The most urgent gaps requiring immediate action"],
+    ["Finding 3 — Systemic Issues", "Underlying structural or cultural issues observed"],
+    [],
+    ["TOP 3 RISKS (from Risk Register)"],
+    ["#", "Risk", "Impact", "Likelihood", "Recommended Treatment"],
+    ["1", "", "", "", ""],
+    ["2", "", "", "", ""],
+    ["3", "", "", "", ""],
+    [],
+    ["RECOMMENDED NEXT STEPS"],
+    ["Immediate (0–30 days)", ""],
+    ["Short-term (30–90 days)", ""],
+    ["Strategic (90+ days)", ""],
+    [],
+    ["ENGAGEMENT RECOMMENDATION"],
+    ["Proposed Engagement", ""],
+    ["Estimated Duration", ""],
+    ["Key Deliverables", ""],
+    ["Indicative Investment", ""],
+    ["Expected Outcome", ""],
+    [],
+    ["NOTES FOR BOARD / AUDIT COMMITTEE"],
+    [""],
+    [],
+    ["Prepared by: pretzelslab · " + today + " · Confidential — for discussion purposes only"],
+  ];
+  const esWs = XLSX.utils.aoa_to_sheet(esData);
+  esWs["!cols"] = [{ wch: 30 }, { wch: 60 }, { wch: 4 }, { wch: 24 }, { wch: 36 }];
+  XLSX.utils.book_append_sheet(wb, esWs, "Executive Summary");
+
+  XLSX.writeFile(wb, `${clientName ? clientName.replace(/\s+/g, "-").toLowerCase() + "-" : ""}${policy.id}-discovery.xlsx`);
+}
 
   // ── Discovery sheet ──
   const headers = ["Discovery Area", "Regulatory Ref", "Priority", "Effort", "Pillar", "Stakeholder", "Q#", "Discovery Question", "Current Status", "Documentation Exists?", "Notes / Evidence", "Risk if Not Addressed", "Evidence to Collect", "Maturity — Not Started", "Maturity — Developing", "Maturity — Defined", "Maturity — Optimised"];
@@ -1112,6 +1339,11 @@ function PolicyGuide({ policy, onBack }) {
   const [solutionResult, setSolutionResult] = useState(null);
   const [uploadError, setUploadError] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [showClientModal, setShowClientModal] = useState(false);
+  const [clientName, setClientName] = useState("");
+  const [clientIndustry, setClientIndustry] = useState("");
+
+  const INDUSTRIES = ["Financial Services / Fintech", "Banking & Lending", "Insurtech", "Wealth Management", "Healthtech / EHR", "Digital Health / Telehealth", "Medical Devices", "Technology & SaaS", "Public Sector", "Retail & E-commerce", "HR Technology", "Manufacturing", "Other"];
 
   if (!guide) return <div style={{ padding: 40, textAlign: "center", color: "#94a3b8" }}>No implementation guide available for this policy yet.</div>;
   if (solutionResult) return <SolutionDoc result={solutionResult} onBack={() => setSolutionResult(null)} />;
@@ -1137,7 +1369,7 @@ function PolicyGuide({ policy, onBack }) {
           ← Back
         </button>
         <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-          <button onClick={() => exportDiscoveryToExcel(policy, guide)} style={{ background: "#f0fdf4", color: "#166534", border: "1px solid #bbf7d0", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+          <button onClick={() => setShowClientModal(true)} style={{ background: "#f0fdf4", color: "#166534", border: "1px solid #bbf7d0", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
             ⬇ Download Excel
           </button>
           <label style={{ background: "#eff6ff", color: "#1d4ed8", border: "1px solid #bfdbfe", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
@@ -1152,6 +1384,35 @@ function PolicyGuide({ policy, onBack }) {
       {uploadError && (
         <div style={{ background: "#fef2f2", borderBottom: "1px solid #fecaca", padding: "10px 32px", fontSize: 13, color: "#dc2626" }}>
           ⚠ {uploadError}
+        </div>
+      )}
+
+      {/* Client details modal */}
+      {showClientModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)", backdropFilter: "blur(4px)", zIndex: 9000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <div style={{ background: "#fff", borderRadius: 16, padding: "36px 40px", maxWidth: 440, width: "100%", boxShadow: "0 20px 60px rgba(0,0,0,0.25)" }}>
+            <h2 style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 700, color: "#0f172a" }}>Prepare Client Discovery</h2>
+            <p style={{ margin: "0 0 24px", fontSize: 13, color: "#64748b" }}>Optional: add client details to brand the Excel document.</p>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Client Name</label>
+              <input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="e.g. Apex Capital Partners" style={{ width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+            </div>
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Industry</label>
+              <select value={clientIndustry} onChange={e => setClientIndustry(e.target.value)} style={{ width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, background: "#fff", outline: "none", boxSizing: "border-box" }}>
+                <option value="">Select industry…</option>
+                {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
+              </select>
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setShowClientModal(false)} style={{ flex: 1, background: "#f1f5f9", color: "#374151", border: "none", borderRadius: 8, padding: "11px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                Cancel
+              </button>
+              <button onClick={() => { exportDiscoveryToExcel(policy, guide, clientName, clientIndustry); setShowClientModal(false); }} style={{ flex: 2, background: "#15803d", color: "#fff", border: "none", borderRadius: 8, padding: "11px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                ⬇ Download Excel
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
