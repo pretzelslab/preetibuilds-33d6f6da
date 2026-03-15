@@ -822,6 +822,92 @@ const POLICIES = [
   },
 ];
 
+// ─── FRAMEWORK NAVIGATOR DATA ────────────────────────────────────────────────
+const INDUSTRIES_NAV = [
+  "Financial Services / Fintech",
+  "Banking & Lending",
+  "Insurtech / Insurance",
+  "Healthtech / MedTech",
+  "HR Technology",
+  "Technology & SaaS",
+  "Public Sector / Government",
+  "Retail & E-commerce",
+  "Manufacturing",
+];
+const GEOS_NAV = [
+  "EU / Europe",
+  "United States",
+  "United Kingdom",
+  "Global / International",
+  "Asia-Pacific",
+];
+
+const FRAMEWORK_HIGHLIGHTS: Record<string, string[]> = {
+  "eu-ai-act":    ["Binding law — first in the world", "Risk tiers: Unacceptable → High → Limited → Minimal", "Fines up to €35M or 7% global turnover"],
+  "nist-ai-rmf":  ["Voluntary but de-facto required in US regulated sectors", "4 functions: Govern · Map · Measure · Manage", "GenAI supplement AI 600-1 published 2024"],
+  "nist-csf":     ["New GOVERN function explicitly covers AI security", "AI supply chain risk management (ID.SC)", "Mandatory for US federal agencies and contractors"],
+  "iso-42001":    ["Only internationally certifiable AI governance standard", "Integrates with ISO 27001 and ISO 9001", "Clause 5 board-level leadership is the most common audit failure"],
+  "fair":         ["Quantifies AI risk in financial terms — not qualitative ratings", "Outputs: expected annual loss ranges for board reporting", "Complements governance frameworks — answers 'how much to invest?'"],
+  "aaia":         ["Structured AI audit methodology for internal audit teams", "Domain 3 covers algorithmic bias testing protocols", "Requires AI audit findings to reach board / audit committee"],
+};
+
+type NavLevel = "Required" | "Recommended" | "Advisory";
+type NavRule = { geos: string[]; industries: string[]; level: NavLevel; reason: string };
+
+const NAVIGATOR_RULES: Record<string, NavRule[]> = {
+  "eu-ai-act": [
+    { geos: ["EU / Europe"], industries: ["All"], level: "Required",
+      reason: "Binding regulation — applies to all organisations deploying AI in the EU market regardless of where your company is headquartered." },
+    { geos: ["United States","United Kingdom","Global / International","Asia-Pacific"], industries: ["All"], level: "Recommended",
+      reason: "Extra-territorial reach — if your AI outputs are used by EU residents or your product is sold into the EU market, you are in scope." },
+  ],
+  "nist-ai-rmf": [
+    { geos: ["United States"], industries: ["Financial Services / Fintech","Banking & Lending","Insurtech / Insurance","Healthtech / MedTech","Public Sector / Government"], level: "Required",
+      reason: "US sector regulators (OCC, SEC, CFPB, HHS) reference NIST AI RMF alignment in supervisory guidance — effectively required for regulated US entities." },
+    { geos: ["United States"], industries: ["Technology & SaaS","HR Technology","Retail & E-commerce","Manufacturing"], level: "Recommended",
+      reason: "Widely adopted US AI risk baseline — increasingly expected by enterprise clients, investors, and cyber insurers." },
+    { geos: ["EU / Europe","United Kingdom","Global / International","Asia-Pacific"], industries: ["All"], level: "Recommended",
+      reason: "Globally recognised AI risk framework — used as a common language for international operations and a complement to local regulation." },
+  ],
+  "nist-csf": [
+    { geos: ["United States"], industries: ["All"], level: "Required",
+      reason: "US federal agencies and contractors are required to align. Widely adopted by US critical infrastructure, finance, and healthcare as the cybersecurity baseline." },
+    { geos: ["EU / Europe","United Kingdom","Global / International","Asia-Pacific"], industries: ["All"], level: "Recommended",
+      reason: "CSF 2.0 AI security extensions apply globally — particularly for organisations using third-party AI models or managing AI vendor supply chain risk." },
+  ],
+  "iso-42001": [
+    { geos: ["All"], industries: ["All"], level: "Recommended",
+      reason: "The only internationally certifiable AI governance standard — provides a verifiable credential for clients, regulators, and procurement processes in any geography." },
+  ],
+  "fair": [
+    { geos: ["All"], industries: ["Financial Services / Fintech","Banking & Lending","Insurtech / Insurance","Healthtech / MedTech"], level: "Recommended",
+      reason: "Quantitative risk methodology translates AI risk into financial terms — directly supports board risk reporting, regulatory submissions, and insurance underwriting." },
+    { geos: ["All"], industries: ["Technology & SaaS","HR Technology","Public Sector / Government","Manufacturing","Retail & E-commerce"], level: "Advisory",
+      reason: "Valuable for organisations with mature risk functions seeking to move beyond qualitative risk matrices to financially-grounded AI risk decisions." },
+  ],
+  "aaia": [
+    { geos: ["All"], industries: ["Financial Services / Fintech","Banking & Lending","Insurtech / Insurance","Healthtech / MedTech","Public Sector / Government"], level: "Recommended",
+      reason: "Regulated sectors increasingly require independent AI assurance to board level — AAIA provides the structured audit methodology to deliver it." },
+    { geos: ["All"], industries: ["Technology & SaaS","HR Technology","Retail & E-commerce","Manufacturing"], level: "Advisory",
+      reason: "Any organisation with an internal audit function should extend the audit charter to cover AI — AAIA provides the methodology to do so." },
+  ],
+};
+
+function getNavRelevance(policyId: string, industry: string, geo: string): { level: NavLevel; reason: string } | null {
+  for (const rule of (NAVIGATOR_RULES[policyId] || [])) {
+    const geoMatch  = rule.geos.includes("All") || rule.geos.includes(geo);
+    const indMatch  = rule.industries.includes("All") || rule.industries.includes(industry);
+    if (geoMatch && indMatch) return { level: rule.level, reason: rule.reason };
+  }
+  return null;
+}
+
+const NAV_LEVEL_CONFIG = {
+  Required:    { bg: "#fef2f2", border: "#fecaca", text: "#dc2626", dot: "●", label: "Required" },
+  Recommended: { bg: "#eff6ff", border: "#bfdbfe", text: "#1d4ed8", dot: "○", label: "Recommended" },
+  Advisory:    { bg: "#f8fafc", border: "#e2e8f0", text: "#64748b", dot: "◎", label: "Advisory" },
+};
+
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 const PILLAR_LOOKUP = Object.fromEntries(PILLARS.map(p => [p.id, p]));
 const RISK_COLORS = {
@@ -2051,6 +2137,161 @@ function PolicyDetail({ policy, onBack }) {
   );
 }
 
+// ─── FRAMEWORK NAVIGATOR TAB ─────────────────────────────────────────────────
+function FrameworkNavigatorTab({ policies, onSelectPolicy }: { policies: any[]; onSelectPolicy: (p: any) => void }) {
+  const [selIndustry, setSelIndustry] = useState("");
+  const [selGeo, setSelGeo] = useState("");
+  const hasSelection = !!(selIndustry && selGeo);
+
+  const sortedPolicies = hasSelection ? [...policies].sort((a, b) => {
+    const order: Record<string, number> = { Required: 0, Recommended: 1, Advisory: 2 };
+    const ra = getNavRelevance(a.id, selIndustry, selGeo);
+    const rb = getNavRelevance(b.id, selIndustry, selGeo);
+    return (order[ra?.level ?? "Advisory"] ?? 3) - (order[rb?.level ?? "Advisory"] ?? 3);
+  }) : policies;
+
+  return (
+    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 32px" }}>
+
+      {/* Header */}
+      <div style={{ marginBottom: 28 }}>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#0f172a" }}>Framework Navigator</h2>
+        <p style={{ margin: "6px 0 0", fontSize: 14, color: "#64748b" }}>
+          Understand which AI governance frameworks apply to your organisation — and why. Select your industry and geography to see a tailored view with plain-English explanations.
+        </p>
+      </div>
+
+      {/* Selector */}
+      <div style={{ background: "#0f172a", borderRadius: 14, padding: "20px 24px", marginBottom: 32 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14 }}>Which frameworks apply to me?</div>
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
+          <select
+            value={selIndustry}
+            onChange={e => setSelIndustry(e.target.value)}
+            style={{ flex: 1, minWidth: 220, padding: "10px 14px", border: "1px solid #334155", borderRadius: 8, fontSize: 13, background: "#1e293b", color: "#f1f5f9", outline: "none" }}
+          >
+            <option value="">Select your industry…</option>
+            {INDUSTRIES_NAV.map(i => <option key={i} value={i}>{i}</option>)}
+          </select>
+          <select
+            value={selGeo}
+            onChange={e => setSelGeo(e.target.value)}
+            style={{ flex: 1, minWidth: 200, padding: "10px 14px", border: "1px solid #334155", borderRadius: 8, fontSize: 13, background: "#1e293b", color: "#f1f5f9", outline: "none" }}
+          >
+            <option value="">Select your geography…</option>
+            {GEOS_NAV.map(g => <option key={g} value={g}>{g}</option>)}
+          </select>
+          {hasSelection && (
+            <button onClick={() => { setSelIndustry(""); setSelGeo(""); }} style={{ background: "transparent", color: "#64748b", border: "1px solid #334155", borderRadius: 8, padding: "10px 14px", cursor: "pointer", fontSize: 12 }}>
+              Clear ✕
+            </button>
+          )}
+        </div>
+        {hasSelection && (
+          <div style={{ marginTop: 14, display: "flex", gap: 16, flexWrap: "wrap" }}>
+            {(["Required","Recommended","Advisory"] as NavLevel[]).map(level => {
+              const count = policies.filter(p => getNavRelevance(p.id, selIndustry, selGeo)?.level === level).length;
+              if (!count) return null;
+              const cfg = NAV_LEVEL_CONFIG[level];
+              return (
+                <span key={level} style={{ fontSize: 12, fontWeight: 600, color: cfg.text, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 20, padding: "3px 12px" }}>
+                  {cfg.dot} {count} {level}
+                </span>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Framework Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 20 }}>
+        {sortedPolicies.map(p => {
+          const relevance = hasSelection ? getNavRelevance(p.id, selIndustry, selGeo) : null;
+          const cfg = relevance ? NAV_LEVEL_CONFIG[relevance.level] : null;
+          const highlights = FRAMEWORK_HIGHLIGHTS[p.id] || [];
+
+          return (
+            <div key={p.id} style={{
+              background: "#fff",
+              border: `1px solid ${cfg?.border || "#e2e8f0"}`,
+              borderTop: cfg ? `3px solid ${cfg.text}` : `3px solid ${p.color.border}`,
+              borderRadius: 14,
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              transition: "border-color 0.2s",
+            }}>
+              {/* Relevance banner */}
+              {cfg && (
+                <div style={{ background: cfg.bg, borderBottom: `1px solid ${cfg.border}`, padding: "6px 16px", display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: cfg.text }}>{cfg.dot} {cfg.label}</span>
+                  <span style={{ fontSize: 11, color: "#64748b" }}>for {selIndustry} · {selGeo}</span>
+                </div>
+              )}
+
+              {/* Header */}
+              <div style={{ background: p.color.bg, borderBottom: `1px solid ${p.color.border}`, padding: "14px 18px", display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ fontSize: 28 }}>{p.emoji}</span>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#0f172a" }}>{p.name}</h3>
+                    <span style={{ background: p.color.badge, color: p.color.text, border: `1px solid ${p.color.border}`, borderRadius: 6, padding: "2px 8px", fontSize: 10, fontWeight: 600 }}>{p.type}</span>
+                  </div>
+                  <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{p.geography}</div>
+                </div>
+              </div>
+
+              <div style={{ padding: "14px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
+                {/* Applicability reason */}
+                {relevance && (
+                  <div style={{ background: cfg!.bg, border: `1px solid ${cfg!.border}`, borderRadius: 8, padding: "10px 14px" }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: cfg!.text, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Why this applies to you</div>
+                    <p style={{ margin: 0, fontSize: 12, color: "#334155", lineHeight: 1.65 }}>{relevance.reason}</p>
+                  </div>
+                )}
+
+                {/* Key highlights */}
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Key Facts</div>
+                  {highlights.map((h, i) => (
+                    <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}>
+                      <span style={{ color: p.color.text, fontSize: 12, flexShrink: 0, marginTop: 1 }}>→</span>
+                      <span style={{ fontSize: 12, color: "#475569", lineHeight: 1.5 }}>{h}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Industries */}
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 600, color: "#64748b", marginBottom: 5 }}>Most relevant industries</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                    {p.industries.slice(0, 4).map((ind: string) => (
+                      <span key={ind} style={{ background: p.color.badge, color: p.color.text, border: `1px solid ${p.color.border}`, borderRadius: 20, padding: "2px 8px", fontSize: 10 }}>{ind}</span>
+                    ))}
+                    {p.industries.length > 4 && <span style={{ fontSize: 10, color: "#94a3b8" }}>+{p.industries.length - 4} more</span>}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ padding: "10px 18px", borderTop: "1px solid #f1f5f9" }}>
+                <button onClick={() => onSelectPolicy(p)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontSize: 12, fontWeight: 600, width: "100%" }}>
+                  View Full Detail →
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Footer note */}
+      <div style={{ marginTop: 32, padding: "14px 18px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, fontSize: 12, color: "#64748b" }}>
+        <strong>Note:</strong> Framework applicability depends on your specific AI systems, business activities, and risk profile. This navigator provides directional guidance only — consult legal counsel for a definitive compliance assessment. Most organisations operating internationally require a combination of frameworks. &nbsp;
+        <span style={{ color: "#94a3b8" }}>Required = legally binding or effectively mandated by regulators. &nbsp; Recommended = strong industry expectation or best practice. &nbsp; Advisory = useful for mature risk programmes.</span>
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function AIGovernanceTracker() {
   const unlocked = useGateUnlocked();
@@ -2115,8 +2356,9 @@ export default function AIGovernanceTracker() {
             {[
               { id: "policies", label: "📋 Policy Grid" },
               ...(unlocked ? [
-                { id: "topics",  label: "🧭 Topics Framework" },
-                { id: "digests", label: "📖 Policy Digests" },
+                { id: "topics",    label: "🧭 Topics Framework" },
+                { id: "digests",   label: "📖 Policy Digests" },
+                { id: "navigator", label: "🗺 Framework Navigator" },
               ] : []),
             ].map(tab => (
               <button
@@ -2135,6 +2377,8 @@ export default function AIGovernanceTracker() {
         <PolicyDigestGrid policies={POLICIES} onSelect={pol => setSelectedDigest(pol)} />
       ) : view === "topics" ? (
         <TopicsView onSelectPolicy={pol => setSelected(pol)} />
+      ) : view === "navigator" ? (
+        <FrameworkNavigatorTab policies={POLICIES} onSelectPolicy={pol => setSelected(pol)} />
       ) : (
         <>
           {/* Filters */}
