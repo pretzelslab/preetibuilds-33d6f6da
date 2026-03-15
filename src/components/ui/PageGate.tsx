@@ -1,4 +1,4 @@
-import { useState, ReactNode } from "react";
+import { useState, useEffect, ReactNode } from "react";
 
 // ─── Access configuration ─────────────────────────────────────────────────────
 // Change ACCESS_CODE to any value you want. Case-insensitive.
@@ -29,6 +29,16 @@ export function PageGate({ children }: { children: ReactNode }) {
   const [code, setCode] = useState("");
   const [error, setError] = useState(false);
   const [shaking, setShaking] = useState(false);
+
+  // Auto-unlock from URL hash — owner can bookmark the URL with #PRL2026
+  useEffect(() => {
+    const hash = window.location.hash.replace("#", "").toUpperCase().trim();
+    if (hash === ACCESS_CODE) {
+      safeSet(STORAGE_KEY, "1");
+      setUnlocked(true);
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+  }, []);
 
   const tryUnlock = () => {
     if (code.toUpperCase().trim() === ACCESS_CODE) {
