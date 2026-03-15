@@ -853,8 +853,8 @@ function SolutionDoc({ result, onBack }) {
         {notStarted > 0 && (
           <div style={{ marginBottom: 32, background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 12, padding: 20 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#dc2626", marginBottom: 12 }}>🔴 Priority Gaps — Not Started ({notStarted} items)</div>
-            {Object.entries(areaMap).map(([area, data]) => {
-              const gaps = data.questions.filter(q => q.status === "Not Started");
+            {Object.entries(areaMap).map(([area, data]: [string, any]) => {
+              const gaps = (data as any).questions.filter((q: any) => q.status === "Not Started");
               if (!gaps.length) return null;
               return (
                 <div key={area} style={{ marginBottom: 10 }}>
