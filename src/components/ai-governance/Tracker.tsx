@@ -808,16 +808,16 @@ function SolutionDoc({ result, onBack }) {
         </div>
 
         {/* Per-area breakdown */}
-        {Object.entries(areaMap).map(([area, data], ai) => {
+        {Object.entries(areaMap).map(([area, data]: [string, any], ai) => {
           const sum = summaryMap[area] || {};
-          const areaComplete = data.questions.filter(q => q.status === "Complete").length;
-          const areaTotal = data.questions.length;
-          const pillar = PILLAR_LOOKUP[data.pillar];
+          const areaComplete = (data as any).questions.filter((q: any) => q.status === "Complete").length;
+          const areaTotal = (data as any).questions.length;
+          const pillar = PILLAR_LOOKUP[(data as any).pillar];
           return (
             <div key={ai} style={{ marginBottom: 32, pageBreakInside: "avoid" }}>
               <div style={{ background: pillar?.color.bg || "#f8fafc", border: `1px solid ${pillar?.color.border || "#e2e8f0"}`, borderRadius: "10px 10px 0 0", padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: pillar?.color.text || "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>{pillar?.emoji} {pillar?.label} · {data.stakeholder}</div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: pillar?.color.text || "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>{pillar?.emoji} {pillar?.label} · {(data as any).stakeholder}</div>
                   <h2 style={{ margin: "2px 0 0", fontSize: 14, fontWeight: 700, color: "#0f172a" }}>{area}</h2>
                 </div>
                 <div style={{ textAlign: "right" }}>
@@ -826,7 +826,7 @@ function SolutionDoc({ result, onBack }) {
                 </div>
               </div>
               <div style={{ border: `1px solid ${pillar?.color.border || "#e2e8f0"}`, borderTop: "none", borderRadius: "0 0 10px 10px", overflow: "hidden" }}>
-                {data.questions.map((q, qi) => (
+                {(data as any).questions.map((q: any, qi: number) => (
                   <div key={qi} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, padding: "10px 16px", borderTop: qi > 0 ? "1px solid #f1f5f9" : "none", background: qi % 2 === 0 ? "#fff" : "#fafafa", alignItems: "start" }}>
                     <div>
                       <div style={{ fontSize: 12, color: "#334155", lineHeight: 1.6 }}>{q.q}</div>
