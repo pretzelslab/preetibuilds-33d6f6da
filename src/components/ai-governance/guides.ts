@@ -36,6 +36,13 @@ export type ImplementationGuide = {
 
 export const IMPLEMENTATION_GUIDES: Record<string, ImplementationGuide> = {
   "eu-ai-act": {
+    intro: "The EU AI Act is the world's first comprehensive AI regulation. This implementation guide maps discovery areas to the four governance pillars and provides structured questions for assessing organisational readiness across all mandatory requirements.",
+    complianceDeadlines: [
+      { date: "Feb 2025", requirement: "Prohibited AI practices — ban takes effect" },
+      { date: "Aug 2025", requirement: "GPAI model obligations — transparency & copyright compliance" },
+      { date: "Aug 2026", requirement: "Full high-risk AI system obligations — conformity assessments, registration, technical documentation" },
+      { date: "Aug 2027", requirement: "Obligations for high-risk AI embedded in regulated products (Annex I)" },
+    ],
     areas: [
       {
         area: "AI System Inventory & Risk Classification",

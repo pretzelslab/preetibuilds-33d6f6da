@@ -901,8 +901,8 @@ export default function Pipeline() {
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
                           <div className="mono" style={{ fontSize: 9, color: "#94a3b8", letterSpacing: "0.1em" }}>EXECUTIVE SUMMARY · {report.vertical?.toUpperCase()}</div>
                           <div style={{ display: "flex", gap: 5, flexWrap: "wrap", justifyContent: "flex-end" }}>
-                            {report.caseBreakdown && Object.entries(report.caseBreakdown).map(([k, v]) => v > 0 && (
-                              <span key={k} className="tag mono" style={{ background: "#f1f5f9", color: "#475569", fontSize: 9 }}>{k}: {v}</span>
+                            {report.caseBreakdown && Object.entries(report.caseBreakdown).map(([k, v]: [string, any]) => (v as number) > 0 && (
+                              <span key={k} className="tag mono" style={{ background: "#f1f5f9", color: "#475569", fontSize: 9 }}>{k}: {v as number}</span>
                             ))}
                           </div>
                         </div>

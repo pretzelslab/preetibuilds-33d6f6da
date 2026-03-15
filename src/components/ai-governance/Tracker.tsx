@@ -1633,7 +1633,7 @@ function PolicyDetail({ policy, onBack }) {
       <div style={{ padding: "10px 32px", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", background: "#fff", borderBottom: "2px solid #e2e8f0" }}>
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search clauses..." style={{ flex: 1, minWidth: 200, padding: "7px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none" }} />
         <select value={filterCat} onChange={e => setFilterCat(e.target.value)} style={{ padding: "7px 10px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 12, background: "#fff" }}>
-          {categories.map(c => <option key={c}>{c}</option>)}
+          {categories.map((c: any) => <option key={c as string}>{c as string}</option>)}
         </select>
         <select value={filterRisk} onChange={e => setFilterRisk(e.target.value)} style={{ padding: "7px 10px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 12, background: "#fff" }}>
           {["All","Critical","High","Medium"].map(r => <option key={r}>{r}</option>)}
