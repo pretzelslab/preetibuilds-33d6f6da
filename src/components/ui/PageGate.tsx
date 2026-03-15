@@ -5,15 +5,26 @@ import { useState, ReactNode } from "react";
 const ACCESS_CODE = "PRL2026";
 const STORAGE_KEY = "pl_session_access";
 
+// ─── Safe storage helpers (sessionStorage throws in sandboxed iframes) ────────
+function safeGet(key: string): string | null {
+  try { return localStorage.getItem(key); } catch { return null; }
+}
+function safeSet(key: string, value: string): void {
+  try { localStorage.setItem(key, value); } catch { /* sandboxed */ }
+}
+function safeRemove(key: string): void {
+  try { localStorage.removeItem(key); } catch { /* sandboxed */ }
+}
+
 // ─── Hook ────────────────────────────────────────────────────────────────────
 export function useGateUnlocked(): boolean {
-  return sessionStorage.getItem(STORAGE_KEY) === "1";
+  return safeGet(STORAGE_KEY) === "1";
 }
 
 // ─── Gate component ───────────────────────────────────────────────────────────
 export function PageGate({ children }: { children: ReactNode }) {
   const [unlocked, setUnlocked] = useState(() =>
-    sessionStorage.getItem(STORAGE_KEY) === "1"
+    safeGet(STORAGE_KEY) === "1"
   );
   const [code, setCode] = useState("");
   const [error, setError] = useState(false);
@@ -21,7 +32,7 @@ export function PageGate({ children }: { children: ReactNode }) {
 
   const tryUnlock = () => {
     if (code.toUpperCase().trim() === ACCESS_CODE) {
-      sessionStorage.setItem(STORAGE_KEY, "1");
+      safeSet(STORAGE_KEY, "1");
       setUnlocked(true);
     } else {
       setError(true);
@@ -32,7 +43,7 @@ export function PageGate({ children }: { children: ReactNode }) {
   };
 
   const lock = () => {
-    sessionStorage.removeItem(STORAGE_KEY);
+    safeRemove(STORAGE_KEY);
     setUnlocked(false);
     setCode("");
   };
