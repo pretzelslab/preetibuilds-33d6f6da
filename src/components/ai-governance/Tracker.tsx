@@ -3,6 +3,33 @@ import * as XLSX from "xlsx";
 import { POLICY_DIGESTS } from "./digests";
 import { useGateUnlocked } from "@/components/ui/PageGate";
 
+// ─── HIGHLIGHT HELPER ────────────────────────────────────────────────────────
+function HL({ text, q }: { text: string; q: string }) {
+  if (!q.trim() || !text) return <>{text}</>;
+  const ql = q.toLowerCase();
+  const parts: { str: string; match: boolean }[] = [];
+  let remaining = text;
+  let lower = remaining.toLowerCase();
+  let idx = lower.indexOf(ql);
+  while (idx !== -1) {
+    if (idx > 0) parts.push({ str: remaining.slice(0, idx), match: false });
+    parts.push({ str: remaining.slice(idx, idx + q.length), match: true });
+    remaining = remaining.slice(idx + q.length);
+    lower = remaining.toLowerCase();
+    idx = lower.indexOf(ql);
+  }
+  if (remaining) parts.push({ str: remaining, match: false });
+  return (
+    <>
+      {parts.map((p, i) =>
+        p.match
+          ? <mark key={i} style={{ background: "#fef08a", color: "#713f12", borderRadius: 2, padding: "0 1px", fontWeight: 700 }}>{p.str}</mark>
+          : <span key={i}>{p.str}</span>
+      )}
+    </>
+  );
+}
+
 // ─── IMPLEMENTATION GUIDE DATA (discovery questions per policy) ───────────────
 const IMPLEMENTATION_GUIDES = {
   "eu-ai-act": {
@@ -1841,13 +1868,13 @@ function PolicyDigestGrid({ policies, onSelect }) {
               <div style={{ background: p.color.bg, borderBottom: `1px solid ${p.color.border}`, padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
                 <span style={{ fontSize: 28 }}>{p.emoji}</span>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#0f172a" }}>{p.name}</h3>
+                  <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#0f172a" }}><HL text={p.name} q={search} /></h3>
                   <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{p.type} · {p.geography}</div>
                 </div>
               </div>
               <div style={{ padding: "14px 20px", flex: 1 }}>
                 <p style={{ margin: 0, fontSize: 13, color: "#475569", lineHeight: 1.65 }}>
-                  {digest?.tldr.slice(0, 160)}…
+                  <HL text={(digest?.tldr || "").slice(0, 160) + "…"} q={search} />
                 </p>
                 <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
                   {criticalCount > 0 && (
@@ -2131,10 +2158,10 @@ function PolicyDetail({ policy, onBack }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
               <div>
                 <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 4, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: "#6366f1", background: "#eef2ff", borderRadius: 4, padding: "2px 8px" }}>{c.category}</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "#6366f1", background: "#eef2ff", borderRadius: 4, padding: "2px 8px" }}><HL text={c.category} q={search} /></span>
                   <span style={{ fontSize: 11, color: "#94a3b8", fontFamily: "monospace" }}>{c.clause}</span>
                 </div>
-                <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0f172a" }}>{c.parameter}</h3>
+                <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0f172a" }}><HL text={c.parameter} q={search} /></h3>
               </div>
               <RiskBadge level={c.riskLevel} />
             </div>
@@ -2144,7 +2171,7 @@ function PolicyDetail({ policy, onBack }) {
               {c.pillars.map(pid => <PillarBadge key={pid} pillarId={pid} />)}
             </div>
 
-            <p style={{ margin: 0, fontSize: 13, color: "#475569", lineHeight: 1.65 }}>{c.description}</p>
+            <p style={{ margin: 0, fontSize: 13, color: "#475569", lineHeight: 1.65 }}><HL text={c.description} q={search} /></p>
 
             {[
               { label: "Bias Consideration", value: c.biasConsideration, color: "#fef3c7", border: "#fde68a", text: "#92400e" },
@@ -2717,8 +2744,8 @@ export default function AIGovernanceTracker() {
                             >
                               <span style={{ fontSize: 18 }}>{r.emoji}</span>
                               <div>
-                                <div style={{ fontSize: 13, fontWeight: 600, color: "#0f172a" }}>{r.label}</div>
-                                <div style={{ fontSize: 11, color: "#64748b" }}>{r.sub}</div>
+                                <div style={{ fontSize: 13, fontWeight: 600, color: "#0f172a" }}><HL text={r.label} q={globalSearch} /></div>
+                                <div style={{ fontSize: 11, color: "#64748b" }}><HL text={r.sub} q={globalSearch} /></div>
                               </div>
                             </button>
                           ))}
@@ -2770,7 +2797,7 @@ export default function AIGovernanceTracker() {
                         <span style={{ fontSize: 26 }}>{p.emoji}</span>
                         <div>
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#0f172a" }}>{p.name}</h2>
+                            <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#0f172a" }}><HL text={p.name} q={search} /></h2>
                             <span style={{ background: p.color.badge, color: p.color.text, border: `1px solid ${p.color.border}`, borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 600 }}>{p.type}</span>
                           </div>
                           <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>{p.geography} · {p.yearReleased} · Updated {p.latestUpdateDate}</div>
@@ -2779,7 +2806,7 @@ export default function AIGovernanceTracker() {
                     </div>
 
                     <div style={{ padding: "16px 20px", flex: 1, display: "flex", flexDirection: "column", gap: 14 }}>
-                      <p style={{ margin: 0, fontSize: 13, color: "#475569", lineHeight: 1.65 }}>{p.summary}</p>
+                      <p style={{ margin: 0, fontSize: 13, color: "#475569", lineHeight: 1.65 }}><HL text={p.summary} q={search} /></p>
 
                       {/* Pillar Coverage */}
                       <div>
