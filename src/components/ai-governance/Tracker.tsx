@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
-import { POLICY_DIGESTS } from "./digests";
+import { POLICY_DIGESTS, type CriticalPoint, type Misconception } from "./digests";
 import { IMPLEMENTATION_GUIDES } from "./guides";
 import { useGateUnlocked } from "@/components/ui/PageGate";
 
@@ -768,7 +768,7 @@ function SolutionDoc({ result, onBack }) {
   const STATUS_COLOR = { "Complete": "#15803d", "In Progress": "#a16207", "Not Started": "#dc2626" };
   const STATUS_BG = { "Complete": "#f0fdf4", "In Progress": "#fefce8", "Not Started": "#fef2f2" };
 
-  const allQs = Object.entries(areaMap).flatMap(([area, data]) => data.questions.map(q => ({ ...q, area })));
+  const allQs = Object.entries(areaMap).flatMap(([area, data]: [string, any]) => (data as any).questions.map((q: any) => ({ ...q, area })));
   const complete = allQs.filter(q => q.status === "Complete").length;
   const inProgress = allQs.filter(q => q.status === "In Progress").length;
   const notStarted = allQs.filter(q => q.status === "Not Started").length;
@@ -808,16 +808,16 @@ function SolutionDoc({ result, onBack }) {
         </div>
 
         {/* Per-area breakdown */}
-        {Object.entries(areaMap).map(([area, data], ai) => {
+        {Object.entries(areaMap).map(([area, data]: [string, any], ai) => {
           const sum = summaryMap[area] || {};
-          const areaComplete = data.questions.filter(q => q.status === "Complete").length;
-          const areaTotal = data.questions.length;
-          const pillar = PILLAR_LOOKUP[data.pillar];
+          const areaComplete = (data as any).questions.filter((q: any) => q.status === "Complete").length;
+          const areaTotal = (data as any).questions.length;
+          const pillar = PILLAR_LOOKUP[(data as any).pillar];
           return (
             <div key={ai} style={{ marginBottom: 32, pageBreakInside: "avoid" }}>
               <div style={{ background: pillar?.color.bg || "#f8fafc", border: `1px solid ${pillar?.color.border || "#e2e8f0"}`, borderRadius: "10px 10px 0 0", padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: pillar?.color.text || "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>{pillar?.emoji} {pillar?.label} · {data.stakeholder}</div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: pillar?.color.text || "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>{pillar?.emoji} {pillar?.label} · {(data as any).stakeholder}</div>
                   <h2 style={{ margin: "2px 0 0", fontSize: 14, fontWeight: 700, color: "#0f172a" }}>{area}</h2>
                 </div>
                 <div style={{ textAlign: "right" }}>
@@ -826,7 +826,7 @@ function SolutionDoc({ result, onBack }) {
                 </div>
               </div>
               <div style={{ border: `1px solid ${pillar?.color.border || "#e2e8f0"}`, borderTop: "none", borderRadius: "0 0 10px 10px", overflow: "hidden" }}>
-                {data.questions.map((q, qi) => (
+                {(data as any).questions.map((q: any, qi: number) => (
                   <div key={qi} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, padding: "10px 16px", borderTop: qi > 0 ? "1px solid #f1f5f9" : "none", background: qi % 2 === 0 ? "#fff" : "#fafafa", alignItems: "start" }}>
                     <div>
                       <div style={{ fontSize: 12, color: "#334155", lineHeight: 1.6 }}>{q.q}</div>
@@ -853,8 +853,8 @@ function SolutionDoc({ result, onBack }) {
         {notStarted > 0 && (
           <div style={{ marginBottom: 32, background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 12, padding: 20 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#dc2626", marginBottom: 12 }}>🔴 Priority Gaps — Not Started ({notStarted} items)</div>
-            {Object.entries(areaMap).map(([area, data]) => {
-              const gaps = data.questions.filter(q => q.status === "Not Started");
+            {Object.entries(areaMap).map(([area, data]: [string, any]) => {
+              const gaps = (data as any).questions.filter((q: any) => q.status === "Not Started");
               if (!gaps.length) return null;
               return (
                 <div key={area} style={{ marginBottom: 10 }}>
@@ -1330,9 +1330,9 @@ function PolicyDigestGrid({ policies, onSelect }) {
     return [
       p.name, p.summary,
       digest?.tldr || "",
-      ...(digest?.criticalPoints?.map(c => c.point) || []),
+      ...(digest?.criticalPoints?.map((c: CriticalPoint) => c.heading + " " + c.text) || []),
       ...(digest?.keyObligations || []),
-      ...(digest?.commonMisconceptions?.map(m => m.myth + " " + m.reality) || []),
+      ...(digest?.commonMisconceptions?.map((m: Misconception) => m.myth + " " + m.truth) || []),
     ].some(t => t.toLowerCase().includes(s));
   });
 
@@ -1633,7 +1633,7 @@ function PolicyDetail({ policy, onBack }) {
       <div style={{ padding: "10px 32px", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", background: "#fff", borderBottom: "2px solid #e2e8f0" }}>
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search clauses..." style={{ flex: 1, minWidth: 200, padding: "7px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none" }} />
         <select value={filterCat} onChange={e => setFilterCat(e.target.value)} style={{ padding: "7px 10px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 12, background: "#fff" }}>
-          {categories.map(c => <option key={c}>{c}</option>)}
+          {categories.map((c: any) => <option key={c as string}>{c as string}</option>)}
         </select>
         <select value={filterRisk} onChange={e => setFilterRisk(e.target.value)} style={{ padding: "7px 10px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 12, background: "#fff" }}>
           {["All","Critical","High","Medium"].map(r => <option key={r}>{r}</option>)}
