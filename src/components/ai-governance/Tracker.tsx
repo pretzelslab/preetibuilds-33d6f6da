@@ -1154,27 +1154,6 @@ function exportDiscoveryToExcel(policy, guide, clientName = "", industry = "") {
   });
   XLSX.utils.book_append_sheet(wb, discoveryWs, "Discovery");
 
-  // ── Assessment Summary sheet ──
-  const summaryHeaders = ["Discovery Area", "Pillar", "Stakeholder", "Maturity Rating", "Key Gaps Identified", "Priority Actions", "Owner", "Target Date"];
-  const summaryRows = guide.areas.map(area => [
-    area.area, area.pillar, area.stakeholder, "Not Started", "", "", "", ""
-  ]);
-  const summaryWs = XLSX.utils.aoa_to_sheet([summaryHeaders, ...summaryRows]);
-  summaryWs["!cols"] = [{ wch: 32 }, { wch: 14 }, { wch: 28 }, { wch: 18 }, { wch: 40 }, { wch: 40 }, { wch: 20 }, { wch: 14 }];
-  summaryRows.forEach((_, ri) => {
-    if (!summaryWs["!dataValidation"]) summaryWs["!dataValidation"] = [];
-    summaryWs["!dataValidation"].push({
-      sqref: `D${ri + 2}`,
-      type: "list",
-      formula1: '"Not Started,Developing,Defined,Optimised"',
-      showDropDown: false,
-    });
-  });
-  XLSX.utils.book_append_sheet(wb, summaryWs, "Assessment Summary");
-
-  XLSX.writeFile(wb, `${policy.id}-client-discovery.xlsx`);
-}
-
 // ─── PARSE UPLOADED DISCOVERY EXCEL → SOLUTION DOC ────────────────────────────
 function parseDiscoveryExcel(file, policy, guide, onResult) {
   const reader = new FileReader();
