@@ -2028,38 +2028,39 @@ function PolicyDetail({ policy, onBack }) {
 
   return (
     <div style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "'Inter','Segoe UI',sans-serif" }}>
-      {/* Header */}
-      <div style={{ background: "#fff", borderBottom: "1px solid #e2e8f0", padding: "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <button onClick={onBack} style={{ color: "#6366f1", background: "none", border: "1px solid #e0e7ff", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>
-            ← Back
-          </button>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 22 }}>{policy.emoji}</span>
-              <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#0f172a" }}>{policy.name}</h1>
-              <span style={{ background: policy.color.badge, color: policy.color.text, border: `1px solid ${policy.color.border}`, borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 600 }}>{policy.type}</span>
+      {/* Sticky: Header + Pillar Coverage Banner together */}
+      <div className="no-print" style={{ position: "sticky", top: 57, zIndex: 1000 }}>
+        <div style={{ background: "#fff", borderBottom: "1px solid #e2e8f0", padding: "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <button onClick={onBack} style={{ color: "#6366f1", background: "none", border: "1px solid #e0e7ff", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>
+              ← Back
+            </button>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 22 }}>{policy.emoji}</span>
+                <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#0f172a" }}>{policy.name}</h1>
+                <span style={{ background: policy.color.badge, color: policy.color.text, border: `1px solid ${policy.color.border}`, borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 600 }}>{policy.type}</span>
+              </div>
+              <p style={{ margin: "3px 0 0", fontSize: 12, color: "#64748b" }}>{policy.geography} · {policy.yearReleased} · Updated {policy.latestUpdateDate}</p>
             </div>
-            <p style={{ margin: "3px 0 0", fontSize: 12, color: "#64748b" }}>{policy.geography} · {policy.yearReleased} · Updated {policy.latestUpdateDate}</p>
           </div>
+          <button onClick={() => exportDetailToCSV(policy)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>Export CSV</button>
         </div>
-        <button onClick={() => exportDetailToCSV(policy)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>Export CSV</button>
-      </div>
-
-      {/* Pillar Coverage Banner */}
-      <div style={{ background: "#0f172a", padding: "14px 32px", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
-        <span style={{ fontSize: 12, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em" }}>Pillar Coverage:</span>
-        {pillarMapping.map(m => {
-          const p = PILLAR_LOOKUP[m.pillar];
-          return p ? (
-            <span key={m.pillar} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ background: p.color.badge, color: p.color.text, border: `1px solid ${p.color.border}`, borderRadius: 20, padding: "3px 12px", fontSize: 12, fontWeight: 600 }}>
-                {p.emoji} {p.label}
+        {/* Pillar Coverage Banner */}
+        <div style={{ background: "#0f172a", padding: "12px 32px", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em" }}>Pillar Coverage:</span>
+          {pillarMapping.map(m => {
+            const p = PILLAR_LOOKUP[m.pillar];
+            return p ? (
+              <span key={m.pillar} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ background: p.color.badge, color: p.color.text, border: `1px solid ${p.color.border}`, borderRadius: 20, padding: "3px 12px", fontSize: 11, fontWeight: 600 }}>
+                  {p.emoji} {p.label}
+                </span>
+                <span style={{ fontSize: 10, color: m.strength === "Primary" ? "#a78bfa" : "#64748b", fontWeight: 600 }}>{m.strength}</span>
               </span>
-              <span style={{ fontSize: 10, color: m.strength === "Primary" ? "#a78bfa" : "#64748b", fontWeight: 600 }}>{m.strength}</span>
-            </span>
-          ) : null;
-        })}
+            ) : null;
+          })}
+        </div>
       </div>
 
       {/* Summary */}
@@ -2134,6 +2135,211 @@ function PolicyDetail({ policy, onBack }) {
           </div>
         ))}
         {filtered.length === 0 && <div style={{ gridColumn: "1/-1", textAlign: "center", padding: 48, color: "#94a3b8" }}>No clauses match your filters.</div>}
+      </div>
+    </div>
+  );
+}
+
+// ─── GRC BRIDGE DATA ─────────────────────────────────────────────────────────
+const BRIDGE_LEVEL_CONFIG = {
+  Requires:    { bg: "#fef2f2", border: "#fecaca", text: "#dc2626", label: "Requires AI Governance" },
+  Extends:     { bg: "#eff6ff", border: "#bfdbfe", text: "#1d4ed8", label: "Extends to AI" },
+  Complements: { bg: "#f0fdf4", border: "#bbf7d0", text: "#15803d", label: "Complements" },
+};
+
+const GRC_FRAMEWORKS = [
+  {
+    id: "iso-27001", name: "ISO 27001", emoji: "🔐", type: "Standard", category: "Information Security",
+    geography: "International",
+    color: { bg: "#f0f9ff", badge: "#e0f2fe", text: "#0369a1", border: "#bae6fd" },
+    summary: "Global standard for information security management systems (ISMS). Certifiable, widely required by enterprise procurement and regulators.",
+    keyFacts: ["Certifiable by accredited third-party auditors", "2022 revision added cloud, threat intel & supply chain controls", "ISO 42001 follows identical Annex SL structure — fast integration path"],
+    aiPathways: [
+      { policyId: "iso-42001", bridgeLevel: "Extends", note: "ISO 42001 uses the same Annex SL management system structure as ISO 27001. Existing ISMS holders can integrate AI governance with minimal additional overhead — one integrated audit." },
+      { policyId: "eu-ai-act", bridgeLevel: "Complements", note: "EU AI Act security requirements (Art. 9, 15) reference ISO 27001-style controls. ISMS certification is strong evidence of compliance for high-risk AI system technical documentation." },
+      { policyId: "nist-csf", bridgeLevel: "Complements", note: "ISO 27001 and NIST CSF controls map closely — organisations with ISO 27001 can cross-walk to NIST CSF 2.0 with a targeted gap analysis." },
+    ],
+  },
+  {
+    id: "gdpr", name: "GDPR", emoji: "🌐", type: "Regulation", category: "Data Privacy",
+    geography: "EU / Europe + Extra-territorial",
+    color: { bg: "#f0fdf4", badge: "#dcfce7", text: "#15803d", border: "#bbf7d0" },
+    summary: "EU foundational data protection law governing collection, processing, and rights over personal data. Article 22 directly restricts fully automated decisions with legal or significant effects.",
+    keyFacts: ["Lawful basis required for all personal data processing", "Art. 22 restricts automated decisions — directly overlaps with AI Act obligations", "Extra-territorial: applies to any org processing EU residents' data"],
+    aiPathways: [
+      { policyId: "eu-ai-act", bridgeLevel: "Requires", note: "GDPR Art. 22 (automated decision-making) and EU AI Act high-risk AI requirements overlap directly — GDPR compliance is a prerequisite foundation for EU AI Act conformity. Both must be addressed together." },
+      { policyId: "iso-42001", bridgeLevel: "Complements", note: "ISO 42001 Annex B covers AI system data governance — GDPR-compliant data management practices provide the baseline controls for AI data governance certification." },
+      { policyId: "fair", bridgeLevel: "Complements", note: "FAIR quantification of AI-driven data processing risk supports GDPR Data Protection Impact Assessments with financially-grounded loss estimates." },
+    ],
+  },
+  {
+    id: "soc2", name: "SOC 2", emoji: "☁️", type: "Audit Framework", category: "Cloud / SaaS",
+    geography: "United States (widely accepted globally)",
+    color: { bg: "#f5f3ff", badge: "#ede9fe", text: "#7c3aed", border: "#ddd6fe" },
+    summary: "AICPA trust service criteria for SaaS and cloud providers. Type II demonstrates sustained operational controls over 6–12 months. Required by enterprise buyers and investors.",
+    keyFacts: ["5 Trust Service Criteria: Security, Availability, Processing Integrity, Confidentiality, Privacy", "Type II covers 6–12 month audit period", "AI model behaviour is increasingly in scope for SOC 2 audits"],
+    aiPathways: [
+      { policyId: "nist-ai-rmf", bridgeLevel: "Complements", note: "SOC 2 Processing Integrity and Security criteria map to NIST AI RMF's MEASURE and MANAGE functions — AI systems already in SOC 2 scope benefit directly from full RMF alignment." },
+      { policyId: "iso-42001", bridgeLevel: "Complements", note: "SOC 2 provides the security baseline; ISO 42001 adds the governance, ethics, and accountability layer specific to AI systems — together they cover both trust and governance assurance." },
+      { policyId: "eu-ai-act", bridgeLevel: "Complements", note: "EU AI Act Annex IV technical documentation requirements overlap with SOC 2 audit evidence artefacts — existing SOC 2 reports accelerate EU conformity assessment." },
+    ],
+  },
+  {
+    id: "pci-dss", name: "PCI DSS", emoji: "💳", type: "Standard", category: "Financial",
+    geography: "Global",
+    color: { bg: "#fefce8", badge: "#fef9c3", text: "#a16207", border: "#fde047" },
+    summary: "Mandatory security standard for organisations storing, processing, or transmitting payment card data. v4.0 introduced requirements explicitly covering AI-assisted fraud detection systems.",
+    keyFacts: ["12 requirements covering network, access, monitoring, and testing", "v4.0 (2024) customised approach covers AI fraud models", "Level 1 merchants require annual third-party QSA assessment"],
+    aiPathways: [
+      { policyId: "nist-ai-rmf", bridgeLevel: "Extends", note: "AI fraud detection models in PCI scope should be risk-managed under NIST AI RMF — Req. 10 (logging) and Req. 12 (risk management) map directly to the RMF MANAGE function." },
+      { policyId: "fair", bridgeLevel: "Complements", note: "FAIR quantification of AI fraud model failure risk provides the financial loss modelling required for PCI DSS v4.0 targeted risk analysis." },
+      { policyId: "eu-ai-act", bridgeLevel: "Complements", note: "AI fraud models processing EU cardholder data may qualify as high-risk under EU AI Act Annex III — PCI DSS compliance evidence supports the required technical documentation." },
+    ],
+  },
+  {
+    id: "hipaa", name: "HIPAA", emoji: "🏥", type: "Regulation", category: "Healthcare",
+    geography: "United States",
+    color: { bg: "#fff1f2", badge: "#ffe4e6", text: "#be123c", border: "#fecdd3" },
+    summary: "US federal law governing protected health information (PHI). HHS 2024 guidance extends HIPAA Security Rule expectations to AI clinical decision support tools and diagnostic models.",
+    keyFacts: ["Security Rule: administrative, physical & technical safeguards for ePHI", "AI clinical decision support tools are in scope if they process ePHI", "HHS 2024 guidance extends HIPAA expectations to AI model training data"],
+    aiPathways: [
+      { policyId: "nist-ai-rmf", bridgeLevel: "Requires", note: "HHS and FDA expect AI medical devices and clinical decision support tools to align with NIST AI RMF — HIPAA-regulated AI systems should treat RMF alignment as effectively mandated." },
+      { policyId: "eu-ai-act", bridgeLevel: "Complements", note: "AI medical devices are classified high-risk under EU AI Act Annex III. HIPAA security controls provide baseline evidence for EU technical documentation when operating in both jurisdictions." },
+      { policyId: "aaia", bridgeLevel: "Extends", note: "AI audit of clinical decision support tools under AAIA methodology directly addresses the HIPAA audit programme gap — extends the internal audit charter into AI model assurance." },
+    ],
+  },
+  {
+    id: "sox", name: "SOX", emoji: "📊", type: "Regulation", category: "Financial",
+    geography: "United States",
+    color: { bg: "#fff7ed", badge: "#ffedd5", text: "#c2410c", border: "#fed7aa" },
+    summary: "US law requiring executives to certify financial report accuracy and auditors to assess internal controls. AI models in financial reporting, forecasting, or controls testing are increasingly in scope.",
+    keyFacts: ["Section 404: annual management assessment of internal controls over financial reporting", "PCAOB 2024 guidance flags AI in audit processes as a key risk area", "AI influencing financial estimates or material disclosures falls within SOX scope"],
+    aiPathways: [
+      { policyId: "aaia", bridgeLevel: "Requires", note: "AI models in SOX scope require structured audit methodology — AAIA provides the audit programme to assess and report AI model reliability to the audit committee and board." },
+      { policyId: "fair", bridgeLevel: "Extends", note: "FAIR quantification of AI model failure risk supports SOX 404 risk assessment — boards need financial loss estimates, not qualitative ratings, for material AI risks." },
+      { policyId: "nist-ai-rmf", bridgeLevel: "Complements", note: "NIST AI RMF GOVERN and MEASURE functions provide the risk management evidence base for SOX 404 control documentation where AI systems are involved." },
+    ],
+  },
+  {
+    id: "cobit", name: "COBIT 2019", emoji: "⚙️", type: "Framework", category: "IT Governance",
+    geography: "International",
+    color: { bg: "#f8fafc", badge: "#f1f5f9", text: "#475569", border: "#e2e8f0" },
+    summary: "ISACA's IT governance and management framework. 40 objectives across 5 domains. ISACA published AI-specific COBIT guidance (2023) extending governance objectives to AI systems.",
+    keyFacts: ["40 governance and management objectives across 5 domains", "Integrates with ISO 27001, ITIL, and risk frameworks", "ISACA AI guidance (2023) extends COBIT objectives specifically to AI"],
+    aiPathways: [
+      { policyId: "iso-42001", bridgeLevel: "Extends", note: "ISO 42001 AI management system objectives map directly to COBIT governance objectives — COBIT-aligned organisations have a natural integration path into ISO 42001 certification." },
+      { policyId: "nist-ai-rmf", bridgeLevel: "Complements", note: "COBIT's GOVERN domain and NIST AI RMF's GOVERN function are structurally aligned — combined adoption covers both IT and AI governance comprehensively." },
+      { policyId: "aaia", bridgeLevel: "Complements", note: "COBIT audit objectives extend naturally to AI system audits — AAIA provides the domain-specific AI audit methodology to supplement COBIT's general IT audit approach." },
+    ],
+  },
+  {
+    id: "dora", name: "DORA", emoji: "🏛️", type: "Regulation", category: "Financial",
+    geography: "EU / Europe",
+    color: { bg: "#eff6ff", badge: "#dbeafe", text: "#1d4ed8", border: "#bfdbfe" },
+    summary: "EU regulation requiring financial entities to manage and test digital operational resilience including ICT risk, incident reporting, and third-party AI provider oversight. Fully in force Jan 2025.",
+    keyFacts: ["Applies to banks, insurers, investment firms, crypto-asset service providers", "Requires ICT risk framework, incident classification & threat-led penetration testing", "Third-party AI providers used by financial entities fall under DORA oversight"],
+    aiPathways: [
+      { policyId: "eu-ai-act", bridgeLevel: "Requires", note: "Financial entities subject to DORA and deploying high-risk AI must comply with both — EU AI Act and DORA requirements overlap for AI systems affecting operational resilience and ICT risk." },
+      { policyId: "nist-ai-rmf", bridgeLevel: "Complements", note: "DORA ICT risk management is complemented by NIST AI RMF's MEASURE and MANAGE functions — particularly for AI models with operational continuity impact." },
+      { policyId: "iso-42001", bridgeLevel: "Complements", note: "ISO 42001 provides the AI-specific governance layer that DORA's ICT risk management framework lacks — combined adoption addresses both operational resilience and AI governance obligations." },
+    ],
+  },
+];
+
+// ─── GRC BRIDGE TAB ──────────────────────────────────────────────────────────
+function GRCBridgeTab({ onSelectAIPolicy }: { onSelectAIPolicy: (p: any) => void }) {
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  return (
+    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 32px" }}>
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#0f172a" }}>GRC & IT Compliance Bridge</h2>
+        <p style={{ margin: "6px 0 0", fontSize: 14, color: "#64748b" }}>
+          Already compliant with a traditional GRC or IT security framework? See which AI governance frameworks you additionally need — and how your existing work accelerates the journey.
+        </p>
+      </div>
+
+      {/* Category chips */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
+        {["Information Security","Data Privacy","Cloud / SaaS","Financial","Healthcare","IT Governance"].map(cat => (
+          <span key={cat} style={{ background: "#f1f5f9", color: "#475569", borderRadius: 20, padding: "4px 12px", fontSize: 11, fontWeight: 600 }}>{cat}</span>
+        ))}
+      </div>
+
+      {/* Framework cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(380px, 1fr))", gap: 20 }}>
+        {GRC_FRAMEWORKS.map(f => {
+          const isOpen = expanded === f.id;
+          return (
+            <div key={f.id} style={{ background: "#fff", border: `1px solid #e2e8f0`, borderTop: `3px solid ${f.color.text}`, borderRadius: 14, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+              {/* Card header */}
+              <div style={{ background: f.color.bg, borderBottom: `1px solid ${f.color.border}`, padding: "14px 18px", display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ fontSize: 26 }}>{f.emoji}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#0f172a" }}>{f.name}</h3>
+                    <span style={{ background: f.color.badge, color: f.color.text, border: `1px solid ${f.color.border}`, borderRadius: 6, padding: "2px 8px", fontSize: 10, fontWeight: 600 }}>{f.type}</span>
+                    <span style={{ background: "#f1f5f9", color: "#64748b", borderRadius: 6, padding: "2px 8px", fontSize: 10 }}>{f.category}</span>
+                  </div>
+                  <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{f.geography}</div>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div style={{ padding: "14px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
+                <p style={{ margin: 0, fontSize: 12, color: "#475569", lineHeight: 1.65 }}>{f.summary}</p>
+                <div>
+                  {f.keyFacts.map((fact, i) => (
+                    <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}>
+                      <span style={{ color: f.color.text, fontSize: 12, flexShrink: 0 }}>→</span>
+                      <span style={{ fontSize: 11, color: "#64748b", lineHeight: 1.5 }}>{fact}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* AI Pathways toggle */}
+                <button
+                  onClick={() => setExpanded(isOpen ? null : f.id)}
+                  style={{ background: isOpen ? "#0f172a" : "#f8fafc", color: isOpen ? "#fff" : "#0f172a", border: "1px solid #e2e8f0", borderRadius: 8, padding: "9px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600, display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}
+                >
+                  <span>🤖 AI Governance Pathways from {f.name}</span>
+                  <span style={{ fontSize: 11, opacity: 0.7 }}>{isOpen ? "▾" : "▸"} {f.aiPathways.length} frameworks</span>
+                </button>
+
+                {isOpen && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {f.aiPathways.map(pathway => {
+                      const aiPolicy = POLICIES.find(p => p.id === pathway.policyId);
+                      if (!aiPolicy) return null;
+                      const cfg = BRIDGE_LEVEL_CONFIG[pathway.bridgeLevel];
+                      return (
+                        <div key={pathway.policyId} style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 10, padding: "10px 14px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+                            <span style={{ fontSize: 16 }}>{aiPolicy.emoji}</span>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{aiPolicy.name}</span>
+                            <span style={{ color: cfg.text, border: `1px solid ${cfg.border}`, borderRadius: 20, padding: "2px 10px", fontSize: 10, fontWeight: 700, background: cfg.bg }}>{cfg.label}</span>
+                          </div>
+                          <p style={{ margin: "0 0 8px", fontSize: 11, color: "#334155", lineHeight: 1.65 }}>{pathway.note}</p>
+                          <button onClick={() => onSelectAIPolicy(aiPolicy)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 6, padding: "5px 12px", cursor: "pointer", fontSize: 11, fontWeight: 600 }}>
+                            View AI Framework →
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Footer legend */}
+      <div style={{ marginTop: 32, padding: "14px 18px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, fontSize: 12, color: "#64748b", lineHeight: 1.8 }}>
+        <strong>Bridge key:</strong>&nbsp;
+        <span style={{ color: "#dc2626", fontWeight: 600 }}>Requires AI Governance</span> — your existing framework creates AI obligations you must address. &nbsp;
+        <span style={{ color: "#1d4ed8", fontWeight: 600 }}>Extends to AI</span> — your framework has a direct AI extension or successor standard. &nbsp;
+        <span style={{ color: "#15803d", fontWeight: 600 }}>Complements</span> — existing compliance work accelerates or evidences AI governance requirements.
       </div>
     </div>
   );
@@ -2424,9 +2630,10 @@ export default function AIGovernanceTracker() {
           {[
             { id: "policies", label: "📋 Policy Grid" },
             ...(unlocked ? [
-              { id: "topics",    label: "🧭 Topics Framework" },
-              { id: "digests",   label: "📖 Policy Digests" },
-              { id: "navigator", label: "🗺 Framework Navigator" },
+              { id: "topics",     label: "🧭 Topics Framework" },
+              { id: "digests",    label: "📖 Policy Digests" },
+              { id: "navigator",  label: "🗺 Framework Navigator" },
+              { id: "grc-bridge", label: "🔗 GRC Bridge" },
             ] : []),
           ].map(tab => (
             <button
@@ -2446,6 +2653,8 @@ export default function AIGovernanceTracker() {
         <TopicsView onSelectPolicy={pol => setSelected(pol)} />
       ) : view === "navigator" ? (
         <FrameworkNavigatorTab policies={POLICIES} onSelectPolicy={pol => setSelected(pol)} />
+      ) : view === "grc-bridge" ? (
+        <GRCBridgeTab onSelectAIPolicy={pol => setSelected(pol)} />
       ) : (
         <>
           {/* Filters */}
