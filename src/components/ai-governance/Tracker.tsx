@@ -1103,7 +1103,10 @@ function exportDiscoveryToExcel(policy, guide, clientName = "", industry = "") {
   esWs["!cols"] = [{ wch: 30 }, { wch: 60 }, { wch: 4 }, { wch: 24 }, { wch: 36 }];
   XLSX.utils.book_append_sheet(wb, esWs, "Executive Summary");
 
-  XLSX.writeFile(wb, `${clientName ? clientName.replace(/\s+/g, "-").toLowerCase() + "-" : ""}${policy.id}-discovery.xlsx`);
+  const policyTag = policy.name.replace(/\s+/g, "").replace(/[^a-zA-Z0-9]/g, "");
+  const clientTag = clientName ? clientName.trim().replace(/\s+/g, "_") : "Client";
+  const dateTag = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `${policyTag}_${clientTag}_${dateTag}.xlsx`);
 }
 
 // ─── PARSE UPLOADED DISCOVERY EXCEL → SOLUTION DOC ────────────────────────────
@@ -1383,6 +1386,42 @@ function PolicyGuide({ policy, onBack }) {
           </div>
         )}
 
+        {/* Legend */}
+        <div className="no-print" style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "12px 18px", marginBottom: 28, fontSize: 11 }}>
+          <div style={{ fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>Legend — hover any badge for details</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 20 }}>
+            <div>
+              <div style={{ fontWeight: 600, color: "#0f172a", marginBottom: 4 }}>Priority</div>
+              {[["High","#dc2626","#fef2f2","#fecaca","Urgent — regulatory or high-risk exposure"],["Medium","#a16207","#fefce8","#fef08a","Important — address after High items"],["Low","#15803d","#f0fdf4","#bbf7d0","Lower urgency"]].map(([p,c,bg,br,tip]) => (
+                <span key={p} title={tip as string} style={{ display: "inline-block", marginRight: 6, background: bg as string, color: c as string, border: `1px solid ${br}`, borderRadius: 20, padding: "1px 8px", fontSize: 10, fontWeight: 700, cursor: "help" }}>▲ {p}</span>
+              ))}
+            </div>
+            <div>
+              <div style={{ fontWeight: 600, color: "#0f172a", marginBottom: 4 }}>Effort</div>
+              {[["Quick Win","Days — limited resources needed"],["Medium Effort","Weeks — cross-functional coordination"],["Complex","Months — specialist expertise required"]].map(([e,tip]) => (
+                <span key={e} title={tip as string} style={{ display: "inline-block", marginRight: 6, background: "#f8fafc", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 20, padding: "1px 8px", fontSize: 10, fontWeight: 600, cursor: "help" }}>⏱ {e}</span>
+              ))}
+            </div>
+            <div>
+              <div style={{ fontWeight: 600, color: "#0f172a", marginBottom: 4 }}>Maturity Scale</div>
+              {[["NS","Not Started","#dc2626"],["Dev","Developing","#a16207"],["Def","Defined","#1d4ed8"],["Opt","Optimised","#15803d"]].map(([short,full,color]) => (
+                <span key={short} style={{ display: "inline-flex", alignItems: "center", gap: 4, marginRight: 10, fontSize: 10, color: color as string, fontWeight: 700 }}>
+                  <span style={{ width: 20, height: 20, border: `1.5px solid ${color}`, borderRadius: 4, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 8, cursor: "help" }} title={full as string}>{short}</span>
+                  = {full}
+                </span>
+              ))}
+            </div>
+            <div>
+              <div style={{ fontWeight: 600, color: "#0f172a", marginBottom: 4 }}>Key Acronyms</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 12px", maxWidth: 560 }}>
+                {[["FRIA","Fundamental Rights Impact Assessment"],["AIIA","AI System Impact Assessment"],["DPIA","Data Protection Impact Assessment"],["GPAI","General Purpose AI Model"],["DPO","Data Protection Officer"],["CISO","Chief Information Security Officer"],["CRO","Chief Risk Officer"],["GDPR","General Data Protection Regulation"],["RMF","Risk Management Framework"],["AIMS","AI Management System"],["CAE","Chief Audit Executive"],["SME","Subject Matter Expert"]].map(([abbr,full]) => (
+                  <span key={abbr} title={full as string} style={{ fontSize: 10, color: "#475569", cursor: "help", whiteSpace: "nowrap" }}><strong>{abbr}</strong> — {full}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Discovery Areas */}
         {guide.areas.map((area, aIdx) => {
           const pillar = PILLAR_LOOKUP[area.pillar];
@@ -1405,32 +1444,40 @@ function PolicyGuide({ policy, onBack }) {
                 {/* Priority / Effort / Risk row */}
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                   {area.priority && (
-                    <span style={{
-                      background: area.priority === "High" ? "#fef2f2" : area.priority === "Medium" ? "#fefce8" : "#f0fdf4",
-                      color: area.priority === "High" ? "#dc2626" : area.priority === "Medium" ? "#a16207" : "#15803d",
-                      border: `1px solid ${area.priority === "High" ? "#fecaca" : area.priority === "Medium" ? "#fef08a" : "#bbf7d0"}`,
-                      borderRadius: 20, padding: "2px 10px", fontSize: 10, fontWeight: 700
-                    }}>
+                    <span
+                      title={`Priority: ${area.priority === "High" ? "Urgent — address before other areas; regulatory or high-risk exposure" : area.priority === "Medium" ? "Important — address after High priority items" : "Lower urgency — address when High and Medium items are covered"}`}
+                      style={{
+                        background: area.priority === "High" ? "#fef2f2" : area.priority === "Medium" ? "#fefce8" : "#f0fdf4",
+                        color: area.priority === "High" ? "#dc2626" : area.priority === "Medium" ? "#a16207" : "#15803d",
+                        border: `1px solid ${area.priority === "High" ? "#fecaca" : area.priority === "Medium" ? "#fef08a" : "#bbf7d0"}`,
+                        borderRadius: 20, padding: "2px 10px", fontSize: 10, fontWeight: 700, cursor: "help"
+                      }}>
                       ▲ {area.priority} Priority
                     </span>
                   )}
                   {area.effort && (
-                    <span style={{ background: "#f8fafc", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 20, padding: "2px 10px", fontSize: 10, fontWeight: 600 }}>
+                    <span
+                      title={`Effort: ${area.effort === "Low" ? "Quick Win — can typically be completed in days with limited resources" : area.effort === "Medium" ? "Medium Effort — weeks of work, cross-functional coordination required" : "Complex — months of sustained effort, specialist expertise needed"}`}
+                      style={{ background: "#f8fafc", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 20, padding: "2px 10px", fontSize: 10, fontWeight: 600, cursor: "help" }}>
                       ⏱ {area.effort === "Low" ? "Quick Win" : area.effort === "Medium" ? "Medium Effort" : "Complex"} Effort
                     </span>
                   )}
                   {area.regulatoryRef && (
-                    <span style={{ background: "#eef2ff", color: "#4338ca", border: "1px solid #c7d2fe", borderRadius: 20, padding: "2px 10px", fontSize: 10, fontWeight: 600 }}>
+                    <span
+                      title={`Regulatory Reference: The specific article, clause, or section of the framework this discovery area maps to`}
+                      style={{ background: "#eef2ff", color: "#4338ca", border: "1px solid #c7d2fe", borderRadius: 20, padding: "2px 10px", fontSize: 10, fontWeight: 600, cursor: "help" }}>
                       📎 {area.regulatoryRef}
                     </span>
                   )}
                   {area.dependencies?.length > 0 && (
-                    <span style={{ background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa", borderRadius: 20, padding: "2px 10px", fontSize: 10, fontWeight: 600 }}>
+                    <span
+                      title={`Prerequisite areas: Complete these discovery areas first before addressing this one — findings from them directly inform this assessment`}
+                      style={{ background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa", borderRadius: 20, padding: "2px 10px", fontSize: 10, fontWeight: 600, cursor: "help" }}>
                       🔗 Requires: {area.dependencies.join(", ")}
                     </span>
                   )}
                   {area.riskIfNotAddressed && (
-                    <span style={{ fontSize: 11, color: "#64748b", fontStyle: "italic" }}>
+                    <span title="Risk if not addressed: The likely consequence of leaving this area uncompleted" style={{ fontSize: 11, color: "#64748b", fontStyle: "italic", cursor: "help" }}>
                       ⚠ If not addressed: {area.riskIfNotAddressed}
                     </span>
                   )}
@@ -1484,12 +1531,16 @@ function PolicyGuide({ policy, onBack }) {
                   </div>
                   <div>
                     <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Maturity Indicators</div>
-                    {Object.entries(area.maturityIndicators).map(([level, desc]) => (
-                      <div key={level} style={{ marginBottom: 5 }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: level === "optimised" ? "#15803d" : level === "defined" ? "#1d4ed8" : level === "developing" ? "#a16207" : "#dc2626", textTransform: "capitalize" }}>{level}: </span>
-                        <span style={{ fontSize: 11, color: "#475569" }}>{desc}</span>
-                      </div>
-                    ))}
+                    {Object.entries(area.maturityIndicators).map(([level, desc]) => {
+                      const LEVEL_LABELS: Record<string, string> = { notStarted: "Not Started", developing: "Developing", defined: "Defined", optimised: "Optimised" };
+                      const LEVEL_COLORS: Record<string, string> = { notStarted: "#dc2626", developing: "#a16207", defined: "#1d4ed8", optimised: "#15803d" };
+                      return (
+                        <div key={level} style={{ marginBottom: 5 }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: LEVEL_COLORS[level] || "#64748b" }}>{LEVEL_LABELS[level] || level}: </span>
+                          <span style={{ fontSize: 11, color: "#475569" }}>{desc as string}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -1522,8 +1573,13 @@ function PolicyGuide({ policy, onBack }) {
                     <td style={{ padding: "10px 14px", fontSize: 11, color: "#64748b" }}>{area.stakeholder}</td>
                     <td style={{ padding: "10px 14px", textAlign: "center" }}>
                       <div style={{ display: "flex", gap: 4, justifyContent: "center" }}>
-                        {["NS","Dev","Def","Opt"].map(l => (
-                          <span key={l} style={{ width: 22, height: 22, border: "1.5px solid #cbd5e1", borderRadius: 4, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 8, color: "#94a3b8", fontWeight: 600 }}>{l}</span>
+                        {[
+                          { short: "NS",  full: "Not Started — no activity in this area yet" },
+                          { short: "Dev", full: "Developing — work underway but not yet consistent or complete" },
+                          { short: "Def", full: "Defined — documented, consistent, and operating as intended" },
+                          { short: "Opt", full: "Optimised — continuously improved, audited, and embedded in operations" },
+                        ].map(l => (
+                          <span key={l.short} title={l.full} style={{ width: 22, height: 22, border: "1.5px solid #cbd5e1", borderRadius: 4, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 8, color: "#94a3b8", fontWeight: 600, cursor: "help" }}>{l.short}</span>
                         ))}
                       </div>
                     </td>
