@@ -1105,55 +1105,6 @@ function exportDiscoveryToExcel(policy, guide, clientName = "", industry = "") {
   XLSX.writeFile(wb, `${clientName ? clientName.replace(/\s+/g, "-").toLowerCase() + "-" : ""}${policy.id}-discovery.xlsx`);
 }
 
-  // ── Discovery sheet ──
-  const headers = ["Discovery Area", "Regulatory Ref", "Priority", "Effort", "Pillar", "Stakeholder", "Q#", "Discovery Question", "Current Status", "Documentation Exists?", "Notes / Evidence", "Risk if Not Addressed", "Evidence to Collect", "Maturity — Not Started", "Maturity — Developing", "Maturity — Defined", "Maturity — Optimised"];
-  const rows = [];
-  guide.areas.forEach(area => {
-    area.questions.forEach((q, qi) => {
-      rows.push([
-        area.area,
-        area.regulatoryRef || "",
-        area.priority || "",
-        area.effort || "",
-        area.pillar,
-        area.stakeholder,
-        qi + 1,
-        q,
-        "Not Started",
-        "",
-        "",
-        area.riskIfNotAddressed || "",
-        area.evidenceToCollect.join("\n"),
-        area.maturityIndicators.notStarted,
-        area.maturityIndicators.developing,
-        area.maturityIndicators.defined,
-        area.maturityIndicators.optimised,
-      ]);
-    });
-  });
-  const discoveryWs = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-  discoveryWs["!cols"] = [
-    { wch: 32 }, { wch: 28 }, { wch: 10 }, { wch: 12 }, { wch: 14 }, { wch: 28 }, { wch: 4 }, { wch: 60 },
-    { wch: 14 }, { wch: 18 }, { wch: 36 }, { wch: 48 }, { wch: 36 }, { wch: 28 }, { wch: 28 }, { wch: 28 }, { wch: 28 }
-  ];
-  // Data validation: Status (col I = index 8), Documentation Exists (col J = index 9)
-  if (!discoveryWs["!dataValidation"]) discoveryWs["!dataValidation"] = [];
-  rows.forEach((_, ri) => {
-    discoveryWs["!dataValidation"].push({
-      sqref: `I${ri + 2}`,
-      type: "list",
-      formula1: '"Not Started,In Progress,Complete"',
-      showDropDown: false,
-    });
-    discoveryWs["!dataValidation"].push({
-      sqref: `J${ri + 2}`,
-      type: "list",
-      formula1: '"Yes,No,Partial"',
-      showDropDown: false,
-    });
-  });
-  XLSX.utils.book_append_sheet(wb, discoveryWs, "Discovery");
-
 // ─── PARSE UPLOADED DISCOVERY EXCEL → SOLUTION DOC ────────────────────────────
 function parseDiscoveryExcel(file, policy, guide, onResult) {
   const reader = new FileReader();
