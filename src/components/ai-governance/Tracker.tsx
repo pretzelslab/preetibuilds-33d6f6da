@@ -1802,14 +1802,38 @@ function PolicyDigestDetail({ policy, onBack }) {
 }
 
 function PolicyDigestGrid({ policies, onSelect }) {
+  const [search, setSearch] = useState("");
+  const filtered = !search.trim() ? policies : policies.filter(p => {
+    const digest = POLICY_DIGESTS[p.id];
+    const s = search.toLowerCase();
+    return [
+      p.name, p.summary,
+      digest?.tldr || "",
+      ...(digest?.criticalPoints?.map(c => c.point) || []),
+      ...(digest?.keyObligations || []),
+      ...(digest?.commonMisconceptions?.map(m => m.myth + " " + m.reality) || []),
+    ].some(t => t.toLowerCase().includes(s));
+  });
+
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 32px" }}>
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#0f172a" }}>Policy Digest Library</h2>
-        <p style={{ margin: "6px 0 0", fontSize: 14, color: "#64748b" }}>Plain-English guides to each AI governance policy — what it means, what it requires, and where to start. Includes critical points highlighted, common misconceptions corrected, and practical first steps.</p>
+      <div style={{ marginBottom: 20, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#0f172a" }}>Policy Digest Library</h2>
+          <p style={{ margin: "6px 0 0", fontSize: 14, color: "#64748b" }}>Plain-English guides to each AI governance policy — what it means, what it requires, and where to start.</p>
+        </div>
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search digests by keyword…"
+          style={{ padding: "9px 14px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none", minWidth: 260, background: "#fff" }}
+        />
       </div>
+      {filtered.length === 0 && (
+        <div style={{ textAlign: "center", color: "#94a3b8", padding: "48px 0", fontSize: 14 }}>No digests match "{search}"</div>
+      )}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 20 }}>
-        {policies.map(p => {
+        {filtered.map(p => {
           const digest = POLICY_DIGESTS[p.id];
           const criticalCount = digest?.criticalPoints.filter(c => c.critical).length || 0;
           return (
@@ -2061,24 +2085,23 @@ function PolicyDetail({ policy, onBack }) {
             ) : null;
           })}
         </div>
-      </div>
 
       {/* Summary */}
-      <div style={{ background: policy.color.bg, borderBottom: `1px solid ${policy.color.border}`, padding: "14px 32px" }}>
-        <p style={{ margin: 0, fontSize: 13, color: "#334155", lineHeight: 1.7, maxWidth: 900 }}>{policy.summary}</p>
-        <p style={{ margin: "8px 0 0", fontSize: 12, color: "#64748b" }}><strong>Latest:</strong> {policy.latestUpdateSummary}</p>
+      <div style={{ background: policy.color.bg, borderBottom: `1px solid ${policy.color.border}`, padding: "10px 32px" }}>
+        <p style={{ margin: 0, fontSize: 12, color: "#334155", lineHeight: 1.65, maxWidth: 900 }}>{policy.summary}</p>
+        <p style={{ margin: "4px 0 0", fontSize: 11, color: "#64748b" }}><strong>Latest:</strong> {policy.latestUpdateSummary}</p>
       </div>
 
       {/* Pillar Impact per this Policy */}
-      <div style={{ background: "#fff", borderBottom: "1px solid #f1f5f9", padding: "16px 32px" }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>What This Policy Requires Across Each Pillar</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 10 }}>
+      <div style={{ background: "#fff", borderBottom: "1px solid #f1f5f9", padding: "12px 32px" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>What This Policy Requires Across Each Pillar</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 8 }}>
           {pillarMapping.map(m => {
             const p = PILLAR_LOOKUP[m.pillar];
             return p ? (
-              <div key={m.pillar} style={{ background: p.color.bg, border: `1px solid ${p.color.border}`, borderRadius: 10, padding: "10px 14px" }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: p.color.text, marginBottom: 4 }}>{p.emoji} {p.label} <span style={{ fontSize: 10, fontWeight: 500, color: "#94a3b8" }}>— {m.strength}</span></div>
-                <p style={{ margin: 0, fontSize: 12, color: "#475569", lineHeight: 1.55 }}>{m.impact}</p>
+              <div key={m.pillar} style={{ background: p.color.bg, border: `1px solid ${p.color.border}`, borderRadius: 8, padding: "8px 12px" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: p.color.text, marginBottom: 3 }}>{p.emoji} {p.label} <span style={{ fontSize: 10, fontWeight: 500, color: "#94a3b8" }}>— {m.strength}</span></div>
+                <p style={{ margin: 0, fontSize: 11, color: "#475569", lineHeight: 1.5 }}>{m.impact}</p>
               </div>
             ) : null;
           })}
@@ -2086,19 +2109,20 @@ function PolicyDetail({ policy, onBack }) {
       </div>
 
       {/* Filters */}
-      <div style={{ padding: "14px 32px", display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", background: "#fff", borderBottom: "1px solid #f1f5f9" }}>
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search clauses..." style={{ flex: 1, minWidth: 200, padding: "8px 14px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none" }} />
-        <select value={filterCat} onChange={e => setFilterCat(e.target.value)} style={{ padding: "8px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, background: "#fff" }}>
+      <div style={{ padding: "10px 32px", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", background: "#fff", borderBottom: "2px solid #e2e8f0" }}>
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search clauses..." style={{ flex: 1, minWidth: 200, padding: "7px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none" }} />
+        <select value={filterCat} onChange={e => setFilterCat(e.target.value)} style={{ padding: "7px 10px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 12, background: "#fff" }}>
           {categories.map(c => <option key={c}>{c}</option>)}
         </select>
-        <select value={filterRisk} onChange={e => setFilterRisk(e.target.value)} style={{ padding: "8px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, background: "#fff" }}>
+        <select value={filterRisk} onChange={e => setFilterRisk(e.target.value)} style={{ padding: "7px 10px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 12, background: "#fff" }}>
           {["All","Critical","High","Medium"].map(r => <option key={r}>{r}</option>)}
         </select>
-        <select value={filterPillar} onChange={e => setFilterPillar(e.target.value)} style={{ padding: "8px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, background: "#fff" }}>
+        <select value={filterPillar} onChange={e => setFilterPillar(e.target.value)} style={{ padding: "7px 10px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 12, background: "#fff" }}>
           {["All", ...PILLARS.map(p => p.id)].map(id => <option key={id} value={id}>{id === "All" ? "All Pillars" : `${PILLAR_LOOKUP[id]?.emoji} ${PILLAR_LOOKUP[id]?.label}`}</option>)}
         </select>
-        <span style={{ fontSize: 12, color: "#94a3b8" }}>{filtered.length} clauses</span>
+        <span style={{ fontSize: 11, color: "#94a3b8" }}>{filtered.length} clauses</span>
       </div>
+      </div>{/* end sticky block */}
 
       {/* Clause Cards */}
       <div style={{ padding: "24px 32px", display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fill, minmax(480px, 1fr))" }}>
@@ -2573,6 +2597,19 @@ export default function AIGovernanceTracker() {
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("All");
   const [filterGeo, setFilterGeo] = useState("All");
+  const [globalSearch, setGlobalSearch] = useState("");
+  const [showGlobalResults, setShowGlobalResults] = useState(false);
+
+  const globalResults = globalSearch.trim().length > 1 ? (() => {
+    const s = globalSearch.toLowerCase();
+    const policies = POLICIES.filter(p =>
+      [p.name, p.summary, p.geography, ...p.industries].some(t => t.toLowerCase().includes(s))
+    ).map(p => ({ type: "policy" as const, id: p.id, label: p.name, sub: p.type + " · " + p.geography, emoji: p.emoji, item: p }));
+    const grc = GRC_FRAMEWORKS.filter(f =>
+      [f.name, f.summary, f.category, f.geography].some(t => t.toLowerCase().includes(s))
+    ).map(f => ({ type: "grc" as const, id: f.id, label: f.name, sub: f.category + " · " + f.geography, emoji: f.emoji, item: f }));
+    return [...policies, ...grc];
+  })() : [];
 
   const types = ["All", ...new Set(POLICIES.map(p => p.type))];
   const geos  = ["All", ...new Set(POLICIES.map(p => p.geography.split(" /")[0].trim()))];
@@ -2626,7 +2663,7 @@ export default function AIGovernanceTracker() {
 
       {/* Sticky Tab Nav */}
       <div className="no-print" style={{ position: "sticky", top: 57, zIndex: 1000, background: "#0f172a", borderBottom: "2px solid #1e293b" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", display: "flex", gap: 4 }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", display: "flex", gap: 4, alignItems: "stretch" }}>
           {[
             { id: "policies", label: "📋 Policy Grid" },
             ...(unlocked ? [
@@ -2644,6 +2681,55 @@ export default function AIGovernanceTracker() {
               {tab.label}
             </button>
           ))}
+          {/* Global search — right side */}
+          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", padding: "6px 0", position: "relative" }}>
+            <input
+              value={globalSearch}
+              onChange={e => { setGlobalSearch(e.target.value); setShowGlobalResults(true); }}
+              onFocus={() => setShowGlobalResults(true)}
+              onBlur={() => setTimeout(() => setShowGlobalResults(false), 180)}
+              placeholder="🔍 Search frameworks…"
+              style={{ padding: "6px 12px", border: "1px solid #334155", borderRadius: 8, fontSize: 12, background: "#1e293b", color: "#f1f5f9", outline: "none", width: 210 }}
+            />
+            {showGlobalResults && globalSearch.trim().length > 1 && (
+              <div style={{ position: "absolute", top: "100%", right: 0, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.15)", zIndex: 2000, width: 360, maxHeight: 380, overflowY: "auto" }}>
+                {globalResults.length === 0 ? (
+                  <div style={{ padding: "16px 18px", fontSize: 13, color: "#94a3b8" }}>No matches for "{globalSearch}"</div>
+                ) : (
+                  <>
+                    {["policy","grc"].map(type => {
+                      const group = globalResults.filter(r => r.type === type);
+                      if (!group.length) return null;
+                      return (
+                        <div key={type}>
+                          <div style={{ padding: "8px 14px 4px", fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", background: "#f8fafc", borderBottom: "1px solid #f1f5f9" }}>
+                            {type === "policy" ? "AI Governance Frameworks" : "GRC / IT Frameworks"}
+                          </div>
+                          {group.map(r => (
+                            <button
+                              key={r.id}
+                              onMouseDown={() => {
+                                if (r.type === "policy") { setSelected(r.item); }
+                                else { setView("grc-bridge"); }
+                                setGlobalSearch(""); setShowGlobalResults(false);
+                              }}
+                              style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", background: "none", border: "none", borderBottom: "1px solid #f8fafc", cursor: "pointer", textAlign: "left" }}
+                            >
+                              <span style={{ fontSize: 18 }}>{r.emoji}</span>
+                              <div>
+                                <div style={{ fontSize: 13, fontWeight: 600, color: "#0f172a" }}>{r.label}</div>
+                                <div style={{ fontSize: 11, color: "#64748b" }}>{r.sub}</div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -2658,7 +2744,7 @@ export default function AIGovernanceTracker() {
       ) : (
         <>
           {/* Filters */}
-          <div style={{ background: "#fff", borderBottom: "1px solid #e2e8f0", padding: "14px 32px" }}>
+          <div style={{ position: "sticky", top: 101, zIndex: 900, background: "#fff", borderBottom: "1px solid #e2e8f0", padding: "14px 32px" }}>
             <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search policies, industries..." style={{ flex: 1, minWidth: 240, padding: "8px 14px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none" }} />
               <select value={filterType} onChange={e => setFilterType(e.target.value)} style={{ padding: "8px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, background: "#fff" }}>
