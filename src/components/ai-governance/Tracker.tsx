@@ -858,22 +858,24 @@ const NAVIGATOR_RULES: Record<string, NavRule[]> = {
   "eu-ai-act": [
     { geos: ["EU / Europe"], industries: ["All"], level: "Required",
       reason: "Binding regulation — applies to all organisations deploying AI in the EU market regardless of where your company is headquartered." },
-    { geos: ["United States","United Kingdom","Global / International","Asia-Pacific"], industries: ["All"], level: "Recommended",
-      reason: "Extra-territorial reach — if your AI outputs are used by EU residents or your product is sold into the EU market, you are in scope." },
+    { geos: ["United States","United Kingdom","Global / International"], industries: ["All"], level: "Recommended",
+      reason: "Extra-territorial reach — if your AI outputs are used by EU residents or your product is sold into the EU market, you are in scope even if headquartered outside the EU." },
+    { geos: ["Asia-Pacific"], industries: ["All"], level: "Advisory",
+      reason: "Direct applicability requires EU market presence or EU-resident users. If your organisation has no EU exposure, the Act does not currently apply — but similar regional AI laws are emerging across APAC." },
   ],
   "nist-ai-rmf": [
     { geos: ["United States"], industries: ["Financial Services / Fintech","Banking & Lending","Insurtech / Insurance","Healthtech / MedTech","Public Sector / Government"], level: "Required",
       reason: "US sector regulators (OCC, SEC, CFPB, HHS) reference NIST AI RMF alignment in supervisory guidance — effectively required for regulated US entities." },
-    { geos: ["United States"], industries: ["Technology & SaaS","HR Technology","Retail & E-commerce","Manufacturing"], level: "Recommended",
-      reason: "Widely adopted US AI risk baseline — increasingly expected by enterprise clients, investors, and cyber insurers." },
-    { geos: ["EU / Europe","United Kingdom","Global / International","Asia-Pacific"], industries: ["All"], level: "Recommended",
-      reason: "Globally recognised AI risk framework — used as a common language for international operations and a complement to local regulation." },
+    { geos: ["United States"], industries: ["All"], level: "Recommended",
+      reason: "Widely adopted US AI risk baseline — increasingly expected by enterprise clients, investors, and cyber insurers in all US sectors." },
+    { geos: ["EU / Europe","United Kingdom","Global / International","Asia-Pacific"], industries: ["All"], level: "Advisory",
+      reason: "A useful common risk language for international teams or US-connected operations, but not a primary regulatory requirement outside the United States." },
   ],
   "nist-csf": [
     { geos: ["United States"], industries: ["All"], level: "Required",
       reason: "US federal agencies and contractors are required to align. Widely adopted by US critical infrastructure, finance, and healthcare as the cybersecurity baseline." },
-    { geos: ["EU / Europe","United Kingdom","Global / International","Asia-Pacific"], industries: ["All"], level: "Recommended",
-      reason: "CSF 2.0 AI security extensions apply globally — particularly for organisations using third-party AI models or managing AI vendor supply chain risk." },
+    { geos: ["EU / Europe","United Kingdom","Global / International","Asia-Pacific"], industries: ["All"], level: "Advisory",
+      reason: "CSF 2.0 AI security extensions are globally relevant but not mandated outside the US — useful as a supplementary cybersecurity framework alongside local requirements such as NIS2 or ISO 27001." },
   ],
   "iso-42001": [
     { geos: ["All"], industries: ["All"], level: "Recommended",
@@ -1253,7 +1255,7 @@ function SolutionDoc({ result, onBack }) {
 
   return (
     <div style={{ minHeight: "100vh", background: "#fff", fontFamily: "'Inter','Segoe UI',sans-serif" }}>
-      <div className="no-print" style={{ background: "#0f172a", padding: "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <div className="no-print" style={{ position: "sticky", top: 57, zIndex: 1000, background: "#0f172a", padding: "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         <button onClick={onBack} style={{ color: "#a5b4fc", background: "none", border: "1px solid #334155", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>← Back to Discovery</button>
         <button onClick={() => window.print()} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Print / Save as PDF</button>
       </div>
@@ -1384,7 +1386,7 @@ function PolicyGuide({ policy, onBack }) {
   return (
     <div style={{ minHeight: "100vh", background: "#fff", fontFamily: "'Inter','Segoe UI',sans-serif" }}>
       {/* Print-hide nav */}
-      <div className="no-print" style={{ background: "#0f172a", padding: "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+      <div className="no-print" style={{ position: "sticky", top: 57, zIndex: 1000, background: "#0f172a", padding: "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         <button onClick={onBack} style={{ color: "#a5b4fc", background: "none", border: "1px solid #334155", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>
           ← Back
         </button>
@@ -1696,7 +1698,7 @@ function PolicyDigestDetail({ policy, onBack }) {
 
   return (
     <div style={{ minHeight: "100vh", background: "#fff", fontFamily: "'Inter','Segoe UI',sans-serif" }}>
-      <div className="no-print" style={{ background: "#0f172a", padding: "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <div className="no-print" style={{ position: "sticky", top: 57, zIndex: 1000, background: "#0f172a", padding: "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         <button onClick={onBack} style={{ color: "#a5b4fc", background: "none", border: "1px solid #334155", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>← All Digests</button>
         <button onClick={() => window.print()} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Print / PDF</button>
       </div>
@@ -2141,6 +2143,7 @@ function PolicyDetail({ policy, onBack }) {
 function FrameworkNavigatorTab({ policies, onSelectPolicy }: { policies: any[]; onSelectPolicy: (p: any) => void }) {
   const [selIndustry, setSelIndustry] = useState("");
   const [selGeo, setSelGeo] = useState("");
+  const [showAdvisory, setShowAdvisory] = useState(false);
   const hasSelection = !!(selIndustry && selGeo);
 
   const sortedPolicies = hasSelection ? [...policies].sort((a, b) => {
@@ -2149,6 +2152,15 @@ function FrameworkNavigatorTab({ policies, onSelectPolicy }: { policies: any[]; 
     const rb = getNavRelevance(b.id, selIndustry, selGeo);
     return (order[ra?.level ?? "Advisory"] ?? 3) - (order[rb?.level ?? "Advisory"] ?? 3);
   }) : policies;
+
+  const primaryPolicies = hasSelection ? sortedPolicies.filter(p => {
+    const r = getNavRelevance(p.id, selIndustry, selGeo);
+    return !r || r.level === "Required" || r.level === "Recommended";
+  }) : sortedPolicies;
+  const advisoryPolicies = hasSelection ? sortedPolicies.filter(p => {
+    const r = getNavRelevance(p.id, selIndustry, selGeo);
+    return r?.level === "Advisory";
+  }) : [];
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 32px" }}>
@@ -2203,9 +2215,9 @@ function FrameworkNavigatorTab({ policies, onSelectPolicy }: { policies: any[]; 
         )}
       </div>
 
-      {/* Framework Cards */}
+      {/* Framework Cards — Required + Recommended */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 20 }}>
-        {sortedPolicies.map(p => {
+        {primaryPolicies.map(p => {
           const relevance = hasSelection ? getNavRelevance(p.id, selIndustry, selGeo) : null;
           const cfg = relevance ? NAV_LEVEL_CONFIG[relevance.level] : null;
           const highlights = FRAMEWORK_HIGHLIGHTS[p.id] || [];
@@ -2221,15 +2233,12 @@ function FrameworkNavigatorTab({ policies, onSelectPolicy }: { policies: any[]; 
               flexDirection: "column",
               transition: "border-color 0.2s",
             }}>
-              {/* Relevance banner */}
               {cfg && (
                 <div style={{ background: cfg.bg, borderBottom: `1px solid ${cfg.border}`, padding: "6px 16px", display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: 11, fontWeight: 700, color: cfg.text }}>{cfg.dot} {cfg.label}</span>
                   <span style={{ fontSize: 11, color: "#64748b" }}>for {selIndustry} · {selGeo}</span>
                 </div>
               )}
-
-              {/* Header */}
               <div style={{ background: p.color.bg, borderBottom: `1px solid ${p.color.border}`, padding: "14px 18px", display: "flex", alignItems: "center", gap: 12 }}>
                 <span style={{ fontSize: 28 }}>{p.emoji}</span>
                 <div>
@@ -2240,17 +2249,13 @@ function FrameworkNavigatorTab({ policies, onSelectPolicy }: { policies: any[]; 
                   <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{p.geography}</div>
                 </div>
               </div>
-
               <div style={{ padding: "14px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
-                {/* Applicability reason */}
                 {relevance && (
                   <div style={{ background: cfg!.bg, border: `1px solid ${cfg!.border}`, borderRadius: 8, padding: "10px 14px" }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: cfg!.text, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Why this applies to you</div>
                     <p style={{ margin: 0, fontSize: 12, color: "#334155", lineHeight: 1.65 }}>{relevance.reason}</p>
                   </div>
                 )}
-
-                {/* Key highlights */}
                 <div>
                   <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Key Facts</div>
                   {highlights.map((h, i) => (
@@ -2260,8 +2265,6 @@ function FrameworkNavigatorTab({ policies, onSelectPolicy }: { policies: any[]; 
                     </div>
                   ))}
                 </div>
-
-                {/* Industries */}
                 <div>
                   <div style={{ fontSize: 10, fontWeight: 600, color: "#64748b", marginBottom: 5 }}>Most relevant industries</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
@@ -2272,7 +2275,6 @@ function FrameworkNavigatorTab({ policies, onSelectPolicy }: { policies: any[]; 
                   </div>
                 </div>
               </div>
-
               <div style={{ padding: "10px 18px", borderTop: "1px solid #f1f5f9" }}>
                 <button onClick={() => onSelectPolicy(p)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontSize: 12, fontWeight: 600, width: "100%" }}>
                   View Full Detail →
@@ -2282,6 +2284,69 @@ function FrameworkNavigatorTab({ policies, onSelectPolicy }: { policies: any[]; 
           );
         })}
       </div>
+
+      {/* Advisory — collapsible section */}
+      {hasSelection && advisoryPolicies.length > 0 && (
+        <div style={{ marginTop: 28 }}>
+          <button
+            onClick={() => setShowAdvisory(v => !v)}
+            style={{ display: "flex", alignItems: "center", gap: 10, background: "none", border: "1px solid #e2e8f0", borderRadius: 10, padding: "10px 18px", cursor: "pointer", fontSize: 13, color: "#64748b", fontWeight: 600, width: "100%", textAlign: "left" }}
+          >
+            <span style={{ fontSize: 14 }}>{showAdvisory ? "▾" : "▸"}</span>
+            Also worth considering — {advisoryPolicies.length} Advisory framework{advisoryPolicies.length > 1 ? "s" : ""}
+            <span style={{ marginLeft: "auto", fontSize: 11, color: "#94a3b8", fontWeight: 400 }}>These frameworks do not directly apply to your selection but may be relevant as your programme matures.</span>
+          </button>
+          {showAdvisory && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 20, marginTop: 16 }}>
+              {advisoryPolicies.map(p => {
+                const relevance = getNavRelevance(p.id, selIndustry, selGeo);
+                const cfg = NAV_LEVEL_CONFIG.Advisory;
+                const highlights = FRAMEWORK_HIGHLIGHTS[p.id] || [];
+                return (
+                  <div key={p.id} style={{ background: "#fff", border: `1px solid ${cfg.border}`, borderTop: `3px solid ${cfg.text}`, borderRadius: 14, overflow: "hidden", display: "flex", flexDirection: "column", opacity: 0.85 }}>
+                    <div style={{ background: cfg.bg, borderBottom: `1px solid ${cfg.border}`, padding: "6px 16px", display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: cfg.text }}>{cfg.dot} Advisory</span>
+                      <span style={{ fontSize: 11, color: "#64748b" }}>for {selIndustry} · {selGeo}</span>
+                    </div>
+                    <div style={{ background: p.color.bg, borderBottom: `1px solid ${p.color.border}`, padding: "14px 18px", display: "flex", alignItems: "center", gap: 12 }}>
+                      <span style={{ fontSize: 28 }}>{p.emoji}</span>
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#0f172a" }}>{p.name}</h3>
+                          <span style={{ background: p.color.badge, color: p.color.text, border: `1px solid ${p.color.border}`, borderRadius: 6, padding: "2px 8px", fontSize: 10, fontWeight: 600 }}>{p.type}</span>
+                        </div>
+                        <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{p.geography}</div>
+                      </div>
+                    </div>
+                    <div style={{ padding: "14px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
+                      {relevance && (
+                        <div style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 8, padding: "10px 14px" }}>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: cfg.text, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Context</div>
+                          <p style={{ margin: 0, fontSize: 12, color: "#334155", lineHeight: 1.65 }}>{relevance.reason}</p>
+                        </div>
+                      )}
+                      <div>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Key Facts</div>
+                        {highlights.map((h, i) => (
+                          <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}>
+                            <span style={{ color: p.color.text, fontSize: 12, flexShrink: 0, marginTop: 1 }}>→</span>
+                            <span style={{ fontSize: 12, color: "#475569", lineHeight: 1.5 }}>{h}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={{ padding: "10px 18px", borderTop: "1px solid #f1f5f9" }}>
+                      <button onClick={() => onSelectPolicy(p)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontSize: 12, fontWeight: 600, width: "100%" }}>
+                        View Full Detail →
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Footer note */}
       <div style={{ marginTop: 32, padding: "14px 18px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, fontSize: 12, color: "#64748b" }}>
