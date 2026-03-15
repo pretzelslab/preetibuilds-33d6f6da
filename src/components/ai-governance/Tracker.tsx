@@ -2387,7 +2387,7 @@ export default function AIGovernanceTracker() {
     <div style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "'Inter','Segoe UI',sans-serif" }}>
 
       {/* Header */}
-      <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", padding: "32px 32px 24px", color: "#fff" }}>
+      <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", padding: "32px 32px 20px", color: "#fff" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
             <div>
@@ -2415,26 +2415,28 @@ export default function AIGovernanceTracker() {
               </div>
             ))}
           </div>
+        </div>
+      </div>
 
-          {/* Tab Nav */}
-          <div style={{ display: "flex", gap: 4, marginTop: 20 }}>
-            {[
-              { id: "policies", label: "📋 Policy Grid" },
-              ...(unlocked ? [
-                { id: "topics",    label: "🧭 Topics Framework" },
-                { id: "digests",   label: "📖 Policy Digests" },
-                { id: "navigator", label: "🗺 Framework Navigator" },
-              ] : []),
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setView(tab.id)}
-                style={{ background: view === tab.id ? "#fff" : "transparent", color: view === tab.id ? "#0f172a" : "#94a3b8", border: "none", borderRadius: "8px 8px 0 0", padding: "8px 20px", cursor: "pointer", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+      {/* Sticky Tab Nav */}
+      <div className="no-print" style={{ position: "sticky", top: 57, zIndex: 1000, background: "#0f172a", borderBottom: "2px solid #1e293b" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", display: "flex", gap: 4 }}>
+          {[
+            { id: "policies", label: "📋 Policy Grid" },
+            ...(unlocked ? [
+              { id: "topics",    label: "🧭 Topics Framework" },
+              { id: "digests",   label: "📖 Policy Digests" },
+              { id: "navigator", label: "🗺 Framework Navigator" },
+            ] : []),
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setView(tab.id)}
+              style={{ background: view === tab.id ? "#fff" : "transparent", color: view === tab.id ? "#0f172a" : "#94a3b8", border: "none", borderRadius: "8px 8px 0 0", padding: "8px 20px", cursor: "pointer", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
       </div>
 
