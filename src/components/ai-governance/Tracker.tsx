@@ -1330,9 +1330,9 @@ function PolicyDigestGrid({ policies, onSelect }) {
     return [
       p.name, p.summary,
       digest?.tldr || "",
-      ...(digest?.criticalPoints?.map(c => c.point) || []),
+      ...(digest?.criticalPoints?.map((c: CriticalPoint) => c.heading + " " + c.text) || []),
       ...(digest?.keyObligations || []),
-      ...(digest?.commonMisconceptions?.map(m => m.myth + " " + m.reality) || []),
+      ...(digest?.commonMisconceptions?.map((m: Misconception) => m.myth + " " + m.truth) || []),
     ].some(t => t.toLowerCase().includes(s));
   });
 

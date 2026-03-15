@@ -23,7 +23,14 @@ export type GuideArea = {
   questions: string[];
 };
 
+export type ComplianceDeadline = {
+  date: string;
+  requirement: string;
+};
+
 export type ImplementationGuide = {
+  intro: string;
+  complianceDeadlines?: ComplianceDeadline[];
   areas: GuideArea[];
 };
 
