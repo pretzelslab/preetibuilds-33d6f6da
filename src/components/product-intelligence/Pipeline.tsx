@@ -213,7 +213,7 @@ function computeClusters(cases, dimension) {
     if (c.priority === "Critical") groups[key].critical++;
     if (c.accountTier === "Enterprise") groups[key].enterprise++;
   });
-  return Object.values(groups).sort((a, b) => b.count - a.count);
+  return Object.values(groups).sort((a: any, b: any) => b.count - a.count);
 }
 
 function getStrategy(count, rules) {
