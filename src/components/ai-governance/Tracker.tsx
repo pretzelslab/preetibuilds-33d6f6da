@@ -2207,7 +2207,7 @@ export default function AIGovernanceTracker() {
           {unlocked && (
             <button
               onClick={() => navigate("/client-discovery")}
-              style={{ marginLeft: "auto", background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "6px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6 }}
+              style={{ marginLeft: "auto", background: "transparent", color: "#94a3b8", border: "1px solid #334155", borderRadius: "8px 8px 0 0", padding: "6px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6 }}
             >
               📓 Client Workbook
             </button>
