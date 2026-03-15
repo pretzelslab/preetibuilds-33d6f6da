@@ -768,7 +768,7 @@ function SolutionDoc({ result, onBack }) {
   const STATUS_COLOR = { "Complete": "#15803d", "In Progress": "#a16207", "Not Started": "#dc2626" };
   const STATUS_BG = { "Complete": "#f0fdf4", "In Progress": "#fefce8", "Not Started": "#fef2f2" };
 
-  const allQs = Object.entries(areaMap).flatMap(([area, data]) => data.questions.map(q => ({ ...q, area })));
+  const allQs = Object.entries(areaMap).flatMap(([area, data]: [string, any]) => (data as any).questions.map((q: any) => ({ ...q, area })));
   const complete = allQs.filter(q => q.status === "Complete").length;
   const inProgress = allQs.filter(q => q.status === "In Progress").length;
   const notStarted = allQs.filter(q => q.status === "Not Started").length;
