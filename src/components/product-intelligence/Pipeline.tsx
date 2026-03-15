@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useGateUnlocked } from "@/components/ui/PageGate";
 
 // ─── PIPELINE CONFIGURATION (schema-driven — add verticals/sources/clusters here) ─
 const PIPELINE_CONFIG = {
@@ -272,6 +273,7 @@ Keep arrays: max 3 intelligence items, max 3 growthAreas, max 3 items per priori
 
 // ─── MAIN APP ──────────────────────────────────────────────────────────────────
 export default function Pipeline() {
+  const unlocked = useGateUnlocked();
   const [verticalId, setVerticalId] = useState("fintech");
   const [sourceId, setSourceId] = useState("salesforce");
   const [clusterDimId, setClusterDimId] = useState("type");
@@ -464,7 +466,7 @@ export default function Pipeline() {
               <span className="mono" style={{ fontSize: 9, color: "#64748b" }}>Synced {lastSync.toLocaleTimeString()}</span>
             </div>
           )}
-          {(cases.length > 0 || report) && (
+          {unlocked && (cases.length > 0 || report) && (
             <div style={{ position: "relative" }} ref={exportRef}>
               <button className="btn-ghost" onClick={() => setExportMenuOpen(o => !o)} style={{ padding: "5px 11px", fontSize: 11, fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
                 ↓ Export <span style={{ fontSize: 9, color: "#94a3b8" }}>▾</span>

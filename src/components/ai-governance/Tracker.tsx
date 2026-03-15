@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef } from "react";
 import * as XLSX from "xlsx";
 import { POLICY_DIGESTS } from "./digests";
+import { useGateUnlocked } from "@/components/ui/PageGate";
 
 // ─── IMPLEMENTATION GUIDE DATA (discovery questions per policy) ───────────────
 const IMPLEMENTATION_GUIDES = {
@@ -1996,6 +1997,7 @@ function PolicyDetail({ policy, onBack }) {
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function AIGovernanceTracker() {
+  const unlocked = useGateUnlocked();
   const [view, setView] = useState("policies");   // "policies" | "topics" | "digests"
   const [selected, setSelected] = useState(null);
   const [selectedGuide, setSelectedGuide] = useState(null);
@@ -2032,7 +2034,7 @@ export default function AIGovernanceTracker() {
               <p style={{ margin: "8px 0 0", color: "#94a3b8", fontSize: 14 }}>Policy grid with clause-level detail · Four-pillar framework · Bias, gender & compliance analysis · Export</p>
             </div>
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => exportToCSV(filtered)} style={{ background: "#fff", color: "#0f172a", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Export CSV</button>
+              {unlocked && <button onClick={() => exportToCSV(filtered)} style={{ background: "#fff", color: "#0f172a", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Export CSV</button>}
               <button onClick={() => window.print()} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Print / PDF</button>
             </div>
           </div>
@@ -2056,8 +2058,10 @@ export default function AIGovernanceTracker() {
           <div style={{ display: "flex", gap: 4, marginTop: 20 }}>
             {[
               { id: "policies", label: "📋 Policy Grid" },
-              { id: "topics",   label: "🧭 Topics Framework" },
-              { id: "digests",  label: "📖 Policy Digests" },
+              ...(unlocked ? [
+                { id: "topics",  label: "🧭 Topics Framework" },
+                { id: "digests", label: "📖 Policy Digests" },
+              ] : []),
             ].map(tab => (
               <button
                 key={tab.id}
@@ -2152,7 +2156,7 @@ export default function AIGovernanceTracker() {
                     <div style={{ padding: "12px 20px", borderTop: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                       <span style={{ fontSize: 12, color: "#94a3b8" }}>{p.clauses.length} clauses with pillar, bias & gender detail</span>
                       <div style={{ display: "flex", gap: 8 }}>
-                        {IMPLEMENTATION_GUIDES[p.id] && (
+                        {unlocked && IMPLEMENTATION_GUIDES[p.id] && (
                           <button onClick={() => setSelectedGuide(p)} style={{ background: "#f0fdf4", color: "#166534", border: "1px solid #bbf7d0", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
                             Client Discovery →
                           </button>
