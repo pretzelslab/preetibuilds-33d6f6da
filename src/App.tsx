@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import Research from "./pages/Research";
 import AIGovernance from "./pages/AIGovernance";
 import ProductIntelligence from "./pages/ProductIntelligence";
+import ClientDiscovery from "./pages/ClientDiscovery";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/research" element={<Research />} />
             <Route path="/ai-governance" element={<AIGovernance />} />
             <Route path="/product-intelligence" element={<ProductIntelligence />} />
+            <Route path="/client-discovery" element={<ClientDiscovery />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
