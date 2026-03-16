@@ -49,6 +49,9 @@ const sevColors: Record<string, string> = {
 const MedLog = () => {
   const [activeView, setActiveView] = useState("dashboard");
   const [unlocked, setUnlocked] = useState(mlUnlocked);
+  const [showLockModal, setShowLockModal] = useState(false);
+  const [code, setCode] = useState("");
+  const [codeError, setCodeError] = useState(false);
 
   // Auto-unlock from URL hash — bookmark /medlog#PRL2026
   useEffect(() => {
@@ -60,8 +63,51 @@ const MedLog = () => {
     }
   }, []);
 
+  const tryUnlock = () => {
+    if (code.toUpperCase().trim() === ML_ACCESS_CODE) {
+      try { localStorage.setItem(ML_ACCESS_KEY, "1"); } catch {}
+      setUnlocked(true);
+      setShowLockModal(false);
+      setCode("");
+    } else {
+      setCodeError(true);
+      setTimeout(() => setCodeError(false), 800);
+      setCode("");
+    }
+  };
+
+  const lock = () => {
+    try { localStorage.removeItem(ML_ACCESS_KEY); } catch {}
+    setUnlocked(false);
+  };
+
   return (
     <div className="min-h-screen" style={{ background: "#f7f4ef", color: "#1a1a2e", fontFamily: "'DM Sans', sans-serif" }}>
+      {/* Unlock modal */}
+      {showLockModal && !unlocked && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(26,26,46,0.8)", backdropFilter: "blur(4px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <div style={{ background: "#fff", borderRadius: 20, padding: "40px 44px", maxWidth: 400, width: "100%", textAlign: "center", boxShadow: "0 25px 60px rgba(0,0,0,0.3)" }}>
+            <div style={{ fontSize: 44, marginBottom: 14 }}>🔒</div>
+            <h2 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 800, color: "#1a1a2e" }}>MedLog Access</h2>
+            <p style={{ margin: "0 0 24px", fontSize: 13, color: "#6b6b80", lineHeight: 1.6 }}>Enter your access code to view the full application.</p>
+            <input
+              type="password"
+              placeholder="Access code"
+              value={code}
+              autoFocus
+              onChange={e => setCode(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && tryUnlock()}
+              style={{ width: "100%", padding: "12px 14px", border: `2px solid ${codeError ? "#dc2626" : "#e2e8f0"}`, borderRadius: 10, fontSize: 15, outline: "none", marginBottom: 12, boxSizing: "border-box", fontFamily: "monospace", letterSpacing: "0.15em", textAlign: "center", background: codeError ? "#fef2f2" : "#fff" }}
+            />
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => { setShowLockModal(false); setCode(""); }} style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1px solid #e2e8f0", background: "#f7f4ef", color: "#6b6b80", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+              <button onClick={tryUnlock} style={{ flex: 2, padding: "11px", borderRadius: 10, border: "none", background: "#1a1a2e", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Unlock →</button>
+            </div>
+            {codeError && <p style={{ color: "#dc2626", fontSize: 12, marginTop: 10 }}>Incorrect code — try again.</p>}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-50 flex items-center justify-between px-4 h-16" style={{ background: "#1a1a2e" }}>
         <div className="flex items-center gap-3">
@@ -88,11 +134,18 @@ const MedLog = () => {
             </button>
           ))}
         </nav>
-        <div className="flex items-center gap-2 bg-white/10 rounded-full py-1 px-3 ml-2">
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: "#2d6a4f" }}>
-            JS
+        <div className="flex items-center gap-2 ml-2">
+          {unlocked ? (
+            <button onClick={lock} title="Lock MedLog" className="text-white/40 hover:text-white/80 transition-colors text-base px-2">🔓</button>
+          ) : (
+            <button onClick={() => setShowLockModal(true)} title="Enter access code" className="text-white/40 hover:text-[#74c69d] transition-colors text-base px-2">🔒</button>
+          )}
+          <div className="flex items-center gap-2 bg-white/10 rounded-full py-1 px-3">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: "#2d6a4f" }}>
+              JS
+            </div>
+            <span className="text-xs font-semibold text-white/90 hidden sm:inline">Jane</span>
           </div>
-          <span className="text-xs font-semibold text-white/90 hidden sm:inline">Jane</span>
         </div>
       </header>
 
