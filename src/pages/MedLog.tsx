@@ -19,6 +19,10 @@ interface MedEvent {
 interface SymptomEntry {
   id: string; name: string; severity: Severity; date: string; dateTo?: string; trigger: string; notes: string;
 }
+interface InsightItem {
+  text: string;
+  records: Array<{ id: string; label: string; date: string; kind: "event" | "symptom" }>;
+}
 
 // ── Persistence ───────────────────────────────────────────────────────────────
 const EVENTS_KEY = "pl_medlog_events";
@@ -136,27 +140,39 @@ function topN(map: Record<string, number>, n = 5): Array<{ name: string; count: 
     .sort((a, b) => b.count - a.count).slice(0, n);
 }
 
-function generateInsights(events: MedEvent[], symptoms: SymptomEntry[], year: string): string[] {
+function generateInsights(events: MedEvent[], symptoms: SymptomEntry[], year: string): InsightItem[] {
   const yEvts = events.filter(e => e.date.startsWith(year));
   const ySyms = symptoms.filter(s => s.date.startsWith(year));
-  const insights: string[] = [];
+  const insights: InsightItem[] = [];
 
   const symCounts: Record<string, number> = {};
   ySyms.forEach(s => { symCounts[s.name] = (symCounts[s.name] || 0) + 1; });
   const topSym = Object.entries(symCounts).sort((a, b) => b[1] - a[1])[0];
-  if (topSym) insights.push(`🔁 ${topSym[0]} is your most frequent symptom, logged ${topSym[1]}× in ${year}.`);
+  if (topSym) insights.push({
+    text: `🔁 ${topSym[0]} most frequent — ${topSym[1]}×`,
+    records: ySyms.filter(s => s.name === topSym[0]).map(s => ({ id: s.id, label: `${s.name} (${s.severity})`, date: s.date, kind: "symptom" as const })),
+  });
 
   const trigCounts: Record<string, number> = {};
   ySyms.forEach(s => { if (s.trigger && s.trigger !== "Unknown") trigCounts[s.trigger] = (trigCounts[s.trigger] || 0) + 1; });
   const topTrig = Object.entries(trigCounts).sort((a, b) => b[1] - a[1])[0];
-  if (topTrig) insights.push(`⚡ "${topTrig[0]}" is your most common trigger — linked to ${topTrig[1]} episode${topTrig[1] > 1 ? "s" : ""}.`);
+  if (topTrig) insights.push({
+    text: `⚡ "${topTrig[0]}" top trigger — ${topTrig[1]} episode${topTrig[1] > 1 ? "s" : ""}`,
+    records: ySyms.filter(s => s.trigger === topTrig[0]).map(s => ({ id: s.id, label: `${s.name} · ${s.severity}`, date: s.date, kind: "symptom" as const })),
+  });
 
-  const severeCount = ySyms.filter(s => s.severity === "Severe").length;
-  if (severeCount > 0) insights.push(`⚠️ ${severeCount} severe episode${severeCount > 1 ? "s" : ""} logged — consider discussing patterns with your doctor.`);
-  else if (ySyms.length > 0) insights.push(`✅ No severe episodes logged in ${year} — great sign!`);
+  const severe = ySyms.filter(s => s.severity === "Severe");
+  if (severe.length > 0) insights.push({
+    text: `⚠️ ${severe.length} severe episode${severe.length > 1 ? "s" : ""} — discuss with doctor`,
+    records: severe.map(s => ({ id: s.id, label: s.name, date: s.date, kind: "symptom" as const })),
+  });
+  else if (ySyms.length > 0) insights.push({ text: `✅ No severe episodes in ${year}`, records: [] });
 
-  const headScreen = ySyms.filter(s => s.name === "Headache" && s.trigger === "Screen time").length;
-  if (headScreen >= 2) insights.push(`💡 ${headScreen} of your headaches are linked to screen time — consider regular eye breaks.`);
+  const headScreen = ySyms.filter(s => s.name === "Headache" && s.trigger === "Screen time");
+  if (headScreen.length >= 2) insights.push({
+    text: `💡 ${headScreen.length} headaches linked to screen time`,
+    records: headScreen.map(s => ({ id: s.id, label: `Headache · ${s.trigger}`, date: s.date, kind: "symptom" as const })),
+  });
 
   const monthCounts: Record<string, number> = {};
   [...yEvts.map(e => e.date), ...ySyms.map(s => s.date)].forEach(d => {
@@ -166,10 +182,16 @@ function generateInsights(events: MedEvent[], symptoms: SymptomEntry[], year: st
   if (topMonth) {
     const [y, m] = topMonth[0].split("-");
     const mName = new Date(parseInt(y), parseInt(m) - 1).toLocaleDateString("en-US", { month: "long" });
-    insights.push(`📅 ${mName} was your most active health month with ${topMonth[1]} entries.`);
+    insights.push({
+      text: `📅 ${mName} busiest — ${topMonth[1]} entries`,
+      records: [
+        ...yEvts.filter(e => e.date.startsWith(topMonth[0])).map(e => ({ id: e.id, label: e.title, date: e.date, kind: "event" as const })),
+        ...ySyms.filter(s => s.date.startsWith(topMonth[0])).map(s => ({ id: s.id, label: s.name, date: s.date, kind: "symptom" as const })),
+      ],
+    });
   }
 
-  if (insights.length === 0) insights.push("📝 Start logging events and symptoms to see personalised insights here.");
+  if (insights.length === 0) insights.push({ text: "📝 Start logging to see insights", records: [] });
   return insights;
 }
 
@@ -198,6 +220,14 @@ const MedLog = () => {
 
   const addSymptom = useCallback((s: SymptomEntry) => {
     setSymptoms(prev => { const u = [s, ...prev]; saveItems(SYMPTOMS_KEY, u); return u; });
+  }, []);
+
+  const deleteEvent = useCallback((id: string) => {
+    setEvents(prev => { const u = prev.filter(e => e.id !== id); saveItems(EVENTS_KEY, u); return u; });
+  }, []);
+
+  const deleteSymptom = useCallback((id: string) => {
+    setSymptoms(prev => { const u = prev.filter(s => s.id !== id); saveItems(SYMPTOMS_KEY, u); return u; });
   }, []);
 
   const tryUnlock = () => {
@@ -288,8 +318,8 @@ const MedLog = () => {
 
         {activeView === "dashboard" && <DashboardView events={events} symptoms={symptoms} />}
         {activeView === "log"       && <LogEventView onSave={addEvent} />}
-        {activeView === "symptoms"  && <SymptomsView symptoms={symptoms} onSave={addSymptom} />}
-        {activeView === "history"   && <HistoryView events={events} />}
+        {activeView === "symptoms"  && <SymptomsView symptoms={symptoms} onSave={addSymptom} onDelete={deleteSymptom} />}
+        {activeView === "history"   && <HistoryView events={events} onDelete={deleteEvent} />}
         {activeView === "analysis"  && <AnalysisView events={events} symptoms={symptoms} />}
         {activeView === "family"    && <FamilyView />}
       </main>
@@ -310,7 +340,7 @@ const StatCard = ({ label, value, sub }: { label: string; value: string; sub?: s
   </div>
 );
 
-const EventItem = ({ event }: { event: MedEvent }) => (
+const EventItem = ({ event, onDelete }: { event: MedEvent; onDelete?: (id: string) => void }) => (
   <div className="flex items-start gap-3 p-3 rounded-xl border" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }}>
     <div className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${(typeColors[event.type] || "").split(" ")[0] || "bg-gray-300"}`} />
     <div className="flex-1 min-w-0">
@@ -321,6 +351,14 @@ const EventItem = ({ event }: { event: MedEvent }) => (
       <div className="text-xs mt-0.5" style={{ color: "#6b6b80" }}>{event.date}{event.dateTo ? ` → ${event.dateTo}` : ""}{event.doctor && ` · ${event.doctor}`}</div>
       {event.notes && <div className="text-xs mt-1 italic" style={{ color: "#6b6b80" }}>{event.notes}</div>}
     </div>
+    {onDelete && (
+      <button onClick={() => onDelete(event.id)} title="Delete record"
+        style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 15, padding: "2px 4px", lineHeight: 1, flexShrink: 0, opacity: 0.5 }}
+        onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+        onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}>
+        ✕
+      </button>
+    )}
   </div>
 );
 
@@ -430,7 +468,7 @@ const LogEventView = ({ onSave }: { onSave: (e: MedEvent) => void }) => {
   );
 };
 
-const SymptomsView = ({ symptoms, onSave }: { symptoms: SymptomEntry[]; onSave: (s: SymptomEntry) => void }) => {
+const SymptomsView = ({ symptoms, onSave, onDelete }: { symptoms: SymptomEntry[]; onSave: (s: SymptomEntry) => void; onDelete: (id: string) => void }) => {
   const [name, setName] = useState("Headache");
   const [customName, setCustomName] = useState("");
   const [severity, setSeverity] = useState<Severity>("Mild");
@@ -522,9 +560,12 @@ const SymptomsView = ({ symptoms, onSave }: { symptoms: SymptomEntry[]; onSave: 
       </div>
 
       <div className="rounded-2xl border p-5 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
-        <div className="font-serif font-bold mb-4">📋 Symptom History</div>
+        <div className="flex items-center justify-between mb-4">
+          <div className="font-serif font-bold">📋 Symptom History</div>
+          <span className="text-xs" style={{ color: "#6b6b80" }}>{symptoms.length} record{symptoms.length !== 1 ? "s" : ""} · click ✕ to delete</span>
+        </div>
         <div className="flex flex-col gap-2">
-          {symptoms.slice(0, 8).map(s => (
+          {symptoms.slice(0, 10).map(s => (
             <div key={s.id} className="flex items-start gap-3 p-3 rounded-xl border" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }}>
               <div className="w-2 h-2 rounded-full bg-pink-300 mt-1.5 flex-shrink-0" />
               <div className="flex-1">
@@ -534,6 +575,12 @@ const SymptomsView = ({ symptoms, onSave }: { symptoms: SymptomEntry[]; onSave: 
                 </div>
                 <div className="text-xs mt-0.5" style={{ color: "#6b6b80" }}>{s.date}{s.dateTo ? ` → ${s.dateTo}` : ""}{s.trigger ? ` · Trigger: ${s.trigger}` : ""}</div>
               </div>
+              <button onClick={() => onDelete(s.id)} title="Delete record"
+                style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 15, padding: "2px 4px", lineHeight: 1, flexShrink: 0, opacity: 0.5 }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+                onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}>
+                ✕
+              </button>
             </div>
           ))}
         </div>
@@ -542,13 +589,16 @@ const SymptomsView = ({ symptoms, onSave }: { symptoms: SymptomEntry[]; onSave: 
   );
 };
 
-const HistoryView = ({ events }: { events: MedEvent[] }) => {
+const HistoryView = ({ events, onDelete }: { events: MedEvent[]; onDelete: (id: string) => void }) => {
   const [filter, setFilter] = useState("All");
   const filters = ["All", "visit", "checkup", "surgery", "medication", "other"];
   const filtered = filter === "All" ? events : events.filter(e => e.type === filter);
   return (
     <div className="rounded-2xl border p-5 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
-      <div className="font-serif font-bold mb-4">📅 Medical Event History</div>
+      <div className="flex items-center justify-between mb-4">
+        <div className="font-serif font-bold">📅 Medical Event History</div>
+        <span className="text-xs" style={{ color: "#6b6b80" }}>{events.length} record{events.length !== 1 ? "s" : ""} · click ✕ to delete</span>
+      </div>
       <div className="flex flex-wrap gap-2 mb-4">
         {filters.map(f => (
           <button key={f} onClick={() => setFilter(f)}
@@ -561,7 +611,7 @@ const HistoryView = ({ events }: { events: MedEvent[] }) => {
       <div className="flex flex-col gap-2">
         {filtered.length === 0
           ? <p className="text-sm" style={{ color: "#6b6b80" }}>No events found.</p>
-          : filtered.map(e => <EventItem key={e.id} event={e} />)}
+          : filtered.map(e => <EventItem key={e.id} event={e} onDelete={onDelete} />)}
       </div>
     </div>
   );
@@ -576,6 +626,7 @@ const AnalysisView = ({ events, symptoms }: { events: MedEvent[]; symptoms: Symp
   ])].sort((a, b) => b - a);
 
   const [year, setYear] = useState(currentYear);
+  const [expandedInsight, setExpandedInsight] = useState<number | null>(null);
   const yStr = String(year);
   const yEvts = events.filter(e => e.date.startsWith(yStr));
   const ySyms = symptoms.filter(s => s.date.startsWith(yStr));
@@ -604,17 +655,62 @@ const AnalysisView = ({ events, symptoms }: { events: MedEvent[]; symptoms: Symp
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6">
+      {/* Header row */}
+      <div className="flex items-center gap-3 mb-4">
         <h2 className="font-serif text-xl font-bold">Health Analysis</h2>
-        <select value={year} onChange={e => setYear(parseInt(e.target.value))}
+        <select value={year} onChange={e => { setYear(parseInt(e.target.value)); setExpandedInsight(null); }}
           className="rounded-lg border px-3 py-1.5 text-sm" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }}>
           {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
 
+      {/* ── Compact AI Insights strip ── */}
+      <div className="rounded-2xl border p-4 mb-5" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6b6b80" }}>🧠 Insights</span>
+          <span className="text-[0.68rem] italic" style={{ color: "#6b6b80" }}>Not medical advice · tap chip to see linked records</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {insights.map((ins, i) => (
+            <button key={i}
+              onClick={() => setExpandedInsight(expandedInsight === i ? null : i)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all"
+              style={expandedInsight === i
+                ? { background: "#1a1a2e", color: "#fff", borderColor: "#1a1a2e" }
+                : { background: "#f8fafc", color: "#1a1a2e", borderColor: "#e2ddd6" }}>
+              {ins.text}
+              {ins.records.length > 0 && (
+                <span style={{
+                  background: expandedInsight === i ? "rgba(255,255,255,0.2)" : "#e2ddd6",
+                  color: expandedInsight === i ? "#fff" : "#6b6b80",
+                  borderRadius: 9999, padding: "1px 6px", fontSize: "0.65rem", fontWeight: 700,
+                }}>
+                  {ins.records.length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+        {expandedInsight !== null && insights[expandedInsight]?.records.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3 pt-3" style={{ borderTop: "1px solid #e2ddd6" }}>
+            {insights[expandedInsight].records.map(r => (
+              <span key={r.id} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs border"
+                style={{
+                  background: r.kind === "symptom" ? "#fdf2f8" : "#f0fdf4",
+                  borderColor: r.kind === "symptom" ? "#fbcfe8" : "#bbf7d0",
+                  color: "#1a1a2e",
+                }}>
+                {r.kind === "symptom" ? "🤒" : "📋"} <strong>{r.label}</strong> · {r.date}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <StatCard label="Total Events"  value={String(yEvts.length)}       sub={yStr} />
-        <StatCard label="Symptoms"      value={String(ySyms.length)}       sub="Logged" />
+        <StatCard label="Total Events"  value={String(yEvts.length)}        sub={yStr} />
+        <StatCard label="Symptoms"      value={String(ySyms.length)}        sub="Logged" />
         <StatCard label="Doctors Seen"  value={String(doctors)} />
         <StatCard label="Top Symptom"   value={topSymptoms[0]?.name || "—"} sub={topSymptoms[0] ? `×${topSymptoms[0].count}` : ""} />
       </div>
@@ -667,7 +763,7 @@ const AnalysisView = ({ events, symptoms }: { events: MedEvent[]; symptoms: Symp
       </div>
 
       {/* Top symptoms + top triggers */}
-      <div className="grid md:grid-cols-2 gap-6 mb-6">
+      <div className="grid md:grid-cols-2 gap-6">
         <div className="rounded-2xl border p-5 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
           <div className="font-serif font-bold mb-4">🤒 Top Symptoms</div>
           {topSymptoms.length === 0
@@ -697,19 +793,6 @@ const AnalysisView = ({ events, symptoms }: { events: MedEvent[]; symptoms: Symp
                 <span className="text-sm font-semibold" style={{ minWidth: 20, textAlign: "right" }}>{t.count}×</span>
               </div>
             ))}
-        </div>
-      </div>
-
-      {/* AI Insights */}
-      <div className="rounded-2xl border p-5 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
-        <div className="font-serif font-bold mb-1">🧠 AI Health Insights — {year}</div>
-        <p className="text-xs italic mb-4" style={{ color: "#6b6b80" }}>Pattern analysis based on your logged data. Not a medical diagnosis.</p>
-        <div className="flex flex-col gap-3">
-          {insights.map((insight, i) => (
-            <div key={i} className="p-3 rounded-xl text-sm leading-relaxed" style={{ background: "#f8fafc", border: "1px solid #e2ddd6" }}>
-              {insight}
-            </div>
-          ))}
         </div>
       </div>
     </div>
