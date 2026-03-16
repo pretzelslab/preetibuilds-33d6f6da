@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, BarChart3, Calendar, ClipboardList, Heart, Plus, Stethoscope, Users } from "lucide-react";
-import { useGateUnlocked } from "@/components/ui/PageGate";
+
+// MedLog has its own independent access key — completely separate from AI Governance
+const ML_ACCESS_KEY = "pl_medlog_access";
+const ML_ACCESS_CODE = "PRL2026";
+function mlUnlocked(): boolean {
+  try { return localStorage.getItem(ML_ACCESS_KEY) === "1"; } catch { return false; }
+}
 
 const navItems = [
   { id: "dashboard", label: "Dashboard", icon: ClipboardList },
@@ -42,15 +48,15 @@ const sevColors: Record<string, string> = {
 
 const MedLog = () => {
   const [activeView, setActiveView] = useState("dashboard");
-  const unlocked = useGateUnlocked();
+  const [unlocked, setUnlocked] = useState(mlUnlocked);
 
   // Auto-unlock from URL hash — bookmark /medlog#PRL2026
   useEffect(() => {
     const hash = window.location.hash.replace("#", "").toUpperCase().trim();
-    if (hash === "PRL2026") {
-      try { localStorage.setItem("pl_session_access", "1"); } catch {}
+    if (hash === ML_ACCESS_CODE) {
+      try { localStorage.setItem(ML_ACCESS_KEY, "1"); } catch {}
       window.history.replaceState(null, "", window.location.pathname + window.location.search);
-      window.location.reload();
+      setUnlocked(true);
     }
   }, []);
 
