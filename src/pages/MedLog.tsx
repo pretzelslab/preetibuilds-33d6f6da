@@ -136,9 +136,15 @@ const MedLog = () => {
         </nav>
         <div className="flex items-center gap-2 ml-2">
           {unlocked ? (
-            <button onClick={lock} title="Lock MedLog" className="text-white/40 hover:text-white/80 transition-colors text-base px-2">🔓</button>
+            <button onClick={lock} title="Lock MedLog"
+              style={{ background: "rgba(116,198,157,0.15)", border: "1px solid rgba(116,198,157,0.4)", borderRadius: 8, padding: "4px 10px", fontSize: 13, cursor: "pointer", color: "#74c69d" }}>
+              🔓
+            </button>
           ) : (
-            <button onClick={() => setShowLockModal(true)} title="Enter access code" className="text-white/40 hover:text-[#74c69d] transition-colors text-base px-2">🔒</button>
+            <button onClick={() => setShowLockModal(true)}
+              style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 8, padding: "4px 10px", fontSize: 13, cursor: "pointer", color: "#fff", fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
+              🔒 <span style={{ fontSize: 11 }}>Owner</span>
+            </button>
           )}
           <div className="flex items-center gap-2 bg-white/10 rounded-full py-1 px-3">
             <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: "#2d6a4f" }}>
