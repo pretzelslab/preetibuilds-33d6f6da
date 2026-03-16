@@ -40,6 +40,8 @@ const typeColors: Record<string, string> = {
   other: "bg-purple-100 text-purple-700",
 };
 
+const today = () => new Date().toISOString().slice(0, 10);
+
 const sevColors: Record<string, string> = {
   Mild: "bg-emerald-100 text-emerald-700",
   Moderate: "bg-amber-100 text-amber-700",
@@ -271,7 +273,7 @@ const LogEventView = () => (
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-[0.78rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Date</label>
-          <input type="date" className="rounded-lg border px-3 py-2.5 text-sm" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }} defaultValue="2026-03-04" />
+          <input type="date" className="rounded-lg border px-3 py-2.5 text-sm" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }} defaultValue={today()} />
         </div>
         <div className="col-span-2 flex flex-col gap-1.5">
           <label className="text-[0.78rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Title / Description</label>
@@ -304,7 +306,7 @@ const SymptomsView = () => (
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-[0.78rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Date</label>
-          <input type="date" className="rounded-lg border px-3 py-2.5 text-sm" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }} />
+          <input type="date" className="rounded-lg border px-3 py-2.5 text-sm" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }} defaultValue={today()} />
         </div>
         <div className="col-span-2 flex flex-col gap-1.5">
           <label className="text-[0.78rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Severity</label>
