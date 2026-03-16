@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, BarChart3, Calendar, ClipboardList, Heart, Plus, Stethoscope, Users } from "lucide-react";
+import { useGateUnlocked } from "@/components/ui/PageGate";
 
 const navItems = [
   { id: "dashboard", label: "Dashboard", icon: ClipboardList },
@@ -41,6 +42,17 @@ const sevColors: Record<string, string> = {
 
 const MedLog = () => {
   const [activeView, setActiveView] = useState("dashboard");
+  const unlocked = useGateUnlocked();
+
+  // Auto-unlock from URL hash — bookmark /medlog#PRL2026
+  useEffect(() => {
+    const hash = window.location.hash.replace("#", "").toUpperCase().trim();
+    if (hash === "PRL2026") {
+      try { localStorage.setItem("pl_session_access", "1"); } catch {}
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      window.location.reload();
+    }
+  }, []);
 
   return (
     <div className="min-h-screen" style={{ background: "#f7f4ef", color: "#1a1a2e", fontFamily: "'DM Sans', sans-serif" }}>
@@ -78,35 +90,39 @@ const MedLog = () => {
         </div>
       </header>
 
-      {/* Main Content with Coming Soon Overlay */}
+      {/* Main Content */}
       <main className="max-w-[1100px] mx-auto px-6 py-8 relative overflow-hidden">
-        {/* Diagonal watermark */}
-        <div className="pointer-events-none absolute inset-0 z-30 overflow-hidden">
-          <div className="absolute inset-0 flex flex-col justify-center items-center gap-24" style={{ transform: "rotate(-35deg)", transformOrigin: "center center" }}>
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="flex gap-16 whitespace-nowrap">
-                {Array.from({ length: 6 }).map((_, j) => (
-                  <span key={j} className="text-lg font-bold uppercase tracking-[0.3em] select-none" style={{ color: "rgba(26,26,46,0.06)" }}>
-                    © MedLog · Copyrighted
-                  </span>
-                ))}
-              </div>
-            ))}
+        {/* Visitor overlays — hidden when unlocked */}
+        {!unlocked && (<>
+          {/* Diagonal watermark */}
+          <div className="pointer-events-none absolute inset-0 z-30 overflow-hidden">
+            <div className="absolute inset-0 flex flex-col justify-center items-center gap-24" style={{ transform: "rotate(-35deg)", transformOrigin: "center center" }}>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="flex gap-16 whitespace-nowrap">
+                  {Array.from({ length: 6 }).map((_, j) => (
+                    <span key={j} className="text-lg font-bold uppercase tracking-[0.3em] select-none" style={{ color: "rgba(26,26,46,0.06)" }}>
+                      © MedLog · Copyrighted
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-        {/* Semi-transparent overlay for bottom half */}
-        <div className="pointer-events-none absolute inset-0 z-40" style={{
-          background: "linear-gradient(to bottom, transparent 40%, rgba(247,244,239,0.7) 55%, rgba(247,244,239,0.95) 75%, #f7f4ef 100%)",
-        }} />
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-50 text-center">
-          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl shadow-lg" style={{ background: "#1a1a2e" }}>
-            <Heart className="w-5 h-5 text-[#74c69d]" />
-            <span className="text-white font-semibold text-sm">Full app coming soon — stay tuned!</span>
+          {/* Gradient fade */}
+          <div className="pointer-events-none absolute inset-0 z-40" style={{
+            background: "linear-gradient(to bottom, transparent 40%, rgba(247,244,239,0.7) 55%, rgba(247,244,239,0.95) 75%, #f7f4ef 100%)",
+          }} />
+          {/* Coming soon badge */}
+          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-50 text-center">
+            <div className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl shadow-lg" style={{ background: "#1a1a2e" }}>
+              <Heart className="w-5 h-5 text-[#74c69d]" />
+              <span className="text-white font-semibold text-sm">Full app coming soon — stay tuned!</span>
+            </div>
+            <p className="mt-3 text-sm" style={{ color: "#6b6b80" }}>
+              This is a preview of MedLog. Backend &amp; interactivity launching shortly.
+            </p>
           </div>
-          <p className="mt-3 text-sm" style={{ color: "#6b6b80" }}>
-            This is a preview of MedLog. Backend & interactivity launching shortly.
-          </p>
-        </div>
+        </>)}
 
         {activeView === "dashboard" && <DashboardView />}
         {activeView === "log" && <LogEventView />}
@@ -116,9 +132,9 @@ const MedLog = () => {
         {activeView === "family" && <FamilyView />}
       </main>
 
-      {/* Fixed watermark footer */}
+      {/* Footer — copyright always visible */}
       <footer className="fixed bottom-0 left-0 right-0 z-30 text-center py-2 text-[0.7rem] tracking-wide" style={{ background: "#1a1a2e", color: "rgba(255,255,255,0.35)" }}>
-        © 2026 MedLog · All rights reserved · Private & Confidential · Unauthorised reproduction prohibited
+        © 2026 MedLog · All rights reserved · Private &amp; Confidential · Unauthorised reproduction prohibited
       </footer>
     </div>
   );
