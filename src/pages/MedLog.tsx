@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, BarChart3, Calendar, ClipboardList, Heart, Plus, Stethoscope, Users } from "lucide-react";
 
@@ -41,6 +41,35 @@ const typeColors: Record<string, string> = {
 };
 
 const today = () => new Date().toISOString().slice(0, 10);
+
+const DateInput = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
+  const ref = useRef<HTMLInputElement>(null);
+  const open = () => {
+    if (!ref.current) return;
+    if (typeof ref.current.showPicker === "function") ref.current.showPicker();
+    else ref.current.focus();
+  };
+  return (
+    <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+      <input
+        ref={ref}
+        type="date"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="rounded-lg border px-3 py-2.5 text-sm w-full"
+        style={{ background: "#f7f4ef", borderColor: "#e2ddd6", paddingRight: "2.5rem" }}
+      />
+      <button
+        type="button"
+        onClick={open}
+        style={{ position: "absolute", right: 8, background: "none", border: "none", cursor: "pointer", fontSize: 16, lineHeight: 1, padding: 2, color: "#6b6b80" }}
+        tabIndex={-1}
+      >
+        📅
+      </button>
+    </div>
+  );
+};
 
 const sevColors: Record<string, string> = {
   Mild: "bg-emerald-100 text-emerald-700",
@@ -260,7 +289,9 @@ const DashboardView = () => (
   </div>
 );
 
-const LogEventView = () => (
+const LogEventView = () => {
+  const [date, setDate] = useState(today());
+  return (
   <div className="max-w-[640px] mx-auto">
     <div className="rounded-2xl border p-6 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
       <div className="font-serif font-bold mb-5 flex items-center gap-2">➕ Log a Medical Event</div>
@@ -273,7 +304,7 @@ const LogEventView = () => (
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-[0.78rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Date</label>
-          <input type="date" className="rounded-lg border px-3 py-2.5 text-sm" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }} defaultValue={today()} />
+          <DateInput value={date} onChange={setDate} />
         </div>
         <div className="col-span-2 flex flex-col gap-1.5">
           <label className="text-[0.78rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Title / Description</label>
@@ -291,9 +322,12 @@ const LogEventView = () => (
       <button className="mt-4 px-6 py-2.5 rounded-lg text-white text-sm font-semibold" style={{ background: "#2d6a4f" }}>💾 Save Event</button>
     </div>
   </div>
-);
+  );
+};
 
-const SymptomsView = () => (
+const SymptomsView = () => {
+  const [date, setDate] = useState(today());
+  return (
   <div className="grid md:grid-cols-2 gap-6">
     <div className="rounded-2xl border p-5 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
       <div className="font-serif font-bold mb-4">🤒 Log a Symptom</div>
@@ -306,7 +340,7 @@ const SymptomsView = () => (
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-[0.78rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Date</label>
-          <input type="date" className="rounded-lg border px-3 py-2.5 text-sm" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }} defaultValue={today()} />
+          <DateInput value={date} onChange={setDate} />
         </div>
         <div className="col-span-2 flex flex-col gap-1.5">
           <label className="text-[0.78rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Severity</label>
@@ -337,7 +371,8 @@ const SymptomsView = () => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
 const HistoryView = () => (
   <div className="rounded-2xl border p-5 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
