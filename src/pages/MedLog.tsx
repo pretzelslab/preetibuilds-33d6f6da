@@ -49,13 +49,27 @@ const DateInput = ({ value, onChange }: { value: string; onChange: (v: string) =
     if (typeof ref.current.showPicker === "function") ref.current.showPicker();
     else ref.current.focus();
   };
+  const handleBlur = () => {
+    if (!value) return;
+    const parts = value.split("-");
+    if (parts.length === 3) {
+      let year = parseInt(parts[0], 10);
+      if (isNaN(year) || year < 1900) year = 1900;
+      if (year > 2099) year = 2099;
+      const corrected = `${year}-${parts[1]}-${parts[2]}`;
+      if (corrected !== value) onChange(corrected);
+    }
+  };
   return (
     <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
       <input
         ref={ref}
         type="date"
         value={value}
+        min="1900-01-01"
+        max="2099-12-31"
         onChange={e => onChange(e.target.value)}
+        onBlur={handleBlur}
         className="rounded-lg border px-3 py-2.5 text-sm w-full"
         style={{ background: "#f7f4ef", borderColor: "#e2ddd6", paddingRight: "2.5rem" }}
       />
