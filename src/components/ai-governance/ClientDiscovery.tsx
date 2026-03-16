@@ -193,8 +193,18 @@ const SIGN_OFF_CONFIG: Record<SignOffStatus, { bg: string; text: string; border:
 
 // ─── STORAGE HELPERS ──────────────────────────────────────────────────────────
 const CL_KEY = "pl_clients";
+function migrateClient(c: any): Client {
+  return {
+    geography: "",
+    primaryAiUseCase: "",
+    contactName: "",
+    engagementType: "" as EngagementType,
+    signOffStatus: "Pending" as SignOffStatus,
+    ...c,
+  };
+}
 function loadClients(): Client[] {
-  try { return JSON.parse(localStorage.getItem(CL_KEY) || "[]"); } catch { return []; }
+  try { return (JSON.parse(localStorage.getItem(CL_KEY) || "[]") as any[]).map(migrateClient); } catch { return []; }
 }
 function saveClients(clients: Client[]) {
   try { localStorage.setItem(CL_KEY, JSON.stringify(clients)); } catch {}
