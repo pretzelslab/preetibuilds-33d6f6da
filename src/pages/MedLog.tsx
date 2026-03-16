@@ -206,6 +206,14 @@ const MedLog = () => {
   const [symptoms, setSymptoms] = useState<SymptomEntry[]>(() => loadItems(SYMPTOMS_KEY, DEFAULT_SYMPTOMS));
 
   useEffect(() => {
+    const labels: Record<string, string> = {
+      dashboard: "Dashboard", log: "Log Event", symptoms: "Symptoms",
+      history: "History", analysis: "Analysis", family: "Family",
+    };
+    document.title = `${labels[activeView] ?? activeView} · MedLog | Preeti Builds`;
+  }, [activeView]);
+
+  useEffect(() => {
     const hash = window.location.hash.replace("#", "").toUpperCase().trim();
     if (hash === ML_ACCESS_CODE) {
       try { localStorage.setItem(ML_ACCESS_KEY, "1"); } catch {}
