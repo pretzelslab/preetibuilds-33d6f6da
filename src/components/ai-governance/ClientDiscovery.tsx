@@ -368,7 +368,7 @@ function ProgressBar({ pct, color = "#6366f1" }: { pct: number; color?: string }
 }
 
 function SignOffBadge({ status }: { status: SignOffStatus }) {
-  const cfg = SIGN_OFF_CONFIG[status];
+  const cfg = SIGN_OFF_CONFIG[status] || SIGN_OFF_CONFIG["Pending"];
   return (
     <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 6, background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}`, whiteSpace: "nowrap" }}>
       {cfg.icon} {status}
@@ -567,7 +567,10 @@ function NewClientForm({ onAdd, onCancel }: { onAdd: (c: Client) => void; onCanc
 }
 
 // ─── VIEW 1: CLIENT LIST (grouped by industry) ────────────────────────────────
-function ClientListView({ onSelectClient }: { onSelectClient: (c: Client) => void }) {
+function ClientListView({ onSelectClient, onOpenWorkbook }: {
+  onSelectClient: (c: Client) => void;
+  onOpenWorkbook: (c: Client, policyId: string) => void;
+}) {
   const [clients, setClients] = useState<Client[]>(loadClients);
   const [showAddForm, setShowAddForm] = useState(false);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
@@ -674,7 +677,11 @@ function ClientListView({ onSelectClient }: { onSelectClient: (c: Client) => voi
                               {client.activePolicies.length === 0 && <span style={{ fontSize: 11, color: "#64748b", fontStyle: "italic" }}>No frameworks</span>}
                             </div>
                             <div style={{ display: "flex", gap: 8 }}>
-                              <button onClick={() => onSelectClient(client)} style={{ background: "#fff", color: "#0f172a", border: "none", borderRadius: 7, padding: "6px 14px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>Open →</button>
+                              <button onClick={() => {
+                                const guideEnabled = client.activePolicies.filter(pid => POLICY_STUBS.find(p => p.id === pid)?.hasGuide);
+                                if (guideEnabled.length === 1) onOpenWorkbook(client, guideEnabled[0]);
+                                else onSelectClient(client);
+                              }} style={{ background: "#fff", color: "#0f172a", border: "none", borderRadius: 7, padding: "6px 14px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>Open →</button>
                               <button onClick={() => removeClient(client.id)} title="Remove" style={{ background: "transparent", color: "#94a3b8", border: "1px solid #334155", borderRadius: 7, padding: "6px 9px", cursor: "pointer", fontSize: 12 }}>✕</button>
                             </div>
                           </div>
@@ -844,7 +851,7 @@ function ReadinessReport({ client, policyId, areaStates }: { client: Client; pol
   const pct = totalQ ? Math.round((completeQ / totalQ) * 100) : 0;
   const level = pct >= 80 ? "Advanced" : pct >= 50 ? "Developing" : pct >= 25 ? "Initial" : "Not Started";
   const levelColor = pct >= 80 ? "#15803d" : pct >= 50 ? "#a16207" : pct >= 25 ? "#c2410c" : "#dc2626";
-  const sof = SIGN_OFF_CONFIG[client.signOffStatus];
+  const sof = SIGN_OFF_CONFIG[client.signOffStatus] || SIGN_OFF_CONFIG["Pending"];
 
   return (
     <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, overflow: "hidden", marginBottom: 24 }}>
@@ -931,13 +938,14 @@ function ReadinessReport({ client, policyId, areaStates }: { client: Client; pol
 function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
   client: Client; policyId: string; onBack: () => void; onBackToClient: () => void;
 }) {
-  const stub = POLICY_STUBS.find(p => p.id === policyId)!;
-  const guide = IMPLEMENTATION_GUIDES[policyId];
+  const stub = POLICY_STUBS.find(p => p.id === policyId) || POLICY_STUBS[0];
+  const guide = (IMPLEMENTATION_GUIDES as Record<string, any>)[policyId];
+  // All hooks must be declared before any early return
   const [openArea, setOpenArea] = useState<number | null>(null);
   const [showReport, setShowReport] = useState(false);
   const [lastSaved, setLastSaved] = useState("");
   const [areaStates, setAreaStates] = useState<AreaState[]>(() =>
-    guide.areas.map((_a, i) => loadArea(client.id, policyId, i))
+    guide ? guide.areas.map((_a: any, i: number) => loadArea(client.id, policyId, i)) : []
   );
 
   const updateQuestion = useCallback((areaIdx: number, qIdx: number, field: keyof QuestionState, value: string) => {
@@ -952,10 +960,22 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
     });
   }, [client.id, policyId]);
 
+  // Safe early return after all hooks
+  if (!guide) return (
+    <div style={{ maxWidth: 960, margin: "0 auto", padding: "28px 32px" }}>
+      <Breadcrumb items={[{ label: "All Clients", onClick: onBackToClient }, { label: client.name, onClick: onBack }]} />
+      <div style={{ marginTop: 32, textAlign: "center", color: "#94a3b8" }}>
+        <div style={{ fontSize: 32, marginBottom: 12 }}>📋</div>
+        <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>Guide not yet available</div>
+        <div style={{ fontSize: 13 }}>The full discovery workbook for this framework is coming soon.</div>
+      </div>
+    </div>
+  );
+
   const overallPct = (() => {
     let total = 0, done = 0;
     areaStates.forEach((a, i) => {
-      guide.areas[i].questions.forEach((_q, qi) => {
+      guide.areas[i].questions.forEach((_q: string, qi: number) => {
         const s = a.questions[qi]?.status;
         if (s === "Not Applicable") return;
         total++; if (s === "Complete") done++;
@@ -1124,16 +1144,20 @@ export default function ClientDiscovery() {
   const [view, setView] = useState<View>("clients");
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [selectedPolicy, setSelectedPolicy] = useState<string | null>(null);
+  const [workbookFrom, setWorkbookFrom] = useState<"detail" | "list">("detail");
 
   if (view === "workbook" && selectedClient && selectedPolicy) {
     return <DiscoveryWorkbook client={selectedClient} policyId={selectedPolicy}
-      onBack={() => setView("detail")}
+      onBack={() => workbookFrom === "list" ? (setView("clients"), setSelectedClient(null)) : setView("detail")}
       onBackToClient={() => { setView("clients"); setSelectedClient(null); }} />;
   }
   if (view === "detail" && selectedClient) {
     return <ClientDetailView client={selectedClient}
       onBack={() => { setView("clients"); setSelectedClient(null); }}
-      onSelectPolicy={pid => { setSelectedPolicy(pid); setView("workbook"); }} />;
+      onSelectPolicy={pid => { setSelectedPolicy(pid); setWorkbookFrom("detail"); setView("workbook"); }} />;
   }
-  return <ClientListView onSelectClient={c => { setSelectedClient(c); setView("detail"); }} />;
+  return <ClientListView
+    onSelectClient={c => { setSelectedClient(c); setView("detail"); }}
+    onOpenWorkbook={(c, pid) => { setSelectedClient(c); setSelectedPolicy(pid); setWorkbookFrom("list"); setView("workbook"); }}
+  />;
 }
