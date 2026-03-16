@@ -4,6 +4,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Restore native date picker that Tailwind's preflight suppresses */
+input[type="date"] {
+  -webkit-appearance: auto;
+  appearance: auto;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  display: block;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
 @layer base {
   :root {
     --background: 220 20% 97%;
