@@ -25,11 +25,16 @@ type QuestionState = {
   status: QStatus;
   notes: string;
   docExists: DocExists;
+  dueDate: string;
+  owner: string;
+  comment: string;
+  commentAnswer: string;
 };
 
 type AreaState = {
   questions: Record<number, QuestionState>;
   lastUpdated: string;
+  summary: string;
 };
 
 // ─── POLICY STUBS ─────────────────────────────────────────────────────────────
@@ -191,6 +196,29 @@ const SIGN_OFF_CONFIG: Record<SignOffStatus, { bg: string; text: string; border:
   "Signed Off": { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0", icon: "✅" },
 };
 
+// ─── CLAUSE TOOLTIPS ──────────────────────────────────────────────────────────
+const CLAUSE_SUMMARIES: Record<string, string> = {
+  "Art. 5":    "Prohibited Practices — Bans social scoring, real-time biometric ID in public, subliminal manipulation, and emotion recognition in workplace/education. Penalty: up to €35M or 7% global turnover.",
+  "Art. 6":    "High-Risk Classification Criteria — An AI system is high-risk if it is a safety component of a product under Annex II legislation, or falls within one of the 8 use-case areas in Annex III.",
+  "Art. 9":    "Risk Management System — Requires a documented, iterative process throughout the AI lifecycle to identify, analyse, estimate, evaluate, and mitigate foreseeable risks.",
+  "Art. 10":   "Data Governance — Training, validation, and test data must meet quality criteria: relevant, representative, free of errors as far as possible, and have appropriate statistical properties.",
+  "Art. 13":   "Transparency — High-risk AI must provide instructions allowing operators to understand the system's purpose, capabilities, limitations, and performance levels.",
+  "Art. 14":   "Human Oversight — High-risk AI systems must be designed to allow effective human oversight. Operators must be able to monitor, understand, and intervene or halt the system.",
+  "Art. 17":   "Quality Management System — Providers must implement a written QMS covering the entire AI lifecycle, documented policies, testing protocols, and post-market obligations.",
+  "Art. 43":   "Conformity Assessment — High-risk AI must undergo conformity assessment (self-assessment or third-party) before being placed on the EU market.",
+  "Annex III": "8 High-Risk Use Cases — Biometrics · Critical Infrastructure · Education & Vocational Training · Employment · Essential Private/Public Services · Law Enforcement · Migration & Border Control · Justice.",
+  "Annex IV":  "Technical Documentation — Must include: system description, design specs, training data, testing methodology, performance metrics, risk management records, and post-market monitoring plan.",
+};
+
+// Extracts clause keys from a regulatoryRef string and returns matching summaries
+function getClauseSummaries(ref: string): Array<{ key: string; summary: string }> {
+  return Object.entries(CLAUSE_SUMMARIES)
+    .filter(([key]) => ref.includes(key))
+    .map(([key, summary]) => ({ key, summary }));
+}
+
+const RISK_CLASSIFICATION_HINT = `EU AI Act Risk Levels:\n• Unacceptable — Prohibited (Art. 5). No use permitted.\n• High — Regulated under Annex III (e.g. recruitment AI, credit scoring, biometrics, medical devices). Requires conformity assessment, technical documentation, and human oversight.\n• Limited — Transparency obligations only (e.g. chatbots must disclose AI interaction).\n• Minimal — No specific obligations. Most AI systems fall here (e.g. spam filters, recommendation engines).`;
+
 // ─── STORAGE HELPERS ──────────────────────────────────────────────────────────
 const CL_KEY = "pl_clients";
 function migrateClient(c: any): Client {
@@ -214,8 +242,18 @@ function areaKey(clientId: string, policyId: string, areaIdx: number) {
 }
 function loadArea(clientId: string, policyId: string, areaIdx: number): AreaState {
   try {
-    return JSON.parse(localStorage.getItem(areaKey(clientId, policyId, areaIdx)) || "null") || { questions: {}, lastUpdated: "" };
-  } catch { return { questions: {}, lastUpdated: "" }; }
+    const raw = JSON.parse(localStorage.getItem(areaKey(clientId, policyId, areaIdx)) || "null");
+    return raw ? { summary: "", ...raw } : { questions: {}, lastUpdated: "", summary: "" };
+  } catch { return { questions: {}, lastUpdated: "", summary: "" }; }
+}
+function reportSummaryKey(clientId: string, policyId: string) {
+  return `pl_rpt_sum_${clientId}_${policyId}`;
+}
+function loadReportSummary(clientId: string, policyId: string): string {
+  return localStorage.getItem(reportSummaryKey(clientId, policyId)) || "";
+}
+function saveReportSummary(clientId: string, policyId: string, text: string) {
+  try { localStorage.setItem(reportSummaryKey(clientId, policyId), text); } catch {}
 }
 function saveArea(clientId: string, policyId: string, areaIdx: number, state: AreaState) {
   try { localStorage.setItem(areaKey(clientId, policyId, areaIdx), JSON.stringify({ ...state, lastUpdated: new Date().toISOString() })); } catch {}
@@ -826,7 +864,10 @@ function ClientDetailView({ client, onBack, onSelectPolicy }: {
 }
 
 // ─── READINESS REPORT ─────────────────────────────────────────────────────────
-function ReadinessReport({ client, policyId, areaStates }: { client: Client; policyId: string; areaStates: AreaState[] }) {
+function ReadinessReport({ client, policyId, areaStates, reportSummary, onSummaryChange }: {
+  client: Client; policyId: string; areaStates: AreaState[];
+  reportSummary: string; onSummaryChange: (v: string) => void;
+}) {
   const stub = POLICY_STUBS.find(p => p.id === policyId)!;
   const guide = IMPLEMENTATION_GUIDES[policyId];
   if (!guide) return null;
@@ -856,8 +897,8 @@ function ReadinessReport({ client, policyId, areaStates }: { client: Client; pol
   return (
     <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, overflow: "hidden", marginBottom: 24 }}>
       {/* Client overview section */}
-      <div style={{ background: "#0f172a", padding: "18px 24px" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Assessment Overview</div>
+      <div style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0", padding: "18px 24px" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Assessment Overview</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 12 }}>
           {[
             { label: "Client", value: client.name },
@@ -871,7 +912,7 @@ function ReadinessReport({ client, policyId, areaStates }: { client: Client; pol
           ].map(f => (
             <div key={f.label}>
               <div style={{ fontSize: 10, fontWeight: 600, color: "#64748b", marginBottom: 3 }}>{f.label}</div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#f1f5f9" }}>{f.value}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#0f172a" }}>{f.value}</div>
             </div>
           ))}
         </div>
@@ -881,12 +922,25 @@ function ReadinessReport({ client, policyId, areaStates }: { client: Client; pol
           </span>
           <span style={{ fontSize: 11, color: "#64748b" }}>Assessed: {new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</span>
         </div>
+        {/* Assessment summary */}
+        <div style={{ marginTop: 16 }}>
+          <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Overall Assessment Summary
+          </label>
+          <textarea
+            value={reportSummary}
+            onChange={e => onSummaryChange(e.target.value)}
+            placeholder="Provide an executive summary of the assessment: key strengths, critical gaps, recommended priorities, and agreed next steps…"
+            rows={3}
+            style={{ width: "100%", padding: "8px 10px", border: "1px solid #e2e8f0", borderRadius: 7, fontSize: 12, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit", color: "#0f172a", background: "#fff" }}
+          />
+        </div>
       </div>
 
       {/* Readiness result */}
       <div style={{ padding: "20px 24px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>📊 Readiness Score — {stub.name}</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#334155" }}>📊 Readiness Score — {stub.name}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ fontSize: 32, fontWeight: 900, color: levelColor }}>{pct}%</div>
             <div style={{ fontSize: 13, fontWeight: 700, color: levelColor, padding: "4px 10px", background: pct >= 80 ? "#f0fdf4" : pct >= 50 ? "#fefce8" : pct >= 25 ? "#fff7ed" : "#fef2f2", borderRadius: 8 }}>{level}</div>
@@ -944,9 +998,18 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
   const [openArea, setOpenArea] = useState<number | null>(null);
   const [showReport, setShowReport] = useState(false);
   const [lastSaved, setLastSaved] = useState("");
+  const [reportSummary, setReportSummary] = useState(() => loadReportSummary(client.id, policyId));
+  const [openComments, setOpenComments] = useState<Set<string>>(new Set());
   const [areaStates, setAreaStates] = useState<AreaState[]>(() =>
     guide ? guide.areas.map((_a: any, i: number) => loadArea(client.id, policyId, i)) : []
   );
+  const areaRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    if (openArea !== null && areaRefs.current[openArea]) {
+      setTimeout(() => areaRefs.current[openArea!]?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+    }
+  }, [openArea]);
 
   const updateQuestion = useCallback((areaIdx: number, qIdx: number, field: keyof QuestionState, value: string) => {
     setAreaStates(prev => {
@@ -959,6 +1022,19 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
       return updated;
     });
   }, [client.id, policyId]);
+
+  const updateAreaSummary = useCallback((areaIdx: number, text: string) => {
+    setAreaStates(prev => {
+      const updated = prev.map((a, i) => i !== areaIdx ? a : { ...a, summary: text });
+      saveArea(client.id, policyId, areaIdx, updated[areaIdx]);
+      setLastSaved(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+      return updated;
+    });
+  }, [client.id, policyId]);
+
+  const toggleComment = useCallback((key: string) => {
+    setOpenComments(prev => { const s = new Set(prev); s.has(key) ? s.delete(key) : s.add(key); return s; });
+  }, []);
 
   // Safe early return after all hooks
   if (!guide) return (
@@ -1016,7 +1092,10 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
         </div>
       </div>
 
-      {showReport && <ReadinessReport client={client} policyId={policyId} areaStates={areaStates} />}
+      {showReport && <ReadinessReport client={client} policyId={policyId} areaStates={areaStates}
+        reportSummary={reportSummary}
+        onSummaryChange={v => { setReportSummary(v); saveReportSummary(client.id, policyId, v); setLastSaved(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })); }}
+      />}
 
       <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "11px 16px", marginBottom: 18, fontSize: 13, color: "#475569", lineHeight: 1.6 }}>
         {guide.intro}
@@ -1028,14 +1107,17 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
           const isOpen = openArea === areaIdx;
           const aState = areaStates[areaIdx];
 
+          const clauseHints = getClauseSummaries(area.regulatoryRef || "");
+          const isRiskClass = (area.area || "").toLowerCase().includes("risk classification");
+
           return (
-            <div key={areaIdx} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 11, overflow: "hidden" }}>
+            <div key={areaIdx} ref={el => { areaRefs.current[areaIdx] = el; }} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 11, overflow: "hidden" }}>
               <button onClick={() => setOpenArea(isOpen ? null : areaIdx)}
-                style={{ width: "100%", background: isOpen ? "#0f172a" : "#fff", border: "none", padding: "13px 18px", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 12 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: isOpen ? "#818cf8" : "#6366f1", minWidth: 26 }}>{String(areaIdx + 1).padStart(2, "0")}</span>
+                style={{ width: "100%", background: isOpen ? "#f0f4ff" : "#fff", border: "none", padding: "13px 18px", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 12, borderBottom: isOpen ? "1px solid #c7d2fe" : "none" }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#6366f1", minWidth: 26 }}>{String(areaIdx + 1).padStart(2, "0")}</span>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: isOpen ? "#fff" : "#0f172a" }}>{area.area}</div>
-                  <div style={{ fontSize: 11, color: isOpen ? "#94a3b8" : "#64748b", marginTop: 2 }}>{area.stakeholder} · {area.regulatoryRef}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{area.area}</div>
+                  <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{area.stakeholder} · {area.regulatoryRef}</div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
                   <span style={{ fontSize: 10, fontWeight: 700, color: area.priority === "High" ? "#dc2626" : area.priority === "Medium" ? "#a16207" : "#15803d", background: area.priority === "High" ? "#fef2f2" : area.priority === "Medium" ? "#fefce8" : "#f0fdf4", borderRadius: 5, padding: "2px 7px" }}>{area.priority}</span>
@@ -1050,8 +1132,9 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
               </button>
 
               {isOpen && (
-                <div style={{ padding: "18px 22px", borderTop: "1px solid #1e293b", background: "#fafafa" }}>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+                <div style={{ padding: "18px 22px", background: "#fafafa" }}>
+                  {/* Meta badges row */}
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: clauseHints.length > 0 || isRiskClass ? 10 : 16 }}>
                     {[{ label: "Effort", value: area.effort }, { label: "Pillar", value: area.pillar }].map(m => (
                       <span key={m.label} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 6, padding: "3px 10px", fontSize: 11 }}>
                         <strong style={{ color: "#64748b" }}>{m.label}:</strong> <span style={{ color: "#0f172a" }}>{m.value}</span>
@@ -1062,18 +1145,50 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
                     </span>
                   </div>
 
+                  {/* Clause tooltips */}
+                  {clauseHints.length > 0 && (
+                    <div style={{ marginBottom: 14, display: "flex", flexDirection: "column", gap: 6 }}>
+                      {clauseHints.map(({ key, summary }) => (
+                        <div key={key} style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderLeft: "3px solid #6366f1", borderRadius: 7, padding: "8px 12px", fontSize: 12, color: "#334155", lineHeight: 1.6 }}>
+                          <span style={{ fontWeight: 700, color: "#6366f1", marginRight: 6 }}>{key}</span>{summary}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Risk classification inline guide */}
+                  {isRiskClass && (
+                    <div style={{ marginBottom: 14, background: "#fffbeb", border: "1px solid #fde68a", borderLeft: "3px solid #f59e0b", borderRadius: 7, padding: "10px 12px" }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#92400e", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>How Risk Classification Works</div>
+                      {RISK_CLASSIFICATION_HINT.split("\n").map((line, i) => (
+                        <div key={i} style={{ fontSize: 12, color: "#78350f", lineHeight: 1.65 }}>{line}</div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Question rows */}
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    {area.questions.map((question, qIdx) => {
-                      const qState = aState.questions[qIdx] || { status: "Not Started", notes: "", docExists: "" };
+                    {area.questions.map((question: string, qIdx: number) => {
+                      const qState = aState.questions[qIdx] || { status: "Not Started", notes: "", docExists: "", dueDate: "", owner: "", comment: "", commentAnswer: "" };
                       const scfg = STATUS_CONFIG[qState.status as QStatus];
                       const isNA = qState.status === "Not Applicable";
+                      const commentKey = `${areaIdx}-${qIdx}`;
+                      const showComment = openComments.has(commentKey);
                       return (
-                        <div key={qIdx} style={{ background: "#fff", border: `1px solid ${scfg.border}`, borderLeft: `4px solid ${scfg.border}`, borderRadius: 9, padding: "12px 14px", opacity: isNA ? 0.5 : 1 }}>
+                        <div key={qIdx} style={{ background: "#fff", border: `1px solid ${scfg.border}`, borderLeft: `4px solid ${scfg.border}`, borderRadius: 9, padding: "12px 14px", opacity: isNA ? 0.55 : 1 }}>
+                          {/* Question text + comment toggle */}
                           <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 10 }}>
                             <span style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", minWidth: 18, marginTop: 2 }}>{qIdx + 1}.</span>
                             <p style={{ margin: 0, fontSize: 13, color: "#0f172a", lineHeight: 1.65, flex: 1, fontWeight: 500, textDecoration: isNA ? "line-through" : "none" }}>{question}</p>
+                            <button onClick={() => toggleComment(commentKey)}
+                              title={showComment ? "Hide comment" : "Add comment / question"}
+                              style={{ flexShrink: 0, background: showComment ? "#ede9fe" : "#f8fafc", color: showComment ? "#7c3aed" : "#94a3b8", border: `1px solid ${showComment ? "#c4b5fd" : "#e2e8f0"}`, borderRadius: 6, padding: "3px 7px", fontSize: 11, cursor: "pointer", marginTop: 1 }}>
+                              💬
+                            </button>
                           </div>
-                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+
+                          {/* Status / Doc / Notes / Due / Owner row */}
+                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end" }}>
                             <div>
                               <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Status</label>
                               <select value={qState.status} onChange={e => updateQuestion(areaIdx, qIdx, "status", e.target.value)}
@@ -1081,7 +1196,7 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
                                 {(["Not Started", "In Progress", "Complete", "On Hold", "Not Applicable"] as QStatus[]).map(s => <option key={s}>{s}</option>)}
                               </select>
                             </div>
-                            {!isNA && (
+                            {!isNA && (<>
                               <div>
                                 <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Documentation?</label>
                                 <select value={qState.docExists} onChange={e => updateQuestion(areaIdx, qIdx, "docExists", e.target.value)}
@@ -1090,35 +1205,66 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
                                   <option>Yes</option><option>Partial</option><option>No</option>
                                 </select>
                               </div>
-                            )}
-                            {!isNA && (
+                              <div>
+                                <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Owner / Role</label>
+                                <input value={qState.owner || ""} onChange={e => updateQuestion(areaIdx, qIdx, "owner", e.target.value)}
+                                  placeholder="e.g. Legal, CTO, DPO"
+                                  style={{ padding: "5px 9px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, outline: "none", width: 130 }} />
+                              </div>
+                              <div>
+                                <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Due Date</label>
+                                <input type="date" value={qState.dueDate || ""} onChange={e => updateQuestion(areaIdx, qIdx, "dueDate", e.target.value)}
+                                  style={{ padding: "5px 9px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, outline: "none", cursor: "pointer" }} />
+                              </div>
                               <div style={{ flex: 1, minWidth: 180 }}>
-                                <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Notes</label>
+                                <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Notes / Evidence</label>
                                 <input value={qState.notes} onChange={e => updateQuestion(areaIdx, qIdx, "notes", e.target.value)}
                                   placeholder="Evidence, observations, follow-up actions…"
                                   style={{ width: "100%", padding: "5px 9px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, outline: "none", boxSizing: "border-box" }} />
                               </div>
-                            )}
+                            </>)}
                           </div>
+
+                          {/* Comment / Answer panel */}
+                          {showComment && (
+                            <div style={{ marginTop: 10, background: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: 8, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
+                              <div>
+                                <label style={{ fontSize: 10, fontWeight: 700, color: "#7c3aed", display: "block", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>Comment / Question</label>
+                                <textarea value={qState.comment || ""} onChange={e => updateQuestion(areaIdx, qIdx, "comment", e.target.value)}
+                                  placeholder="Leave a comment, flag an issue, or ask a clarifying question…"
+                                  rows={2}
+                                  style={{ width: "100%", padding: "6px 9px", border: "1px solid #c4b5fd", borderRadius: 6, fontSize: 12, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit" }} />
+                              </div>
+                              <div>
+                                <label style={{ fontSize: 10, fontWeight: 700, color: "#5b21b6", display: "block", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>Answer / Response</label>
+                                <textarea value={qState.commentAnswer || ""} onChange={e => updateQuestion(areaIdx, qIdx, "commentAnswer", e.target.value)}
+                                  placeholder="Response, resolution, or agreed action…"
+                                  rows={2}
+                                  style={{ width: "100%", padding: "6px 9px", border: "1px solid #c4b5fd", borderRadius: 6, fontSize: 12, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit", background: "#ede9fe" }} />
+                              </div>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
                   </div>
 
+                  {/* Evidence to collect */}
                   {area.evidenceToCollect?.length > 0 && (
                     <div style={{ marginTop: 14, background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 9, padding: "11px 14px" }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: "#1d4ed8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 7 }}>Evidence to Collect</div>
-                      {area.evidenceToCollect.map((e, i) => <div key={i} style={{ fontSize: 12, color: "#334155", marginBottom: 3 }}>→ {e}</div>)}
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#3b82f6", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 7 }}>Evidence to Collect</div>
+                      {area.evidenceToCollect.map((e: string, i: number) => <div key={i} style={{ fontSize: 12, color: "#334155", marginBottom: 3 }}>→ {e}</div>)}
                     </div>
                   )}
 
+                  {/* Maturity indicators */}
                   {area.maturityIndicators && (
                     <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 7 }}>
                       {[
-                        { key: "notStarted", label: "Not Started", bg: "#fef2f2", text: "#dc2626" },
+                        { key: "notStarted", label: "Not Started", bg: "#fef2f2", text: "#b91c1c" },
                         { key: "developing",  label: "Developing",  bg: "#fff7ed", text: "#c2410c" },
-                        { key: "defined",     label: "Defined",     bg: "#fefce8", text: "#a16207" },
-                        { key: "optimised",   label: "Optimised",   bg: "#f0fdf4", text: "#15803d" },
+                        { key: "defined",     label: "Defined",     bg: "#fefce8", text: "#92400e" },
+                        { key: "optimised",   label: "Optimised",   bg: "#f0fdf4", text: "#166534" },
                       ].map(m => (
                         <div key={m.key} style={{ background: m.bg, borderRadius: 7, padding: "7px 10px" }}>
                           <div style={{ fontSize: 9, fontWeight: 700, color: m.text, marginBottom: 3, textTransform: "uppercase" }}>{m.label}</div>
@@ -1127,6 +1273,20 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
                       ))}
                     </div>
                   )}
+
+                  {/* Section summary */}
+                  <div style={{ marginTop: 16, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 9, padding: "12px 14px" }}>
+                    <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                      Section Summary &amp; Findings
+                    </label>
+                    <textarea
+                      value={(aState?.summary) || ""}
+                      onChange={e => updateAreaSummary(areaIdx, e.target.value)}
+                      placeholder="Summarise the key findings, agreed actions, or overall assessment for this section…"
+                      rows={3}
+                      style={{ width: "100%", padding: "7px 10px", border: "1px solid #e2e8f0", borderRadius: 7, fontSize: 12, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit", color: "#0f172a", background: "#fff" }}
+                    />
+                  </div>
                 </div>
               )}
             </div>
