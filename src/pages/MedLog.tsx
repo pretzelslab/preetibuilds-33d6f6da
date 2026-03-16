@@ -367,7 +367,7 @@ const DashboardView = ({ events, symptoms }: { events: MedEvent[]; symptoms: Sym
 const LogEventView = ({ onSave }: { onSave: (e: MedEvent) => void }) => {
   const [type, setType] = useState<EventType>("visit");
   const [date, setDate] = useState(today());
-  const [dateTo, setDateTo] = useState("");
+  const [dateTo, setDateTo] = useState(today());
   const [title, setTitle] = useState("");
   const [doctor, setDoctor] = useState("");
   const [notes, setNotes] = useState("");
@@ -376,7 +376,7 @@ const LogEventView = ({ onSave }: { onSave: (e: MedEvent) => void }) => {
   const handleSave = () => {
     if (!title.trim()) return;
     onSave({ id: `evt_${Date.now()}`, type, date, ...(dateTo ? { dateTo } : {}), title: title.trim(), doctor: doctor.trim(), notes: notes.trim() });
-    setTitle(""); setDoctor(""); setNotes(""); setDate(today()); setDateTo("");
+    setTitle(""); setDoctor(""); setNotes(""); setDate(today()); setDateTo(today());
     setSaved(true); setTimeout(() => setSaved(false), 2000);
   };
 
@@ -395,15 +395,12 @@ const LogEventView = ({ onSave }: { onSave: (e: MedEvent) => void }) => {
               {(Object.entries(TYPE_LABELS) as [EventType, string][]).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
           </div>
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls} style={{ color: "#6b6b80" }}>From Date</label>
-            <DateInput value={date} onChange={setDate} />
-          </div>
           <div className="col-span-2 flex flex-col gap-1.5">
-            <label className={labelCls} style={{ color: "#6b6b80" }}>To Date <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional — leave blank for single-day events)</span></label>
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Date Range</label>
             <div className="flex items-center gap-2">
+              <div className="flex-1"><DateInput value={date} onChange={setDate} /></div>
+              <span style={{ color: "#6b6b80", fontWeight: 600, fontSize: 14, flexShrink: 0 }}>→</span>
               <div className="flex-1"><DateInput value={dateTo} onChange={setDateTo} /></div>
-              {dateTo && <button type="button" onClick={() => setDateTo("")} style={{ fontSize: 18, lineHeight: 1, background: "none", border: "none", cursor: "pointer", color: "#6b6b80" }}>✕</button>}
             </div>
           </div>
           <div className="col-span-2 flex flex-col gap-1.5">
@@ -438,7 +435,7 @@ const SymptomsView = ({ symptoms, onSave }: { symptoms: SymptomEntry[]; onSave: 
   const [customName, setCustomName] = useState("");
   const [severity, setSeverity] = useState<Severity>("Mild");
   const [date, setDate] = useState(today());
-  const [dateTo, setDateTo] = useState("");
+  const [dateTo, setDateTo] = useState(today());
   const [trigger, setTrigger] = useState("Unknown");
   const [customTrigger, setCustomTrigger] = useState("");
   const [notes, setNotes] = useState("");
@@ -448,7 +445,7 @@ const SymptomsView = ({ symptoms, onSave }: { symptoms: SymptomEntry[]; onSave: 
     const finalName = name === "Other" ? (customName.trim() || "Other") : name;
     const finalTrigger = trigger === "Other" ? (customTrigger.trim() || "Other") : trigger;
     onSave({ id: `sym_${Date.now()}`, name: finalName, severity, date, ...(dateTo ? { dateTo } : {}), trigger: finalTrigger, notes: notes.trim() });
-    setCustomName(""); setNotes(""); setDate(today()); setDateTo(""); setCustomTrigger("");
+    setCustomName(""); setNotes(""); setDate(today()); setDateTo(today()); setCustomTrigger("");
     setSaved(true); setTimeout(() => setSaved(false), 2000);
   };
 
@@ -478,15 +475,12 @@ const SymptomsView = ({ symptoms, onSave }: { symptoms: SymptomEntry[]; onSave: 
                 placeholder="Describe symptom" className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
             </div>
           )}
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls} style={{ color: "#6b6b80" }}>From Date</label>
-            <DateInput value={date} onChange={setDate} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls} style={{ color: "#6b6b80" }}>To Date <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional)</span></label>
-            <div className="flex items-center gap-1">
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Date Range</label>
+            <div className="flex items-center gap-2">
+              <div className="flex-1"><DateInput value={date} onChange={setDate} /></div>
+              <span style={{ color: "#6b6b80", fontWeight: 600, fontSize: 14, flexShrink: 0 }}>→</span>
               <div className="flex-1"><DateInput value={dateTo} onChange={setDateTo} /></div>
-              {dateTo && <button type="button" onClick={() => setDateTo("")} style={{ fontSize: 18, lineHeight: 1, background: "none", border: "none", cursor: "pointer", color: "#6b6b80" }}>✕</button>}
             </div>
           </div>
           <div className="col-span-2 flex flex-col gap-1.5">
