@@ -273,7 +273,7 @@ const LogEventView = () => (
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-[0.78rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Date</label>
-          <input type="date" className="rounded-lg border px-3 py-2.5 text-sm" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }} defaultValue={today()} />
+          <input type="date" className="rounded-lg border px-3 py-2.5 text-sm" style={{ background: "#f7f4ef", borderColor: "#e2ddd6", cursor: "pointer", WebkitAppearance: "auto", appearance: "auto" } as React.CSSProperties} defaultValue={today()} />
         </div>
         <div className="col-span-2 flex flex-col gap-1.5">
           <label className="text-[0.78rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Title / Description</label>
@@ -306,7 +306,7 @@ const SymptomsView = () => (
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-[0.78rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Date</label>
-          <input type="date" className="rounded-lg border px-3 py-2.5 text-sm" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }} defaultValue={today()} />
+          <input type="date" className="rounded-lg border px-3 py-2.5 text-sm" style={{ background: "#f7f4ef", borderColor: "#e2ddd6", cursor: "pointer", WebkitAppearance: "auto", appearance: "auto" } as React.CSSProperties} defaultValue={today()} />
         </div>
         <div className="col-span-2 flex flex-col gap-1.5">
           <label className="text-[0.78rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Severity</label>
