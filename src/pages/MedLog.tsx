@@ -23,10 +23,14 @@ interface InsightItem {
   text: string;
   records: Array<{ id: string; label: string; date: string; kind: "event" | "symptom" }>;
 }
+interface FamilyMember {
+  id: string; name: string; relationship: string;
+}
 
 // ── Persistence ───────────────────────────────────────────────────────────────
-const EVENTS_KEY = "pl_medlog_events";
+const EVENTS_KEY  = "pl_medlog_events";
 const SYMPTOMS_KEY = "pl_medlog_symptoms";
+const FAMILY_KEY  = "pl_medlog_family";
 
 const DEFAULT_EVENTS: MedEvent[] = [
   { id: "d1", type: "visit",      title: "Annual Physical Exam",        doctor: "Dr. Smith", date: "2026-02-15", notes: "All vitals normal" },
@@ -195,6 +199,45 @@ function generateInsights(events: MedEvent[], symptoms: SymptomEntry[], year: st
   return insights;
 }
 
+function generateSummaryParagraph(events: MedEvent[], symptoms: SymptomEntry[], year: string): string {
+  const yEvts = events.filter(e => e.date.startsWith(year));
+  const ySyms = symptoms.filter(s => s.date.startsWith(year));
+  if (yEvts.length === 0 && ySyms.length === 0)
+    return `No health data recorded for ${year} yet. Start logging events and symptoms to build your health picture.`;
+
+  const symCounts: Record<string, number> = {};
+  ySyms.forEach(s => { symCounts[s.name] = (symCounts[s.name] || 0) + 1; });
+  const topSym = Object.entries(symCounts).sort((a, b) => b[1] - a[1])[0];
+
+  const trigCounts: Record<string, number> = {};
+  ySyms.forEach(s => { if (s.trigger && s.trigger !== "Unknown") trigCounts[s.trigger] = (trigCounts[s.trigger] || 0) + 1; });
+  const topTrig = Object.entries(trigCounts).sort((a, b) => b[1] - a[1])[0];
+
+  const severeCount   = ySyms.filter(s => s.severity === "Severe").length;
+  const moderateCount = ySyms.filter(s => s.severity === "Moderate").length;
+
+  const sentences: string[] = [];
+  sentences.push(`In ${year} you logged ${yEvts.length} medical event${yEvts.length !== 1 ? "s" : ""} and ${ySyms.length} symptom episode${ySyms.length !== 1 ? "s" : ""}.`);
+  if (topSym) {
+    const sevLabel = severeCount > 0 ? `including ${severeCount} severe episode${severeCount > 1 ? "s"  : ""}` :
+                     moderateCount > 0 ? "generally mild to moderate in intensity" : "all mild";
+    sentences.push(`${topSym[0]} is your most frequent complaint (${topSym[1]}×), ${sevLabel}.`);
+  }
+  if (topTrig) sentences.push(`The most commonly identified trigger is ${topTrig[0].toLowerCase()}, linked to ${topTrig[1]} episode${topTrig[1] > 1 ? "s" : ""}.`);
+  if (severeCount > 0)
+    sentences.push(`The presence of severe episodes suggests a proactive conversation with your healthcare provider would be worthwhile.`);
+  else if (ySyms.length > 0)
+    sentences.push(`No severe episodes have been recorded — your health profile this year looks stable. Continued regular logging will help spot any emerging patterns early.`);
+  return sentences.join(" ");
+}
+
+function loadFamily(): FamilyMember[] {
+  try { const r = localStorage.getItem(FAMILY_KEY); return r ? JSON.parse(r) : []; } catch { return []; }
+}
+function saveFamily(f: FamilyMember[]) {
+  try { localStorage.setItem(FAMILY_KEY, JSON.stringify(f)); } catch {}
+}
+
 // ── MedLog (main) ─────────────────────────────────────────────────────────────
 const MedLog = () => {
   const [activeView, setActiveView] = useState("dashboard");
@@ -204,6 +247,7 @@ const MedLog = () => {
   const [codeError, setCodeError] = useState(false);
   const [events, setEvents] = useState<MedEvent[]>(() => loadItems(EVENTS_KEY, DEFAULT_EVENTS));
   const [symptoms, setSymptoms] = useState<SymptomEntry[]>(() => loadItems(SYMPTOMS_KEY, DEFAULT_SYMPTOMS));
+  const [family, setFamily] = useState<FamilyMember[]>(loadFamily);
 
   useEffect(() => {
     const labels: Record<string, string> = {
@@ -236,6 +280,14 @@ const MedLog = () => {
 
   const deleteSymptom = useCallback((id: string) => {
     setSymptoms(prev => { const u = prev.filter(s => s.id !== id); saveItems(SYMPTOMS_KEY, u); return u; });
+  }, []);
+
+  const addFamilyMember = useCallback((m: FamilyMember) => {
+    setFamily(prev => { const u = [...prev, m]; saveFamily(u); return u; });
+  }, []);
+
+  const deleteFamilyMember = useCallback((id: string) => {
+    setFamily(prev => { const u = prev.filter(m => m.id !== id); saveFamily(u); return u; });
   }, []);
 
   const tryUnlock = () => {
@@ -329,7 +381,7 @@ const MedLog = () => {
         {activeView === "symptoms"  && <SymptomsView symptoms={symptoms} onSave={addSymptom} onDelete={deleteSymptom} />}
         {activeView === "history"   && <HistoryView events={events} onDelete={deleteEvent} />}
         {activeView === "analysis"  && <AnalysisView events={events} symptoms={symptoms} />}
-        {activeView === "family"    && <FamilyView />}
+        {activeView === "family"    && <FamilyView family={family} onAdd={addFamilyMember} onDelete={deleteFamilyMember} />}
       </main>
 
       <footer className="fixed bottom-0 left-0 right-0 z-30 text-center py-2 text-[0.7rem] tracking-wide" style={{ background: "#1a1a2e", color: "rgba(255,255,255,0.35)" }}>
@@ -373,38 +425,45 @@ const EventItem = ({ event, onDelete }: { event: MedEvent; onDelete?: (id: strin
 // ── Views ─────────────────────────────────────────────────────────────────────
 const DashboardView = ({ events, symptoms }: { events: MedEvent[]; symptoms: SymptomEntry[] }) => {
   const thisYear = new Date().getFullYear();
-  const yearEvents = events.filter(e => e.date.startsWith(String(thisYear)));
+  const yearEvents   = events.filter(e => e.date.startsWith(String(thisYear)));
+  const yearSymptoms = symptoms.filter(s => s.date.startsWith(String(thisYear)));
   const doctors = new Set(events.filter(e => e.doctor).map(e => e.doctor)).size;
+
+  // Unified chronological feed — latest 6 entries from both events + symptoms
+  type FeedItem = { id: string; date: string; kind: "event" | "symptom"; title: string; badge: string; badgeCls: string; sub: string };
+  const feed: FeedItem[] = [
+    ...events.map(e => ({ id: e.id, date: e.date, kind: "event" as const, title: e.title, badge: e.type, badgeCls: typeColors[e.type] ?? "", sub: [e.dateTo ? `→ ${e.dateTo}` : "", e.doctor].filter(Boolean).join(" · ") })),
+    ...symptoms.map(s => ({ id: s.id, date: s.date, kind: "symptom" as const, title: s.name, badge: s.severity, badgeCls: sevColors[s.severity] ?? "", sub: [s.dateTo ? `→ ${s.dateTo}` : "", s.trigger].filter(Boolean).join(" · ") })),
+  ].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6);
+
   return (
     <div>
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
-        <StatCard label="Total Events"  value={String(events.length)}      sub="All time" />
-        <StatCard label="This Year"     value={String(yearEvents.length)}   sub={String(thisYear)} />
-        <StatCard label="Doctors"       value={String(doctors)} />
-        <StatCard label="Symptoms"      value={String(symptoms.length)}     sub="Logged" />
-        <StatCard label="Streak"        value="4w" sub="Active logging" />
+        <StatCard label="Total Events"   value={String(events.length)}        sub="All time" />
+        <StatCard label="This Year"      value={String(yearEvents.length)}     sub={String(thisYear)} />
+        <StatCard label="Doctors"        value={String(doctors)} />
+        <StatCard label="Symptoms"       value={String(yearSymptoms.length)}   sub={String(thisYear)} />
+        <StatCard label="All Symptoms"   value={String(symptoms.length)}       sub="All time" />
       </div>
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="rounded-2xl border p-5 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
-          <div className="font-serif font-bold mb-4">🕐 Recent Activity</div>
-          <div className="flex flex-col gap-2">{events.slice(0, 4).map(e => <EventItem key={e.id} event={e} />)}</div>
-        </div>
-        <div className="rounded-2xl border p-5 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
-          <div className="font-serif font-bold mb-4">🤒 Recent Symptoms</div>
-          <div className="flex flex-col gap-2">
-            {symptoms.slice(0, 4).map(s => (
-              <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl border" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }}>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm">{s.name}</span>
-                    <span className={`text-[0.68rem] font-bold px-2 py-0.5 rounded-full ${sevColors[s.severity]}`}>{s.severity}</span>
+      <div className="rounded-2xl border p-5 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
+        <div className="font-serif font-bold mb-4">🕐 Recent Activity</div>
+        {feed.length === 0
+          ? <p className="text-sm" style={{ color: "#6b6b80" }}>No activity logged yet.</p>
+          : <div className="flex flex-col gap-2">
+              {feed.map(item => (
+                <div key={item.id} className="flex items-start gap-3 p-3 rounded-xl border" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }}>
+                  <span style={{ fontSize: 14, marginTop: 1, flexShrink: 0 }}>{item.kind === "symptom" ? "🤒" : "📋"}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm">{item.title}</span>
+                      <span className={`text-[0.68rem] font-bold uppercase px-2 py-0.5 rounded-full ${item.badgeCls}`}>{item.badge}</span>
+                    </div>
+                    {item.sub && <div className="text-xs mt-0.5" style={{ color: "#6b6b80" }}>{item.date} · {item.sub}</div>}
+                    {!item.sub && <div className="text-xs mt-0.5" style={{ color: "#6b6b80" }}>{item.date}</div>}
                   </div>
-                  <div className="text-xs mt-0.5" style={{ color: "#6b6b80" }}>{s.date}{s.trigger && ` · ${s.trigger}`}</div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
+              ))}
+            </div>}
       </div>
     </div>
   );
@@ -674,9 +733,15 @@ const AnalysisView = ({ events, symptoms }: { events: MedEvent[]; symptoms: Symp
 
       {/* ── Compact AI Insights strip ── */}
       <div className="rounded-2xl border p-4 mb-5" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6b6b80" }}>🧠 Insights</span>
-          <span className="text-[0.68rem] italic" style={{ color: "#6b6b80" }}>Not medical advice · tap chip to see linked records</span>
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6b6b80" }}>🧠 Health Summary</span>
+          <span className="text-[0.68rem] italic" style={{ color: "#6b6b80" }}>Not medical advice</span>
+        </div>
+        <p className="text-sm leading-relaxed mb-3" style={{ color: "#1a1a2e" }}>
+          {generateSummaryParagraph(events, symptoms, yStr)}
+        </p>
+        <div className="text-[0.68rem] font-bold uppercase tracking-wider mb-2" style={{ color: "#6b6b80" }}>
+          Key patterns — tap to see linked records
         </div>
         <div className="flex flex-wrap gap-2">
           {insights.map((ins, i) => (
@@ -807,46 +872,69 @@ const AnalysisView = ({ events, symptoms }: { events: MedEvent[]; symptoms: Symp
   );
 };
 
-const FamilyView = () => (
-  <div className="grid md:grid-cols-2 gap-6">
-    <div className="rounded-2xl border p-5 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
-      <div className="font-serif font-bold mb-4">👨‍👩‍👧 Family Members</div>
-      {[
-        { name: "Jane Smith", rel: "Self",   color: "#2d6a4f", events: 12 },
-        { name: "John Smith", rel: "Spouse", color: "#b7791f", events: 5 },
-        { name: "Lily Smith", rel: "Child",  color: "#9d174d", events: 3 },
-      ].map(p => (
-        <div key={p.name} className="flex items-center gap-3 p-3 rounded-xl border mb-2" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }}>
-          <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: p.color }}>
-            {p.name.split(" ").map(n => n[0]).join("")}
+const MEMBER_COLORS = ["#2d6a4f", "#b7791f", "#9d174d", "#1e40af", "#7c3aed", "#065f46", "#92400e"];
+
+const FamilyView = ({ family, onAdd, onDelete }: { family: FamilyMember[]; onAdd: (m: FamilyMember) => void; onDelete: (id: string) => void }) => {
+  const [name, setName] = useState("");
+  const [relationship, setRelationship] = useState("Spouse / Partner");
+  const [saved, setSaved] = useState(false);
+  const inputStyle = { background: "#f7f4ef", borderColor: "#e2ddd6" };
+  const labelCls = "text-[0.78rem] font-semibold uppercase tracking-wider";
+
+  const handleAdd = () => {
+    if (!name.trim()) return;
+    onAdd({ id: `fm_${Date.now()}`, name: name.trim(), relationship });
+    setName(""); setSaved(true); setTimeout(() => setSaved(false), 2000);
+  };
+
+  return (
+    <div className="grid md:grid-cols-2 gap-6">
+      <div className="rounded-2xl border p-5 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
+        <div className="font-serif font-bold mb-4">👨‍👩‍👧 Family Members</div>
+        {family.length === 0 ? (
+          <p className="text-sm" style={{ color: "#6b6b80" }}>No family members added yet. Use the form to add one.</p>
+        ) : family.map((m, i) => (
+          <div key={m.id} className="flex items-center gap-3 p-3 rounded-xl border mb-2" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }}>
+            <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+              style={{ background: MEMBER_COLORS[i % MEMBER_COLORS.length] }}>
+              {m.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+            </div>
+            <div className="flex-1">
+              <div className="font-semibold text-sm">{m.name}</div>
+              <div className="text-xs" style={{ color: "#6b6b80" }}>{m.relationship}</div>
+            </div>
+            <button onClick={() => onDelete(m.id)} title="Remove"
+              style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 15, padding: "2px 4px", opacity: 0.5 }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+              onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}>✕</button>
           </div>
-          <div className="flex-1">
-            <div className="font-semibold text-sm">{p.name}</div>
-            <div className="text-xs" style={{ color: "#6b6b80" }}>{p.rel} · {p.events} events</div>
+        ))}
+      </div>
+      <div className="rounded-2xl border p-5 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
+        <div className="font-serif font-bold mb-4">➕ Add Family Member</div>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Full Name</label>
+            <input type="text" value={name} onChange={e => setName(e.target.value)}
+              placeholder="e.g. Sarah Johnson" onKeyDown={e => e.key === "Enter" && handleAdd()}
+              className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
           </div>
-          <span className="text-xs font-semibold px-3 py-1 rounded-lg" style={p.rel === "Self" ? { background: "#e8f5ee", color: "#2d6a4f" } : { background: "#2d6a4f", color: "#fff" }}>
-            {p.rel === "Self" ? "Current" : "Switch"}
-          </span>
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Relationship</label>
+            <select value={relationship} onChange={e => setRelationship(e.target.value)}
+              className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle}>
+              <option>Spouse / Partner</option><option>Child</option><option>Parent</option>
+              <option>Sibling</option><option>Other</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={handleAdd} className="px-6 py-2.5 rounded-lg text-white text-sm font-semibold" style={{ background: "#2d6a4f" }}>Add Member</button>
+            {saved && <span className="text-sm font-medium" style={{ color: "#2d6a4f" }}>✓ Added!</span>}
+          </div>
         </div>
-      ))}
-    </div>
-    <div className="rounded-2xl border p-5 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
-      <div className="font-serif font-bold mb-4">➕ Add Family Member</div>
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1.5">
-          <label className="text-[0.78rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Full Name</label>
-          <input type="text" placeholder="e.g. Sarah Johnson" className="rounded-lg border px-3 py-2.5 text-sm" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }} />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-[0.78rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Relationship</label>
-          <select className="rounded-lg border px-3 py-2.5 text-sm" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }}>
-            <option>Spouse / Partner</option><option>Child</option><option>Parent</option><option>Sibling</option><option>Other</option>
-          </select>
-        </div>
-        <button className="px-6 py-2.5 rounded-lg text-white text-sm font-semibold" style={{ background: "#2d6a4f" }}>Add Family Member</button>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default MedLog;
