@@ -4,6 +4,8 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  NPM_VERSION  = "10"
+  CI           = "false"
 
 # SPA redirect — sends all routes to index.html so React Router handles them
 [[redirects]]
