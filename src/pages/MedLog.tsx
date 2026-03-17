@@ -1574,6 +1574,8 @@ const EditFamilyModal = ({ member, onSave, onClose }: {
   const [email, setEmail]             = useState(member.email);
   const [phone, setPhone]             = useState(member.phone);
   const [otp, setOtp]                 = useState(member.otp);
+  const [copied, setCopied]           = useState(false);
+  const copyOtp = () => { navigator.clipboard.writeText(otp).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); };
   const inputStyle = { background: "#f7f4ef", borderColor: "#e2ddd6" };
   const labelCls = "text-[0.78rem] font-semibold uppercase tracking-wider";
   const handleSave = () => {
@@ -1613,6 +1615,11 @@ const EditFamilyModal = ({ member, onSave, onClose }: {
             <div className="flex items-center gap-2">
               <input type="text" value={otp} readOnly className="rounded-lg border px-3 py-2.5 text-sm font-mono tracking-widest flex-1"
                 style={{ ...inputStyle, letterSpacing: "0.2em", color: "#1a1a2e" }} />
+              <button type="button" onClick={copyOtp} title="Copy code"
+                className="px-3 py-2.5 rounded-lg border text-xs font-semibold"
+                style={{ borderColor: "#e2ddd6", background: copied ? "#f0fdf4" : "#f7f4ef", color: copied ? "#2d6a4f" : "#6b6b80", minWidth: 40 }}>
+                {copied ? "✓" : "⎘"}
+              </button>
               <button type="button" onClick={() => setOtp(generateOTP())}
                 className="px-3 py-2.5 rounded-lg border text-xs font-semibold"
                 style={{ borderColor: "#e2ddd6", background: "#f7f4ef", color: "#6b6b80" }}>↺ New</button>
