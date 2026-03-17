@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import { POLICY_DIGESTS, type CriticalPoint, type Misconception } from "./digests";
 import { IMPLEMENTATION_GUIDES } from "./guides";
-import { useGateUnlocked } from "@/components/ui/PageGate";
 
 // ─── HIGHLIGHT HELPER ────────────────────────────────────────────────────────
 function HL({ text, q }: { text: string; q: string }) {
@@ -2110,7 +2109,26 @@ function FrameworkNavigatorTab({ policies, onSelectPolicy }: { policies: any[]; 
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function AIGovernanceTracker() {
-  const unlocked = useGateUnlocked();
+  const [unlocked, setUnlocked] = useState(() => {
+    try { return localStorage.getItem("pl_session_access") === "1"; } catch { return false; }
+  });
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const [unlockCode, setUnlockCode] = useState("");
+  const [unlockError, setUnlockError] = useState(false);
+
+  const tryUnlock = () => {
+    if (unlockCode.toUpperCase().trim() === "PRL2026") {
+      try { localStorage.setItem("pl_session_access", "1"); } catch {}
+      setUnlocked(true); setShowUnlockModal(false); setUnlockCode("");
+    } else {
+      setUnlockError(true); setTimeout(() => setUnlockError(false), 800); setUnlockCode("");
+    }
+  };
+
+  const doLock = () => {
+    try { localStorage.removeItem("pl_session_access"); } catch {}
+    setUnlocked(false);
+  };
   const navigate = useNavigate();
   const [view, setView] = useState("policies");   // "policies" | "topics" | "digests"
   const [selected, setSelected] = useState(null);
@@ -2187,20 +2205,19 @@ export default function AIGovernanceTracker() {
       <div className="no-print" style={{ position: "sticky", top: 57, zIndex: 1000, background: "#0f172a", borderBottom: "2px solid #1e293b" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", display: "flex", gap: 4, alignItems: "stretch" }}>
           {[
-            { id: "policies", label: "📋 Policy Grid" },
-            ...(unlocked ? [
-              { id: "topics",     label: "🧭 Topics Framework" },
-              { id: "digests",    label: "📖 Policy Digests" },
-              { id: "navigator",  label: "🗺 Framework Navigator" },
-              { id: "grc-bridge", label: "🔗 GRC Bridge" },
-            ] : []),
+            { id: "policies",   label: "📋 Policy Grid",          locked: false },
+            { id: "topics",     label: "🧭 Topics Framework",      locked: !unlocked },
+            { id: "digests",    label: "📖 Policy Digests",        locked: !unlocked },
+            { id: "navigator",  label: "🗺 Framework Navigator",   locked: !unlocked },
+            { id: "grc-bridge", label: "🔗 GRC Bridge",            locked: !unlocked },
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => setView(tab.id)}
-              style={{ background: view === tab.id ? "#fff" : "transparent", color: view === tab.id ? "#0f172a" : "#94a3b8", border: "none", borderRadius: "8px 8px 0 0", padding: "8px 20px", cursor: "pointer", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}
+              style={{ background: view === tab.id ? "#fff" : "transparent", color: view === tab.id ? "#0f172a" : "#94a3b8", border: "none", borderRadius: "8px 8px 0 0", padding: "8px 20px", cursor: "pointer", fontSize: 13, fontWeight: 600, transition: "all 0.15s", display: "flex", alignItems: "center", gap: 5 }}
             >
               {tab.label}
+              {tab.locked && <span style={{ fontSize: 10, opacity: 0.6 }}>🔒</span>}
             </button>
           ))}
           {/* Client Workbook link — only for unlocked users */}
@@ -2264,7 +2281,53 @@ export default function AIGovernanceTracker() {
         </div>
       </div>
 
-      {view === "digests" ? (
+      {/* Unlock modal */}
+      {showUnlockModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.75)", backdropFilter: "blur(4px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <div style={{ background: "#fff", borderRadius: 20, padding: "44px 48px", maxWidth: 420, width: "100%", textAlign: "center", boxShadow: "0 25px 60px rgba(0,0,0,0.3)" }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
+            <h2 style={{ margin: "0 0 8px", fontSize: 22, fontWeight: 800, color: "#0f172a" }}>Restricted Access</h2>
+            <p style={{ margin: "0 0 28px", fontSize: 14, color: "#64748b", lineHeight: 1.6 }}>Enter your access code to unlock all tabs.</p>
+            <input type="password" placeholder="Access code" value={unlockCode} autoFocus
+              onChange={e => setUnlockCode(e.target.value)} onKeyDown={e => e.key === "Enter" && tryUnlock()}
+              style={{ width: "100%", padding: "13px 16px", border: `2px solid ${unlockError ? "#dc2626" : "#e2e8f0"}`, borderRadius: 10, fontSize: 16, outline: "none", marginBottom: 14, boxSizing: "border-box", fontFamily: "monospace", letterSpacing: "0.15em", textAlign: "center", background: unlockError ? "#fef2f2" : "#fff" }} />
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => { setShowUnlockModal(false); setUnlockCode(""); }} style={{ flex: 1, padding: 13, borderRadius: 10, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#64748b", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+              <button onClick={tryUnlock} style={{ flex: 2, padding: 13, borderRadius: 10, border: "none", background: "#0f172a", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Unlock →</button>
+            </div>
+            {unlockError && <p style={{ color: "#dc2626", fontSize: 13, marginTop: 12 }}>Incorrect code — please try again.</p>}
+          </div>
+        </div>
+      )}
+
+      {/* Lock / unlock floating button */}
+      <button onClick={unlocked ? doLock : () => setShowUnlockModal(true)} title={unlocked ? "Lock page" : "Unlock page"}
+        style={{ position: "fixed", bottom: 24, right: 24, zIndex: 1000, background: "#0f172a", color: "#fff", border: "none", borderRadius: 50, width: 44, height: 44, fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 16px rgba(0,0,0,0.25)", opacity: 0.7 }}>
+        {unlocked ? "🔓" : "🔒"}
+      </button>
+
+      {/* Tab content — locked tabs show blurred teaser */}
+      {view !== "policies" && !unlocked ? (
+        <div style={{ position: "relative" }}>
+          <div style={{ filter: "blur(7px)", pointerEvents: "none", userSelect: "none", opacity: 0.55, maxHeight: 480, overflow: "hidden" }}>
+            {view === "digests"    ? <PolicyDigestGrid policies={POLICIES} onSelect={() => {}} /> :
+             view === "topics"     ? <TopicsView onSelectPolicy={() => {}} /> :
+             view === "navigator"  ? <FrameworkNavigatorTab policies={POLICIES} onSelectPolicy={() => {}} /> :
+                                     <GRCBridgeTab onSelectAIPolicy={() => {}} />}
+          </div>
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: 80, background: "linear-gradient(to bottom, transparent 30%, rgba(255,255,255,0.85) 70%)" }}>
+            <div style={{ background: "#fff", borderRadius: 20, padding: "36px 44px", textAlign: "center", boxShadow: "0 8px 40px rgba(0,0,0,0.18)", maxWidth: 380 }}>
+              <div style={{ fontSize: 40, marginBottom: 14 }}>🔒</div>
+              <h3 style={{ margin: "0 0 8px", fontSize: 18, fontWeight: 800, color: "#0f172a" }}>Unlock to explore</h3>
+              <p style={{ margin: "0 0 22px", fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>This section is available for authorised users.<br />Enter your access code to read the full content.</p>
+              <button onClick={() => setShowUnlockModal(true)}
+                style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 10, padding: "12px 32px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+                Enter access code →
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : view === "digests" ? (
         <PolicyDigestGrid policies={POLICIES} onSelect={pol => setSelectedDigest(pol)} />
       ) : view === "topics" ? (
         <TopicsView onSelectPolicy={pol => setSelected(pol)} />
