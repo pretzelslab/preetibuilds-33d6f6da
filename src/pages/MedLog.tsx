@@ -49,13 +49,18 @@ const DEFAULT_SYMPTOMS: SymptomEntry[] = [
   { id: "s5", name: "Fatigue",   severity: "Moderate", date: "2026-01-10", trigger: "Stress",           notes: "" },
 ];
 
-function loadItems<T>(key: string, defaults: T[]): T[] {
+// Demo IDs that were seeded before Supabase — strip them on load
+const DEMO_IDS = new Set(["d1","d2","d3","d4","d5","s1","s2","s3","s4","s5"]);
+
+function loadItems<T extends { id: string }>(key: string): T[] {
   try {
     const raw = localStorage.getItem(key);
-    if (raw) return JSON.parse(raw);
-    localStorage.setItem(key, JSON.stringify(defaults));
-    return defaults;
-  } catch { return defaults; }
+    if (!raw) return [];
+    const items: T[] = JSON.parse(raw);
+    const clean = items.filter(item => !DEMO_IDS.has(item.id));
+    if (clean.length !== items.length) localStorage.setItem(key, JSON.stringify(clean));
+    return clean;
+  } catch { return []; }
 }
 function saveItems<T>(key: string, items: T[]) {
   try { localStorage.setItem(key, JSON.stringify(items)); } catch {}
@@ -246,8 +251,8 @@ const MedLog = () => {
   const [showLockModal, setShowLockModal] = useState(false);
   const [code, setCode] = useState("");
   const [codeError, setCodeError] = useState(false);
-  const [events, setEvents] = useState<MedEvent[]>(() => loadItems(EVENTS_KEY, DEFAULT_EVENTS));
-  const [symptoms, setSymptoms] = useState<SymptomEntry[]>(() => loadItems(SYMPTOMS_KEY, DEFAULT_SYMPTOMS));
+  const [events, setEvents] = useState<MedEvent[]>(() => loadItems<MedEvent>(EVENTS_KEY));
+  const [symptoms, setSymptoms] = useState<SymptomEntry[]>(() => loadItems<SymptomEntry>(SYMPTOMS_KEY));
   const [family, setFamily] = useState<FamilyMember[]>(loadFamily);
   const [syncStatus, setSyncStatus] = useState<"syncing" | "synced" | "offline">("syncing");
 
@@ -287,8 +292,8 @@ const MedLog = () => {
           saveFamily(remoteFamily);
         } else {
           // Supabase is empty — migrate any real (non-demo) local data up
-          const localEvents = loadItems<MedEvent>(EVENTS_KEY, []).filter(e => e.id.startsWith("evt_"));
-          const localSymptoms = loadItems<SymptomEntry>(SYMPTOMS_KEY, []).filter(s => s.id.startsWith("sym_"));
+          const localEvents = loadItems<MedEvent>(EVENTS_KEY).filter(e => e.id.startsWith("evt_"));
+          const localSymptoms = loadItems<SymptomEntry>(SYMPTOMS_KEY).filter(s => s.id.startsWith("sym_"));
           const localFamily = loadFamily();
           if (localEvents.length > 0)
             await supabase.from("medlog_events").insert(localEvents.map(e => ({
