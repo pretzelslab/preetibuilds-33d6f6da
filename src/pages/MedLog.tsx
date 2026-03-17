@@ -14,11 +14,16 @@ function mlUnlocked(): boolean {
 type EventType = "visit" | "medication" | "checkup" | "surgery" | "other";
 type Severity = "Mild" | "Moderate" | "Severe";
 
+interface Attachment {
+  id: string; name: string; path: string; url: string; type: string;
+}
 interface MedEvent {
   id: string; type: EventType; title: string; doctor: string; date: string; dateTo?: string; notes: string;
+  attachments?: Attachment[];
 }
 interface SymptomEntry {
   id: string; name: string; severity: Severity; date: string; dateTo?: string; trigger: string; notes: string;
+  attachments?: Attachment[];
 }
 interface InsightItem {
   text: string;
@@ -273,6 +278,9 @@ const MedLog = () => {
     try { return localStorage.getItem("pl_medlog_member_id") || "owner"; } catch { return "owner"; }
   });
   const tabFirstRender = useRef(true);
+  const isAdmin = memberId === "owner";
+  const [editingEvent, setEditingEvent] = useState<MedEvent | null>(null);
+  const [editingSymptom, setEditingSymptom] = useState<SymptomEntry | null>(null);
 
   const logActivity = useCallback((actor: string, action: string, detail = "") => {
     supabase.from("medlog_activity_log").insert({ user_key: USER_KEY, actor, action, detail })
@@ -291,11 +299,12 @@ const MedLog = () => {
       const evts: MedEvent[] = (evtRes.data || []).map(r => ({
         id: r.id, type: r.type as EventType, title: r.title, doctor: r.doctor || "",
         date: r.date, ...(r.date_to ? { dateTo: r.date_to } : {}), notes: r.notes || "",
+        attachments: r.attachments || [],
       }));
       const syms: SymptomEntry[] = (symRes.data || []).map(r => ({
         id: r.id, name: r.name, severity: r.severity as Severity,
         date: r.date, ...(r.date_to ? { dateTo: r.date_to } : {}),
-        trigger: r.trigger || "", notes: r.notes || "",
+        trigger: r.trigger || "", notes: r.notes || "", attachments: r.attachments || [],
       }));
       setEvents(evts); saveItems(EVENTS_KEY, evts);
       setSymptoms(syms); saveItems(SYMPTOMS_KEY, syms);
@@ -319,11 +328,12 @@ const MedLog = () => {
         const remoteEvents: MedEvent[] = (evtRes.data || []).map(r => ({
           id: r.id, type: r.type as EventType, title: r.title, doctor: r.doctor || "",
           date: r.date, ...(r.date_to ? { dateTo: r.date_to } : {}), notes: r.notes || "",
+          attachments: r.attachments || [],
         }));
         const remoteSymptoms: SymptomEntry[] = (symRes.data || []).map(r => ({
           id: r.id, name: r.name, severity: r.severity as Severity,
           date: r.date, ...(r.date_to ? { dateTo: r.date_to } : {}),
-          trigger: r.trigger || "", notes: r.notes || "",
+          trigger: r.trigger || "", notes: r.notes || "", attachments: r.attachments || [],
         }));
         const remoteFamily: FamilyMember[] = (famRes.data || []).map(r => ({
           id: r.id, name: r.name, relationship: r.relationship,
@@ -434,6 +444,39 @@ const MedLog = () => {
       .then(({ error }) => { if (error) console.warn("Supabase delete family:", error.message); });
   }, []);
 
+  const updateEvent = useCallback((updated: MedEvent) => {
+    setEvents(prev => { const u = prev.map(e => e.id === updated.id ? updated : e); saveItems(EVENTS_KEY, u); return u; });
+    supabase.from("medlog_events").update({
+      type: updated.type, title: updated.title, doctor: updated.doctor,
+      date: updated.date, date_to: updated.dateTo || null, notes: updated.notes,
+      attachments: updated.attachments || [],
+    }).eq("id", updated.id).eq("user_key", USER_KEY)
+      .then(({ error }) => { if (error) console.warn("Supabase update event:", error.message); });
+    logActivity(memberName || "Preeti", "edit_event", updated.title);
+  }, [memberName, logActivity]);
+
+  const updateSymptom = useCallback((updated: SymptomEntry) => {
+    setSymptoms(prev => { const u = prev.map(s => s.id === updated.id ? updated : s); saveItems(SYMPTOMS_KEY, u); return u; });
+    supabase.from("medlog_symptoms").update({
+      name: updated.name, severity: updated.severity,
+      date: updated.date, date_to: updated.dateTo || null,
+      trigger: updated.trigger, notes: updated.notes, attachments: updated.attachments || [],
+    }).eq("id", updated.id).eq("user_key", USER_KEY)
+      .then(({ error }) => { if (error) console.warn("Supabase update symptom:", error.message); });
+    logActivity(memberName || "Preeti", "edit_symptom", updated.name);
+  }, [memberName, logActivity]);
+
+  const uploadAttachment = useCallback(async (file: File, recordId: string, recordType: "event" | "symptom"): Promise<Attachment | null> => {
+    try {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const path = `${USER_KEY}/${memberId}/${recordType}/${recordId}/${Date.now()}_${safeName}`;
+      const { error } = await supabase.storage.from("medlog-attachments").upload(path, file, { upsert: false });
+      if (error) { console.warn("Upload error:", error.message); return null; }
+      const { data: { publicUrl } } = supabase.storage.from("medlog-attachments").getPublicUrl(path);
+      return { id: `att_${Date.now()}`, name: file.name, path, url: publicUrl, type: file.type };
+    } catch (e) { console.warn("Upload failed:", e); return null; }
+  }, [memberId]);
+
   const tryUnlock = async () => {
     const raw = code.trim();
     const upper = raw.toUpperCase();
@@ -530,10 +573,15 @@ const MedLog = () => {
           )}
           {unlocked && (
             <div className="flex items-center gap-2 bg-white/10 rounded-full py-1 px-3">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: memberName ? "#7c3aed" : "#2d6a4f" }}>
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: isAdmin ? "#2d6a4f" : "#7c3aed" }}>
                 {(memberName || "Preeti").slice(0, 1).toUpperCase()}
               </div>
               <span className="text-xs font-semibold text-white/90 hidden sm:inline">{memberName || "Preeti"}</span>
+              <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.06em", padding: "2px 5px", borderRadius: 4,
+                background: isAdmin ? "rgba(116,198,157,0.25)" : "rgba(167,139,250,0.25)",
+                color: isAdmin ? "#74c69d" : "#c4b5fd" }}>
+                {isAdmin ? "ADMIN" : "MEMBER"}
+              </span>
             </div>
           )}
         </div>
@@ -562,10 +610,13 @@ const MedLog = () => {
           </div>
         </>)}
 
+        {editingEvent   && <EditEventModal   event={editingEvent}     onSave={e => { updateEvent(e);   setEditingEvent(null);   }} onClose={() => setEditingEvent(null)}   onUpload={uploadAttachment} />}
+        {editingSymptom && <EditSymptomModal symptom={editingSymptom} onSave={s => { updateSymptom(s); setEditingSymptom(null); }} onClose={() => setEditingSymptom(null)} onUpload={uploadAttachment} />}
+
         {activeView === "dashboard" && <DashboardView events={events} symptoms={symptoms} />}
-        {activeView === "log"       && <LogEventView onSave={addEvent} />}
-        {activeView === "symptoms"  && <SymptomsView symptoms={symptoms} onSave={addSymptom} onDelete={deleteSymptom} />}
-        {activeView === "history"   && <HistoryView events={events} symptoms={symptoms} onDelete={deleteEvent} onDeleteSymptom={deleteSymptom} />}
+        {activeView === "log"       && <LogEventView onSave={addEvent} onUpload={uploadAttachment} />}
+        {activeView === "symptoms"  && <SymptomsView symptoms={symptoms} onSave={addSymptom} onDelete={deleteSymptom} onEdit={setEditingSymptom} onUpload={uploadAttachment} />}
+        {activeView === "history"   && <HistoryView events={events} symptoms={symptoms} onDelete={deleteEvent} onDeleteSymptom={deleteSymptom} onEdit={setEditingEvent} onEditSymptom={setEditingSymptom} />}
         {activeView === "analysis"  && <AnalysisView events={events} symptoms={symptoms} />}
         {activeView === "family"    && <FamilyView family={family} onAdd={addFamilyMember} onDelete={deleteFamilyMember} />}
         {activeView === "admin"     && <AdminView />}
@@ -587,7 +638,22 @@ const StatCard = ({ label, value, sub }: { label: string; value: string; sub?: s
   </div>
 );
 
-const EventItem = ({ event, onDelete }: { event: MedEvent; onDelete?: (id: string) => void }) => (
+const AttachmentChips = ({ attachments }: { attachments?: Attachment[] }) => {
+  if (!attachments || attachments.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-1.5">
+      {attachments.map(a => (
+        <a key={a.id} href={a.url} target="_blank" rel="noreferrer"
+          className="flex items-center gap-1 px-2 py-0.5 rounded text-[0.65rem] font-medium border"
+          style={{ background: "#f0f4ff", borderColor: "#c7d2fe", color: "#3730a3", textDecoration: "none" }}>
+          📎 {a.name.length > 20 ? a.name.slice(0, 18) + "…" : a.name}
+        </a>
+      ))}
+    </div>
+  );
+};
+
+const EventItem = ({ event, onDelete, onEdit }: { event: MedEvent; onDelete?: (id: string) => void; onEdit?: (e: MedEvent) => void }) => (
   <div className="flex items-start gap-3 p-3 rounded-xl border" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }}>
     <div className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${(typeColors[event.type] || "").split(" ")[0] || "bg-gray-300"}`} />
     <div className="flex-1 min-w-0">
@@ -597,7 +663,14 @@ const EventItem = ({ event, onDelete }: { event: MedEvent; onDelete?: (id: strin
       </div>
       <div className="text-xs mt-0.5" style={{ color: "#6b6b80" }}>{event.date}{event.dateTo ? ` → ${event.dateTo}` : ""}{event.doctor && ` · ${event.doctor}`}</div>
       {event.notes && <div className="text-xs mt-1 italic" style={{ color: "#6b6b80" }}>{event.notes}</div>}
+      <AttachmentChips attachments={event.attachments} />
     </div>
+    {onEdit && (
+      <button onClick={() => onEdit(event)} title="Edit record"
+        style={{ background: "none", border: "none", cursor: "pointer", color: "#2563eb", fontSize: 14, padding: "2px 4px", lineHeight: 1, flexShrink: 0, opacity: 0.5 }}
+        onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+        onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}>✏</button>
+    )}
     {onDelete && (
       <button onClick={() => onDelete(event.id)} title="Delete record"
         style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 15, padding: "2px 4px", lineHeight: 1, flexShrink: 0, opacity: 0.5 }}
@@ -656,19 +729,33 @@ const DashboardView = ({ events, symptoms }: { events: MedEvent[]; symptoms: Sym
   );
 };
 
-const LogEventView = ({ onSave }: { onSave: (e: MedEvent) => void }) => {
+const LogEventView = ({ onSave, onUpload }: { onSave: (e: MedEvent) => void; onUpload: (file: File, recordId: string, recordType: "event" | "symptom") => Promise<Attachment | null> }) => {
   const [type, setType] = useState<EventType>("visit");
   const [date, setDate] = useState(today());
   const [dateTo, setDateTo] = useState(today());
   const [title, setTitle] = useState("");
   const [doctor, setDoctor] = useState("");
   const [notes, setNotes] = useState("");
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [saved, setSaved] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const pendingId = useRef(`evt_${Date.now()}`);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    setUploading(true);
+    const att = await onUpload(file, pendingId.current, "event");
+    if (att) setAttachments(prev => [...prev, att]);
+    setUploading(false);
+    if (fileRef.current) fileRef.current.value = "";
+  };
 
   const handleSave = () => {
     if (!title.trim()) return;
-    onSave({ id: `evt_${Date.now()}`, type, date, ...(dateTo ? { dateTo } : {}), title: title.trim(), doctor: doctor.trim(), notes: notes.trim() });
-    setTitle(""); setDoctor(""); setNotes(""); setDate(today()); setDateTo(today());
+    onSave({ id: pendingId.current, type, date, ...(dateTo ? { dateTo } : {}), title: title.trim(), doctor: doctor.trim(), notes: notes.trim(), attachments });
+    setTitle(""); setDoctor(""); setNotes(""); setDate(today()); setDateTo(today()); setAttachments([]);
+    pendingId.current = `evt_${Date.now()}`;
     setSaved(true); setTimeout(() => setSaved(false), 2000);
   };
 
@@ -713,7 +800,23 @@ const LogEventView = ({ onSave }: { onSave: (e: MedEvent) => void }) => {
               placeholder="Additional details…" className="rounded-lg border px-3 py-2.5 text-sm min-h-[72px]" style={inputStyle} />
           </div>
         </div>
-        <div className="mt-4 flex items-center gap-3">
+        <div className="col-span-2 flex flex-col gap-1.5">
+          <label className={labelCls} style={{ color: "#6b6b80" }}>Attachments <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional)</span></label>
+          <div className="flex flex-wrap gap-2">
+            {attachments.map(a => (
+              <div key={a.id} className="flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs" style={{ background: "#f0f4ff", borderColor: "#c7d2fe", color: "#3730a3" }}>
+                📎 <a href={a.url} target="_blank" rel="noreferrer" style={{ color: "#3730a3" }}>{a.name.length > 20 ? a.name.slice(0,18)+"…" : a.name}</a>
+                <button onClick={() => setAttachments(p => p.filter(x => x.id !== a.id))} style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 12, lineHeight: 1, padding: "0 2px" }}>✕</button>
+              </div>
+            ))}
+            <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+              style={{ padding: "6px 12px", borderRadius: 8, border: "1px dashed #e2ddd6", background: "#f7f4ef", fontSize: 12, cursor: "pointer", color: "#6b6b80" }}>
+              {uploading ? "Uploading…" : "📎 Attach file"}
+            </button>
+            <input ref={fileRef} type="file" style={{ display: "none" }} onChange={handleFileChange} />
+          </div>
+        </div>
+        <div className="col-span-2 mt-2 flex items-center gap-3">
           <button onClick={handleSave} className="px-6 py-2.5 rounded-lg text-white text-sm font-semibold" style={{ background: "#2d6a4f" }}>💾 Save Event</button>
           {saved && <span className="text-sm font-medium" style={{ color: "#2d6a4f" }}>✓ Saved!</span>}
         </div>
@@ -722,7 +825,7 @@ const LogEventView = ({ onSave }: { onSave: (e: MedEvent) => void }) => {
   );
 };
 
-const SymptomsView = ({ symptoms, onSave, onDelete }: { symptoms: SymptomEntry[]; onSave: (s: SymptomEntry) => void; onDelete: (id: string) => void }) => {
+const SymptomsView = ({ symptoms, onSave, onDelete, onEdit, onUpload }: { symptoms: SymptomEntry[]; onSave: (s: SymptomEntry) => void; onDelete: (id: string) => void; onEdit: (s: SymptomEntry) => void; onUpload: (file: File, recordId: string, recordType: "event" | "symptom") => Promise<Attachment | null> }) => {
   const [name, setName] = useState("Headache");
   const [customName, setCustomName] = useState("");
   const [severity, setSeverity] = useState<Severity>("Mild");
@@ -828,7 +931,12 @@ const SymptomsView = ({ symptoms, onSave, onDelete }: { symptoms: SymptomEntry[]
                   <span className={`text-[0.68rem] font-bold px-2 py-0.5 rounded-full ${sevColors[s.severity]}`}>{s.severity}</span>
                 </div>
                 <div className="text-xs mt-0.5" style={{ color: "#6b6b80" }}>{s.date}{s.dateTo ? ` → ${s.dateTo}` : ""}{s.trigger ? ` · Trigger: ${s.trigger}` : ""}</div>
+                <AttachmentChips attachments={s.attachments} />
               </div>
+              <button onClick={() => onEdit(s)} title="Edit record"
+                style={{ background: "none", border: "none", cursor: "pointer", color: "#2563eb", fontSize: 14, padding: "2px 4px", lineHeight: 1, flexShrink: 0, opacity: 0.5 }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+                onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}>✏</button>
               <button onClick={() => onDelete(s.id)} title="Delete record"
                 style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 15, padding: "2px 4px", lineHeight: 1, flexShrink: 0, opacity: 0.5 }}
                 onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
@@ -843,9 +951,10 @@ const SymptomsView = ({ symptoms, onSave, onDelete }: { symptoms: SymptomEntry[]
   );
 };
 
-const HistoryView = ({ events, symptoms, onDelete, onDeleteSymptom }: {
+const HistoryView = ({ events, symptoms, onDelete, onDeleteSymptom, onEdit, onEditSymptom }: {
   events: MedEvent[]; symptoms: SymptomEntry[];
   onDelete: (id: string) => void; onDeleteSymptom: (id: string) => void;
+  onEdit: (e: MedEvent) => void; onEditSymptom: (s: SymptomEntry) => void;
 }) => {
   const [filter, setFilter] = useState("All");
   // Unified feed: merge events + symptoms, sort by date desc
@@ -889,7 +998,7 @@ const HistoryView = ({ events, symptoms, onDelete, onDeleteSymptom }: {
         {filtered.length === 0
           ? <p className="text-sm" style={{ color: "#6b6b80" }}>No records found.</p>
           : filtered.map(item => item.kind === "event" && item.eventData
-              ? <EventItem key={item.id} event={item.eventData} onDelete={onDelete} />
+              ? <EventItem key={item.id} event={item.eventData} onDelete={onDelete} onEdit={onEdit} />
               : item.symData ? (
                   <div key={item.id} className="flex items-start gap-3 p-3 rounded-xl border" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }}>
                     <div className="w-2 h-2 rounded-full bg-pink-300 mt-1.5 flex-shrink-0" />
@@ -900,7 +1009,12 @@ const HistoryView = ({ events, symptoms, onDelete, onDeleteSymptom }: {
                         <span className={`text-[0.68rem] font-bold px-2 py-0.5 rounded-full ${sevColors[item.symData.severity]}`}>{item.symData.severity}</span>
                       </div>
                       <div className="text-xs mt-0.5" style={{ color: "#6b6b80" }}>{item.symData.date}{item.symData.dateTo ? ` → ${item.symData.dateTo}` : ""}{item.symData.trigger ? ` · Trigger: ${item.symData.trigger}` : ""}</div>
+                      <AttachmentChips attachments={item.symData.attachments} />
                     </div>
+                    <button onClick={() => onEditSymptom(item.symData!)} title="Edit record"
+                      style={{ background: "none", border: "none", cursor: "pointer", color: "#2563eb", fontSize: 14, padding: "2px 4px", lineHeight: 1, flexShrink: 0, opacity: 0.5 }}
+                      onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+                      onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}>✏</button>
                     <button onClick={() => onDeleteSymptom(item.id)} title="Delete record"
                       style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 15, padding: "2px 4px", lineHeight: 1, flexShrink: 0, opacity: 0.5 }}
                       onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
@@ -1102,11 +1216,203 @@ const AnalysisView = ({ events, symptoms }: { events: MedEvent[]; symptoms: Symp
 };
 
 // ── Admin View ────────────────────────────────────────────────────────────────
+// ── Edit Modals ───────────────────────────────────────────────────────────────
+type UploadFn = (file: File, recordId: string, recordType: "event" | "symptom") => Promise<Attachment | null>;
+
+const AttachmentEditor = ({ attachments, onChange, onUpload, recordId, recordType }: {
+  attachments: Attachment[]; onChange: (a: Attachment[]) => void;
+  onUpload: UploadFn; recordId: string; recordType: "event" | "symptom";
+}) => {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    setUploading(true);
+    const att = await onUpload(file, recordId, recordType);
+    if (att) onChange([...attachments, att]);
+    setUploading(false);
+    if (fileRef.current) fileRef.current.value = "";
+  };
+  return (
+    <div className="flex flex-wrap gap-2">
+      {attachments.map(a => (
+        <div key={a.id} className="flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs" style={{ background: "#f0f4ff", borderColor: "#c7d2fe", color: "#3730a3" }}>
+          📎 <a href={a.url} target="_blank" rel="noreferrer" style={{ color: "#3730a3" }}>{a.name.length > 20 ? a.name.slice(0,18)+"…" : a.name}</a>
+          <button onClick={() => onChange(attachments.filter(x => x.id !== a.id))} style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 12, lineHeight: 1, padding: "0 2px" }}>✕</button>
+        </div>
+      ))}
+      <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+        style={{ padding: "6px 12px", borderRadius: 8, border: "1px dashed #c7d2fe", background: "#f0f4ff", fontSize: 12, cursor: "pointer", color: "#3730a3" }}>
+        {uploading ? "Uploading…" : "📎 Add file"}
+      </button>
+      <input ref={fileRef} type="file" style={{ display: "none" }} onChange={handleFile} />
+    </div>
+  );
+};
+
+const EditEventModal = ({ event, onSave, onClose, onUpload }: {
+  event: MedEvent; onSave: (e: MedEvent) => void; onClose: () => void; onUpload: UploadFn;
+}) => {
+  const [type, setType]   = useState<EventType>(event.type);
+  const [date, setDate]   = useState(event.date);
+  const [dateTo, setDateTo] = useState(event.dateTo || "");
+  const [title, setTitle] = useState(event.title);
+  const [doctor, setDoctor] = useState(event.doctor);
+  const [notes, setNotes] = useState(event.notes);
+  const [attachments, setAttachments] = useState<Attachment[]>(event.attachments || []);
+  const inputStyle = { background: "#f7f4ef", borderColor: "#e2ddd6" };
+  const labelCls = "text-[0.78rem] font-semibold uppercase tracking-wider";
+  const handleSave = () => {
+    if (!title.trim()) return;
+    onSave({ ...event, type, date, ...(dateTo ? { dateTo } : { dateTo: undefined }), title: title.trim(), doctor: doctor.trim(), notes: notes.trim(), attachments });
+    onClose();
+  };
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(26,26,46,0.85)", backdropFilter: "blur(4px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div style={{ background: "#fff", borderRadius: 20, padding: 32, maxWidth: 520, width: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 25px 60px rgba(0,0,0,0.3)" }}>
+        <div className="flex items-center justify-between mb-5">
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#1a1a2e" }}>✏ Edit Event</h2>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "#6b6b80" }}>✕</button>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Event Type</label>
+            <select value={type} onChange={e => setType(e.target.value as EventType)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle}>
+              {(Object.entries(TYPE_LABELS) as [EventType, string][]).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+            </select>
+          </div>
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Date Range</label>
+            <div className="flex items-center gap-2">
+              <div className="flex-1"><DateInput value={date} onChange={setDate} /></div>
+              <span style={{ color: "#6b6b80", fontWeight: 600, fontSize: 14, flexShrink: 0 }}>→</span>
+              <div className="flex-1"><DateInput value={dateTo} onChange={setDateTo} /></div>
+            </div>
+          </div>
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Title / Description</label>
+            <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Doctor / Clinic</label>
+            <input type="text" value={doctor} onChange={e => setDoctor(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
+          </div>
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Notes</label>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm min-h-[60px]" style={inputStyle} />
+          </div>
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Attachments</label>
+            <AttachmentEditor attachments={attachments} onChange={setAttachments} onUpload={onUpload} recordId={event.id} recordType="event" />
+          </div>
+        </div>
+        <div className="mt-5 flex gap-3">
+          <button onClick={onClose} style={{ flex: 1, padding: 11, borderRadius: 10, border: "1px solid #e2e8f0", background: "#f7f4ef", color: "#6b6b80", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+          <button onClick={handleSave} style={{ flex: 2, padding: 11, borderRadius: 10, border: "none", background: "#1a1a2e", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Save changes →</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const EditSymptomModal = ({ symptom, onSave, onClose, onUpload }: {
+  symptom: SymptomEntry; onSave: (s: SymptomEntry) => void; onClose: () => void; onUpload: UploadFn;
+}) => {
+  const [name, setName]     = useState(symptom.name);
+  const [customName, setCustomName] = useState(SYMPTOM_OPTIONS.includes(symptom.name) ? "" : symptom.name);
+  const [severity, setSeverity] = useState<Severity>(symptom.severity);
+  const [date, setDate]     = useState(symptom.date);
+  const [dateTo, setDateTo] = useState(symptom.dateTo || "");
+  const [trigger, setTrigger] = useState(TRIGGER_OPTIONS.includes(symptom.trigger) ? symptom.trigger : "Other");
+  const [customTrigger, setCustomTrigger] = useState(TRIGGER_OPTIONS.includes(symptom.trigger) ? "" : symptom.trigger);
+  const [notes, setNotes]   = useState(symptom.notes);
+  const [attachments, setAttachments] = useState<Attachment[]>(symptom.attachments || []);
+  const inputStyle = { background: "#f7f4ef", borderColor: "#e2ddd6" };
+  const labelCls = "text-[0.78rem] font-semibold uppercase tracking-wider";
+  const sevConfig: { value: Severity; emoji: string }[] = [{ value: "Mild", emoji: "😌" }, { value: "Moderate", emoji: "😟" }, { value: "Severe", emoji: "😰" }];
+  const handleSave = () => {
+    const finalName = name === "Other" ? (customName.trim() || "Other") : name;
+    const finalTrigger = trigger === "Other" ? (customTrigger.trim() || "Other") : trigger;
+    onSave({ ...symptom, name: finalName, severity, date, ...(dateTo ? { dateTo } : { dateTo: undefined }), trigger: finalTrigger, notes: notes.trim(), attachments });
+    onClose();
+  };
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(26,26,46,0.85)", backdropFilter: "blur(4px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div style={{ background: "#fff", borderRadius: 20, padding: 32, maxWidth: 520, width: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 25px 60px rgba(0,0,0,0.3)" }}>
+        <div className="flex items-center justify-between mb-5">
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#1a1a2e" }}>✏ Edit Symptom</h2>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "#6b6b80" }}>✕</button>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Symptom</label>
+            <select value={SYMPTOM_OPTIONS.includes(name) ? name : "Other"} onChange={e => setName(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle}>
+              {SYMPTOM_OPTIONS.map(o => <option key={o}>{o}</option>)}
+            </select>
+          </div>
+          {(!SYMPTOM_OPTIONS.includes(name) || name === "Other") && (
+            <div className="flex flex-col gap-1.5">
+              <label className={labelCls} style={{ color: "#6b6b80" }}>Specify</label>
+              <input type="text" value={customName} onChange={e => setCustomName(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
+            </div>
+          )}
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Date Range</label>
+            <div className="flex items-center gap-2">
+              <div className="flex-1"><DateInput value={date} onChange={setDate} /></div>
+              <span style={{ color: "#6b6b80", fontWeight: 600, fontSize: 14, flexShrink: 0 }}>→</span>
+              <div className="flex-1"><DateInput value={dateTo} onChange={setDateTo} /></div>
+            </div>
+          </div>
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Severity</label>
+            <div className="flex gap-2">
+              {sevConfig.map(({ value, emoji }) => (
+                <button key={value} type="button" onClick={() => setSeverity(value)}
+                  className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${severity === value ? sevColors[value] + " ring-2 ring-offset-1" : ""}`}
+                  style={severity !== value ? { borderColor: "#e2ddd6", color: "#6b6b80", background: "#f7f4ef" } : {}}>
+                  {emoji} {value}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Trigger</label>
+            <select value={trigger} onChange={e => setTrigger(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle}>
+              {TRIGGER_OPTIONS.map(o => <option key={o}>{o}</option>)}
+            </select>
+          </div>
+          {trigger === "Other" && (
+            <div className="flex flex-col gap-1.5">
+              <label className={labelCls} style={{ color: "#6b6b80" }}>Specify trigger</label>
+              <input type="text" value={customTrigger} onChange={e => setCustomTrigger(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
+            </div>
+          )}
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Notes (optional)</label>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm min-h-[60px]" style={inputStyle} />
+          </div>
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Attachments</label>
+            <AttachmentEditor attachments={attachments} onChange={setAttachments} onUpload={onUpload} recordId={symptom.id} recordType="symptom" />
+          </div>
+        </div>
+        <div className="mt-5 flex gap-3">
+          <button onClick={onClose} style={{ flex: 1, padding: 11, borderRadius: 10, border: "1px solid #e2e8f0", background: "#f7f4ef", color: "#6b6b80", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+          <button onClick={handleSave} style={{ flex: 2, padding: 11, borderRadius: 10, border: "none", background: "#1a1a2e", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Save changes →</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ACTION_LABELS: Record<string, { label: string; color: string }> = {
   login:          { label: "Login",          color: "#2d6a4f" },
   view_tab:       { label: "Tab View",       color: "#1e40af" },
   add_event:      { label: "Added Event",    color: "#065f46" },
   add_symptom:    { label: "Added Symptom",  color: "#9d174d" },
+  edit_event:     { label: "Edited Event",   color: "#2563eb" },
+  edit_symptom:   { label: "Edited Symptom", color: "#7c3aed" },
   delete_event:   { label: "Deleted Event",  color: "#b91c1c" },
   delete_symptom: { label: "Deleted Symptom",color: "#b91c1c" },
 };
