@@ -269,7 +269,39 @@ const MedLog = () => {
   const [memberName, setMemberName] = useState<string | null>(() => {
     try { return localStorage.getItem("pl_medlog_member"); } catch { return null; }
   });
+  const [memberId, setMemberId] = useState<string>(() => {
+    try { return localStorage.getItem("pl_medlog_member_id") || "owner"; } catch { return "owner"; }
+  });
   const tabFirstRender = useRef(true);
+
+  const logActivity = useCallback((actor: string, action: string, detail = "") => {
+    supabase.from("medlog_activity_log").insert({ user_key: USER_KEY, actor, action, detail })
+      .then(({ error }) => { if (error) console.warn("Activity log:", error.message); });
+  }, []);
+
+  const reloadMemberData = useCallback(async (mId: string) => {
+    setEvents([]); setSymptoms([]); // clear immediately so old data never bleeds through
+    setSyncStatus("syncing");
+    try {
+      const [evtRes, symRes] = await Promise.all([
+        supabase.from("medlog_events").select("*").eq("user_key", USER_KEY).eq("member_id", mId).order("date", { ascending: false }),
+        supabase.from("medlog_symptoms").select("*").eq("user_key", USER_KEY).eq("member_id", mId).order("date", { ascending: false }),
+      ]);
+      if (evtRes.error || symRes.error) { setSyncStatus("offline"); return; }
+      const evts: MedEvent[] = (evtRes.data || []).map(r => ({
+        id: r.id, type: r.type as EventType, title: r.title, doctor: r.doctor || "",
+        date: r.date, ...(r.date_to ? { dateTo: r.date_to } : {}), notes: r.notes || "",
+      }));
+      const syms: SymptomEntry[] = (symRes.data || []).map(r => ({
+        id: r.id, name: r.name, severity: r.severity as Severity,
+        date: r.date, ...(r.date_to ? { dateTo: r.date_to } : {}),
+        trigger: r.trigger || "", notes: r.notes || "",
+      }));
+      setEvents(evts); saveItems(EVENTS_KEY, evts);
+      setSymptoms(syms); saveItems(SYMPTOMS_KEY, syms);
+      setSyncStatus("synced");
+    } catch { setSyncStatus("offline"); }
+  }, []);
 
   // ── Supabase sync ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -277,8 +309,8 @@ const MedLog = () => {
     async function syncFromSupabase() {
       try {
         const [evtRes, symRes, famRes] = await Promise.all([
-          supabase.from("medlog_events").select("*").eq("user_key", USER_KEY).order("date", { ascending: false }),
-          supabase.from("medlog_symptoms").select("*").eq("user_key", USER_KEY).order("date", { ascending: false }),
+          supabase.from("medlog_events").select("*").eq("user_key", USER_KEY).eq("member_id", memberId).order("date", { ascending: false }),
+          supabase.from("medlog_symptoms").select("*").eq("user_key", USER_KEY).eq("member_id", memberId).order("date", { ascending: false }),
           supabase.from("medlog_family").select("*").eq("user_key", USER_KEY),
         ]);
         if (cancelled) return;
@@ -298,31 +330,35 @@ const MedLog = () => {
           email: r.email || "", phone: r.phone || "", otp: r.otp || "",
         }));
 
-        if (remoteEvents.length > 0 || remoteSymptoms.length > 0 || remoteFamily.length > 0) {
-          // Supabase has data — use it as the source of truth
-          setEvents(remoteEvents);
-          setSymptoms(remoteSymptoms);
-          setFamily(remoteFamily);
-          saveItems(EVENTS_KEY, remoteEvents);
-          saveItems(SYMPTOMS_KEY, remoteSymptoms);
-          saveFamily(remoteFamily);
+        // Each collection is synced independently — avoids one empty collection wiping local data
+        if (remoteEvents.length > 0) {
+          setEvents(remoteEvents); saveItems(EVENTS_KEY, remoteEvents);
         } else {
-          // Supabase is empty — migrate any real (non-demo) local data up
-          const localEvents = loadItems<MedEvent>(EVENTS_KEY).filter(e => e.id.startsWith("evt_"));
-          const localSymptoms = loadItems<SymptomEntry>(SYMPTOMS_KEY).filter(s => s.id.startsWith("sym_"));
-          const localFamily = loadFamily();
-          if (localEvents.length > 0)
-            await supabase.from("medlog_events").insert(localEvents.map(e => ({
+          const local = loadItems<MedEvent>(EVENTS_KEY).filter(e => e.id.startsWith("evt_"));
+          if (local.length > 0)
+            await supabase.from("medlog_events").insert(local.map(e => ({
               id: e.id, user_key: USER_KEY, type: e.type, title: e.title,
               doctor: e.doctor, date: e.date, date_to: e.dateTo || null, notes: e.notes,
             })));
-          if (localSymptoms.length > 0)
-            await supabase.from("medlog_symptoms").insert(localSymptoms.map(s => ({
+        }
+
+        if (remoteSymptoms.length > 0) {
+          setSymptoms(remoteSymptoms); saveItems(SYMPTOMS_KEY, remoteSymptoms);
+        } else {
+          const local = loadItems<SymptomEntry>(SYMPTOMS_KEY).filter(s => s.id.startsWith("sym_"));
+          if (local.length > 0)
+            await supabase.from("medlog_symptoms").insert(local.map(s => ({
               id: s.id, user_key: USER_KEY, name: s.name, severity: s.severity,
               date: s.date, date_to: s.dateTo || null, trigger: s.trigger, notes: s.notes,
             })));
-          if (localFamily.length > 0)
-            await supabase.from("medlog_family").insert(localFamily.map(m => ({
+        }
+
+        if (remoteFamily.length > 0) {
+          setFamily(remoteFamily); saveFamily(remoteFamily);
+        } else {
+          const local = loadFamily();
+          if (local.length > 0)
+            await supabase.from("medlog_family").insert(local.map(m => ({
               id: m.id, user_key: USER_KEY, name: m.name, relationship: m.relationship,
               email: m.email || "", phone: m.phone || "", otp: m.otp || "",
             })));
@@ -351,28 +387,24 @@ const MedLog = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (tabFirstRender.current) { tabFirstRender.current = false; return; }
-    if (unlocked) logActivity(memberName || "Preeti", "view_tab", activeView);
-  }, [activeView]);
 
   const addEvent = useCallback((e: MedEvent) => {
     setEvents(prev => { const u = [e, ...prev]; saveItems(EVENTS_KEY, u); return u; });
     supabase.from("medlog_events").insert({
-      id: e.id, user_key: USER_KEY, type: e.type, title: e.title,
+      id: e.id, user_key: USER_KEY, member_id: memberId, type: e.type, title: e.title,
       doctor: e.doctor, date: e.date, date_to: e.dateTo || null, notes: e.notes,
     }).then(({ error }) => { if (error) console.warn("Supabase insert event:", error.message); });
     logActivity(memberName || "Preeti", "add_event", e.title);
-  }, [memberName, logActivity]);
+  }, [memberName, memberId, logActivity]);
 
   const addSymptom = useCallback((s: SymptomEntry) => {
     setSymptoms(prev => { const u = [s, ...prev]; saveItems(SYMPTOMS_KEY, u); return u; });
     supabase.from("medlog_symptoms").insert({
-      id: s.id, user_key: USER_KEY, name: s.name, severity: s.severity,
+      id: s.id, user_key: USER_KEY, member_id: memberId, name: s.name, severity: s.severity,
       date: s.date, date_to: s.dateTo || null, trigger: s.trigger, notes: s.notes,
     }).then(({ error }) => { if (error) console.warn("Supabase insert symptom:", error.message); });
     logActivity(memberName || "Preeti", "add_symptom", `${s.name} (${s.severity})`);
-  }, [memberName, logActivity]);
+  }, [memberName, memberId, logActivity]);
 
   const deleteEvent = useCallback((id: string) => {
     setEvents(prev => { const u = prev.filter(e => e.id !== id); saveItems(EVENTS_KEY, u); return u; });
@@ -402,25 +434,36 @@ const MedLog = () => {
       .then(({ error }) => { if (error) console.warn("Supabase delete family:", error.message); });
   }, []);
 
-  const logActivity = useCallback((actor: string, action: string, detail = "") => {
-    supabase.from("medlog_activity_log").insert({ user_key: USER_KEY, actor, action, detail })
-      .then(({ error }) => { if (error) console.warn("Activity log:", error.message); });
-  }, []);
-
   const tryUnlock = async () => {
-    const input = code.toUpperCase().trim();
-    if (input === ML_ACCESS_CODE) {
-      try { localStorage.setItem(ML_ACCESS_KEY, "1"); localStorage.removeItem("pl_medlog_member"); } catch {}
-      setUnlocked(true); setMemberName(null); setShowLockModal(false); setCode("");
+    const raw = code.trim();
+    const upper = raw.toUpperCase();
+    if (upper === ML_ACCESS_CODE) {
+      try {
+        localStorage.setItem(ML_ACCESS_KEY, "1");
+        localStorage.removeItem("pl_medlog_member");
+        localStorage.removeItem("pl_medlog_member_id");
+      } catch {}
+      setUnlocked(true); setMemberName(null); setMemberId("owner");
+      setShowLockModal(false); setCode("");
       logActivity("Preeti (owner)", "login", "Owner login");
+      reloadMemberData("owner");
     } else {
-      // Check family member OTPs
-      const { data } = await supabase.from("medlog_family").select("id, name, otp").eq("user_key", USER_KEY);
-      const match = (data || []).find(m => m.otp && m.otp.toUpperCase() === input);
-      if (match) {
-        try { localStorage.setItem(ML_ACCESS_KEY, "1"); localStorage.setItem("pl_medlog_member", match.name); } catch {}
-        setUnlocked(true); setMemberName(match.name); setShowLockModal(false); setCode("");
-        logActivity(match.name, "login", "Family member login");
+      const { data } = await supabase.from("medlog_family").select("id, name, otp, email").eq("user_key", USER_KEY);
+      // Match by OTP (case-insensitive) OR by email address
+      const found = (data || []).find(m =>
+        (m.otp && m.otp.toUpperCase() === upper) ||
+        (m.email && m.email.toLowerCase() === raw.toLowerCase())
+      );
+      if (found) {
+        try {
+          localStorage.setItem(ML_ACCESS_KEY, "1");
+          localStorage.setItem("pl_medlog_member", found.name);
+          localStorage.setItem("pl_medlog_member_id", found.id);
+        } catch {}
+        setUnlocked(true); setMemberName(found.name); setMemberId(found.id);
+        setShowLockModal(false); setCode("");
+        logActivity(found.name, "login", `Family member login`);
+        reloadMemberData(found.id);
       } else {
         setCodeError(true); setTimeout(() => setCodeError(false), 800); setCode("");
       }
@@ -428,8 +471,12 @@ const MedLog = () => {
   };
 
   const lock = () => {
-    try { localStorage.removeItem(ML_ACCESS_KEY); localStorage.removeItem("pl_medlog_member"); } catch {}
-    setUnlocked(false); setMemberName(null);
+    try {
+      localStorage.removeItem(ML_ACCESS_KEY);
+      localStorage.removeItem("pl_medlog_member");
+      localStorage.removeItem("pl_medlog_member_id");
+    } catch {}
+    setUnlocked(false); setMemberName(null); setMemberId("owner"); setActiveView("dashboard");
   };
 
   return (
@@ -472,10 +519,12 @@ const MedLog = () => {
             {syncStatus === "syncing" ? "⟳ syncing" : syncStatus === "synced" ? "☁ synced" : "⚠ offline"}
           </span>
           {unlocked ? (
-            <button onClick={lock} title="Lock MedLog" style={{ background: "rgba(116,198,157,0.15)", border: "1px solid rgba(116,198,157,0.4)", borderRadius: 8, padding: "4px 10px", fontSize: 13, cursor: "pointer", color: "#74c69d" }}>🔓</button>
+            <button onClick={lock} title="Log out" style={{ background: "rgba(220,38,38,0.15)", border: "1px solid rgba(220,38,38,0.4)", borderRadius: 8, padding: "4px 10px", fontSize: 12, cursor: "pointer", color: "#fca5a5", fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
+              ⏏ <span style={{ fontSize: 11 }}>Log out</span>
+            </button>
           ) : (
             <button onClick={() => setShowLockModal(true)} style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 8, padding: "4px 10px", fontSize: 13, cursor: "pointer", color: "#fff", fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
-              🔒 <span style={{ fontSize: 11 }}>Owner</span>
+              🔒 <span style={{ fontSize: 11 }}>Login</span>
             </button>
           )}
           <div className="flex items-center gap-2 bg-white/10 rounded-full py-1 px-3">
@@ -1022,12 +1071,23 @@ const AdminView = () => {
   const [loading, setLoading] = useState(true);
   const [filterActor, setFilterActor] = useState("All");
   const [filterAction, setFilterAction] = useState("All");
+  const [clearing, setClearing] = useState(false);
 
-  useEffect(() => {
+  const fetchLogs = () => {
+    setLoading(true);
     supabase.from("medlog_activity_log").select("*").eq("user_key", USER_KEY)
       .order("created_at", { ascending: false }).limit(300)
       .then(({ data }) => { setLogs(data || []); setLoading(false); });
-  }, []);
+  };
+
+  useEffect(() => { fetchLogs(); }, []);
+
+  const clearLog = async () => {
+    if (!confirm("Clear all activity log entries? This cannot be undone.")) return;
+    setClearing(true);
+    await supabase.from("medlog_activity_log").delete().eq("user_key", USER_KEY);
+    setLogs([]); setClearing(false);
+  };
 
   const actors  = ["All", ...Array.from(new Set(logs.map(l => l.actor)))];
   const actions = ["All", ...Array.from(new Set(logs.map(l => l.action)))];
@@ -1070,7 +1130,7 @@ const AdminView = () => {
       <div className="rounded-2xl border shadow-sm overflow-hidden" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
         <div className="px-5 py-4 border-b flex items-center justify-between flex-wrap gap-3" style={{ borderColor: "#e2ddd6" }}>
           <span className="font-serif font-bold">🛡 Activity Log</span>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <select value={filterActor} onChange={e => setFilterActor(e.target.value)} style={selStyle}>
               {actors.map(a => <option key={a}>{a}</option>)}
             </select>
@@ -1078,6 +1138,10 @@ const AdminView = () => {
               {actions.map(a => <option key={a} value={a}>{a === "All" ? "All actions" : (ACTION_LABELS[a]?.label ?? a)}</option>)}
             </select>
             <span className="text-xs self-center" style={{ color: "#6b6b80" }}>{filtered.length} entries</span>
+            <button onClick={clearLog} disabled={clearing}
+              style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid #fca5a5", background: "#fef2f2", color: "#dc2626", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+              {clearing ? "Clearing…" : "🗑 Clear log"}
+            </button>
           </div>
         </div>
 
