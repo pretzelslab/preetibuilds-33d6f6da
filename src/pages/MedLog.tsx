@@ -26,6 +26,12 @@ interface InsightItem {
 }
 interface FamilyMember {
   id: string; name: string; relationship: string;
+  email: string; phone: string; otp: string;
+}
+
+function generateOTP(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
 }
 
 // ── Persistence ───────────────────────────────────────────────────────────────
@@ -280,6 +286,7 @@ const MedLog = () => {
         }));
         const remoteFamily: FamilyMember[] = (famRes.data || []).map(r => ({
           id: r.id, name: r.name, relationship: r.relationship,
+          email: r.email || "", phone: r.phone || "", otp: r.otp || "",
         }));
 
         if (remoteEvents.length > 0 || remoteSymptoms.length > 0 || remoteFamily.length > 0) {
@@ -308,6 +315,7 @@ const MedLog = () => {
           if (localFamily.length > 0)
             await supabase.from("medlog_family").insert(localFamily.map(m => ({
               id: m.id, user_key: USER_KEY, name: m.name, relationship: m.relationship,
+              email: m.email || "", phone: m.phone || "", otp: m.otp || "",
             })));
         }
         if (!cancelled) setSyncStatus("synced");
@@ -366,6 +374,7 @@ const MedLog = () => {
     setFamily(prev => { const u = [...prev, m]; saveFamily(u); return u; });
     supabase.from("medlog_family").insert({
       id: m.id, user_key: USER_KEY, name: m.name, relationship: m.relationship,
+      email: m.email || "", phone: m.phone || "", otp: m.otp || "",
     }).then(({ error }) => { if (error) console.warn("Supabase insert family:", error.message); });
   }, []);
 
@@ -436,8 +445,8 @@ const MedLog = () => {
             </button>
           )}
           <div className="flex items-center gap-2 bg-white/10 rounded-full py-1 px-3">
-            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: "#2d6a4f" }}>JS</div>
-            <span className="text-xs font-semibold text-white/90 hidden sm:inline">Jane</span>
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: "#2d6a4f" }}>P</div>
+            <span className="text-xs font-semibold text-white/90 hidden sm:inline">Preeti</span>
           </div>
         </div>
       </header>
@@ -966,46 +975,42 @@ const MEMBER_COLORS = ["#2d6a4f", "#b7791f", "#9d174d", "#1e40af", "#7c3aed", "#
 const FamilyView = ({ family, onAdd, onDelete }: { family: FamilyMember[]; onAdd: (m: FamilyMember) => void; onDelete: (id: string) => void }) => {
   const [name, setName] = useState("");
   const [relationship, setRelationship] = useState("Spouse / Partner");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState(() => generateOTP());
   const [saved, setSaved] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const inputStyle = { background: "#f7f4ef", borderColor: "#e2ddd6" };
   const labelCls = "text-[0.78rem] font-semibold uppercase tracking-wider";
 
   const handleAdd = () => {
     if (!name.trim()) return;
-    onAdd({ id: `fm_${Date.now()}`, name: name.trim(), relationship });
-    setName(""); setSaved(true); setTimeout(() => setSaved(false), 2000);
+    onAdd({ id: `fm_${Date.now()}`, name: name.trim(), relationship, email: email.trim(), phone: phone.trim(), otp });
+    setName(""); setEmail(""); setPhone(""); setOtp(generateOTP());
+    setSaved(true); setTimeout(() => setSaved(false), 2000);
+  };
+
+  const copyOTP = (code: string, id: string) => {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopiedId(id); setTimeout(() => setCopiedId(null), 1500);
+    });
+  };
+
+  const whatsappLink = (phone: string, name: string, otp: string) => {
+    const msg = encodeURIComponent(`Hi ${name}, your MedLog access code is: ${otp}`);
+    return `https://wa.me/${phone.replace(/\D/g, "")}?text=${msg}`;
   };
 
   return (
-    <div className="grid md:grid-cols-2 gap-6">
-      <div className="rounded-2xl border p-5 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
-        <div className="font-serif font-bold mb-4">👨‍👩‍👧 Family Members</div>
-        {family.length === 0 ? (
-          <p className="text-sm" style={{ color: "#6b6b80" }}>No family members added yet. Use the form to add one.</p>
-        ) : family.map((m, i) => (
-          <div key={m.id} className="flex items-center gap-3 p-3 rounded-xl border mb-2" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }}>
-            <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-              style={{ background: MEMBER_COLORS[i % MEMBER_COLORS.length] }}>
-              {m.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
-            </div>
-            <div className="flex-1">
-              <div className="font-semibold text-sm">{m.name}</div>
-              <div className="text-xs" style={{ color: "#6b6b80" }}>{m.relationship}</div>
-            </div>
-            <button onClick={() => onDelete(m.id)} title="Remove"
-              style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 15, padding: "2px 4px", opacity: 0.5 }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
-              onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}>✕</button>
-          </div>
-        ))}
-      </div>
+    <div className="flex flex-col gap-6">
+      {/* Add member form */}
       <div className="rounded-2xl border p-5 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
         <div className="font-serif font-bold mb-4">➕ Add Family Member</div>
-        <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <label className={labelCls} style={{ color: "#6b6b80" }}>Full Name</label>
             <input type="text" value={name} onChange={e => setName(e.target.value)}
-              placeholder="e.g. Sarah Johnson" onKeyDown={e => e.key === "Enter" && handleAdd()}
+              placeholder="e.g. Sarah Johnson"
               className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
           </div>
           <div className="flex flex-col gap-1.5">
@@ -1016,11 +1021,106 @@ const FamilyView = ({ family, onAdd, onDelete }: { family: FamilyMember[]; onAdd
               <option>Sibling</option><option>Other</option>
             </select>
           </div>
-          <div className="flex items-center gap-3">
-            <button onClick={handleAdd} className="px-6 py-2.5 rounded-lg text-white text-sm font-semibold" style={{ background: "#2d6a4f" }}>Add Member</button>
-            {saved && <span className="text-sm font-medium" style={{ color: "#2d6a4f" }}>✓ Added!</span>}
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Email Address</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+              placeholder="member@example.com"
+              className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>WhatsApp / Phone</label>
+            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+              placeholder="+44 7700 900000"
+              className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
+          </div>
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Access Code (OTP) — share with member</label>
+            <div className="flex items-center gap-2">
+              <input type="text" value={otp} readOnly
+                className="rounded-lg border px-3 py-2.5 text-sm font-mono tracking-widest flex-1"
+                style={{ ...inputStyle, letterSpacing: "0.2em", color: "#1a1a2e" }} />
+              <button type="button" onClick={() => setOtp(generateOTP())}
+                className="px-3 py-2.5 rounded-lg border text-xs font-semibold"
+                style={{ borderColor: "#e2ddd6", background: "#f7f4ef", color: "#6b6b80" }}>
+                ↺ New
+              </button>
+            </div>
+            <p className="text-[0.72rem]" style={{ color: "#6b6b80" }}>Auto-generated. Share this code with the member so they can log in.</p>
           </div>
         </div>
+        <div className="mt-4 flex items-center gap-3">
+          <button onClick={handleAdd} className="px-6 py-2.5 rounded-lg text-white text-sm font-semibold" style={{ background: "#2d6a4f" }}>Add Member</button>
+          {saved && <span className="text-sm font-medium" style={{ color: "#2d6a4f" }}>✓ Added!</span>}
+        </div>
+      </div>
+
+      {/* Members grid */}
+      <div className="rounded-2xl border shadow-sm overflow-hidden" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
+        <div className="px-5 py-4 border-b" style={{ borderColor: "#e2ddd6" }}>
+          <span className="font-serif font-bold">👨‍👩‍👧 Family Members</span>
+          <span className="ml-2 text-xs" style={{ color: "#6b6b80" }}>{family.length} member{family.length !== 1 ? "s" : ""}</span>
+        </div>
+        {family.length === 0 ? (
+          <p className="text-sm p-5" style={{ color: "#6b6b80" }}>No family members added yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: "#f7f4ef", borderBottom: "1px solid #e2ddd6" }}>
+                  {["Member", "Relationship", "Email", "WhatsApp", "Access Code", ""].map(h => (
+                    <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#6b6b80", whiteSpace: "nowrap" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {family.map((m, i) => (
+                  <tr key={m.id} style={{ borderBottom: "1px solid #f0ece6" }}>
+                    <td style={{ padding: "12px 16px" }}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                          style={{ background: MEMBER_COLORS[i % MEMBER_COLORS.length] }}>
+                          {m.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+                        </div>
+                        <span className="font-semibold">{m.name}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: "12px 16px", color: "#6b6b80" }}>{m.relationship}</td>
+                    <td style={{ padding: "12px 16px" }}>
+                      {m.email
+                        ? <a href={`mailto:${m.email}`} style={{ color: "#1e40af", textDecoration: "none" }}>{m.email}</a>
+                        : <span style={{ color: "#c0bdb8" }}>—</span>}
+                    </td>
+                    <td style={{ padding: "12px 16px" }}>
+                      {m.phone
+                        ? <a href={whatsappLink(m.phone, m.name, m.otp)} target="_blank" rel="noopener noreferrer"
+                            style={{ color: "#2d6a4f", textDecoration: "none", fontWeight: 600 }}>
+                            📱 {m.phone}
+                          </a>
+                        : <span style={{ color: "#c0bdb8" }}>—</span>}
+                    </td>
+                    <td style={{ padding: "12px 16px" }}>
+                      {m.otp ? (
+                        <div className="flex items-center gap-1.5">
+                          <code style={{ fontFamily: "monospace", letterSpacing: "0.12em", fontSize: 13, background: "#f0fdf4", padding: "2px 8px", borderRadius: 6, color: "#2d6a4f", fontWeight: 700 }}>{m.otp}</code>
+                          <button onClick={() => copyOTP(m.otp, m.id)} title="Copy code"
+                            style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: copiedId === m.id ? "#2d6a4f" : "#6b6b80", padding: "2px 4px" }}>
+                            {copiedId === m.id ? "✓" : "⎘"}
+                          </button>
+                        </div>
+                      ) : <span style={{ color: "#c0bdb8" }}>—</span>}
+                    </td>
+                    <td style={{ padding: "12px 16px" }}>
+                      <button onClick={() => onDelete(m.id)} title="Remove member"
+                        style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 14, opacity: 0.5, padding: "2px 4px" }}
+                        onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+                        onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}>✕</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
