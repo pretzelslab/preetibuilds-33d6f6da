@@ -17,7 +17,7 @@ import ClientDiscovery from "./pages/ClientDiscovery";
 const queryClient = new QueryClient();
 
 const ROUTE_TITLES: Record<string, string> = {
-  "/":                    "Preeti Builds — Engineering meets Revenue",
+  "/":                    "Preeti Builds",
   "/medlog":              "MedLog | Preeti Builds",
   "/ai-governance":       "AI Governance Tracker | Preeti Builds",
   "/client-discovery":    "Client Discovery Workbook | Preeti Builds",

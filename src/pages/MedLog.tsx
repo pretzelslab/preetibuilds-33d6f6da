@@ -486,10 +486,11 @@ const MedLog = () => {
           <div style={{ background: "#fff", borderRadius: 20, padding: "40px 44px", maxWidth: 400, width: "100%", textAlign: "center", boxShadow: "0 25px 60px rgba(0,0,0,0.3)" }}>
             <div style={{ fontSize: 44, marginBottom: 14 }}>🔒</div>
             <h2 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 800, color: "#1a1a2e" }}>MedLog Access</h2>
-            <p style={{ margin: "0 0 24px", fontSize: 13, color: "#6b6b80", lineHeight: 1.6 }}>Enter your access code to view the full application.</p>
-            <input type="password" placeholder="Access code" value={code} autoFocus
+            <p style={{ margin: "0 0 6px", fontSize: 13, color: "#6b6b80", lineHeight: 1.6 }}>Enter your access OTP or email address.</p>
+            <p style={{ margin: "0 0 20px", fontSize: 11, color: "#b0b0c0" }}>Family members: use the OTP or email shared with you.</p>
+            <input type="text" placeholder="OTP or email address" value={code} autoFocus autoComplete="off"
               onChange={e => setCode(e.target.value)} onKeyDown={e => e.key === "Enter" && tryUnlock()}
-              style={{ width: "100%", padding: "12px 14px", border: `2px solid ${codeError ? "#dc2626" : "#e2e8f0"}`, borderRadius: 10, fontSize: 15, outline: "none", marginBottom: 12, boxSizing: "border-box", fontFamily: "monospace", letterSpacing: "0.15em", textAlign: "center", background: codeError ? "#fef2f2" : "#fff" }} />
+              style={{ width: "100%", padding: "12px 14px", border: `2px solid ${codeError ? "#dc2626" : "#e2e8f0"}`, borderRadius: 10, fontSize: 14, outline: "none", marginBottom: 12, boxSizing: "border-box", textAlign: "center", background: codeError ? "#fef2f2" : "#fff" }} />
             <div style={{ display: "flex", gap: 8 }}>
               <button onClick={() => { setShowLockModal(false); setCode(""); }} style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1px solid #e2e8f0", background: "#f7f4ef", color: "#6b6b80", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
               <button onClick={tryUnlock} style={{ flex: 2, padding: "11px", borderRadius: 10, border: "none", background: "#1a1a2e", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Unlock →</button>
@@ -527,12 +528,14 @@ const MedLog = () => {
               🔒 <span style={{ fontSize: 11 }}>Login</span>
             </button>
           )}
-          <div className="flex items-center gap-2 bg-white/10 rounded-full py-1 px-3">
-            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: memberName ? "#7c3aed" : "#2d6a4f" }}>
-              {(memberName || "Preeti").slice(0, 1).toUpperCase()}
+          {unlocked && (
+            <div className="flex items-center gap-2 bg-white/10 rounded-full py-1 px-3">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: memberName ? "#7c3aed" : "#2d6a4f" }}>
+                {(memberName || "Preeti").slice(0, 1).toUpperCase()}
+              </div>
+              <span className="text-xs font-semibold text-white/90 hidden sm:inline">{memberName || "Preeti"}</span>
             </div>
-            <span className="text-xs font-semibold text-white/90 hidden sm:inline">{memberName || "Preeti"}</span>
-          </div>
+          )}
         </div>
       </header>
 
@@ -553,16 +556,16 @@ const MedLog = () => {
           <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-50 text-center">
             <div className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl shadow-lg" style={{ background: "#1a1a2e" }}>
               <Heart className="w-5 h-5 text-[#74c69d]" />
-              <span className="text-white font-semibold text-sm">Full app coming soon — stay tuned!</span>
+              <span className="text-white font-semibold text-sm">Your personal medical log · Private &amp; Confidential</span>
             </div>
-            <p className="mt-3 text-sm" style={{ color: "#6b6b80" }}>This is a preview of MedLog. Backend &amp; interactivity launching shortly.</p>
+            <p className="mt-3 text-sm" style={{ color: "#6b6b80" }}>Log in to access your health records and insights.</p>
           </div>
         </>)}
 
         {activeView === "dashboard" && <DashboardView events={events} symptoms={symptoms} />}
         {activeView === "log"       && <LogEventView onSave={addEvent} />}
         {activeView === "symptoms"  && <SymptomsView symptoms={symptoms} onSave={addSymptom} onDelete={deleteSymptom} />}
-        {activeView === "history"   && <HistoryView events={events} onDelete={deleteEvent} />}
+        {activeView === "history"   && <HistoryView events={events} symptoms={symptoms} onDelete={deleteEvent} onDeleteSymptom={deleteSymptom} />}
         {activeView === "analysis"  && <AnalysisView events={events} symptoms={symptoms} />}
         {activeView === "family"    && <FamilyView family={family} onAdd={addFamilyMember} onDelete={deleteFamilyMember} />}
         {activeView === "admin"     && <AdminView />}
@@ -840,29 +843,71 @@ const SymptomsView = ({ symptoms, onSave, onDelete }: { symptoms: SymptomEntry[]
   );
 };
 
-const HistoryView = ({ events, onDelete }: { events: MedEvent[]; onDelete: (id: string) => void }) => {
+const HistoryView = ({ events, symptoms, onDelete, onDeleteSymptom }: {
+  events: MedEvent[]; symptoms: SymptomEntry[];
+  onDelete: (id: string) => void; onDeleteSymptom: (id: string) => void;
+}) => {
   const [filter, setFilter] = useState("All");
-  const filters = ["All", "visit", "checkup", "surgery", "medication", "other"];
-  const filtered = filter === "All" ? events : events.filter(e => e.type === filter);
+  // Unified feed: merge events + symptoms, sort by date desc
+  type HistItem = { id: string; date: string; kind: "event" | "symptom"; eventData?: MedEvent; symData?: SymptomEntry };
+  const allItems: HistItem[] = [
+    ...events.map(e => ({ id: e.id, date: e.date, kind: "event" as const, eventData: e })),
+    ...symptoms.map(s => ({ id: s.id, date: s.date, kind: "symptom" as const, symData: s })),
+  ].sort((a, b) => b.date.localeCompare(a.date));
+
+  const filtered = filter === "All" ? allItems
+    : filter === "symptoms" ? allItems.filter(i => i.kind === "symptom")
+    : allItems.filter(i => i.kind === "event" && (filter === "events" || i.eventData?.type === filter));
+
+  const total = allItems.length;
+
   return (
     <div className="rounded-2xl border p-5 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
       <div className="flex items-center justify-between mb-4">
-        <div className="font-serif font-bold">📅 Medical Event History</div>
-        <span className="text-xs" style={{ color: "#6b6b80" }}>{events.length} record{events.length !== 1 ? "s" : ""} · click ✕ to delete</span>
+        <div className="font-serif font-bold">📅 Health History</div>
+        <span className="text-xs" style={{ color: "#6b6b80" }}>{total} record{total !== 1 ? "s" : ""} · click ✕ to delete</span>
       </div>
       <div className="flex flex-wrap gap-2 mb-4">
-        {filters.map(f => (
-          <button key={f} onClick={() => setFilter(f)}
-            className={`px-3 py-1 rounded-full text-xs font-semibold border cursor-pointer transition-all ${filter === f ? "bg-emerald-50 border-emerald-300 text-emerald-700" : ""}`}
-            style={filter !== f ? { borderColor: "#e2ddd6", color: "#6b6b80" } : {}}>
-            {f === "All" ? "All" : TYPE_LABELS[f as EventType]}
+        {[
+          { key: "All",       label: "All" },
+          { key: "events",    label: "Events" },
+          { key: "symptoms",  label: "Symptoms" },
+          { key: "visit",     label: "Doctor's Visit" },
+          { key: "checkup",   label: "Check-up" },
+          { key: "surgery",   label: "Surgery" },
+          { key: "medication",label: "Medication" },
+          { key: "other",     label: "Other" },
+        ].map(({ key, label }) => (
+          <button key={key} onClick={() => setFilter(key)}
+            className={`px-3 py-1 rounded-full text-xs font-semibold border cursor-pointer transition-all ${filter === key ? "bg-emerald-50 border-emerald-300 text-emerald-700" : ""}`}
+            style={filter !== key ? { borderColor: "#e2ddd6", color: "#6b6b80" } : {}}>
+            {label}
           </button>
         ))}
       </div>
       <div className="flex flex-col gap-2">
         {filtered.length === 0
-          ? <p className="text-sm" style={{ color: "#6b6b80" }}>No events found.</p>
-          : filtered.map(e => <EventItem key={e.id} event={e} onDelete={onDelete} />)}
+          ? <p className="text-sm" style={{ color: "#6b6b80" }}>No records found.</p>
+          : filtered.map(item => item.kind === "event" && item.eventData
+              ? <EventItem key={item.id} event={item.eventData} onDelete={onDelete} />
+              : item.symData ? (
+                  <div key={item.id} className="flex items-start gap-3 p-3 rounded-xl border" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }}>
+                    <div className="w-2 h-2 rounded-full bg-pink-300 mt-1.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs" style={{ color: "#6b6b80" }}>🤒</span>
+                        <span className="font-semibold text-sm">{item.symData.name}</span>
+                        <span className={`text-[0.68rem] font-bold px-2 py-0.5 rounded-full ${sevColors[item.symData.severity]}`}>{item.symData.severity}</span>
+                      </div>
+                      <div className="text-xs mt-0.5" style={{ color: "#6b6b80" }}>{item.symData.date}{item.symData.dateTo ? ` → ${item.symData.dateTo}` : ""}{item.symData.trigger ? ` · Trigger: ${item.symData.trigger}` : ""}</div>
+                    </div>
+                    <button onClick={() => onDeleteSymptom(item.id)} title="Delete record"
+                      style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 15, padding: "2px 4px", lineHeight: 1, flexShrink: 0, opacity: 0.5 }}
+                      onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+                      onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}>✕</button>
+                  </div>
+                ) : null
+          )}
       </div>
     </div>
   );
