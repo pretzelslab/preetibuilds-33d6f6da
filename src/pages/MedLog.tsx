@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, BarChart3, Calendar, ClipboardList, Heart, Plus, Stethoscope, Users } from "lucide-react";
+import { supabase, USER_KEY } from "@/lib/supabase";
 
 // ── Access gate (independent from AI Governance) ──────────────────────────────
 const ML_ACCESS_KEY = "pl_medlog_access";
@@ -248,6 +249,68 @@ const MedLog = () => {
   const [events, setEvents] = useState<MedEvent[]>(() => loadItems(EVENTS_KEY, DEFAULT_EVENTS));
   const [symptoms, setSymptoms] = useState<SymptomEntry[]>(() => loadItems(SYMPTOMS_KEY, DEFAULT_SYMPTOMS));
   const [family, setFamily] = useState<FamilyMember[]>(loadFamily);
+  const [syncStatus, setSyncStatus] = useState<"syncing" | "synced" | "offline">("syncing");
+
+  // ── Supabase sync ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+    async function syncFromSupabase() {
+      try {
+        const [evtRes, symRes, famRes] = await Promise.all([
+          supabase.from("medlog_events").select("*").eq("user_key", USER_KEY).order("date", { ascending: false }),
+          supabase.from("medlog_symptoms").select("*").eq("user_key", USER_KEY).order("date", { ascending: false }),
+          supabase.from("medlog_family").select("*").eq("user_key", USER_KEY),
+        ]);
+        if (cancelled) return;
+        if (evtRes.error || symRes.error || famRes.error) { setSyncStatus("offline"); return; }
+
+        const remoteEvents: MedEvent[] = (evtRes.data || []).map(r => ({
+          id: r.id, type: r.type as EventType, title: r.title, doctor: r.doctor || "",
+          date: r.date, ...(r.date_to ? { dateTo: r.date_to } : {}), notes: r.notes || "",
+        }));
+        const remoteSymptoms: SymptomEntry[] = (symRes.data || []).map(r => ({
+          id: r.id, name: r.name, severity: r.severity as Severity,
+          date: r.date, ...(r.date_to ? { dateTo: r.date_to } : {}),
+          trigger: r.trigger || "", notes: r.notes || "",
+        }));
+        const remoteFamily: FamilyMember[] = (famRes.data || []).map(r => ({
+          id: r.id, name: r.name, relationship: r.relationship,
+        }));
+
+        if (remoteEvents.length > 0 || remoteSymptoms.length > 0 || remoteFamily.length > 0) {
+          // Supabase has data — use it as the source of truth
+          setEvents(remoteEvents);
+          setSymptoms(remoteSymptoms);
+          setFamily(remoteFamily);
+          saveItems(EVENTS_KEY, remoteEvents);
+          saveItems(SYMPTOMS_KEY, remoteSymptoms);
+          saveFamily(remoteFamily);
+        } else {
+          // Supabase is empty — migrate any real (non-demo) local data up
+          const localEvents = loadItems<MedEvent>(EVENTS_KEY, []).filter(e => e.id.startsWith("evt_"));
+          const localSymptoms = loadItems<SymptomEntry>(SYMPTOMS_KEY, []).filter(s => s.id.startsWith("sym_"));
+          const localFamily = loadFamily();
+          if (localEvents.length > 0)
+            await supabase.from("medlog_events").insert(localEvents.map(e => ({
+              id: e.id, user_key: USER_KEY, type: e.type, title: e.title,
+              doctor: e.doctor, date: e.date, date_to: e.dateTo || null, notes: e.notes,
+            })));
+          if (localSymptoms.length > 0)
+            await supabase.from("medlog_symptoms").insert(localSymptoms.map(s => ({
+              id: s.id, user_key: USER_KEY, name: s.name, severity: s.severity,
+              date: s.date, date_to: s.dateTo || null, trigger: s.trigger, notes: s.notes,
+            })));
+          if (localFamily.length > 0)
+            await supabase.from("medlog_family").insert(localFamily.map(m => ({
+              id: m.id, user_key: USER_KEY, name: m.name, relationship: m.relationship,
+            })));
+        }
+        if (!cancelled) setSyncStatus("synced");
+      } catch { if (!cancelled) setSyncStatus("offline"); }
+    }
+    syncFromSupabase();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     const labels: Record<string, string> = {
@@ -268,26 +331,43 @@ const MedLog = () => {
 
   const addEvent = useCallback((e: MedEvent) => {
     setEvents(prev => { const u = [e, ...prev]; saveItems(EVENTS_KEY, u); return u; });
+    supabase.from("medlog_events").insert({
+      id: e.id, user_key: USER_KEY, type: e.type, title: e.title,
+      doctor: e.doctor, date: e.date, date_to: e.dateTo || null, notes: e.notes,
+    }).then(({ error }) => { if (error) console.warn("Supabase insert event:", error.message); });
   }, []);
 
   const addSymptom = useCallback((s: SymptomEntry) => {
     setSymptoms(prev => { const u = [s, ...prev]; saveItems(SYMPTOMS_KEY, u); return u; });
+    supabase.from("medlog_symptoms").insert({
+      id: s.id, user_key: USER_KEY, name: s.name, severity: s.severity,
+      date: s.date, date_to: s.dateTo || null, trigger: s.trigger, notes: s.notes,
+    }).then(({ error }) => { if (error) console.warn("Supabase insert symptom:", error.message); });
   }, []);
 
   const deleteEvent = useCallback((id: string) => {
     setEvents(prev => { const u = prev.filter(e => e.id !== id); saveItems(EVENTS_KEY, u); return u; });
+    supabase.from("medlog_events").delete().eq("id", id).eq("user_key", USER_KEY)
+      .then(({ error }) => { if (error) console.warn("Supabase delete event:", error.message); });
   }, []);
 
   const deleteSymptom = useCallback((id: string) => {
     setSymptoms(prev => { const u = prev.filter(s => s.id !== id); saveItems(SYMPTOMS_KEY, u); return u; });
+    supabase.from("medlog_symptoms").delete().eq("id", id).eq("user_key", USER_KEY)
+      .then(({ error }) => { if (error) console.warn("Supabase delete symptom:", error.message); });
   }, []);
 
   const addFamilyMember = useCallback((m: FamilyMember) => {
     setFamily(prev => { const u = [...prev, m]; saveFamily(u); return u; });
+    supabase.from("medlog_family").insert({
+      id: m.id, user_key: USER_KEY, name: m.name, relationship: m.relationship,
+    }).then(({ error }) => { if (error) console.warn("Supabase insert family:", error.message); });
   }, []);
 
   const deleteFamilyMember = useCallback((id: string) => {
     setFamily(prev => { const u = prev.filter(m => m.id !== id); saveFamily(u); return u; });
+    supabase.from("medlog_family").delete().eq("id", id).eq("user_key", USER_KEY)
+      .then(({ error }) => { if (error) console.warn("Supabase delete family:", error.message); });
   }, []);
 
   const tryUnlock = () => {
@@ -339,6 +419,10 @@ const MedLog = () => {
           ))}
         </nav>
         <div className="flex items-center gap-2 ml-2">
+          <span title={syncStatus === "syncing" ? "Syncing with cloud…" : syncStatus === "synced" ? "Synced with cloud" : "Offline — data saved locally"}
+            style={{ fontSize: 12, color: syncStatus === "synced" ? "#74c69d" : syncStatus === "offline" ? "#f59e0b" : "rgba(255,255,255,0.45)", letterSpacing: "0.02em" }}>
+            {syncStatus === "syncing" ? "⟳ syncing" : syncStatus === "synced" ? "☁ synced" : "⚠ offline"}
+          </span>
           {unlocked ? (
             <button onClick={lock} title="Lock MedLog" style={{ background: "rgba(116,198,157,0.15)", border: "1px solid rgba(116,198,157,0.4)", borderRadius: 8, padding: "4px 10px", fontSize: 13, cursor: "pointer", color: "#74c69d" }}>🔓</button>
           ) : (
