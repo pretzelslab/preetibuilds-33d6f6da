@@ -1616,42 +1616,31 @@ const EditFamilyModal = ({ member, onSave, onClose }: {
   };
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(26,26,46,0.85)", backdropFilter: "blur(4px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <div style={{ background: "#fff", borderRadius: 20, padding: 32, maxWidth: 480, width: "100%", boxShadow: "0 25px 60px rgba(0,0,0,0.3)" }}>
+      <div style={{ background: "#fff", borderRadius: 20, padding: 32, maxWidth: 460, width: "100%", boxShadow: "0 25px 60px rgba(0,0,0,0.3)", maxHeight: "90vh", overflowY: "auto" }}>
         <div className="flex items-center justify-between mb-5">
           <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#1a1a2e" }}>✏ Edit Member</h2>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "#6b6b80" }}>✕</button>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls} style={{ color: "#6b6b80" }}>Full Name</label>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls} style={{ color: "#6b6b80" }}>Relationship</label>
-            <select value={relationship} onChange={e => setRelationship(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle}>
-              <option>Spouse / Partner</option><option>Child</option><option>Parent</option>
-              <option>Sibling</option><option>Other</option>
-            </select>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls} style={{ color: "#6b6b80" }}>Email Address</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls} style={{ color: "#6b6b80" }}>WhatsApp / Phone</label>
-            <div className="flex gap-1">
-              <select value={countryCode} onChange={e => setCountryCode(e.target.value)}
-                className="rounded-lg border px-2 py-2.5 text-sm" style={{ ...inputStyle, minWidth: 120, flexShrink: 0 }}>
-                {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
+        <div className="flex flex-col gap-4">
+          {/* Row 1: Name + Relationship side by side */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className={labelCls} style={{ color: "#6b6b80" }}>Full Name</label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className={labelCls} style={{ color: "#6b6b80" }}>Relationship</label>
+              <select value={relationship} onChange={e => setRelationship(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle}>
+                <option>Spouse / Partner</option><option>Child</option><option>Parent</option>
+                <option>Sibling</option><option>Other</option>
               </select>
-              <input type="tel" value={localPhone} onChange={e => setLocalPhone(e.target.value)}
-                placeholder="7700 900000" className="rounded-lg border px-3 py-2.5 text-sm flex-1" style={inputStyle} />
             </div>
           </div>
-          <div className="col-span-2 flex flex-col gap-1.5">
+          {/* Access Code — moved up */}
+          <div className="flex flex-col gap-1.5">
             <label className={labelCls} style={{ color: "#6b6b80" }}>Access Code (OTP)</label>
             <div className="flex items-center gap-2">
-              <input type="text" value={otp} readOnly className="rounded-lg border px-3 py-2.5 text-sm font-mono tracking-widest flex-1"
+              <input type="text" value={otp} readOnly className="rounded-lg border px-3 py-2.5 text-sm font-mono flex-1"
                 style={{ ...inputStyle, letterSpacing: "0.2em", color: "#1a1a2e" }} />
               <button type="button" onClick={copyOtp} title="Copy code"
                 className="px-3 py-2.5 rounded-lg border text-xs font-semibold"
@@ -1664,8 +1653,26 @@ const EditFamilyModal = ({ member, onSave, onClose }: {
             </div>
             <p className="text-[0.72rem]" style={{ color: "#6b6b80" }}>Regenerating issues a new code — share it with the member again.</p>
           </div>
-          <div className="col-span-2 flex flex-col gap-1.5">
-            <label className="text-[0.78rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Share Access Code</label>
+          {/* Email — full width */}
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Email Address</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
+          </div>
+          {/* Phone — full width so dropdown + input have space */}
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>WhatsApp / Phone</label>
+            <div className="flex gap-2">
+              <select value={countryCode} onChange={e => setCountryCode(e.target.value)}
+                className="rounded-lg border px-2 py-2.5 text-sm" style={{ ...inputStyle, width: 140, flexShrink: 0 }}>
+                {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
+              </select>
+              <input type="tel" value={localPhone} onChange={e => setLocalPhone(e.target.value)}
+                placeholder="7700 900000" className="rounded-lg border px-3 py-2.5 text-sm flex-1 min-w-0" style={inputStyle} />
+            </div>
+          </div>
+          {/* Share buttons — full width */}
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Share Access Code</label>
             <div className="flex gap-2 flex-wrap">
               {email ? (
                 <a href={`mailto:${email}?subject=${encodeURIComponent("Your MedLog Access Code")}&body=${encodeURIComponent(`Hi ${name},\n\nYour MedLog access code is: ${otp}\n\nUse this code (or your email address) to log in when the link is shared with you.\n\nThis code is personal — please keep it private.`)}`}
@@ -1682,9 +1689,8 @@ const EditFamilyModal = ({ member, onSave, onClose }: {
                   📱 WhatsApp
                 </a>
               ) : (
-                <span style={{ fontSize: 12, color: "#9ca3af" }}>Add phone above to enable WhatsApp sharing</span>
+                <span style={{ fontSize: 12, color: "#9ca3af" }}>Add phone above to enable WhatsApp</span>
               )}
-
             </div>
           </div>
         </div>
