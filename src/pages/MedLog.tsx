@@ -467,6 +467,7 @@ const MedLog = () => {
   }, []);
 
   const [editingMember, setEditingMember] = useState<FamilyMember | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   const updateFamilyMember = useCallback((updated: FamilyMember) => {
     setFamily(prev => { const u = prev.map(m => m.id === updated.id ? updated : m); saveFamily(u); return u; });
@@ -498,6 +499,15 @@ const MedLog = () => {
       .then(({ error }) => { if (error) console.warn("Supabase update symptom:", error.message); });
     logActivity(memberName || "Preeti", "edit_symptom", updated.name);
   }, [memberName, logActivity]);
+
+  const updateMemberProfile = useCallback(async (updates: { name: string; email: string; phone: string }) => {
+    if (!memberId || memberId === "owner") return;
+    await supabase.from("medlog_family").update({
+      name: updates.name, email: updates.email || "", phone: updates.phone || "",
+    }).eq("id", memberId).eq("user_key", USER_KEY);
+    try { localStorage.setItem("pl_medlog_member", updates.name); } catch {}
+    setMemberName(updates.name);
+  }, [memberId]);
 
   const uploadAttachment = useCallback(async (file: File, recordId: string, recordType: "event" | "symptom"): Promise<Attachment | null> => {
     try {
@@ -595,6 +605,11 @@ const MedLog = () => {
             style={{ fontSize: 12, color: syncStatus === "synced" ? "#74c69d" : syncStatus === "offline" ? "#f59e0b" : "rgba(255,255,255,0.45)", letterSpacing: "0.02em" }}>
             {syncStatus === "syncing" ? "⟳ syncing" : syncStatus === "synced" ? "☁ synced" : "⚠ offline"}
           </span>
+          {unlocked && !isAdmin && (
+            <button onClick={() => setShowProfileModal(true)} title="Edit my profile" style={{ background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.4)", borderRadius: 8, padding: "4px 10px", fontSize: 12, cursor: "pointer", color: "#c4b5fd", fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
+              ✏ <span style={{ fontSize: 11 }}>Profile</span>
+            </button>
+          )}
           {unlocked ? (
             <button onClick={lock} title="Log out" style={{ background: "rgba(220,38,38,0.15)", border: "1px solid rgba(220,38,38,0.4)", borderRadius: 8, padding: "4px 10px", fontSize: 12, cursor: "pointer", color: "#fca5a5", fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
               ⏏ <span style={{ fontSize: 11 }}>Log out</span>
@@ -646,6 +661,13 @@ const MedLog = () => {
         {editingEvent   && <EditEventModal   event={editingEvent}     onSave={e => { updateEvent(e);         setEditingEvent(null);   }} onClose={() => setEditingEvent(null)}   onUpload={uploadAttachment} />}
         {editingSymptom && <EditSymptomModal symptom={editingSymptom} onSave={s => { updateSymptom(s);       setEditingSymptom(null); }} onClose={() => setEditingSymptom(null)} onUpload={uploadAttachment} />}
         {editingMember  && <EditFamilyModal  member={editingMember}   onSave={m => { updateFamilyMember(m); setEditingMember(null);   }} onClose={() => setEditingMember(null)} />}
+        {showProfileModal && memberId !== "owner" && (
+          <MemberProfileModal
+            memberId={memberId}
+            onSave={async (updates) => { await updateMemberProfile(updates); setShowProfileModal(false); }}
+            onClose={() => setShowProfileModal(false)}
+          />
+        )}
 
         {activeView === "dashboard" && <DashboardView events={events} symptoms={symptoms} />}
         {activeView === "log"       && <LogEventView onSave={addEvent} onUpload={uploadAttachment} />}
@@ -1669,6 +1691,87 @@ const EditFamilyModal = ({ member, onSave, onClose }: {
         <div className="mt-5 flex gap-3">
           <button onClick={onClose} style={{ flex: 1, padding: 11, borderRadius: 10, border: "1px solid #e2e8f0", background: "#f7f4ef", color: "#6b6b80", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
           <button onClick={handleSave} style={{ flex: 2, padding: 11, borderRadius: 10, border: "none", background: "#1a1a2e", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Save changes →</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Member Profile Modal (self-edit — no OTP, no relationship) ────────────────
+const MemberProfileModal = ({ memberId, onSave, onClose }: {
+  memberId: string;
+  onSave: (updates: { name: string; email: string; phone: string }) => Promise<void>;
+  onClose: () => void;
+}) => {
+  const [loaded, setLoaded] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [countryCode, setCountryCode] = useState("+44");
+  const [localPhone, setLocalPhone] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    supabase.from("medlog_family").select("name,email,phone").eq("id", memberId).eq("user_key", USER_KEY).single()
+      .then(({ data }) => {
+        if (data) {
+          setName(data.name || "");
+          setEmail(data.email || "");
+          const p = parsePhone(data.phone || "");
+          setCountryCode(p.cc); setLocalPhone(p.local);
+        }
+        setLoaded(true);
+      });
+  }, [memberId]);
+
+  const handleSave = async () => {
+    if (!name.trim()) return;
+    setSaving(true);
+    const fullPhone = localPhone.trim() ? countryCode + localPhone.trim().replace(/[^0-9]/g, "") : "";
+    await onSave({ name: name.trim(), email: email.trim(), phone: fullPhone });
+    setSaving(false);
+  };
+
+  const inputStyle = { background: "#f7f4ef", borderColor: "#e2ddd6" };
+  const labelCls = "text-[0.78rem] font-semibold uppercase tracking-wider";
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(26,26,46,0.85)", backdropFilter: "blur(4px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div style={{ background: "#fff", borderRadius: 20, padding: 32, maxWidth: 420, width: "100%", boxShadow: "0 25px 60px rgba(0,0,0,0.3)" }}>
+        <div className="flex items-center justify-between mb-5">
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#1a1a2e" }}>✏ My Profile</h2>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "#6b6b80" }}>✕</button>
+        </div>
+        {!loaded ? (
+          <p style={{ textAlign: "center", color: "#6b6b80", padding: "20px 0" }}>Loading…</p>
+        ) : (
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className={labelCls} style={{ color: "#6b6b80" }}>Display Name</label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className={labelCls} style={{ color: "#6b6b80" }}>Email Address</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} placeholder="used for login" />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className={labelCls} style={{ color: "#6b6b80" }}>Phone / WhatsApp</label>
+              <div className="flex gap-1">
+                <select value={countryCode} onChange={e => setCountryCode(e.target.value)}
+                  className="rounded-lg border px-2 py-2.5 text-sm" style={{ ...inputStyle, minWidth: 120, flexShrink: 0 }}>
+                  {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
+                </select>
+                <input type="tel" value={localPhone} onChange={e => setLocalPhone(e.target.value)}
+                  placeholder="7700 900000" className="rounded-lg border px-3 py-2.5 text-sm flex-1" style={inputStyle} />
+              </div>
+            </div>
+            <p className="text-[0.72rem]" style={{ color: "#9ca3af" }}>Your access code (OTP) is managed by the account owner.</p>
+          </div>
+        )}
+        <div className="mt-5 flex gap-3">
+          <button onClick={onClose} style={{ flex: 1, padding: 11, borderRadius: 10, border: "1px solid #e2e8f0", background: "#f7f4ef", color: "#6b6b80", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+          <button onClick={handleSave} disabled={saving || !loaded} style={{ flex: 2, padding: 11, borderRadius: 10, border: "none", background: "#1a1a2e", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", opacity: saving ? 0.7 : 1 }}>
+            {saving ? "Saving…" : "Save changes →"}
+          </button>
         </div>
       </div>
     </div>
