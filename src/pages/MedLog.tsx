@@ -444,6 +444,17 @@ const MedLog = () => {
       .then(({ error }) => { if (error) console.warn("Supabase delete family:", error.message); });
   }, []);
 
+  const [editingMember, setEditingMember] = useState<FamilyMember | null>(null);
+
+  const updateFamilyMember = useCallback((updated: FamilyMember) => {
+    setFamily(prev => { const u = prev.map(m => m.id === updated.id ? updated : m); saveFamily(u); return u; });
+    supabase.from("medlog_family").update({
+      name: updated.name, relationship: updated.relationship,
+      email: updated.email || "", phone: updated.phone || "", otp: updated.otp || "",
+    }).eq("id", updated.id).eq("user_key", USER_KEY)
+      .then(({ error }) => { if (error) console.warn("Supabase update family:", error.message); });
+  }, []);
+
   const updateEvent = useCallback((updated: MedEvent) => {
     setEvents(prev => { const u = prev.map(e => e.id === updated.id ? updated : e); saveItems(EVENTS_KEY, u); return u; });
     supabase.from("medlog_events").update({
@@ -610,15 +621,16 @@ const MedLog = () => {
           </div>
         </>)}
 
-        {editingEvent   && <EditEventModal   event={editingEvent}     onSave={e => { updateEvent(e);   setEditingEvent(null);   }} onClose={() => setEditingEvent(null)}   onUpload={uploadAttachment} />}
-        {editingSymptom && <EditSymptomModal symptom={editingSymptom} onSave={s => { updateSymptom(s); setEditingSymptom(null); }} onClose={() => setEditingSymptom(null)} onUpload={uploadAttachment} />}
+        {editingEvent   && <EditEventModal   event={editingEvent}     onSave={e => { updateEvent(e);         setEditingEvent(null);   }} onClose={() => setEditingEvent(null)}   onUpload={uploadAttachment} />}
+        {editingSymptom && <EditSymptomModal symptom={editingSymptom} onSave={s => { updateSymptom(s);       setEditingSymptom(null); }} onClose={() => setEditingSymptom(null)} onUpload={uploadAttachment} />}
+        {editingMember  && <EditFamilyModal  member={editingMember}   onSave={m => { updateFamilyMember(m); setEditingMember(null);   }} onClose={() => setEditingMember(null)} />}
 
         {activeView === "dashboard" && <DashboardView events={events} symptoms={symptoms} />}
         {activeView === "log"       && <LogEventView onSave={addEvent} onUpload={uploadAttachment} />}
         {activeView === "symptoms"  && <SymptomsView symptoms={symptoms} onSave={addSymptom} onDelete={deleteSymptom} onEdit={setEditingSymptom} onUpload={uploadAttachment} />}
         {activeView === "history"   && <HistoryView events={events} symptoms={symptoms} onDelete={deleteEvent} onDeleteSymptom={deleteSymptom} onEdit={setEditingEvent} onEditSymptom={setEditingSymptom} />}
         {activeView === "analysis"  && <AnalysisView events={events} symptoms={symptoms} />}
-        {activeView === "family"    && <FamilyView family={family} onAdd={addFamilyMember} onDelete={deleteFamilyMember} />}
+        {activeView === "family"    && <FamilyView family={family} onAdd={addFamilyMember} onDelete={deleteFamilyMember} onEdit={setEditingMember} />}
         {activeView === "admin"     && <AdminView />}
       </main>
 
@@ -655,11 +667,11 @@ const AttachmentChips = ({ attachments }: { attachments?: Attachment[] }) => {
 
 const EventItem = ({ event, onDelete, onEdit }: { event: MedEvent; onDelete?: (id: string) => void; onEdit?: (e: MedEvent) => void }) => (
   <div className="flex items-start gap-3 p-3 rounded-xl border" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }}>
-    <div className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${(typeColors[event.type] || "").split(" ")[0] || "bg-gray-300"}`} />
+    <span style={{ fontSize: 14, marginTop: 2, flexShrink: 0 }}>📋</span>
     <div className="flex-1 min-w-0">
       <div className="flex items-center gap-2">
         <span className="font-semibold text-sm">{event.title}</span>
-        <span className={`text-[0.68rem] font-bold uppercase px-2 py-0.5 rounded-full ${typeColors[event.type]}`}>{event.type}</span>
+        <span className={`text-[0.68rem] font-bold uppercase px-2 py-0.5 rounded-full ${typeColors[event.type]}`}>{TYPE_LABELS[event.type]}</span>
       </div>
       <div className="text-xs mt-0.5" style={{ color: "#6b6b80" }}>{event.date}{event.dateTo ? ` → ${event.dateTo}` : ""}{event.doctor && ` · ${event.doctor}`}</div>
       {event.notes && <div className="text-xs mt-1 italic" style={{ color: "#6b6b80" }}>{event.notes}</div>}
@@ -924,7 +936,7 @@ const SymptomsView = ({ symptoms, onSave, onDelete, onEdit, onUpload }: { sympto
         <div className="flex flex-col gap-2">
           {symptoms.slice(0, 10).map(s => (
             <div key={s.id} className="flex items-start gap-3 p-3 rounded-xl border" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }}>
-              <div className="w-2 h-2 rounded-full bg-pink-300 mt-1.5 flex-shrink-0" />
+              <span style={{ fontSize: 14, marginTop: 2, flexShrink: 0 }}>🤒</span>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-sm">{s.name}</span>
@@ -1001,10 +1013,9 @@ const HistoryView = ({ events, symptoms, onDelete, onDeleteSymptom, onEdit, onEd
               ? <EventItem key={item.id} event={item.eventData} onDelete={onDelete} onEdit={onEdit} />
               : item.symData ? (
                   <div key={item.id} className="flex items-start gap-3 p-3 rounded-xl border" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }}>
-                    <div className="w-2 h-2 rounded-full bg-pink-300 mt-1.5 flex-shrink-0" />
+                    <span style={{ fontSize: 14, marginTop: 2, flexShrink: 0 }}>🤒</span>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs" style={{ color: "#6b6b80" }}>🤒</span>
                         <span className="font-semibold text-sm">{item.symData.name}</span>
                         <span className={`text-[0.68rem] font-bold px-2 py-0.5 rounded-full ${sevColors[item.symData.severity]}`}>{item.symData.severity}</span>
                       </div>
@@ -1219,14 +1230,22 @@ const AnalysisView = ({ events, symptoms }: { events: MedEvent[]; symptoms: Symp
 // ── Edit Modals ───────────────────────────────────────────────────────────────
 type UploadFn = (file: File, recordId: string, recordType: "event" | "symptom") => Promise<Attachment | null>;
 
+const ALLOWED_TYPES = "image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv";
+const MAX_FILE_MB = 5;
+
 const AttachmentEditor = ({ attachments, onChange, onUpload, recordId, recordType }: {
   attachments: Attachment[]; onChange: (a: Attachment[]) => void;
   onUpload: UploadFn; recordId: string; recordType: "event" | "symptom";
 }) => {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [sizeError, setSizeError] = useState(false);
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
+    if (file.size > MAX_FILE_MB * 1024 * 1024) {
+      setSizeError(true); setTimeout(() => setSizeError(false), 3000);
+      if (fileRef.current) fileRef.current.value = ""; return;
+    }
     setUploading(true);
     const att = await onUpload(file, recordId, recordType);
     if (att) onChange([...attachments, att]);
@@ -1234,18 +1253,28 @@ const AttachmentEditor = ({ attachments, onChange, onUpload, recordId, recordTyp
     if (fileRef.current) fileRef.current.value = "";
   };
   return (
-    <div className="flex flex-wrap gap-2">
-      {attachments.map(a => (
-        <div key={a.id} className="flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs" style={{ background: "#f0f4ff", borderColor: "#c7d2fe", color: "#3730a3" }}>
-          📎 <a href={a.url} target="_blank" rel="noreferrer" style={{ color: "#3730a3" }}>{a.name.length > 20 ? a.name.slice(0,18)+"…" : a.name}</a>
-          <button onClick={() => onChange(attachments.filter(x => x.id !== a.id))} style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 12, lineHeight: 1, padding: "0 2px" }}>✕</button>
-        </div>
-      ))}
-      <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
-        style={{ padding: "6px 12px", borderRadius: 8, border: "1px dashed #c7d2fe", background: "#f0f4ff", fontSize: 12, cursor: "pointer", color: "#3730a3" }}>
-        {uploading ? "Uploading…" : "📎 Add file"}
-      </button>
-      <input ref={fileRef} type="file" style={{ display: "none" }} onChange={handleFile} />
+    <div>
+      <div className="flex flex-wrap gap-2">
+        {attachments.map(a => (
+          <div key={a.id} className="flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs" style={{ background: "#f0f4ff", borderColor: "#c7d2fe", color: "#3730a3" }}>
+            📎 <a href={a.url} target="_blank" rel="noreferrer" style={{ color: "#3730a3" }}>{a.name.length > 20 ? a.name.slice(0,18)+"…" : a.name}</a>
+            <button onClick={() => onChange(attachments.filter(x => x.id !== a.id))} style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 12, lineHeight: 1, padding: "0 2px" }}>✕</button>
+          </div>
+        ))}
+        <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+          title="Allowed: images (JPG, PNG, GIF, WebP), PDFs, Word, Excel, CSV, TXT"
+          style={{ padding: "6px 12px", borderRadius: 8, border: "1px dashed #c7d2fe", background: "#f0f4ff", fontSize: 12, cursor: "pointer", color: "#3730a3" }}>
+          {uploading ? "Uploading…" : "📎 Add file"}
+        </button>
+        <input ref={fileRef} type="file" accept={ALLOWED_TYPES} style={{ display: "none" }} onChange={handleFile} />
+      </div>
+      <p className="text-[0.68rem] mt-1.5" style={{ color: "#9ca3af" }}>
+        Max {MAX_FILE_MB} MB per file · Supabase free tier: 1 GB shared storage ·
+        <span title="Images (JPG, PNG, GIF, WebP), PDFs, Word, Excel, CSV, TXT" style={{ borderBottom: "1px dotted #9ca3af", cursor: "help", marginLeft: 4 }}>
+          Allowed file types ℹ
+        </span>
+      </p>
+      {sizeError && <p className="text-[0.72rem] mt-1" style={{ color: "#dc2626" }}>File exceeds {MAX_FILE_MB} MB limit — please choose a smaller file.</p>}
     </div>
   );
 };
@@ -1537,7 +1566,70 @@ const AdminView = () => {
 
 const MEMBER_COLORS = ["#2d6a4f", "#b7791f", "#9d174d", "#1e40af", "#7c3aed", "#065f46", "#92400e"];
 
-const FamilyView = ({ family, onAdd, onDelete }: { family: FamilyMember[]; onAdd: (m: FamilyMember) => void; onDelete: (id: string) => void }) => {
+const EditFamilyModal = ({ member, onSave, onClose }: {
+  member: FamilyMember; onSave: (m: FamilyMember) => void; onClose: () => void;
+}) => {
+  const [name, setName]               = useState(member.name);
+  const [relationship, setRelationship] = useState(member.relationship);
+  const [email, setEmail]             = useState(member.email);
+  const [phone, setPhone]             = useState(member.phone);
+  const [otp, setOtp]                 = useState(member.otp);
+  const inputStyle = { background: "#f7f4ef", borderColor: "#e2ddd6" };
+  const labelCls = "text-[0.78rem] font-semibold uppercase tracking-wider";
+  const handleSave = () => {
+    if (!name.trim()) return;
+    onSave({ ...member, name: name.trim(), relationship, email: email.trim(), phone: phone.trim(), otp });
+    onClose();
+  };
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(26,26,46,0.85)", backdropFilter: "blur(4px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div style={{ background: "#fff", borderRadius: 20, padding: 32, maxWidth: 480, width: "100%", boxShadow: "0 25px 60px rgba(0,0,0,0.3)" }}>
+        <div className="flex items-center justify-between mb-5">
+          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#1a1a2e" }}>✏ Edit Member</h2>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "#6b6b80" }}>✕</button>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Full Name</label>
+            <input type="text" value={name} onChange={e => setName(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Relationship</label>
+            <select value={relationship} onChange={e => setRelationship(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle}>
+              <option>Spouse / Partner</option><option>Child</option><option>Parent</option>
+              <option>Sibling</option><option>Other</option>
+            </select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Email Address</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>WhatsApp / Phone</label>
+            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
+          </div>
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Access Code (OTP)</label>
+            <div className="flex items-center gap-2">
+              <input type="text" value={otp} readOnly className="rounded-lg border px-3 py-2.5 text-sm font-mono tracking-widest flex-1"
+                style={{ ...inputStyle, letterSpacing: "0.2em", color: "#1a1a2e" }} />
+              <button type="button" onClick={() => setOtp(generateOTP())}
+                className="px-3 py-2.5 rounded-lg border text-xs font-semibold"
+                style={{ borderColor: "#e2ddd6", background: "#f7f4ef", color: "#6b6b80" }}>↺ New</button>
+            </div>
+            <p className="text-[0.72rem]" style={{ color: "#6b6b80" }}>Regenerating issues a new code — share it with the member again.</p>
+          </div>
+        </div>
+        <div className="mt-5 flex gap-3">
+          <button onClick={onClose} style={{ flex: 1, padding: 11, borderRadius: 10, border: "1px solid #e2e8f0", background: "#f7f4ef", color: "#6b6b80", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+          <button onClick={handleSave} style={{ flex: 2, padding: 11, borderRadius: 10, border: "none", background: "#1a1a2e", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Save changes →</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const FamilyView = ({ family, onAdd, onDelete, onEdit }: { family: FamilyMember[]; onAdd: (m: FamilyMember) => void; onDelete: (id: string) => void; onEdit: (m: FamilyMember) => void }) => {
   const [name, setName] = useState("");
   const [relationship, setRelationship] = useState("Spouse / Partner");
   const [email, setEmail] = useState("");
@@ -1632,7 +1724,7 @@ const FamilyView = ({ family, onAdd, onDelete }: { family: FamilyMember[]; onAdd
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
                 <tr style={{ background: "#f7f4ef", borderBottom: "1px solid #e2ddd6" }}>
-                  {["Member", "Relationship", "Email", "WhatsApp", "Access Code", ""].map(h => (
+                  {["Member", "Relationship", "Email", "WhatsApp", "Access Code", "Actions"].map(h => (
                     <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#6b6b80", whiteSpace: "nowrap" }}>{h}</th>
                   ))}
                 </tr>
@@ -1675,10 +1767,16 @@ const FamilyView = ({ family, onAdd, onDelete }: { family: FamilyMember[]; onAdd
                       ) : <span style={{ color: "#c0bdb8" }}>—</span>}
                     </td>
                     <td style={{ padding: "12px 16px" }}>
-                      <button onClick={() => onDelete(m.id)} title="Remove member"
-                        style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 14, opacity: 0.5, padding: "2px 4px" }}
-                        onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
-                        onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}>✕</button>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => onEdit(m)} title="Edit member"
+                          style={{ background: "none", border: "none", cursor: "pointer", color: "#2563eb", fontSize: 14, opacity: 0.5, padding: "2px 4px" }}
+                          onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+                          onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}>✏</button>
+                        <button onClick={() => onDelete(m.id)} title="Remove member"
+                          style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 14, opacity: 0.5, padding: "2px 4px" }}
+                          onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+                          onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}>✕</button>
+                      </div>
                     </td>
                   </tr>
                 ))}
