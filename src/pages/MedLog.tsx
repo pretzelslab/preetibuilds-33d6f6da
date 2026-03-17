@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, BarChart3, Calendar, ClipboardList, Heart, Plus, Stethoscope, Users } from "lucide-react";
+import { ArrowLeft, BarChart3, Calendar, ClipboardList, Heart, Plus, Shield, Stethoscope, Users } from "lucide-react";
 import { supabase, USER_KEY } from "@/lib/supabase";
 
 // ── Access gate (independent from AI Governance) ──────────────────────────────
@@ -24,6 +24,10 @@ interface InsightItem {
   text: string;
   records: Array<{ id: string; label: string; date: string; kind: "event" | "symptom" }>;
 }
+interface ActivityLog {
+  id: string; actor: string; action: string; detail: string; created_at: string;
+}
+
 interface FamilyMember {
   id: string; name: string; relationship: string;
   email: string; phone: string; otp: string;
@@ -74,12 +78,13 @@ function saveItems<T>(key: string, items: T[]) {
 
 // ── Config ────────────────────────────────────────────────────────────────────
 const navItems = [
-  { id: "dashboard", label: "Dashboard", icon: ClipboardList },
-  { id: "log",       label: "Log Event", icon: Plus },
-  { id: "symptoms",  label: "Symptoms",  icon: Stethoscope },
-  { id: "history",   label: "History",   icon: Calendar },
-  { id: "analysis",  label: "Analysis",  icon: BarChart3 },
-  { id: "family",    label: "Family",    icon: Users },
+  { id: "dashboard", label: "Dashboard", icon: ClipboardList, ownerOnly: false },
+  { id: "log",       label: "Log Event", icon: Plus,          ownerOnly: false },
+  { id: "symptoms",  label: "Symptoms",  icon: Stethoscope,   ownerOnly: false },
+  { id: "history",   label: "History",   icon: Calendar,      ownerOnly: false },
+  { id: "analysis",  label: "Analysis",  icon: BarChart3,     ownerOnly: false },
+  { id: "family",    label: "Family",    icon: Users,         ownerOnly: true  },
+  { id: "admin",     label: "Admin",     icon: Shield,        ownerOnly: true  },
 ];
 
 const TYPE_LABELS: Record<EventType, string> = {
@@ -261,6 +266,10 @@ const MedLog = () => {
   const [symptoms, setSymptoms] = useState<SymptomEntry[]>(() => loadItems<SymptomEntry>(SYMPTOMS_KEY));
   const [family, setFamily] = useState<FamilyMember[]>(loadFamily);
   const [syncStatus, setSyncStatus] = useState<"syncing" | "synced" | "offline">("syncing");
+  const [memberName, setMemberName] = useState<string | null>(() => {
+    try { return localStorage.getItem("pl_medlog_member"); } catch { return null; }
+  });
+  const tabFirstRender = useRef(true);
 
   // ── Supabase sync ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -342,13 +351,19 @@ const MedLog = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (tabFirstRender.current) { tabFirstRender.current = false; return; }
+    if (unlocked) logActivity(memberName || "Preeti", "view_tab", activeView);
+  }, [activeView]);
+
   const addEvent = useCallback((e: MedEvent) => {
     setEvents(prev => { const u = [e, ...prev]; saveItems(EVENTS_KEY, u); return u; });
     supabase.from("medlog_events").insert({
       id: e.id, user_key: USER_KEY, type: e.type, title: e.title,
       doctor: e.doctor, date: e.date, date_to: e.dateTo || null, notes: e.notes,
     }).then(({ error }) => { if (error) console.warn("Supabase insert event:", error.message); });
-  }, []);
+    logActivity(memberName || "Preeti", "add_event", e.title);
+  }, [memberName, logActivity]);
 
   const addSymptom = useCallback((s: SymptomEntry) => {
     setSymptoms(prev => { const u = [s, ...prev]; saveItems(SYMPTOMS_KEY, u); return u; });
@@ -356,19 +371,22 @@ const MedLog = () => {
       id: s.id, user_key: USER_KEY, name: s.name, severity: s.severity,
       date: s.date, date_to: s.dateTo || null, trigger: s.trigger, notes: s.notes,
     }).then(({ error }) => { if (error) console.warn("Supabase insert symptom:", error.message); });
-  }, []);
+    logActivity(memberName || "Preeti", "add_symptom", `${s.name} (${s.severity})`);
+  }, [memberName, logActivity]);
 
   const deleteEvent = useCallback((id: string) => {
     setEvents(prev => { const u = prev.filter(e => e.id !== id); saveItems(EVENTS_KEY, u); return u; });
     supabase.from("medlog_events").delete().eq("id", id).eq("user_key", USER_KEY)
       .then(({ error }) => { if (error) console.warn("Supabase delete event:", error.message); });
-  }, []);
+    logActivity(memberName || "Preeti", "delete_event", id);
+  }, [memberName, logActivity]);
 
   const deleteSymptom = useCallback((id: string) => {
     setSymptoms(prev => { const u = prev.filter(s => s.id !== id); saveItems(SYMPTOMS_KEY, u); return u; });
     supabase.from("medlog_symptoms").delete().eq("id", id).eq("user_key", USER_KEY)
       .then(({ error }) => { if (error) console.warn("Supabase delete symptom:", error.message); });
-  }, []);
+    logActivity(memberName || "Preeti", "delete_symptom", id);
+  }, [memberName, logActivity]);
 
   const addFamilyMember = useCallback((m: FamilyMember) => {
     setFamily(prev => { const u = [...prev, m]; saveFamily(u); return u; });
@@ -384,18 +402,34 @@ const MedLog = () => {
       .then(({ error }) => { if (error) console.warn("Supabase delete family:", error.message); });
   }, []);
 
-  const tryUnlock = () => {
-    if (code.toUpperCase().trim() === ML_ACCESS_CODE) {
-      try { localStorage.setItem(ML_ACCESS_KEY, "1"); } catch {}
-      setUnlocked(true); setShowLockModal(false); setCode("");
+  const logActivity = useCallback((actor: string, action: string, detail = "") => {
+    supabase.from("medlog_activity_log").insert({ user_key: USER_KEY, actor, action, detail })
+      .then(({ error }) => { if (error) console.warn("Activity log:", error.message); });
+  }, []);
+
+  const tryUnlock = async () => {
+    const input = code.toUpperCase().trim();
+    if (input === ML_ACCESS_CODE) {
+      try { localStorage.setItem(ML_ACCESS_KEY, "1"); localStorage.removeItem("pl_medlog_member"); } catch {}
+      setUnlocked(true); setMemberName(null); setShowLockModal(false); setCode("");
+      logActivity("Preeti (owner)", "login", "Owner login");
     } else {
-      setCodeError(true); setTimeout(() => setCodeError(false), 800); setCode("");
+      // Check family member OTPs
+      const { data } = await supabase.from("medlog_family").select("id, name, otp").eq("user_key", USER_KEY);
+      const match = (data || []).find(m => m.otp && m.otp.toUpperCase() === input);
+      if (match) {
+        try { localStorage.setItem(ML_ACCESS_KEY, "1"); localStorage.setItem("pl_medlog_member", match.name); } catch {}
+        setUnlocked(true); setMemberName(match.name); setShowLockModal(false); setCode("");
+        logActivity(match.name, "login", "Family member login");
+      } else {
+        setCodeError(true); setTimeout(() => setCodeError(false), 800); setCode("");
+      }
     }
   };
 
   const lock = () => {
-    try { localStorage.removeItem(ML_ACCESS_KEY); } catch {}
-    setUnlocked(false);
+    try { localStorage.removeItem(ML_ACCESS_KEY); localStorage.removeItem("pl_medlog_member"); } catch {}
+    setUnlocked(false); setMemberName(null);
   };
 
   return (
@@ -424,7 +458,7 @@ const MedLog = () => {
           <span className="text-xl font-serif tracking-tight text-white">Med<span style={{ color: "#74c69d" }}>Log</span> ✦</span>
         </div>
         <nav className="flex gap-1 flex-wrap justify-end">
-          {navItems.map((item) => (
+          {navItems.filter(item => !item.ownerOnly || (unlocked && !memberName)).map((item) => (
             <button key={item.id} onClick={() => setActiveView(item.id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeView === item.id ? "bg-white/10 text-[#74c69d]" : "text-white/60 hover:bg-white/5 hover:text-white"}`}>
               <item.icon className="w-3.5 h-3.5" />
@@ -445,8 +479,10 @@ const MedLog = () => {
             </button>
           )}
           <div className="flex items-center gap-2 bg-white/10 rounded-full py-1 px-3">
-            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: "#2d6a4f" }}>P</div>
-            <span className="text-xs font-semibold text-white/90 hidden sm:inline">Preeti</span>
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: memberName ? "#7c3aed" : "#2d6a4f" }}>
+              {(memberName || "Preeti").slice(0, 1).toUpperCase()}
+            </div>
+            <span className="text-xs font-semibold text-white/90 hidden sm:inline">{memberName || "Preeti"}</span>
           </div>
         </div>
       </header>
@@ -480,6 +516,7 @@ const MedLog = () => {
         {activeView === "history"   && <HistoryView events={events} onDelete={deleteEvent} />}
         {activeView === "analysis"  && <AnalysisView events={events} symptoms={symptoms} />}
         {activeView === "family"    && <FamilyView family={family} onAdd={addFamilyMember} onDelete={deleteFamilyMember} />}
+        {activeView === "admin"     && <AdminView />}
       </main>
 
       <footer className="fixed bottom-0 left-0 right-0 z-30 text-center py-2 text-[0.7rem] tracking-wide" style={{ background: "#1a1a2e", color: "rgba(255,255,255,0.35)" }}>
@@ -965,6 +1002,119 @@ const AnalysisView = ({ events, symptoms }: { events: MedEvent[]; symptoms: Symp
               </div>
             ))}
         </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Admin View ────────────────────────────────────────────────────────────────
+const ACTION_LABELS: Record<string, { label: string; color: string }> = {
+  login:          { label: "Login",          color: "#2d6a4f" },
+  view_tab:       { label: "Tab View",       color: "#1e40af" },
+  add_event:      { label: "Added Event",    color: "#065f46" },
+  add_symptom:    { label: "Added Symptom",  color: "#9d174d" },
+  delete_event:   { label: "Deleted Event",  color: "#b91c1c" },
+  delete_symptom: { label: "Deleted Symptom",color: "#b91c1c" },
+};
+
+const AdminView = () => {
+  const [logs, setLogs] = useState<ActivityLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterActor, setFilterActor] = useState("All");
+  const [filterAction, setFilterAction] = useState("All");
+
+  useEffect(() => {
+    supabase.from("medlog_activity_log").select("*").eq("user_key", USER_KEY)
+      .order("created_at", { ascending: false }).limit(300)
+      .then(({ data }) => { setLogs(data || []); setLoading(false); });
+  }, []);
+
+  const actors  = ["All", ...Array.from(new Set(logs.map(l => l.actor)))];
+  const actions = ["All", ...Array.from(new Set(logs.map(l => l.action)))];
+  const filtered = logs.filter(l =>
+    (filterActor  === "All" || l.actor  === filterActor) &&
+    (filterAction === "All" || l.action === filterAction)
+  );
+
+  const logins     = logs.filter(l => l.action === "login");
+  const uniqueUsers = new Set(logs.map(l => l.actor)).size;
+  const additions  = logs.filter(l => l.action.startsWith("add_")).length;
+
+  const fmt = (ts: string) => {
+    const d = new Date(ts);
+    return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+      + " " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  };
+
+  const selStyle = { background: "#f7f4ef", borderColor: "#e2ddd6", padding: "7px 12px", borderRadius: 8, fontSize: 12, border: "1px solid #e2ddd6", color: "#1a1a2e" };
+
+  return (
+    <div className="flex flex-col gap-5">
+      {/* Summary row */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-2xl border p-4 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
+          <div className="text-[0.72rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Total Logins</div>
+          <div className="text-2xl font-serif font-bold mt-1">{logins.length}</div>
+        </div>
+        <div className="rounded-2xl border p-4 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
+          <div className="text-[0.72rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Unique Users</div>
+          <div className="text-2xl font-serif font-bold mt-1">{uniqueUsers}</div>
+        </div>
+        <div className="rounded-2xl border p-4 shadow-sm" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
+          <div className="text-[0.72rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Records Added</div>
+          <div className="text-2xl font-serif font-bold mt-1">{additions}</div>
+        </div>
+      </div>
+
+      {/* Activity log table */}
+      <div className="rounded-2xl border shadow-sm overflow-hidden" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
+        <div className="px-5 py-4 border-b flex items-center justify-between flex-wrap gap-3" style={{ borderColor: "#e2ddd6" }}>
+          <span className="font-serif font-bold">🛡 Activity Log</span>
+          <div className="flex gap-2">
+            <select value={filterActor} onChange={e => setFilterActor(e.target.value)} style={selStyle}>
+              {actors.map(a => <option key={a}>{a}</option>)}
+            </select>
+            <select value={filterAction} onChange={e => setFilterAction(e.target.value)} style={selStyle}>
+              {actions.map(a => <option key={a} value={a}>{a === "All" ? "All actions" : (ACTION_LABELS[a]?.label ?? a)}</option>)}
+            </select>
+            <span className="text-xs self-center" style={{ color: "#6b6b80" }}>{filtered.length} entries</span>
+          </div>
+        </div>
+
+        {loading ? (
+          <p className="p-5 text-sm" style={{ color: "#6b6b80" }}>Loading activity…</p>
+        ) : filtered.length === 0 ? (
+          <p className="p-5 text-sm" style={{ color: "#6b6b80" }}>No activity recorded yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: "#f7f4ef", borderBottom: "1px solid #e2ddd6" }}>
+                  {["Timestamp", "User", "Action", "Detail"].map(h => (
+                    <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#6b6b80", whiteSpace: "nowrap" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(log => {
+                  const meta = ACTION_LABELS[log.action];
+                  return (
+                    <tr key={log.id} style={{ borderBottom: "1px solid #f0ece6" }}>
+                      <td style={{ padding: "10px 16px", color: "#6b6b80", whiteSpace: "nowrap", fontSize: 12 }}>{fmt(log.created_at)}</td>
+                      <td style={{ padding: "10px 16px", fontWeight: 600 }}>{log.actor}</td>
+                      <td style={{ padding: "10px 16px" }}>
+                        <span style={{ background: meta ? meta.color + "18" : "#f0f0f0", color: meta?.color ?? "#6b6b80", fontWeight: 700, fontSize: 11, padding: "2px 8px", borderRadius: 6 }}>
+                          {meta?.label ?? log.action}
+                        </span>
+                      </td>
+                      <td style={{ padding: "10px 16px", color: "#6b6b80", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{log.detail || "—"}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
