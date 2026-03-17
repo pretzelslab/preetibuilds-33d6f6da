@@ -115,6 +115,25 @@ const TRIGGER_OPTIONS = ["Screen time", "Physical activity", "Lack of sleep",
 
 const today = () => new Date().toISOString().slice(0, 10);
 
+// ── Country codes (longest-first so prefix matching is safe) ──────────────────
+const COUNTRY_CODES = [
+  { code: "+971", label: "+971 🇦🇪 UAE"  }, { code: "+353", label: "+353 🇮🇪 Ireland" },
+  { code: "+61",  label: "+61 🇦🇺 AU"    }, { code: "+64",  label: "+64 🇳🇿 NZ"   },
+  { code: "+65",  label: "+65 🇸🇬 SG"    }, { code: "+60",  label: "+60 🇲🇾 MY"   },
+  { code: "+81",  label: "+81 🇯🇵 JP"    }, { code: "+86",  label: "+86 🇨🇳 CN"   },
+  { code: "+91",  label: "+91 🇮🇳 India" }, { code: "+27",  label: "+27 🇿🇦 ZA"   },
+  { code: "+44",  label: "+44 🇬🇧 UK"    }, { code: "+49",  label: "+49 🇩🇪 DE"   },
+  { code: "+33",  label: "+33 🇫🇷 FR"    }, { code: "+34",  label: "+34 🇪🇸 ES"   },
+  { code: "+39",  label: "+39 🇮🇹 IT"    }, { code: "+55",  label: "+55 🇧🇷 BR"   },
+  { code: "+1",   label: "+1 🇺🇸 US/CA"  },
+];
+function parsePhone(full: string): { cc: string; local: string } {
+  for (const { code } of COUNTRY_CODES) {
+    if (full.startsWith(code)) return { cc: code, local: full.slice(code.length).trim() };
+  }
+  return { cc: "+44", local: full };
+}
+
 // ── DateInput ─────────────────────────────────────────────────────────────────
 const DateInput = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
   const ref = useRef<HTMLInputElement>(null);
@@ -314,6 +333,9 @@ const MedLog = () => {
 
   // ── Supabase sync ──────────────────────────────────────────────────────────
   useEffect(() => {
+    // Members: use reloadMemberData — avoids race condition with owner sync
+    if (memberId !== "owner") { reloadMemberData(memberId); return; }
+
     let cancelled = false;
     async function syncFromSupabase() {
       try {
@@ -1556,15 +1578,18 @@ const EditFamilyModal = ({ member, onSave, onClose }: {
   const [name, setName]               = useState(member.name);
   const [relationship, setRelationship] = useState(member.relationship);
   const [email, setEmail]             = useState(member.email);
-  const [phone, setPhone]             = useState(member.phone);
+  const parsed                        = parsePhone(member.phone);
+  const [countryCode, setCountryCode] = useState(parsed.cc);
+  const [localPhone, setLocalPhone]   = useState(parsed.local);
   const [otp, setOtp]                 = useState(member.otp);
   const [copied, setCopied]           = useState(false);
+  const fullPhone = localPhone.trim() ? countryCode + localPhone.trim().replace(/[^0-9]/g, "") : "";
   const copyOtp = () => { navigator.clipboard.writeText(otp).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); };
   const inputStyle = { background: "#f7f4ef", borderColor: "#e2ddd6" };
   const labelCls = "text-[0.78rem] font-semibold uppercase tracking-wider";
   const handleSave = () => {
     if (!name.trim()) return;
-    onSave({ ...member, name: name.trim(), relationship, email: email.trim(), phone: phone.trim(), otp });
+    onSave({ ...member, name: name.trim(), relationship, email: email.trim(), phone: fullPhone, otp });
     onClose();
   };
   return (
@@ -1592,7 +1617,14 @@ const EditFamilyModal = ({ member, onSave, onClose }: {
           </div>
           <div className="flex flex-col gap-1.5">
             <label className={labelCls} style={{ color: "#6b6b80" }}>WhatsApp / Phone</label>
-            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
+            <div className="flex gap-1">
+              <select value={countryCode} onChange={e => setCountryCode(e.target.value)}
+                className="rounded-lg border px-2 py-2.5 text-sm" style={{ ...inputStyle, minWidth: 120, flexShrink: 0 }}>
+                {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
+              </select>
+              <input type="tel" value={localPhone} onChange={e => setLocalPhone(e.target.value)}
+                placeholder="7700 900000" className="rounded-lg border px-3 py-2.5 text-sm flex-1" style={inputStyle} />
+            </div>
           </div>
           <div className="col-span-2 flex flex-col gap-1.5">
             <label className={labelCls} style={{ color: "#6b6b80" }}>Access Code (OTP)</label>
@@ -1621,8 +1653,8 @@ const EditFamilyModal = ({ member, onSave, onClose }: {
               ) : (
                 <span style={{ fontSize: 12, color: "#9ca3af" }}>Add email above to enable email sharing</span>
               )}
-              {phone ? (
-                <a href={`https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Hi ${name}, your MedLog access code is: ${otp}. Use this code (or your email) to log in.`)}`}
+              {fullPhone ? (
+                <a href={`https://wa.me/${fullPhone.replace(/\D/g, "")}?text=${encodeURIComponent(`Hi ${name}, your MedLog access code is: ${otp}. Use this code (or your email) to log in.`)}`}
                   target="_blank" rel="noopener noreferrer"
                   style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 8, border: "1px solid #bbf7d0", background: "#f0fdf4", color: "#15803d", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>
                   📱 WhatsApp
@@ -1630,6 +1662,7 @@ const EditFamilyModal = ({ member, onSave, onClose }: {
               ) : (
                 <span style={{ fontSize: 12, color: "#9ca3af" }}>Add phone above to enable WhatsApp sharing</span>
               )}
+
             </div>
           </div>
         </div>
@@ -1646,6 +1679,7 @@ const FamilyView = ({ family, onAdd, onDelete, onEdit }: { family: FamilyMember[
   const [name, setName] = useState("");
   const [relationship, setRelationship] = useState("Spouse / Partner");
   const [email, setEmail] = useState("");
+  const [countryCode, setCountryCode] = useState("+44");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState(() => generateOTP());
   const [saved, setSaved] = useState(false);
@@ -1655,7 +1689,8 @@ const FamilyView = ({ family, onAdd, onDelete, onEdit }: { family: FamilyMember[
 
   const handleAdd = () => {
     if (!name.trim()) return;
-    onAdd({ id: `fm_${Date.now()}`, name: name.trim(), relationship, email: email.trim(), phone: phone.trim(), otp });
+    const fullPhone = phone.trim() ? countryCode + phone.trim().replace(/[^0-9]/g, "") : "";
+    onAdd({ id: `fm_${Date.now()}`, name: name.trim(), relationship, email: email.trim(), phone: fullPhone, otp });
     setName(""); setEmail(""); setPhone(""); setOtp(generateOTP());
     setSaved(true); setTimeout(() => setSaved(false), 2000);
   };
@@ -1699,9 +1734,15 @@ const FamilyView = ({ family, onAdd, onDelete, onEdit }: { family: FamilyMember[
           </div>
           <div className="flex flex-col gap-1.5">
             <label className={labelCls} style={{ color: "#6b6b80" }}>WhatsApp / Phone</label>
-            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
-              placeholder="+44 7700 900000"
-              className="rounded-lg border px-3 py-2.5 text-sm" style={inputStyle} />
+            <div className="flex gap-1">
+              <select value={countryCode} onChange={e => setCountryCode(e.target.value)}
+                className="rounded-lg border px-2 py-2.5 text-sm" style={{ ...inputStyle, minWidth: 120, flexShrink: 0 }}>
+                {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
+              </select>
+              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+                placeholder="7700 900000"
+                className="rounded-lg border px-3 py-2.5 text-sm flex-1" style={inputStyle} />
+            </div>
           </div>
           <div className="col-span-2 flex flex-col gap-1.5">
             <label className={labelCls} style={{ color: "#6b6b80" }}>Access Code (OTP) — share with member</label>
