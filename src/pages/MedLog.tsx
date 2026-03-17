@@ -749,19 +749,8 @@ const LogEventView = ({ onSave, onUpload }: { onSave: (e: MedEvent) => void; onU
   const [doctor, setDoctor] = useState("");
   const [notes, setNotes] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [uploading, setUploading] = useState(false);
   const [saved, setSaved] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
   const pendingId = useRef(`evt_${Date.now()}`);
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; if (!file) return;
-    setUploading(true);
-    const att = await onUpload(file, pendingId.current, "event");
-    if (att) setAttachments(prev => [...prev, att]);
-    setUploading(false);
-    if (fileRef.current) fileRef.current.value = "";
-  };
 
   const handleSave = () => {
     if (!title.trim()) return;
@@ -814,19 +803,7 @@ const LogEventView = ({ onSave, onUpload }: { onSave: (e: MedEvent) => void; onU
         </div>
         <div className="col-span-2 flex flex-col gap-1.5">
           <label className={labelCls} style={{ color: "#6b6b80" }}>Attachments <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional)</span></label>
-          <div className="flex flex-wrap gap-2">
-            {attachments.map(a => (
-              <div key={a.id} className="flex items-center gap-1 px-2.5 py-1 rounded-lg border text-xs" style={{ background: "#f0f4ff", borderColor: "#c7d2fe", color: "#3730a3" }}>
-                📎 <a href={a.url} target="_blank" rel="noreferrer" style={{ color: "#3730a3" }}>{a.name.length > 20 ? a.name.slice(0,18)+"…" : a.name}</a>
-                <button onClick={() => setAttachments(p => p.filter(x => x.id !== a.id))} style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: 12, lineHeight: 1, padding: "0 2px" }}>✕</button>
-              </div>
-            ))}
-            <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
-              style={{ padding: "6px 12px", borderRadius: 8, border: "1px dashed #e2ddd6", background: "#f7f4ef", fontSize: 12, cursor: "pointer", color: "#6b6b80" }}>
-              {uploading ? "Uploading…" : "📎 Attach file"}
-            </button>
-            <input ref={fileRef} type="file" style={{ display: "none" }} onChange={handleFileChange} />
-          </div>
+          <AttachmentEditor attachments={attachments} onChange={setAttachments} onUpload={onUpload} recordId={pendingId.current} recordType="event" />
         </div>
         <div className="col-span-2 mt-2 flex items-center gap-3">
           <button onClick={handleSave} className="px-6 py-2.5 rounded-lg text-white text-sm font-semibold" style={{ background: "#2d6a4f" }}>💾 Save Event</button>
@@ -846,13 +823,16 @@ const SymptomsView = ({ symptoms, onSave, onDelete, onEdit, onUpload }: { sympto
   const [trigger, setTrigger] = useState("Unknown");
   const [customTrigger, setCustomTrigger] = useState("");
   const [notes, setNotes] = useState("");
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [saved, setSaved] = useState(false);
+  const pendingId = useRef(`sym_${Date.now()}`);
 
   const handleSave = () => {
     const finalName = name === "Other" ? (customName.trim() || "Other") : name;
     const finalTrigger = trigger === "Other" ? (customTrigger.trim() || "Other") : trigger;
-    onSave({ id: `sym_${Date.now()}`, name: finalName, severity, date, ...(dateTo ? { dateTo } : {}), trigger: finalTrigger, notes: notes.trim() });
-    setCustomName(""); setNotes(""); setDate(today()); setDateTo(today()); setCustomTrigger("");
+    onSave({ id: pendingId.current, name: finalName, severity, date, ...(dateTo ? { dateTo } : {}), trigger: finalTrigger, notes: notes.trim(), attachments });
+    setCustomName(""); setNotes(""); setDate(today()); setDateTo(today()); setCustomTrigger(""); setAttachments([]);
+    pendingId.current = `sym_${Date.now()}`;
     setSaved(true); setTimeout(() => setSaved(false), 2000);
   };
 
@@ -920,6 +900,10 @@ const SymptomsView = ({ symptoms, onSave, onDelete, onEdit, onUpload }: { sympto
             <label className={labelCls} style={{ color: "#6b6b80" }}>Notes (optional)</label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)}
               placeholder="Any additional context…" className="rounded-lg border px-3 py-2.5 text-sm min-h-[60px]" style={inputStyle} />
+          </div>
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <label className={labelCls} style={{ color: "#6b6b80" }}>Attachments <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional)</span></label>
+            <AttachmentEditor attachments={attachments} onChange={setAttachments} onUpload={onUpload} recordId={pendingId.current} recordType="symptom" />
           </div>
         </div>
         <div className="mt-4 flex items-center gap-3">
@@ -1625,6 +1609,28 @@ const EditFamilyModal = ({ member, onSave, onClose }: {
                 style={{ borderColor: "#e2ddd6", background: "#f7f4ef", color: "#6b6b80" }}>↺ New</button>
             </div>
             <p className="text-[0.72rem]" style={{ color: "#6b6b80" }}>Regenerating issues a new code — share it with the member again.</p>
+          </div>
+          <div className="col-span-2 flex flex-col gap-1.5">
+            <label className="text-[0.78rem] font-semibold uppercase tracking-wider" style={{ color: "#6b6b80" }}>Share Access Code</label>
+            <div className="flex gap-2 flex-wrap">
+              {email ? (
+                <a href={`mailto:${email}?subject=${encodeURIComponent("Your MedLog Access Code")}&body=${encodeURIComponent(`Hi ${name},\n\nYour MedLog access code is: ${otp}\n\nUse this code (or your email address) to log in when the link is shared with you.\n\nThis code is personal — please keep it private.`)}`}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 8, border: "1px solid #bfdbfe", background: "#eff6ff", color: "#1d4ed8", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>
+                  📧 Email code
+                </a>
+              ) : (
+                <span style={{ fontSize: 12, color: "#9ca3af" }}>Add email above to enable email sharing</span>
+              )}
+              {phone ? (
+                <a href={`https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Hi ${name}, your MedLog access code is: ${otp}. Use this code (or your email) to log in.`)}`}
+                  target="_blank" rel="noopener noreferrer"
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 8, border: "1px solid #bbf7d0", background: "#f0fdf4", color: "#15803d", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>
+                  📱 WhatsApp
+                </a>
+              ) : (
+                <span style={{ fontSize: 12, color: "#9ca3af" }}>Add phone above to enable WhatsApp sharing</span>
+              )}
+            </div>
           </div>
         </div>
         <div className="mt-5 flex gap-3">
