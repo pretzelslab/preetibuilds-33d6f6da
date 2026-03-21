@@ -209,6 +209,7 @@ const POLICIES = [
     industries: ["Healthcare","Finance","Law Enforcement","Education","Employment","Critical Infrastructure","Border Control","Justice"],
     latestUpdateDate: "2024-08-01",
     latestUpdateSummary: "Entered into force August 2024. Phased implementation: prohibitions Aug 2025 · GPAI rules Aug 2025 · high-risk obligations Aug 2026 · remaining provisions Aug 2027.",
+    regulatingBody: "European Commission / EU AI Office",
     color: { bg: "#eff6ff", border: "#bfdbfe", text: "#1d4ed8", badge: "#dbeafe" },
     emoji: "🇪🇺",
     clauses: [
@@ -233,6 +234,7 @@ const POLICIES = [
     industries: ["All Sectors","Finance","Healthcare","Government","Technology","Defence"],
     latestUpdateDate: "2024-07-26",
     latestUpdateSummary: "Sector-specific profiles (financial services, healthcare) published July 2024. NIST AI 600-1 for generative AI published August 2024. Playbook resources updated.",
+    regulatingBody: "NIST (National Institute of Standards and Technology)",
     color: { bg: "#f0fdf4", border: "#bbf7d0", text: "#15803d", badge: "#dcfce7" },
     emoji: "🇺🇸",
     clauses: [
@@ -257,6 +259,7 @@ const POLICIES = [
     industries: ["Critical Infrastructure","Finance","Healthcare","Technology","Government","Manufacturing"],
     latestUpdateDate: "2024-02-26",
     latestUpdateSummary: "CSF 2.0 released February 2024. New GOVERN function. AI/ML security addressed in implementation guides. Quick-start guides for SMBs and enterprises published.",
+    regulatingBody: "NIST (National Institute of Standards and Technology)",
     color: { bg: "#fdf4ff", border: "#e9d5ff", text: "#7e22ce", badge: "#f3e8ff" },
     emoji: "🔒",
     clauses: [
@@ -281,6 +284,7 @@ const POLICIES = [
     industries: ["All Sectors","Technology","Finance","Healthcare","Manufacturing","Government"],
     latestUpdateDate: "2023-12-18",
     latestUpdateSummary: "Published December 2023. Certification bodies began issuing certificates Q1 2024. Companion standards ISO 42002 (AI risk) and ISO 42003 (transparency) in development.",
+    regulatingBody: "ISO / IEC JTC 1/SC 42",
     color: { bg: "#fff7ed", border: "#fed7aa", text: "#c2410c", badge: "#ffedd5" },
     emoji: "🌐",
     clauses: [
@@ -305,6 +309,7 @@ const POLICIES = [
     industries: ["Finance","Insurance","Technology","Healthcare","Energy","Government"],
     latestUpdateDate: "2023-10-01",
     latestUpdateSummary: "FAIR-AI taxonomy published October 2023. Integration guidance with NIST AI RMF published 2024. ML-specific risk scenarios mapped to FAIR loss factors.",
+    regulatingBody: "FAIR Institute (Open Group)",
     color: { bg: "#f0fdf4", border: "#bbf7d0", text: "#166534", badge: "#dcfce7" },
     emoji: "📊",
     clauses: [
@@ -328,6 +333,7 @@ const POLICIES = [
     industries: ["All Sectors","Finance","Healthcare","Technology","Government","Consulting"],
     latestUpdateDate: "2024-03-01",
     latestUpdateSummary: "CAAIA exam updated March 2024 to include EU AI Act conformity assessment, generative AI audit methodology, and NIST AI RMF alignment.",
+    regulatingBody: "Responsible AI Institute",
     color: { bg: "#fdf2f8", border: "#f9a8d4", text: "#9d174d", badge: "#fce7f3" },
     emoji: "🏅",
     clauses: [
@@ -1211,6 +1217,126 @@ function PolicyGuide({ policy, onBack }) {
   );
 }
 
+// ─── DIGEST Q&A ───────────────────────────────────────────────────────────────
+function DigestQA({ policy, digest }) {
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [keyInput, setKeyInput] = useState("");
+  const [showKeySetup, setShowKeySetup] = useState(false);
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem("pl_ai_key") || "");
+
+  const context = [
+    `Policy: ${policy.name}`,
+    `Type: ${policy.type} | Geography: ${policy.geography} | Year: ${policy.yearReleased}`,
+    policy.regulatingBody ? `Regulating Body: ${policy.regulatingBody}` : "",
+    `Summary: ${policy.summary}`,
+    `TL;DR: ${digest.tldr}`,
+    `Key Points: ${digest.criticalPoints.map(p => `${p.heading}: ${p.text}`).join("; ")}`,
+    `Key Obligations: ${digest.keyObligations.join("; ")}`,
+    `Who Needs to Act: ${digest.whoNeedsToAct.join(", ")}`,
+    `Common Misconceptions: ${digest.commonMisconceptions.map(m => `Myth: ${m.myth} — Truth: ${m.truth}`).join("; ")}`,
+    `Practical Tip: ${digest.practicalTip}`,
+  ].filter(Boolean).join("\n");
+
+  const saveKey = () => {
+    if (!keyInput.trim()) return;
+    localStorage.setItem("pl_ai_key", keyInput.trim());
+    setApiKey(keyInput.trim());
+    setKeyInput("");
+    setShowKeySetup(false);
+  };
+
+  const ask = async () => {
+    if (!question.trim() || !apiKey) return;
+    setLoading(true); setAnswer(""); setError("");
+    try {
+      const res = await fetch("/.netlify/functions/ai-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: question.trim(), context, apiKey }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Request failed");
+      setAnswer(data.answer);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ marginTop: 40, borderTop: "2px solid #e2e8f0", paddingTop: 32 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 2 }}>💬 Ask about this policy</div>
+          <div style={{ fontSize: 12, color: "#94a3b8" }}>Get plain-English answers powered by Claude</div>
+        </div>
+        <button onClick={() => setShowKeySetup(v => !v)} title="API key settings"
+          style={{ background: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0", borderRadius: 7, padding: "5px 10px", cursor: "pointer", fontSize: 12 }}>
+          ⚙ {apiKey ? "Key set ✓" : "Set key"}
+        </button>
+      </div>
+
+      {showKeySetup && (
+        <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: 16, marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: "#0f172a", marginBottom: 8 }}>Anthropic API key — stored locally in your browser, never shared</div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <input type="password" value={keyInput} onChange={e => setKeyInput(e.target.value)}
+              placeholder="sk-ant-..." onKeyDown={e => e.key === "Enter" && saveKey()}
+              style={{ flex: 1, minWidth: 200, padding: "8px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none", fontFamily: "monospace" }} />
+            <button onClick={saveKey} disabled={!keyInput.trim()}
+              style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Save</button>
+            {apiKey && <button onClick={() => { localStorage.removeItem("pl_ai_key"); setApiKey(""); setShowKeySetup(false); }}
+              style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontSize: 12 }}>Remove</button>}
+          </div>
+          <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 8 }}>
+            Get your key at console.anthropic.com · Stored in browser localStorage only
+          </div>
+        </div>
+      )}
+
+      {!apiKey && !showKeySetup && (
+        <div style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 10, padding: 14, marginBottom: 16, fontSize: 12, color: "#0369a1" }}>
+          Click ⚙ Set key above to add your Anthropic API key and start asking questions about this policy.
+        </div>
+      )}
+
+      {apiKey && (
+        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+          <input value={question} onChange={e => setQuestion(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && !loading && ask()}
+            placeholder={`e.g. Does ${policy.name} apply to my SaaS product?`}
+            style={{ flex: 1, padding: "10px 14px", border: "1px solid #e2e8f0", borderRadius: 10, fontSize: 13, outline: "none" }} />
+          <button onClick={ask} disabled={loading || !question.trim()}
+            style={{ background: loading || !question.trim() ? "#e2e8f0" : "#6366f1", color: loading || !question.trim() ? "#94a3b8" : "#fff", border: "none", borderRadius: 10, padding: "10px 20px", cursor: loading || !question.trim() ? "default" : "pointer", fontSize: 13, fontWeight: 700, whiteSpace: "nowrap" }}>
+            {loading ? "Thinking…" : "Ask →"}
+          </button>
+        </div>
+      )}
+
+      {error && (
+        <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: 14, marginBottom: 16, fontSize: 13, color: "#dc2626" }}>
+          ⚠ {error}
+        </div>
+      )}
+
+      {answer && (
+        <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, padding: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Answer</div>
+          <p style={{ margin: 0, fontSize: 13, color: "#334155", lineHeight: 1.85, whiteSpace: "pre-wrap" }}>{answer}</p>
+          <button onClick={() => { setAnswer(""); setQuestion(""); }}
+            style={{ marginTop: 12, background: "none", border: "none", color: "#94a3b8", fontSize: 11, cursor: "pointer", padding: 0 }}>
+            Clear → ask another
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── POLICY DIGEST ────────────────────────────────────────────────────────────
 function PolicyDigestDetail({ policy, onBack }) {
   const digest = POLICY_DIGESTS[policy.id];
@@ -1232,6 +1358,7 @@ function PolicyDigestDetail({ policy, onBack }) {
             <div>
               <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>{policy.name}</h1>
               <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>{policy.type} · {policy.geography} · {policy.yearReleased}</div>
+              {policy.regulatingBody && <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 3 }}>🏛 {policy.regulatingBody}</div>}
             </div>
           </div>
         </div>
@@ -1311,6 +1438,8 @@ function PolicyDigestDetail({ policy, onBack }) {
           <div style={{ fontSize: 11, fontWeight: 700, color: "#a16207", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>💡 Where to Start</div>
           <p style={{ margin: 0, fontSize: 13, color: "#713f12", lineHeight: 1.75 }}>{digest.practicalTip}</p>
         </div>
+
+        <DigestQA policy={policy} digest={digest} />
 
         <div style={{ marginTop: 40, paddingTop: 16, borderTop: "1px solid #e2e8f0", fontSize: 11, color: "#94a3b8", display: "flex", justifyContent: "space-between" }}>
           <span>{policy.name} Digest · pretzelslab · {new Date().getFullYear()}</span>
@@ -1586,6 +1715,7 @@ function PolicyDetail({ policy, onBack }) {
                 <span style={{ background: policy.color.badge, color: policy.color.text, border: `1px solid ${policy.color.border}`, borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 600 }}>{policy.type}</span>
               </div>
               <p style={{ margin: "3px 0 0", fontSize: 12, color: "#64748b" }}>{policy.geography} · {policy.yearReleased} · Updated {policy.latestUpdateDate}</p>
+              {policy.regulatingBody && <p style={{ margin: "2px 0 0", fontSize: 11, color: "#94a3b8" }}>🏛 {policy.regulatingBody}</p>}
             </div>
           </div>
           <button onClick={() => exportDetailToCSV(policy)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>Export CSV</button>
@@ -1606,11 +1736,12 @@ function PolicyDetail({ policy, onBack }) {
           })}
         </div>
 
-      {/* Summary */}
+      {/* Summary + Latest — sticky ends here */}
       <div style={{ background: policy.color.bg, borderBottom: `1px solid ${policy.color.border}`, padding: "10px 32px" }}>
         <p style={{ margin: 0, fontSize: 12, color: "#334155", lineHeight: 1.65, maxWidth: 900 }}>{policy.summary}</p>
         <p style={{ margin: "4px 0 0", fontSize: 11, color: "#64748b" }}><strong>Latest:</strong> {policy.latestUpdateSummary}</p>
       </div>
+      </div>{/* end sticky block */}
 
       {/* Pillar Impact per this Policy */}
       <div style={{ background: "#fff", borderBottom: "1px solid #f1f5f9", padding: "12px 32px" }}>
@@ -1642,7 +1773,6 @@ function PolicyDetail({ policy, onBack }) {
         </select>
         <span style={{ fontSize: 11, color: "#94a3b8" }}>{filtered.length} clauses</span>
       </div>
-      </div>{/* end sticky block */}
 
       {/* Clause Cards */}
       <div style={{ padding: "24px 32px", display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fill, minmax(480px, 1fr))" }}>

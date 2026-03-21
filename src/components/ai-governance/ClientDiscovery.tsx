@@ -8,9 +8,12 @@ type SignOffStatus = "Pending" | "In Review" | "Signed Off";
 type QStatus = "Not Started" | "In Progress" | "Complete" | "Not Applicable" | "On Hold";
 type DocExists = "" | "Yes" | "No" | "Partial";
 
+type ClientStatus = "active" | "archived" | "hidden";
+
 type Client = {
   id: string;
   name: string;
+  country: string;
   industry: string;
   geography: string;
   primaryAiUseCase: string;
@@ -19,6 +22,7 @@ type Client = {
   signOffStatus: SignOffStatus;
   createdAt: string;
   activePolicies: string[];
+  status: ClientStatus;
 };
 
 type QuestionState = {
@@ -62,6 +66,85 @@ const INDUSTRY_OPTIONS = [
 const ENGAGEMENT_TYPES: EngagementType[] = [
   "", "Readiness Assessment", "Gap Analysis", "Implementation Support", "Audit Preparation",
 ];
+
+// ─── COUNTRY OPTIONS & SUGGESTIONS ───────────────────────────────────────────
+const COUNTRY_OPTIONS = [
+  "European Union (EU / EEA)",
+  "United Kingdom",
+  "United States",
+  "Canada",
+  "Australia / New Zealand",
+  "India",
+  "Singapore / APAC",
+  "Middle East & Africa",
+  "Latin America",
+  "Global / Multi-jurisdictional",
+];
+
+const COUNTRY_SUGGESTIONS: Record<string, Suggestion[]> = {
+  "European Union (EU / EEA)": [
+    { id: "eu-ai-act",   level: "Required",    reason: "Mandatory for all AI systems placed on the EU market" },
+    { id: "iso-42001",   level: "Recommended", reason: "Certifiable AI management system, preferred by EU regulators" },
+    { id: "fair",        level: "Consider",    reason: "Quantitative risk model aligns with EU AI Act risk requirements" },
+    { id: "nist-ai-rmf", level: "Consider",    reason: "Useful if also operating in the US market" },
+  ],
+  "United Kingdom": [
+    { id: "iso-42001",   level: "Required",    reason: "UK ICO and FCA guidance aligns with ISO 42001" },
+    { id: "eu-ai-act",   level: "Recommended", reason: "Required if your AI products are sold or used in the EU" },
+    { id: "nist-ai-rmf", level: "Consider",    reason: "Cross-border alignment with US partners" },
+    { id: "fair",        level: "Consider",    reason: "Risk quantification for FCA-regulated AI" },
+  ],
+  "United States": [
+    { id: "nist-ai-rmf", level: "Required",    reason: "Federal AI guidance; mandatory for government contractors" },
+    { id: "nist-csf",    level: "Required",    reason: "Cybersecurity baseline covering AI/ML systems" },
+    { id: "iso-42001",   level: "Recommended", reason: "International standard for globally operating companies" },
+    { id: "eu-ai-act",   level: "Consider",    reason: "Required if selling AI products to EU customers" },
+    { id: "fair",        level: "Consider",    reason: "Quantitative risk measurement aligned with SEC expectations" },
+  ],
+  "Canada": [
+    { id: "iso-42001",   level: "Required",    reason: "ISED Canada AI code aligns with ISO 42001 principles" },
+    { id: "nist-ai-rmf", level: "Recommended", reason: "Close regulatory alignment with US frameworks" },
+    { id: "eu-ai-act",   level: "Consider",    reason: "Required for EU-facing products or data transfers" },
+    { id: "fair",        level: "Consider",    reason: "Risk quantification framework" },
+  ],
+  "Australia / New Zealand": [
+    { id: "iso-42001",   level: "Required",    reason: "Australian government AI ethics framework aligns with ISO 42001" },
+    { id: "nist-ai-rmf", level: "Recommended", reason: "Five Eyes alignment with US AI governance approach" },
+    { id: "aaia",        level: "Consider",    reason: "AI audit certification increasingly valued in APAC" },
+    { id: "fair",        level: "Consider",    reason: "Risk quantification for APRA-regulated entities" },
+  ],
+  "India": [
+    { id: "iso-42001",   level: "Required",    reason: "India AI governance framework mirrors ISO 42001 structure" },
+    { id: "nist-ai-rmf", level: "Recommended", reason: "MEITY AI framework references the NIST approach" },
+    { id: "fair",        level: "Consider",    reason: "Risk quantification for SEBI and RBI regulated entities" },
+    { id: "aaia",        level: "Consider",    reason: "AI audit certification for financial sector" },
+  ],
+  "Singapore / APAC": [
+    { id: "iso-42001",   level: "Required",    reason: "MAS and IMDA frameworks align with ISO 42001" },
+    { id: "nist-ai-rmf", level: "Recommended", reason: "MAS FEAT and AI ethics principles align with NIST" },
+    { id: "aaia",        level: "Recommended", reason: "PDPC Singapore AI governance framework certification" },
+    { id: "fair",        level: "Consider",    reason: "MAS expects quantitative risk assessment for financial AI" },
+  ],
+  "Middle East & Africa": [
+    { id: "iso-42001",   level: "Required",    reason: "UAE National AI Strategy and DIFC regulation align with ISO 42001" },
+    { id: "nist-ai-rmf", level: "Consider",    reason: "Referenced by ADGM and DIFC AI frameworks" },
+    { id: "fair",        level: "Consider",    reason: "Risk quantification valued in financial services regulation" },
+    { id: "aaia",        level: "Consider",    reason: "AI audit capability building requirement" },
+  ],
+  "Latin America": [
+    { id: "iso-42001",   level: "Required",    reason: "Brazil LGPD and regional AI frameworks align with ISO 42001" },
+    { id: "nist-ai-rmf", level: "Recommended", reason: "Referenced by several national AI strategies in the region" },
+    { id: "eu-ai-act",   level: "Consider",    reason: "Required if exporting AI products to the EU market" },
+    { id: "fair",        level: "Consider",    reason: "Risk quantification for financial sector compliance" },
+  ],
+  "Global / Multi-jurisdictional": [
+    { id: "iso-42001",   level: "Required",    reason: "International standard recognised across all jurisdictions" },
+    { id: "nist-ai-rmf", level: "Required",    reason: "De facto global AI risk management reference framework" },
+    { id: "eu-ai-act",   level: "Recommended", reason: "Highest-bar regulation; compliance provides a global baseline" },
+    { id: "fair",        level: "Recommended", reason: "Consistent quantitative risk measurement across jurisdictions" },
+    { id: "aaia",        level: "Consider",    reason: "AI audit certification valued across major markets" },
+  ],
+};
 
 // ─── FRAMEWORK SUGGESTIONS BY INDUSTRY ───────────────────────────────────────
 type SuggestionLevel = "Required" | "Recommended" | "Consider";
@@ -228,6 +311,8 @@ function migrateClient(c: any): Client {
     contactName: "",
     engagementType: "" as EngagementType,
     signOffStatus: "Pending" as SignOffStatus,
+    country: "",
+    status: "active" as ClientStatus,
     ...c,
   };
 }
@@ -429,9 +514,21 @@ function Breadcrumb({ items }: { items: { label: string; onClick?: () => void }[
   );
 }
 
+// Merge country + industry suggestions, taking highest level when both reference same policy
+const LEVEL_RANK: Record<SuggestionLevel, number> = { Required: 3, Recommended: 2, Consider: 1 };
+function mergeSuggestions(countrySugs: Suggestion[], industrySugs: Suggestion[]): Suggestion[] {
+  const map = new Map<string, Suggestion>();
+  [...countrySugs, ...industrySugs].forEach(s => {
+    const existing = map.get(s.id);
+    if (!existing || LEVEL_RANK[s.level] > LEVEL_RANK[existing.level]) map.set(s.id, s);
+  });
+  return [...map.values()];
+}
+
 // ─── NEW CLIENT FORM ──────────────────────────────────────────────────────────
 function NewClientForm({ onAdd, onCancel }: { onAdd: (c: Client) => void; onCancel: () => void }) {
   const [name, setName] = useState("");
+  const [country, setCountry] = useState("");
   const [industry, setIndustry] = useState("");
   const [customIndustry, setCustomIndustry] = useState("");
   const [geography, setGeography] = useState("");
@@ -443,97 +540,124 @@ function NewClientForm({ onAdd, onCancel }: { onAdd: (c: Client) => void; onCanc
 
   const isOther = industry === "Other (specify below)";
   const effectiveIndustry = isOther ? customIndustry.trim() : industry;
-  const suggestions = INDUSTRY_SUGGESTIONS[industry] || [];
+
+  const countrySugs = COUNTRY_SUGGESTIONS[country] || [];
+  const industrySugs = (!isOther && INDUSTRY_SUGGESTIONS[industry]) ? INDUSTRY_SUGGESTIONS[industry] : [];
+  const suggestions = mergeSuggestions(countrySugs, industrySugs);
   const suggestedIds = new Set(suggestions.map(s => s.id));
   const otherPolicies = POLICY_STUBS.filter(p => !suggestedIds.has(p.id));
 
   useEffect(() => {
-    if (!industry || isOther) { setSelectedPolicies(new Set()); return; }
+    if (!country && (!industry || isOther)) { setSelectedPolicies(new Set()); return; }
     setSelectedPolicies(new Set(suggestions.filter(s => s.level === "Required").map(s => s.id)));
-  }, [industry]);
+  }, [country, industry]);
 
   const togglePolicy = (id: string) =>
     setSelectedPolicies(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
   const submit = () => {
-    if (!name.trim() || !effectiveIndustry) return;
+    if (!name.trim() || !country) return;
     onAdd({
       id: crypto.randomUUID(),
-      name: name.trim(), industry: effectiveIndustry,
+      name: name.trim(), country, industry: effectiveIndustry || "(not specified)",
       geography, primaryAiUseCase, contactName, engagementType,
       signOffStatus: "Pending",
+      status: "active",
       createdAt: new Date().toISOString().slice(0, 10),
       activePolicies: [...selectedPolicies],
     });
   };
 
-  const canSubmit = !!name.trim() && !!effectiveIndustry;
+  const canSubmit = !!name.trim() && !!country;
 
   return (
     <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: 28, marginBottom: 24, boxShadow: "0 4px 20px rgba(0,0,0,0.07)" }}>
       <h3 style={{ margin: "0 0 20px", fontSize: 16, fontWeight: 800, color: "#0f172a" }}>New Client</h3>
 
-      <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 16 }}>
-        <div style={{ flex: 2, minWidth: 200 }}>
-          <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Client / Organisation Name *</label>
-          <input autoFocus value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === "Enter" && submit()}
-            placeholder="e.g. Apex Capital"
-            style={{ width: "100%", padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 14, outline: "none", boxSizing: "border-box" }} />
-        </div>
-        <div style={{ flex: 1.5, minWidth: 200 }}>
-          <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Industry *</label>
-          <select value={industry} onChange={e => setIndustry(e.target.value)}
-            style={{ width: "100%", padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, background: "#fff", boxSizing: "border-box" }}>
-            <option value="">Select industry…</option>
-            {INDUSTRY_OPTIONS.map(i => <option key={i}>{i}</option>)}
-          </select>
+      {/* Step 1: Name + Country (required) */}
+      <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "16px 18px", marginBottom: 16 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12 }}>Step 1 — Client details</div>
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+          <div style={{ flex: 2, minWidth: 200 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Client / Organisation Name *</label>
+            <input autoFocus value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === "Enter" && submit()}
+              placeholder="e.g. Apex Capital"
+              style={{ width: "100%", padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+          </div>
+          <div style={{ flex: 1.5, minWidth: 200 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Client Country / Region *</label>
+            <select value={country} onChange={e => setCountry(e.target.value)}
+              style={{ width: "100%", padding: "9px 12px", border: `1px solid ${country ? "#6366f1" : "#e2e8f0"}`, borderRadius: 8, fontSize: 13, background: "#fff", boxSizing: "border-box" }}>
+              <option value="">Select country / region…</option>
+              {COUNTRY_OPTIONS.map(c => <option key={c}>{c}</option>)}
+            </select>
+          </div>
         </div>
       </div>
 
-      {isOther && (
-        <div style={{ marginBottom: 16 }}>
-          <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Specify Industry *</label>
-          <input autoFocus value={customIndustry} onChange={e => setCustomIndustry(e.target.value)} placeholder="Enter your industry…"
-            style={{ width: "100%", maxWidth: 400, padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+      {/* Step 2: Industry (optional refinement) */}
+      {country && (
+        <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "16px 18px", marginBottom: 16 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12 }}>Step 2 — Industry <span style={{ fontSize: 10, fontWeight: 500, color: "#94a3b8", textTransform: "none" }}>(optional — refines framework suggestions)</span></div>
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+            <div style={{ flex: 1.5, minWidth: 200 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Industry</label>
+              <select value={industry} onChange={e => setIndustry(e.target.value)}
+                style={{ width: "100%", padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, background: "#fff", boxSizing: "border-box" }}>
+                <option value="">Select industry…</option>
+                {INDUSTRY_OPTIONS.map(i => <option key={i}>{i}</option>)}
+              </select>
+            </div>
+          </div>
+          {isOther && (
+            <div style={{ marginTop: 12 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Specify Industry</label>
+              <input value={customIndustry} onChange={e => setCustomIndustry(e.target.value)} placeholder="Enter your industry…"
+                style={{ width: "100%", maxWidth: 400, padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+            </div>
+          )}
         </div>
       )}
 
       {/* Optional scope fields */}
-      <details open={showScope} onToggle={e => setShowScope((e.target as HTMLDetailsElement).open)} style={{ marginBottom: 16 }}>
-        <summary style={{ fontSize: 12, fontWeight: 600, color: "#6366f1", cursor: "pointer", listStyle: "none", display: "flex", alignItems: "center", gap: 6, marginBottom: showScope ? 14 : 0 }}>
-          <span>{showScope ? "▾" : "▸"}</span> Add scope details (optional — geography, AI use case, contact)
-        </summary>
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 14 }}>
-          <div style={{ flex: 1, minWidth: 180 }}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Geography / Region</label>
-            <input value={geography} onChange={e => setGeography(e.target.value)} placeholder="e.g. EU, UK, US, APAC"
-              style={{ width: "100%", padding: "8px 11px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+      {country && (
+        <details open={showScope} onToggle={e => setShowScope((e.target as HTMLDetailsElement).open)} style={{ marginBottom: 16 }}>
+          <summary style={{ fontSize: 12, fontWeight: 600, color: "#6366f1", cursor: "pointer", listStyle: "none", display: "flex", alignItems: "center", gap: 6, marginBottom: showScope ? 14 : 0 }}>
+            <span>{showScope ? "▾" : "▸"}</span> Add scope details (optional — geography, AI use case, contact)
+          </summary>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 14 }}>
+            <div style={{ flex: 1, minWidth: 180 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Geography / Region</label>
+              <input value={geography} onChange={e => setGeography(e.target.value)} placeholder="e.g. EU, UK, US, APAC"
+                style={{ width: "100%", padding: "8px 11px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+            </div>
+            <div style={{ flex: 2, minWidth: 220 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Primary AI Use Case</label>
+              <input value={primaryAiUseCase} onChange={e => setPrimaryAiUseCase(e.target.value)} placeholder="e.g. Credit scoring, clinical decision support…"
+                style={{ width: "100%", padding: "8px 11px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+            </div>
+            <div style={{ flex: 1, minWidth: 180 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Client Contact</label>
+              <input value={contactName} onChange={e => setContactName(e.target.value)} placeholder="Name / role"
+                style={{ width: "100%", padding: "8px 11px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+            </div>
+            <div style={{ flex: 1, minWidth: 180 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Engagement Type</label>
+              <select value={engagementType} onChange={e => setEngagementType(e.target.value as EngagementType)}
+                style={{ width: "100%", padding: "8px 11px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, background: "#fff", boxSizing: "border-box" }}>
+                {ENGAGEMENT_TYPES.map(t => <option key={t} value={t}>{t || "Select…"}</option>)}
+              </select>
+            </div>
           </div>
-          <div style={{ flex: 2, minWidth: 220 }}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Primary AI Use Case</label>
-            <input value={primaryAiUseCase} onChange={e => setPrimaryAiUseCase(e.target.value)} placeholder="e.g. Credit scoring, clinical decision support…"
-              style={{ width: "100%", padding: "8px 11px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none", boxSizing: "border-box" }} />
-          </div>
-          <div style={{ flex: 1, minWidth: 180 }}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Client Contact</label>
-            <input value={contactName} onChange={e => setContactName(e.target.value)} placeholder="Name / role"
-              style={{ width: "100%", padding: "8px 11px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none", boxSizing: "border-box" }} />
-          </div>
-          <div style={{ flex: 1, minWidth: 180 }}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Engagement Type</label>
-            <select value={engagementType} onChange={e => setEngagementType(e.target.value as EngagementType)}
-              style={{ width: "100%", padding: "8px 11px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, background: "#fff", boxSizing: "border-box" }}>
-              {ENGAGEMENT_TYPES.map(t => <option key={t} value={t}>{t || "Select…"}</option>)}
-            </select>
-          </div>
-        </div>
-      </details>
+        </details>
+      )}
 
-      {/* Framework suggestions */}
-      {industry && !isOther && suggestions.length > 0 && (
+      {/* Step 3: Framework suggestions */}
+      {country && suggestions.length > 0 && (
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 10 }}>
-            Suggested frameworks for <span style={{ color: "#6366f1" }}>{industry}</span>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>
+            Step 3 — Applicable frameworks
+            <span style={{ fontSize: 10, fontWeight: 500, color: "#94a3b8", textTransform: "none", marginLeft: 8 }}>based on {country}{industry && !isOther ? ` · ${industry}` : ""} — tick or untick to adjust</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 10 }}>
             {suggestions.map(s => {
@@ -575,7 +699,7 @@ function NewClientForm({ onAdd, onCancel }: { onAdd: (c: Client) => void; onCanc
         </div>
       )}
 
-      {(isOther || (industry && suggestions.length === 0)) && (
+      {country && suggestions.length === 0 && (
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 10 }}>Select applicable frameworks</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -612,6 +736,7 @@ function ClientListView({ onSelectClient, onOpenWorkbook }: {
   const [clients, setClients] = useState<Client[]>(loadClients);
   const [showAddForm, setShowAddForm] = useState(false);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [statusFilter, setStatusFilter] = useState<ClientStatus | "all">("active");
   const importRef = useRef<HTMLInputElement>(null);
 
   const addClient = (client: Client) => {
@@ -619,20 +744,31 @@ function ClientListView({ onSelectClient, onOpenWorkbook }: {
     saveClients(updated); setClients(updated); setShowAddForm(false);
   };
   const removeClient = (id: string) => {
-    if (!confirm("Remove this client and all their discovery data?")) return;
+    if (!confirm("Permanently delete this client and all their discovery data?")) return;
     const updated = clients.filter(c => c.id !== id);
+    saveClients(updated); setClients(updated);
+  };
+  const setClientStatus = (id: string, status: ClientStatus) => {
+    const updated = clients.map(c => c.id === id ? { ...c, status } : c);
     saveClients(updated); setClients(updated);
   };
   const toggleIndustry = (ind: string) =>
     setCollapsed(prev => { const n = new Set(prev); n.has(ind) ? n.delete(ind) : n.add(ind); return n; });
 
-  // Group by industry
+  // Filter and group by industry
+  const visibleClients = statusFilter === "all" ? clients : clients.filter(c => (c.status || "active") === statusFilter);
   const byIndustry: Record<string, Client[]> = {};
-  clients.forEach(c => { (byIndustry[c.industry] = byIndustry[c.industry] || []).push(c); });
+  visibleClients.forEach(c => { (byIndustry[c.industry] = byIndustry[c.industry] || []).push(c); });
+
+  const statusCounts = {
+    active: clients.filter(c => (c.status || "active") === "active").length,
+    archived: clients.filter(c => c.status === "archived").length,
+    hidden: clients.filter(c => c.status === "hidden").length,
+  };
 
   return (
     <div style={{ maxWidth: 940, margin: "0 auto", padding: "32px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
         <div>
           <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#0f172a" }}>Client Workbook</h2>
           <p style={{ margin: "6px 0 0", fontSize: 14, color: "#64748b" }}>Discovery workbooks, progress, and notes saved locally. Export JSON to back up.</p>
@@ -663,11 +799,27 @@ function ClientListView({ onSelectClient, onOpenWorkbook }: {
 
       {showAddForm && <NewClientForm onAdd={addClient} onCancel={() => setShowAddForm(false)} />}
 
+      {/* Status filter tabs */}
+      {clients.length > 0 && (
+        <div style={{ display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap" }}>
+          {([["active", "Active", statusCounts.active], ["archived", "Archived", statusCounts.archived], ["hidden", "Hidden", statusCounts.hidden]] as [ClientStatus, string, number][]).map(([val, label, count]) => (
+            <button key={val} onClick={() => setStatusFilter(val)}
+              style={{ padding: "6px 14px", border: `1px solid ${statusFilter === val ? "#6366f1" : "#e2e8f0"}`, borderRadius: 20, fontSize: 12, fontWeight: statusFilter === val ? 700 : 500, background: statusFilter === val ? "#eef2ff" : "#fff", color: statusFilter === val ? "#4f46e5" : "#64748b", cursor: "pointer" }}>
+              {label} {count > 0 && <span style={{ fontSize: 10, background: statusFilter === val ? "#c7d2fe" : "#f1f5f9", borderRadius: 10, padding: "1px 6px", marginLeft: 4 }}>{count}</span>}
+            </button>
+          ))}
+        </div>
+      )}
+
       {clients.length === 0 && !showAddForm ? (
         <div style={{ textAlign: "center", padding: "64px 0", color: "#94a3b8" }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
           <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>No clients yet</div>
           <div style={{ fontSize: 14 }}>Add your first client to start a discovery workbook.</div>
+        </div>
+      ) : visibleClients.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "48px 0", color: "#94a3b8", background: "#f8fafc", borderRadius: 12, border: "1px dashed #e2e8f0" }}>
+          <div style={{ fontSize: 14 }}>No {statusFilter} clients.</div>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -689,14 +841,20 @@ function ClientListView({ onSelectClient, onOpenWorkbook }: {
                       const totalPct = client.activePolicies.length
                         ? Math.round(client.activePolicies.reduce((sum, pid) => sum + getPolicyProgress(client.id, pid).pct, 0) / client.activePolicies.length)
                         : 0;
+                      const isArchived = client.status === "archived";
+                      const isHidden = client.status === "hidden";
                       return (
-                        <div key={client.id} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
-                          <div style={{ background: "#0f172a", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                        <div key={client.id} style={{ background: "#fff", border: `1px solid ${isArchived ? "#fed7aa" : isHidden ? "#e9d5ff" : "#e2e8f0"}`, borderRadius: 12, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.04)", opacity: isArchived || isHidden ? 0.85 : 1 }}>
+                          <div style={{ background: isArchived ? "#7c3aed" : isHidden ? "#475569" : "#0f172a", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, flexWrap: "wrap" }}>
                               <div>
-                                <div style={{ fontSize: 15, fontWeight: 800, color: "#fff" }}>{client.name}</div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                  <span style={{ fontSize: 15, fontWeight: 800, color: "#fff" }}>{client.name}</span>
+                                  {isArchived && <span style={{ fontSize: 10, background: "#ddd6fe", color: "#5b21b6", borderRadius: 4, padding: "1px 6px", fontWeight: 700 }}>ARCHIVED</span>}
+                                  {isHidden && <span style={{ fontSize: 10, background: "#e2e8f0", color: "#475569", borderRadius: 4, padding: "1px 6px", fontWeight: 700 }}>HIDDEN</span>}
+                                </div>
                                 <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>
-                                  {[client.geography, client.engagementType, `Added ${client.createdAt}`].filter(Boolean).join(" · ")}
+                                  {[client.country, client.geography, client.engagementType, `Added ${client.createdAt}`].filter(Boolean).join(" · ")}
                                 </div>
                               </div>
                               <SignOffBadge status={client.signOffStatus} />
@@ -714,13 +872,24 @@ function ClientListView({ onSelectClient, onOpenWorkbook }: {
                               })}
                               {client.activePolicies.length === 0 && <span style={{ fontSize: 11, color: "#64748b", fontStyle: "italic" }}>No frameworks</span>}
                             </div>
-                            <div style={{ display: "flex", gap: 8 }}>
-                              <button onClick={() => {
-                                const guideEnabled = client.activePolicies.filter(pid => POLICY_STUBS.find(p => p.id === pid)?.hasGuide);
-                                if (guideEnabled.length === 1) onOpenWorkbook(client, guideEnabled[0]);
-                                else onSelectClient(client);
-                              }} style={{ background: "#fff", color: "#0f172a", border: "none", borderRadius: 7, padding: "6px 14px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>Open →</button>
-                              <button onClick={() => removeClient(client.id)} title="Remove" style={{ background: "transparent", color: "#94a3b8", border: "1px solid #334155", borderRadius: 7, padding: "6px 9px", cursor: "pointer", fontSize: 12 }}>✕</button>
+                            <div style={{ display: "flex", gap: 6 }}>
+                              {(isArchived || isHidden) ? (
+                                <button onClick={() => setClientStatus(client.id, "active")} title="Restore to active"
+                                  style={{ background: "#fff", color: "#15803d", border: "1px solid #bbf7d0", borderRadius: 7, padding: "6px 12px", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>↩ Restore</button>
+                              ) : (
+                                <>
+                                  <button onClick={() => {
+                                    const guideEnabled = client.activePolicies.filter(pid => POLICY_STUBS.find(p => p.id === pid)?.hasGuide);
+                                    if (guideEnabled.length === 1) onOpenWorkbook(client, guideEnabled[0]);
+                                    else onSelectClient(client);
+                                  }} style={{ background: "#fff", color: "#0f172a", border: "none", borderRadius: 7, padding: "6px 14px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>Open →</button>
+                                  <button onClick={() => setClientStatus(client.id, "archived")} title="Archive client"
+                                    style={{ background: "transparent", color: "#a78bfa", border: "1px solid #334155", borderRadius: 7, padding: "6px 9px", cursor: "pointer", fontSize: 11 }}>🗄</button>
+                                  <button onClick={() => setClientStatus(client.id, "hidden")} title="Hide client"
+                                    style={{ background: "transparent", color: "#94a3b8", border: "1px solid #334155", borderRadius: 7, padding: "6px 9px", cursor: "pointer", fontSize: 11 }}>👁</button>
+                                </>
+                              )}
+                              <button onClick={() => removeClient(client.id)} title="Delete permanently" style={{ background: "transparent", color: "#f87171", border: "1px solid #334155", borderRadius: 7, padding: "6px 9px", cursor: "pointer", fontSize: 12 }}>✕</button>
                             </div>
                           </div>
                           {/* Overall progress bar */}
@@ -749,6 +918,8 @@ function ClientDetailView({ client, onBack, onSelectPolicy }: {
 }) {
   const [clients, setClients] = useState<Client[]>(loadClients);
   const [showAddPolicy, setShowAddPolicy] = useState(false);
+  const [showEditFrameworks, setShowEditFrameworks] = useState(false);
+  const [editFrameworkSet, setEditFrameworkSet] = useState<Set<string>>(new Set());
   const thisClient = clients.find(c => c.id === client.id) || client;
   const suggestions = INDUSTRY_SUGGESTIONS[thisClient.industry] || [];
 
@@ -766,6 +937,20 @@ function ClientDetailView({ client, onBack, onSelectPolicy }: {
     if (guide) guide.areas.forEach((_a, i) => { try { localStorage.removeItem(areaKey(client.id, pid, i)); } catch {} });
     updateClient({ activePolicies: thisClient.activePolicies.filter(p => p !== pid) });
   };
+  const openEditFrameworks = () => {
+    setEditFrameworkSet(new Set(thisClient.activePolicies));
+    setShowEditFrameworks(true);
+  };
+  const saveEditFrameworks = () => {
+    // Clear data for removed policies
+    const removed = thisClient.activePolicies.filter(pid => !editFrameworkSet.has(pid));
+    removed.forEach(pid => {
+      const guide = IMPLEMENTATION_GUIDES[pid];
+      if (guide) guide.areas.forEach((_a, i) => { try { localStorage.removeItem(areaKey(client.id, pid, i)); } catch {} });
+    });
+    updateClient({ activePolicies: [...editFrameworkSet] });
+    setShowEditFrameworks(false);
+  };
 
   const availableToAdd = POLICY_STUBS.filter(p => !thisClient.activePolicies.includes(p.id));
   const sof = SIGN_OFF_CONFIG[thisClient.signOffStatus];
@@ -778,7 +963,9 @@ function ClientDetailView({ client, onBack, onSelectPolicy }: {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
           <div>
             <h2 style={{ margin: "0 0 4px", fontSize: 20, fontWeight: 800, color: "#0f172a" }}>{thisClient.name}</h2>
-            <div style={{ fontSize: 13, color: "#64748b" }}>{thisClient.industry}{thisClient.geography ? ` · ${thisClient.geography}` : ""}</div>
+            <div style={{ fontSize: 13, color: "#64748b" }}>
+              {[thisClient.country, thisClient.industry, thisClient.geography].filter(Boolean).join(" · ")}
+            </div>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {/* Sign-off selector */}
@@ -786,13 +973,45 @@ function ClientDetailView({ client, onBack, onSelectPolicy }: {
               style={{ padding: "6px 10px", border: `1px solid ${sof.border}`, borderRadius: 8, fontSize: 12, fontWeight: 700, background: sof.bg, color: sof.text, cursor: "pointer" }}>
               {(["Pending", "In Review", "Signed Off"] as SignOffStatus[]).map(s => <option key={s}>{s}</option>)}
             </select>
-            {availableToAdd.length > 0 && (
+            <button onClick={openEditFrameworks}
+              style={{ background: "#f0f9ff", color: "#0369a1", border: "1px solid #bae6fd", borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
+              ✎ Edit Frameworks
+            </button>
+            {availableToAdd.length > 0 && !showEditFrameworks && (
               <button onClick={() => setShowAddPolicy(v => !v)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "7px 16px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
                 + Add Framework
               </button>
             )}
           </div>
         </div>
+
+        {/* Edit Frameworks panel */}
+        {showEditFrameworks && (
+          <div style={{ background: "#fff", border: "1px solid #bae6fd", borderRadius: 12, padding: 18, marginBottom: 18, boxShadow: "0 4px 16px rgba(0,0,0,0.06)" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>Select frameworks for {thisClient.name}</div>
+            <div style={{ fontSize: 12, color: "#64748b", marginBottom: 14 }}>Tick or untick any framework. Removing an existing one will clear its discovery data.</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 16 }}>
+              {POLICY_STUBS.map(stub => {
+                const checked = editFrameworkSet.has(stub.id);
+                const sug = suggestions.find(s => s.id === stub.id);
+                const scfg = sug ? SUGGESTION_CONFIG[sug.level] : null;
+                return (
+                  <label key={stub.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "9px 14px", border: `1px solid ${checked ? stub.border : "#e2e8f0"}`, borderRadius: 10, cursor: "pointer", background: checked ? stub.bg : "#fff" }}>
+                    <input type="checkbox" checked={checked} onChange={() => setEditFrameworkSet(prev => { const n = new Set(prev); n.has(stub.id) ? n.delete(stub.id) : n.add(stub.id); return n; })}
+                      style={{ width: 15, height: 15, accentColor: stub.color, cursor: "pointer" }} />
+                    <span style={{ fontSize: 18 }}>{stub.emoji}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", flex: 1 }}>{stub.name}{!stub.hasGuide && <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 400, marginLeft: 6 }}>guide coming soon</span>}</span>
+                    {sug && scfg && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: scfg.bg, color: scfg.text, border: `1px solid ${scfg.border}` }}>{sug.level}</span>}
+                  </label>
+                );
+              })}
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={saveEditFrameworks} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 700 }}>Save Changes</button>
+              <button onClick={() => setShowEditFrameworks(false)} style={{ background: "#f1f5f9", color: "#64748b", border: "none", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontSize: 13 }}>Cancel</button>
+            </div>
+          </div>
+        )}
 
         {/* Scope summary */}
         {(thisClient.primaryAiUseCase || thisClient.contactName || thisClient.engagementType) && (
