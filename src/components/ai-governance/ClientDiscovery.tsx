@@ -10,6 +10,44 @@ type DocExists = "" | "Yes" | "No" | "Partial";
 
 type ClientStatus = "active" | "archived" | "hidden";
 
+// ─── RISK REGISTER TYPES ──────────────────────────────────────────────────────
+type RiskLevel = "Critical" | "High" | "Medium" | "Low";
+type RiskStatus = "Open" | "In Progress" | "Resolved" | "Accepted";
+type ControlType = "Preventive" | "Detective" | "Corrective";
+type ControlStatus = "Not Implemented" | "Partially Implemented" | "Implemented" | "N/A";
+type ControlEffectiveness = "" | "Effective" | "Partially Effective" | "Ineffective" | "Not Tested";
+
+type RiskControl = {
+  type: ControlType;
+  description: string;
+  owner: string;
+  status: ControlStatus;
+  effectiveness: ControlEffectiveness;
+};
+
+type RiskEntry = {
+  id: string;
+  riskId: string;
+  sourceArea: string;
+  affectedSystem: string;
+  riskCategory: string;
+  description: string;
+  likelihoodAtScale: string;
+  inherentLikelihood: number;
+  inherentImpact: number;
+  residualLikelihood: number;
+  residualImpact: number;
+  controls: RiskControl[];
+  condition: string;
+  criteria: string;
+  cause: string;
+  effect: string;
+  recommendation: string;
+  owner: string;
+  dueDate: string;
+  status: RiskStatus;
+};
+
 type AIType = "Machine Learning" | "Natural Language Processing" | "Computer Vision" | "Generative AI" | "Robotic Process Automation" | "Automation / Rules-Based" | "Other";
 type DecisionAuthority = "" | "Fully Autonomous" | "Human-in-the-Loop" | "Human-on-the-Loop" | "Advisory Only";
 type DeploymentStatus = "" | "Planning" | "Development" | "Pilot / Testing" | "Production" | "Decommissioning";
@@ -28,6 +66,7 @@ type Client = {
   createdAt: string;
   activePolicies: string[];
   status: ClientStatus;
+  aboutClient: string;          // free-text narrative about the client / engagement context
   // AI System Profile (Phase 1 — Govern & Scope)
   aiSystemName: string;
   aiTypes: AIType[];
@@ -334,6 +373,7 @@ function migrateClient(c: any): Client {
     signOffStatus: "Pending" as SignOffStatus,
     countries: Array.isArray(c.countries) && c.countries.length > 0 ? c.countries : (c.country ? [c.country] : []),
     status: "active" as ClientStatus,
+    aboutClient: "",
     aiSystemName: "",
     aiTypes: [],
     systemDescription: "",
@@ -378,6 +418,25 @@ function saveReportSummary(clientId: string, policyId: string, text: string) {
 function saveArea(clientId: string, policyId: string, areaIdx: number, state: AreaState) {
   try { localStorage.setItem(areaKey(clientId, policyId, areaIdx), JSON.stringify({ ...state, lastUpdated: new Date().toISOString() })); } catch {}
 }
+function riskKey(clientId: string) { return `pl_risks_${clientId}`; }
+function riskSummaryKey(clientId: string) { return `pl_risk_sum_${clientId}`; }
+function loadRisks(clientId: string): RiskEntry[] {
+  try { return JSON.parse(localStorage.getItem(riskKey(clientId)) || "[]"); } catch { return []; }
+}
+function saveRisks(clientId: string, risks: RiskEntry[]) {
+  try { localStorage.setItem(riskKey(clientId), JSON.stringify(risks)); } catch {}
+}
+function riskLevel(l: number, i: number): RiskLevel {
+  const s = l * i;
+  return s >= 16 ? "Critical" : s >= 9 ? "High" : s >= 4 ? "Medium" : "Low";
+}
+const RISK_LEVEL_CONFIG: Record<RiskLevel, { bg: string; text: string; border: string }> = {
+  Critical: { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
+  High:     { bg: "#fff7ed", text: "#c2410c", border: "#fed7aa" },
+  Medium:   { bg: "#fefce8", text: "#a16207", border: "#fde068" },
+  Low:      { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" },
+};
+const RISK_CATEGORIES = ["Data Bias & Fairness", "Transparency & Explainability", "Governance & Accountability", "Security & Adversarial Risk", "Privacy & Data Protection", "Regulatory Non-Compliance", "Human Oversight Failure", "Third-Party / Vendor Risk", "Model Performance & Drift", "Fundamental Rights Violation", "Other"];
 
 // ─── BACKUP EXPORT / IMPORT ───────────────────────────────────────────────────
 function exportBackupJSON() {
@@ -483,6 +542,59 @@ function exportWorkbookExcel(client: Client, policyId: string, areaStates: AreaS
 
   const fname = `${stub.name.replace(/\s/g, "")}${client.name.replace(/\s/g, "")}_${new Date().toISOString().slice(0, 10)}.xlsx`;
   XLSX.writeFile(wb, fname);
+}
+
+// ─── FULL REPORT EXCEL EXPORT (Phase 4) ───────────────────────────────────────
+function exportFullReportExcel(client: Client) {
+  const wb = XLSX.utils.book_new();
+  const risks = loadRisks(client.id);
+  const today = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+
+  // Sheet 1: Overview
+  const ws1 = XLSX.utils.aoa_to_sheet([
+    ["AI Governance Risk Assessment Report"], [],
+    ["Client",             client.name],
+    ["Country",            (client.countries || []).join(", ") || "—"],
+    ["Industry",           client.industry],
+    ["AI System",          client.aiSystemName || "—"],
+    ["Decision Authority", client.decisionAuthority || "—"],
+    ["Frameworks",         client.activePolicies.map(id => POLICY_STUBS.find(p => p.id === id)?.name || id).join(", ")],
+    ["Export Date",        today],
+    [], ["Total Risks", risks.length],
+    ["Critical (Residual)", risks.filter(r => riskLevel(r.residualLikelihood, r.residualImpact) === "Critical").length],
+    ["High (Residual)",     risks.filter(r => riskLevel(r.residualLikelihood, r.residualImpact) === "High").length],
+    ["Medium (Residual)",   risks.filter(r => riskLevel(r.residualLikelihood, r.residualImpact) === "Medium").length],
+    ["Low (Residual)",      risks.filter(r => riskLevel(r.residualLikelihood, r.residualImpact) === "Low").length],
+  ]);
+  ws1["!cols"] = [{ wch: 24 }, { wch: 60 }];
+  XLSX.utils.book_append_sheet(wb, ws1, "Overview");
+
+  // Sheet 2: Risk Register
+  const rrRows: any[][] = [["Risk ID", "Source Area", "Affected System", "Category", "Description", "Likelihood at Scale", "Inherent L", "Inherent I", "Inherent Score", "Inherent Level", "Residual L", "Residual I", "Residual Score", "Residual Level", "Status", "Owner", "Due Date"]];
+  risks.forEach(r => rrRows.push([r.riskId, r.sourceArea, r.affectedSystem, r.riskCategory, r.description, r.likelihoodAtScale, r.inherentLikelihood, r.inherentImpact, r.inherentLikelihood * r.inherentImpact, riskLevel(r.inherentLikelihood, r.inherentImpact), r.residualLikelihood, r.residualImpact, r.residualLikelihood * r.residualImpact, riskLevel(r.residualLikelihood, r.residualImpact), r.status, r.owner, r.dueDate]));
+  const ws2 = XLSX.utils.aoa_to_sheet(rrRows);
+  ws2["!cols"] = [{ wch: 10 }, { wch: 28 }, { wch: 24 }, { wch: 28 }, { wch: 50 }, { wch: 40 }, { wch: 8 }, { wch: 8 }, { wch: 12 }, { wch: 12 }, { wch: 8 }, { wch: 8 }, { wch: 12 }, { wch: 12 }, { wch: 14 }, { wch: 20 }, { wch: 12 }];
+  XLSX.utils.book_append_sheet(wb, ws2, "Risk Register");
+
+  // Sheet 3: Formal Findings (Critical + High only)
+  const ffRows: any[][] = [["Risk ID", "Level", "Condition", "Criteria", "Cause", "Effect", "Recommendation", "Owner", "Due Date"]];
+  [...risks].filter(r => { const l = riskLevel(r.residualLikelihood, r.residualImpact); return l === "Critical" || l === "High"; })
+    .sort((a, b) => b.residualLikelihood * b.residualImpact - a.residualLikelihood * a.residualImpact)
+    .forEach(r => ffRows.push([r.riskId, riskLevel(r.residualLikelihood, r.residualImpact), r.condition, r.criteria, r.cause, r.effect, r.recommendation, r.owner, r.dueDate]));
+  const ws3 = XLSX.utils.aoa_to_sheet(ffRows);
+  ws3["!cols"] = [{ wch: 10 }, { wch: 12 }, { wch: 50 }, { wch: 50 }, { wch: 50 }, { wch: 50 }, { wch: 60 }, { wch: 20 }, { wch: 12 }];
+  XLSX.utils.book_append_sheet(wb, ws3, "Formal Findings");
+
+  // Sheet 4: Remediation Roadmap
+  const rmRows: any[][] = [["Priority", "Risk ID", "Description", "Residual Level", "Recommendation", "Owner", "Due Date", "Status"]];
+  [...risks].filter(r => r.status !== "Resolved" && r.status !== "Accepted")
+    .sort((a, b) => b.residualLikelihood * b.residualImpact - a.residualLikelihood * a.residualImpact)
+    .forEach((r, i) => rmRows.push([i + 1, r.riskId, r.description, riskLevel(r.residualLikelihood, r.residualImpact), r.recommendation, r.owner, r.dueDate, r.status]));
+  const ws4 = XLSX.utils.aoa_to_sheet(rmRows);
+  ws4["!cols"] = [{ wch: 8 }, { wch: 10 }, { wch: 50 }, { wch: 14 }, { wch: 60 }, { wch: 20 }, { wch: 12 }, { wch: 14 }];
+  XLSX.utils.book_append_sheet(wb, ws4, "Remediation Roadmap");
+
+  XLSX.writeFile(wb, `${client.name.replace(/\s/g, "")}_AIGovernanceReport_${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
 
 // ─── PROGRESS HELPERS ─────────────────────────────────────────────────────────
@@ -992,8 +1104,8 @@ function Tip({ text, children, width = 240 }: { text: string; children: React.Re
 const PHASES = [
   { num: 1, label: "Govern & Scope",       sub: "System info · Frameworks",        built: true  },
   { num: 2, label: "Map & Discover",       sub: "Gap assessment · Questionnaire",  built: true  },
-  { num: 3, label: "Measure & Assess",     sub: "Risk register · Scoring",         built: false },
-  { num: 4, label: "Report & Recommend",   sub: "Findings · Exec summary",         built: false },
+  { num: 3, label: "Measure & Assess",     sub: "Risk register · Scoring",         built: true  },
+  { num: 4, label: "Report & Recommend",   sub: "Findings · Exec summary",         built: true  },
   { num: 5, label: "Monitor",              sub: "Ongoing review · Drift tracking", built: false },
 ];
 
@@ -1223,7 +1335,7 @@ function ClientProfilePanel({ client, onUpdate }: { client: Client; onUpdate: (p
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<Partial<Client>>({});
 
-  const openEdit = () => { setForm({ name: client.name, countries: [...(client.countries || [])], industry: client.industry, geography: client.geography, primaryAiUseCase: client.primaryAiUseCase, contactName: client.contactName, engagementType: client.engagementType }); setEditing(true); };
+  const openEdit = () => { setForm({ name: client.name, countries: [...(client.countries || [])], industry: client.industry, geography: client.geography, primaryAiUseCase: client.primaryAiUseCase, contactName: client.contactName, engagementType: client.engagementType, aboutClient: client.aboutClient || "" }); setEditing(true); };
   const save = () => { onUpdate(form); setEditing(false); };
   const set = (k: keyof Client, v: any) => setForm(prev => ({ ...prev, [k]: v }));
   const toggleC = (c: string) => setForm(prev => { const arr = prev.countries || []; return { ...prev, countries: arr.includes(c) ? arr.filter(x => x !== c) : [...arr, c] }; });
@@ -1253,6 +1365,12 @@ function ClientProfilePanel({ client, onUpdate }: { client: Client; onUpdate: (p
             </div>
           ))}
         </div>
+        {client.aboutClient && (
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid #e2e8f0" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 5 }}>About this Client</div>
+            <p style={{ margin: 0, fontSize: 13, color: "#334155", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{client.aboutClient}</p>
+          </div>
+        )}
       </div>
     );
   }
@@ -1308,6 +1426,14 @@ function ClientProfilePanel({ client, onUpdate }: { client: Client; onUpdate: (p
         </div>
       </div>
 
+      <div style={{ marginBottom: 16 }}>
+        <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 5 }}>About this Client</label>
+        <textarea value={form.aboutClient || ""} onChange={e => set("aboutClient", e.target.value)}
+          placeholder="Describe the client's background, engagement context, scope of work, key stakeholders, and any relevant notes that aren't captured in the structured fields above…"
+          rows={5}
+          style={{ ...inp(), resize: "vertical" }} />
+      </div>
+
       <div style={{ display: "flex", gap: 8, borderTop: "1px solid #e2e8f0", paddingTop: 14 }}>
         <button onClick={save} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", cursor: "pointer", fontSize: 13, fontWeight: 700 }}>Save Profile</button>
         <button onClick={() => setEditing(false)} style={{ background: "#f1f5f9", color: "#64748b", border: "none", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontSize: 13 }}>Cancel</button>
@@ -1317,8 +1443,8 @@ function ClientProfilePanel({ client, onUpdate }: { client: Client; onUpdate: (p
 }
 
 // ─── VIEW 2: CLIENT DETAIL ────────────────────────────────────────────────────
-function ClientDetailView({ client, onBack, onSelectPolicy }: {
-  client: Client; onBack: () => void; onSelectPolicy: (pid: string) => void;
+function ClientDetailView({ client, onBack, onSelectPolicy, onOpenRiskRegister }: {
+  client: Client; onBack: () => void; onSelectPolicy: (pid: string) => void; onOpenRiskRegister: () => void;
 }) {
   const [clients, setClients] = useState<Client[]>(loadClients);
   const [activePhase, setActivePhase] = useState(1);
@@ -1491,6 +1617,50 @@ function ClientDetailView({ client, onBack, onSelectPolicy }: {
           })}
         </div>
       ))}
+
+      {/* ── Phase 3: Measure & Assess ── */}
+      {activePhase === 3 && (() => {
+        const risks = loadRisks(thisClient.id);
+        const counts: Record<RiskLevel, number> = { Critical: 0, High: 0, Medium: 0, Low: 0 };
+        risks.forEach(r => counts[riskLevel(r.residualLikelihood, r.residualImpact)]++);
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* Risk summary card */}
+            <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "20px 24px" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 14 }}>Risk Register Summary</div>
+              {risks.length === 0 ? (
+                <div style={{ fontSize: 13, color: "#94a3b8", fontStyle: "italic", marginBottom: 16 }}>
+                  No risks identified yet. Open the Risk Register to start assessing.
+                </div>
+              ) : (
+                <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+                  {(["Critical", "High", "Medium", "Low"] as RiskLevel[]).map(lvl => {
+                    const cfg = RISK_LEVEL_CONFIG[lvl];
+                    return (
+                      <div key={lvl} style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 10, padding: "10px 18px", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 70 }}>
+                        <span style={{ fontSize: 20, fontWeight: 800, color: cfg.text }}>{counts[lvl]}</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: cfg.text }}>{lvl}</span>
+                      </div>
+                    );
+                  })}
+                  <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "10px 18px", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 70 }}>
+                    <span style={{ fontSize: 20, fontWeight: 800, color: "#0f172a" }}>{risks.length}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#64748b" }}>Total</span>
+                  </div>
+                </div>
+              )}
+              <button onClick={onOpenRiskRegister} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", cursor: "pointer", fontSize: 13, fontWeight: 700 }}>
+                ⚠️ Open Risk Register →
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── Phase 4: Report & Recommend ── */}
+      {activePhase === 4 && (
+        <Phase4Report client={thisClient} onExportFull={() => exportFullReportExcel(thisClient)} />
+      )}
     </div>
   );
 }
@@ -1793,6 +1963,11 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
                     <span title={area.riskIfNotAddressed} style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 6, padding: "3px 10px", fontSize: 11, color: "#dc2626", cursor: "help" }}>
                       ⚠ Risk if not addressed
                     </span>
+                    {area.isoMapping?.map((clause: string) => (
+                      <span key={clause} style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 6, padding: "3px 10px", fontSize: 11, color: "#15803d" }}>
+                        🌐 ISO 42001 {clause}
+                      </span>
+                    ))}
                   </div>
 
                   {/* Clause tooltips */}
@@ -1973,8 +2148,582 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
   );
 }
 
+// ─── RISK SCORING CONSTANTS & HELPERS ────────────────────────────────────────
+const LIKELIHOOD_LABELS = ["", "1 – Rare", "2 – Unlikely", "3 – Possible", "4 – Likely", "5 – Almost Certain"];
+const IMPACT_LABELS      = ["", "1 – Negligible", "2 – Minor", "3 – Moderate", "4 – Major", "5 – Catastrophic"];
+
+const STATUS_COLORS: Record<RiskStatus, { bg: string; text: string; border: string }> = {
+  "Open":        { bg: "#fef2f2", text: "#b91c1c", border: "#fecaca" },
+  "In Progress": { bg: "#fefce8", text: "#a16207", border: "#fde047" },
+  "Resolved":    { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" },
+  "Accepted":    { bg: "#f5f3ff", text: "#7c3aed", border: "#ddd6fe" },
+};
+
+function RiskLevelBadge({ l, i }: { l: number; i: number }) {
+  const lvl = riskLevel(l, i);
+  const cfg = RISK_LEVEL_CONFIG[lvl];
+  return (
+    <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 5, background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}`, whiteSpace: "nowrap" }}>
+      {lvl} ({l * i})
+    </span>
+  );
+}
+
+const FINDING_FIELDS: Array<{ key: "condition" | "criteria" | "cause" | "effect" | "recommendation"; label: string; hint: string }> = [
+  { key: "condition",      label: "Condition",      hint: "What is the current situation? (the what)" },
+  { key: "criteria",       label: "Criteria",       hint: "What standard or requirement applies? (the should)" },
+  { key: "cause",          label: "Cause",          hint: "Why does the gap exist? (the root cause)" },
+  { key: "effect",         label: "Effect",         hint: "What is the consequence if unaddressed? (the risk impact)" },
+  { key: "recommendation", label: "Recommendation", hint: "What action is recommended? (the fix)" },
+];
+
+// ─── VIEW 4: RISK REGISTER ────────────────────────────────────────────────────
+function RiskRegisterView({ client, onBack, onBackToClients }: {
+  client: Client; onBack: () => void; onBackToClients: () => void;
+}) {
+  const [risks, setRisks] = useState<RiskEntry[]>(() => loadRisks(client.id));
+  const [openRisk, setOpenRisk] = useState<string | null>(null);
+  const [riskSummaryText, setRiskSummaryText] = useState(() => localStorage.getItem(riskSummaryKey(client.id)) || "");
+  const [lastSaved, setLastSaved] = useState("");
+
+  const persist = (updated: RiskEntry[]) => {
+    saveRisks(client.id, updated);
+    setLastSaved(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+  };
+
+  const addRisk = () => {
+    const num = risks.length + 1;
+    const r: RiskEntry = {
+      id: crypto.randomUUID(), riskId: `R-${String(num).padStart(3, "0")}`,
+      sourceArea: "", affectedSystem: client.aiSystemName || "", riskCategory: "",
+      description: "", likelihoodAtScale: "",
+      inherentLikelihood: 3, inherentImpact: 3, residualLikelihood: 2, residualImpact: 2,
+      controls: [], condition: "", criteria: "", cause: "", effect: "", recommendation: "",
+      owner: "", dueDate: "", status: "Open",
+    };
+    const updated = [...risks, r];
+    setRisks(updated); persist(updated); setOpenRisk(r.id);
+  };
+
+  const importFromPhase2 = () => {
+    const seeds: RiskEntry[] = [];
+    client.activePolicies.forEach(policyId => {
+      const guide = (IMPLEMENTATION_GUIDES as Record<string, any>)[policyId];
+      if (!guide) return;
+      guide.areas.forEach((area: any, ai: number) => {
+        const st = loadArea(client.id, policyId, ai);
+        area.questions.forEach((_q: string, qi: number) => {
+          const qs = st.questions[qi];
+          if (!qs?.gap?.trim()) return;
+          const num = risks.length + seeds.length + 1;
+          seeds.push({
+            id: crypto.randomUUID(), riskId: `R-${String(num).padStart(3, "0")}`,
+            sourceArea: area.area, affectedSystem: client.aiSystemName || "", riskCategory: "",
+            description: qs.gap.trim(), likelihoodAtScale: "",
+            inherentLikelihood: 3, inherentImpact: 3, residualLikelihood: 2, residualImpact: 2,
+            controls: [], condition: qs.gap.trim(), criteria: area.area, cause: "",
+            effect: "", recommendation: qs.proposedAction?.trim() || "",
+            owner: qs.owner || "", dueDate: qs.dueDate || "", status: "Open",
+          });
+        });
+      });
+    });
+    if (seeds.length === 0) { alert("No Phase 2 gap fields found. Complete the questionnaire first."); return; }
+    if (!confirm(`Import ${seeds.length} gap(s) from Phase 2 as risk entries? Existing risks will be preserved.`)) return;
+    const updated = [...risks, ...seeds];
+    setRisks(updated); persist(updated);
+  };
+
+  const updateRisk = (id: string, patch: Partial<RiskEntry>) => {
+    setRisks(prev => { const updated = prev.map(r => r.id === id ? { ...r, ...patch } : r); persist(updated); return updated; });
+  };
+
+  const deleteRisk = (id: string) => {
+    if (!confirm("Delete this risk entry?")) return;
+    setRisks(prev => { const updated = prev.filter(r => r.id !== id); persist(updated); return updated; });
+  };
+
+  const addControl = (riskId: string) => {
+    const risk = risks.find(r => r.id === riskId);
+    if (!risk) return;
+    updateRisk(riskId, { controls: [...risk.controls, { type: "Preventive", description: "", owner: "", status: "Not Implemented", effectiveness: "" }] });
+  };
+
+  const updateControl = (riskId: string, idx: number, patch: Partial<RiskControl>) => {
+    const risk = risks.find(r => r.id === riskId);
+    if (!risk) return;
+    updateRisk(riskId, { controls: risk.controls.map((c, i) => i === idx ? { ...c, ...patch } : c) });
+  };
+
+  const removeControl = (riskId: string, idx: number) => {
+    const risk = risks.find(r => r.id === riskId);
+    if (!risk) return;
+    updateRisk(riskId, { controls: risk.controls.filter((_, i) => i !== idx) });
+  };
+
+  const counts: Record<RiskLevel, number> = { Critical: 0, High: 0, Medium: 0, Low: 0 };
+  risks.forEach(r => counts[riskLevel(r.residualLikelihood, r.residualImpact)]++);
+
+  const ipt: React.CSSProperties = { width: "100%", padding: "7px 10px", border: "1px solid #e2e8f0", borderRadius: 7, fontSize: 12, outline: "none", boxSizing: "border-box", fontFamily: "inherit" };
+  const ta: React.CSSProperties  = { ...ipt, resize: "vertical" };
+  const sel: React.CSSProperties = { ...ipt, background: "#fff", cursor: "pointer" };
+
+  return (
+    <div style={{ maxWidth: 1040, margin: "0 auto", padding: "28px 32px" }}>
+      <Breadcrumb items={[
+        { label: "All Clients", onClick: onBackToClients },
+        { label: client.name, onClick: onBack },
+        { label: "Risk Register" },
+      ]} />
+
+      {/* Header */}
+      <div style={{ margin: "20px 0 20px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+        <div>
+          <h2 style={{ margin: "0 0 6px", fontSize: 19, fontWeight: 800, color: "#0f172a" }}>⚠️ Phase 3 — Measure & Assess · Risk Register</h2>
+          <div style={{ fontSize: 13, color: "#64748b" }}>{client.name} · {client.industry}{client.geography ? ` · ${client.geography}` : ""}</div>
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          {lastSaved && <span style={{ fontSize: 11, color: "#15803d", fontWeight: 600 }}>✓ Saved · {lastSaved}</span>}
+          <button onClick={importFromPhase2} style={{ background: "#f0f9ff", color: "#0369a1", border: "1px solid #bae6fd", borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
+            ⬇ Import from Phase 2
+          </button>
+          <button onClick={addRisk} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "7px 16px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
+            + Add Risk
+          </button>
+        </div>
+      </div>
+
+      {/* Risk summary bar */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 24, flexWrap: "wrap" }}>
+        {(["Critical", "High", "Medium", "Low"] as RiskLevel[]).map(lvl => {
+          const cfg = RISK_LEVEL_CONFIG[lvl];
+          return (
+            <div key={lvl} style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 10, padding: "10px 18px", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 80 }}>
+              <span style={{ fontSize: 22, fontWeight: 800, color: cfg.text }}>{counts[lvl]}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: cfg.text }}>{lvl}</span>
+            </div>
+          );
+        })}
+        <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "10px 18px", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 80 }}>
+          <span style={{ fontSize: 22, fontWeight: 800, color: "#0f172a" }}>{risks.length}</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#64748b" }}>Total</span>
+        </div>
+      </div>
+
+      {/* Risk register */}
+      {risks.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "60px 0", color: "#94a3b8", background: "#f8fafc", borderRadius: 12, border: "1px dashed #e2e8f0", marginBottom: 24 }}>
+          <div style={{ fontSize: 28, marginBottom: 10 }}>⚠️</div>
+          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>No risks identified yet</div>
+          <div style={{ fontSize: 12, marginBottom: 18 }}>Import gaps from Phase 2 or add a risk manually.</div>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+            <button onClick={importFromPhase2} style={{ background: "#f0f9ff", color: "#0369a1", border: "1px solid #bae6fd", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
+              ⬇ Import from Phase 2
+            </button>
+            <button onClick={addRisk} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
+              + Add Risk
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
+          {risks.map(risk => {
+            const isOpen = openRisk === risk.id;
+            const sCfg = STATUS_COLORS[risk.status];
+            return (
+              <div key={risk.id} style={{ background: "#fff", border: `1px solid ${isOpen ? "#a5b4fc" : "#e2e8f0"}`, borderRadius: 12, overflow: "hidden", boxShadow: isOpen ? "0 4px 16px rgba(99,102,241,0.1)" : "0 1px 4px rgba(0,0,0,0.04)" }}>
+
+                {/* Collapsed row */}
+                <div onClick={() => setOpenRisk(isOpen ? null : risk.id)}
+                  style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: 10, cursor: "pointer", background: isOpen ? "#f5f3ff" : "#fff" }}>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: "#6366f1", minWidth: 50, flexShrink: 0 }}>{risk.riskId || "—"}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "#334155", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {risk.description || <span style={{ color: "#94a3b8", fontStyle: "italic" }}>No description</span>}
+                  </span>
+                  <span style={{ fontSize: 10, color: "#64748b", minWidth: 110, flexShrink: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{risk.sourceArea || "—"}</span>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: "#64748b", flexShrink: 0 }}>I:</span>
+                  <RiskLevelBadge l={risk.inherentLikelihood} i={risk.inherentImpact} />
+                  <span style={{ fontSize: 10, fontWeight: 600, color: "#64748b", flexShrink: 0 }}>R:</span>
+                  <RiskLevelBadge l={risk.residualLikelihood} i={risk.residualImpact} />
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 5, background: sCfg.bg, color: sCfg.text, border: `1px solid ${sCfg.border}`, whiteSpace: "nowrap", flexShrink: 0 }}>{risk.status}</span>
+                  <span style={{ fontSize: 12, color: "#94a3b8", flexShrink: 0 }}>{isOpen ? "▲" : "▼"}</span>
+                </div>
+
+                {/* Expanded form */}
+                {isOpen && (
+                  <div style={{ padding: "20px 20px 24px", borderTop: "1px solid #e2e8f0", display: "flex", flexDirection: "column", gap: 24 }}>
+
+                    {/* A: Risk Identification */}
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 12 }}>A — Risk Identification</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 2fr", gap: 12, marginBottom: 12 }}>
+                        <div>
+                          <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Risk ID</label>
+                          <input value={risk.riskId} onChange={e => updateRisk(risk.id, { riskId: e.target.value })} style={ipt} />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Source Area / Framework Section</label>
+                          <input value={risk.sourceArea} onChange={e => updateRisk(risk.id, { sourceArea: e.target.value })} placeholder="e.g. Risk Management" style={ipt} />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Affected AI System</label>
+                          <input value={risk.affectedSystem} onChange={e => updateRisk(risk.id, { affectedSystem: e.target.value })} style={ipt} />
+                        </div>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+                        <div>
+                          <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Risk Category</label>
+                          <select value={risk.riskCategory} onChange={e => updateRisk(risk.id, { riskCategory: e.target.value })} style={sel}>
+                            <option value="">Select…</option>
+                            {RISK_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Likelihood at Scale (qualitative)</label>
+                          <input value={risk.likelihoodAtScale} onChange={e => updateRisk(risk.id, { likelihoodAtScale: e.target.value })} placeholder="e.g. High volume automated decisions → systemic impact" style={ipt} />
+                        </div>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Risk Description</label>
+                        <textarea value={risk.description} onChange={e => updateRisk(risk.id, { description: e.target.value })} rows={3} placeholder="Describe the risk clearly…" style={ta} />
+                      </div>
+                    </div>
+
+                    {/* B: Risk Scoring */}
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 12 }}>B — Risk Scoring (L × I)</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                        {/* Inherent */}
+                        <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: 16 }}>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: "#b91c1c", marginBottom: 12 }}>Inherent Risk (before controls)</div>
+                          <div style={{ marginBottom: 10 }}>
+                            <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                              <span>Likelihood</span><span style={{ color: "#0f172a" }}>{LIKELIHOOD_LABELS[risk.inherentLikelihood]}</span>
+                            </label>
+                            <input type="range" min={1} max={5} value={risk.inherentLikelihood} onChange={e => updateRisk(risk.id, { inherentLikelihood: Number(e.target.value) })} style={{ width: "100%" }} />
+                          </div>
+                          <div style={{ marginBottom: 14 }}>
+                            <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                              <span>Impact</span><span style={{ color: "#0f172a" }}>{IMPACT_LABELS[risk.inherentImpact]}</span>
+                            </label>
+                            <input type="range" min={1} max={5} value={risk.inherentImpact} onChange={e => updateRisk(risk.id, { inherentImpact: Number(e.target.value) })} style={{ width: "100%" }} />
+                          </div>
+                          <div style={{ textAlign: "center" }}><RiskLevelBadge l={risk.inherentLikelihood} i={risk.inherentImpact} /></div>
+                        </div>
+                        {/* Residual */}
+                        <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: 16 }}>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: "#15803d", marginBottom: 12 }}>Residual Risk (after controls)</div>
+                          <div style={{ marginBottom: 10 }}>
+                            <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                              <span>Likelihood</span><span style={{ color: "#0f172a" }}>{LIKELIHOOD_LABELS[risk.residualLikelihood]}</span>
+                            </label>
+                            <input type="range" min={1} max={5} value={risk.residualLikelihood} onChange={e => updateRisk(risk.id, { residualLikelihood: Number(e.target.value) })} style={{ width: "100%" }} />
+                          </div>
+                          <div style={{ marginBottom: 14 }}>
+                            <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                              <span>Impact</span><span style={{ color: "#0f172a" }}>{IMPACT_LABELS[risk.residualImpact]}</span>
+                            </label>
+                            <input type="range" min={1} max={5} value={risk.residualImpact} onChange={e => updateRisk(risk.id, { residualImpact: Number(e.target.value) })} style={{ width: "100%" }} />
+                          </div>
+                          <div style={{ textAlign: "center" }}><RiskLevelBadge l={risk.residualLikelihood} i={risk.residualImpact} /></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* C: Controls */}
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 12 }}>C — Controls</div>
+                      {risk.controls.length === 0
+                        ? <div style={{ fontSize: 12, color: "#94a3b8", fontStyle: "italic", marginBottom: 10 }}>No controls added yet.</div>
+                        : (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
+                            {risk.controls.map((ctrl, ci) => (
+                              <div key={ci} style={{ display: "grid", gridTemplateColumns: "1fr 3fr 1fr 1fr 1fr auto", gap: 8, alignItems: "end", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "10px 12px" }}>
+                                <div>
+                                  <label style={{ fontSize: 10, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 3 }}>Type</label>
+                                  <select value={ctrl.type} onChange={e => updateControl(risk.id, ci, { type: e.target.value as ControlType })} style={{ ...sel, fontSize: 11 }}>
+                                    {(["Preventive", "Detective", "Corrective"] as ControlType[]).map(t => <option key={t}>{t}</option>)}
+                                  </select>
+                                </div>
+                                <div>
+                                  <label style={{ fontSize: 10, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 3 }}>Description</label>
+                                  <input value={ctrl.description} onChange={e => updateControl(risk.id, ci, { description: e.target.value })} placeholder="Describe the control…" style={{ ...ipt, fontSize: 11 }} />
+                                </div>
+                                <div>
+                                  <label style={{ fontSize: 10, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 3 }}>Owner</label>
+                                  <input value={ctrl.owner} onChange={e => updateControl(risk.id, ci, { owner: e.target.value })} style={{ ...ipt, fontSize: 11 }} />
+                                </div>
+                                <div>
+                                  <label style={{ fontSize: 10, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 3 }}>Status</label>
+                                  <select value={ctrl.status} onChange={e => updateControl(risk.id, ci, { status: e.target.value as ControlStatus })} style={{ ...sel, fontSize: 11 }}>
+                                    {(["Not Implemented", "Partially Implemented", "Implemented", "N/A"] as ControlStatus[]).map(s => <option key={s}>{s}</option>)}
+                                  </select>
+                                </div>
+                                <div>
+                                  <label style={{ fontSize: 10, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 3 }}>Effectiveness</label>
+                                  <select value={ctrl.effectiveness} onChange={e => updateControl(risk.id, ci, { effectiveness: e.target.value as ControlEffectiveness })} style={{ ...sel, fontSize: 11 }}>
+                                    {(["", "Effective", "Partially Effective", "Ineffective", "Not Tested"] as ControlEffectiveness[]).map(s => <option key={s} value={s}>{s || "Not Assessed"}</option>)}
+                                  </select>
+                                </div>
+                                <button onClick={() => removeControl(risk.id, ci)} title="Remove" style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 14, paddingBottom: 2 }}>✕</button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      <button onClick={() => addControl(risk.id)} style={{ background: "#f0f9ff", color: "#0369a1", border: "1px solid #bae6fd", borderRadius: 7, padding: "6px 14px", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>
+                        + Add Control
+                      </button>
+                    </div>
+
+                    {/* D: Formal Finding */}
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 12 }}>D — Formal Finding</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {FINDING_FIELDS.map(({ key, label, hint }) => (
+                          <div key={key}>
+                            <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>
+                              {label} <span style={{ fontWeight: 400, color: "#94a3b8" }}>— {hint}</span>
+                            </label>
+                            <textarea value={risk[key]} onChange={e => updateRisk(risk.id, { [key]: e.target.value } as Partial<RiskEntry>)} rows={2} style={ta} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* E: Tracking */}
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 12 }}>E — Tracking</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 12, alignItems: "end" }}>
+                        <div>
+                          <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Risk Owner</label>
+                          <input value={risk.owner} onChange={e => updateRisk(risk.id, { owner: e.target.value })} style={ipt} />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Due Date</label>
+                          <input type="date" value={risk.dueDate} onChange={e => updateRisk(risk.id, { dueDate: e.target.value })} style={ipt} />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Status</label>
+                          <select value={risk.status} onChange={e => updateRisk(risk.id, { status: e.target.value as RiskStatus })} style={sel}>
+                            {(["Open", "In Progress", "Resolved", "Accepted"] as RiskStatus[]).map(s => <option key={s}>{s}</option>)}
+                          </select>
+                        </div>
+                        <button onClick={() => deleteRisk(risk.id)} style={{ background: "#fff", color: "#dc2626", border: "1px solid #fecaca", borderRadius: 7, padding: "7px 12px", cursor: "pointer", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" }}>
+                          🗑 Delete
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Phase 3 Summary */}
+      <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "20px 24px" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 10 }}>Phase 3 — Assessment Summary</div>
+        <textarea
+          value={riskSummaryText}
+          onChange={e => {
+            setRiskSummaryText(e.target.value);
+            try { localStorage.setItem(riskSummaryKey(client.id), e.target.value); } catch {}
+            setLastSaved(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+          }}
+          rows={4}
+          placeholder="Summarise the key risk findings, overall risk posture, and priorities for Phase 4 reporting…"
+          style={{ ...ta, width: "100%", boxSizing: "border-box" }}
+        />
+        {lastSaved && <div style={{ fontSize: 11, color: "#15803d", fontWeight: 600, marginTop: 6 }}>✓ Saved · {lastSaved}</div>}
+      </div>
+    </div>
+  );
+}
+
+// ─── PHASE 4: REPORT & RECOMMEND ─────────────────────────────────────────────
+function Phase4Report({ client, onExportFull }: { client: Client; onExportFull: () => void }) {
+  const risks = loadRisks(client.id);
+  const [execSummary, setExecSummary] = useState(() => localStorage.getItem(`pl_p4_exec_${client.id}`) || "");
+  const [preparedBy, setPreparedBy] = useState(() => localStorage.getItem(`pl_p4_prep_${client.id}`) || "");
+  const [reviewedBy, setReviewedBy] = useState(() => localStorage.getItem(`pl_p4_rev_${client.id}`) || "");
+  const [signOffDate, setSignOffDate] = useState(() => localStorage.getItem(`pl_p4_date_${client.id}`) || "");
+  const save = (key: string, val: string) => { try { localStorage.setItem(key, val); } catch {} };
+
+  const counts: Record<RiskLevel, number> = { Critical: 0, High: 0, Medium: 0, Low: 0 };
+  risks.forEach(r => counts[riskLevel(r.residualLikelihood, r.residualImpact)]++);
+
+  const critHighRisks = [...risks]
+    .filter(r => { const l = riskLevel(r.residualLikelihood, r.residualImpact); return l === "Critical" || l === "High"; })
+    .sort((a, b) => b.residualLikelihood * b.residualImpact - a.residualLikelihood * a.residualImpact);
+
+  const roadmap = [...risks]
+    .filter(r => r.status !== "Resolved" && r.status !== "Accepted")
+    .sort((a, b) => b.residualLikelihood * b.residualImpact - a.residualLikelihood * a.residualImpact);
+
+  const autoSummary = risks.length === 0
+    ? "No risks identified. Complete Phase 3 (Risk Register) before generating this report."
+    : `Risk assessment identified ${risks.length} risk(s) across ${client.activePolicies.length} framework(s). Residual profile: ${counts.Critical} Critical, ${counts.High} High, ${counts.Medium} Medium, ${counts.Low} Low. ${roadmap.length} risk(s) require remediation action.`;
+
+  const ipt: React.CSSProperties = { width: "100%", padding: "7px 10px", border: "1px solid #e2e8f0", borderRadius: 7, fontSize: 12, outline: "none", boxSizing: "border-box", fontFamily: "inherit" };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+      {/* Risk Summary */}
+      <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "20px 24px" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 14 }}>Risk Summary (Residual)</div>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          {(["Critical", "High", "Medium", "Low"] as RiskLevel[]).map(lvl => {
+            const cfg = RISK_LEVEL_CONFIG[lvl];
+            return (
+              <div key={lvl} style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 10, padding: "10px 18px", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 70 }}>
+                <span style={{ fontSize: 20, fontWeight: 800, color: cfg.text }}>{counts[lvl]}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: cfg.text }}>{lvl}</span>
+              </div>
+            );
+          })}
+          <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "10px 18px", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 70 }}>
+            <span style={{ fontSize: 20, fontWeight: 800, color: "#0f172a" }}>{risks.length}</span>
+            <span style={{ fontSize: 10, fontWeight: 700, color: "#64748b" }}>Total</span>
+          </div>
+        </div>
+        {risks.length === 0 && (
+          <div style={{ fontSize: 12, color: "#94a3b8", fontStyle: "italic", marginTop: 14 }}>
+            Complete Phase 3 — Risk Register first.
+          </div>
+        )}
+      </div>
+
+      {/* Executive Summary */}
+      <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "20px 24px" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>Executive Summary</div>
+        <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 10, fontStyle: "italic", lineHeight: 1.5, background: "#f8fafc", padding: "8px 12px", borderRadius: 7, border: "1px solid #e2e8f0" }}>
+          Auto-generated: {autoSummary}
+        </div>
+        <textarea
+          value={execSummary}
+          onChange={e => { setExecSummary(e.target.value); save(`pl_p4_exec_${client.id}`, e.target.value); }}
+          rows={5}
+          placeholder="Override or expand the auto-generated summary with your narrative…"
+          style={{ ...ipt, resize: "vertical" }}
+        />
+      </div>
+
+      {/* Top Findings */}
+      {critHighRisks.length > 0 && (
+        <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "20px 24px" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 14 }}>
+            Top Findings — Critical & High Risks
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {critHighRisks.map((r, idx) => {
+              const lvl = riskLevel(r.residualLikelihood, r.residualImpact);
+              const cfg = RISK_LEVEL_CONFIG[lvl];
+              const sCfg = STATUS_COLORS[r.status];
+              return (
+                <div key={r.id} style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 10, padding: "14px 18px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: "#64748b" }}>#{idx + 1}</span>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: "#6366f1" }}>{r.riskId}</span>
+                    <RiskLevelBadge l={r.residualLikelihood} i={r.residualImpact} />
+                    {r.sourceArea && <span style={{ fontSize: 11, color: "#64748b" }}>{r.sourceArea}</span>}
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 5, background: sCfg.bg, color: sCfg.text, border: `1px solid ${sCfg.border}`, marginLeft: "auto" }}>{r.status}</span>
+                  </div>
+                  {r.description && <div style={{ fontSize: 13, fontWeight: 600, color: "#0f172a", marginBottom: 8 }}>{r.description}</div>}
+                  {(r.condition || r.effect || r.recommendation) && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      {r.condition && <div style={{ fontSize: 11 }}><span style={{ fontWeight: 700, color: "#64748b" }}>CONDITION: </span>{r.condition}</div>}
+                      {r.effect && <div style={{ fontSize: 11 }}><span style={{ fontWeight: 700, color: "#64748b" }}>EFFECT: </span>{r.effect}</div>}
+                      {r.recommendation && <div style={{ fontSize: 11 }}><span style={{ fontWeight: 700, color: "#64748b" }}>RECOMMENDATION: </span>{r.recommendation}</div>}
+                    </div>
+                  )}
+                  {(r.owner || r.dueDate) && (
+                    <div style={{ marginTop: 8, fontSize: 11, color: "#64748b" }}>
+                      {r.owner && <span>Owner: <strong>{r.owner}</strong></span>}
+                      {r.owner && r.dueDate && <span style={{ margin: "0 8px" }}>·</span>}
+                      {r.dueDate && <span>Due: <strong>{r.dueDate}</strong></span>}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Remediation Roadmap */}
+      {roadmap.length > 0 && (
+        <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "20px 24px" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 14 }}>
+            Remediation Roadmap
+          </div>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+              <thead>
+                <tr style={{ background: "#f8fafc" }}>
+                  {["#", "Risk ID", "Description", "Residual Level", "Owner", "Due Date", "Status", "Recommendation"].map(h => (
+                    <th key={h} style={{ padding: "8px 10px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "#64748b", borderBottom: "1px solid #e2e8f0", whiteSpace: "nowrap" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {roadmap.map((r, i) => {
+                  const lvl = riskLevel(r.residualLikelihood, r.residualImpact);
+                  const cfg = RISK_LEVEL_CONFIG[lvl];
+                  return (
+                    <tr key={r.id} style={{ background: i % 2 === 0 ? "#fff" : "#f8fafc" }}>
+                      <td style={{ padding: "8px 10px", color: "#94a3b8", borderBottom: "1px solid #f1f5f9" }}>{i + 1}</td>
+                      <td style={{ padding: "8px 10px", fontWeight: 700, color: "#6366f1", borderBottom: "1px solid #f1f5f9", whiteSpace: "nowrap" }}>{r.riskId}</td>
+                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f1f5f9", maxWidth: 200 }}>{r.description || "—"}</td>
+                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f1f5f9" }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}` }}>{lvl}</span>
+                      </td>
+                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f1f5f9" }}>{r.owner || "—"}</td>
+                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f1f5f9", whiteSpace: "nowrap" }}>{r.dueDate || "—"}</td>
+                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f1f5f9" }}>{r.status}</td>
+                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f1f5f9", maxWidth: 240 }}>{r.recommendation || "—"}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Sign-off */}
+      <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "20px 24px" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 14 }}>Sign-off</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 5 }}>Prepared by</label>
+            <input value={preparedBy} onChange={e => { setPreparedBy(e.target.value); save(`pl_p4_prep_${client.id}`, e.target.value); }} placeholder="Name / Role" style={ipt} />
+          </div>
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 5 }}>Reviewed by</label>
+            <input value={reviewedBy} onChange={e => { setReviewedBy(e.target.value); save(`pl_p4_rev_${client.id}`, e.target.value); }} placeholder="Name / Role" style={ipt} />
+          </div>
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 5 }}>Sign-off Date</label>
+            <input type="date" value={signOffDate} onChange={e => { setSignOffDate(e.target.value); save(`pl_p4_date_${client.id}`, e.target.value); }} style={ipt} />
+          </div>
+        </div>
+      </div>
+
+      {/* Export */}
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <button onClick={onExportFull} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", cursor: "pointer", fontSize: 13, fontWeight: 700 }}>
+          ⬇ Export Full Report (Excel)
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN EXPORT ──────────────────────────────────────────────────────────────
-type View = "clients" | "detail" | "workbook";
+type View = "clients" | "detail" | "workbook" | "risk-register";
 
 export default function ClientDiscovery() {
   const [view, setView] = useState<View>("clients");
@@ -1982,6 +2731,11 @@ export default function ClientDiscovery() {
   const [selectedPolicy, setSelectedPolicy] = useState<string | null>(null);
   const [workbookFrom, setWorkbookFrom] = useState<"detail" | "list">("detail");
 
+  if (view === "risk-register" && selectedClient) {
+    return <RiskRegisterView client={selectedClient}
+      onBack={() => setView("detail")}
+      onBackToClients={() => { setView("clients"); setSelectedClient(null); }} />;
+  }
   if (view === "workbook" && selectedClient && selectedPolicy) {
     return <DiscoveryWorkbook client={selectedClient} policyId={selectedPolicy}
       onBack={() => workbookFrom === "list" ? (setView("clients"), setSelectedClient(null)) : setView("detail")}
@@ -1990,7 +2744,8 @@ export default function ClientDiscovery() {
   if (view === "detail" && selectedClient) {
     return <ClientDetailView client={selectedClient}
       onBack={() => { setView("clients"); setSelectedClient(null); }}
-      onSelectPolicy={pid => { setSelectedPolicy(pid); setWorkbookFrom("detail"); setView("workbook"); }} />;
+      onSelectPolicy={pid => { setSelectedPolicy(pid); setWorkbookFrom("detail"); setView("workbook"); }}
+      onOpenRiskRegister={() => setView("risk-register")} />;
   }
   return <ClientListView
     onSelectClient={c => { setSelectedClient(c); setView("detail"); }}

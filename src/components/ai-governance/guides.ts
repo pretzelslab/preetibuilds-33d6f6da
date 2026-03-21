@@ -11,6 +11,7 @@ export const IMPLEMENTATION_GUIDES = {
       {
         area: "AI System Inventory & Risk Classification",
         phaseGroup: "Govern & Scope",
+        isoMapping: ["Cl. 6.1 — Risk Assessment", "Annex A.8.2 — AI System Impact Assessment"],
         regulatoryRef: "Art. 6–9, Annex III — Risk Classification",
         dependencies: [],
         priority: "High",
@@ -31,6 +32,7 @@ export const IMPLEMENTATION_GUIDES = {
       {
         area: "Prohibited AI Uses — Identification & Cessation",
         phaseGroup: "Govern & Scope",
+        isoMapping: ["Cl. 4.1 — Organisational Context", "Cl. 5.2 — AI Policy"],
         regulatoryRef: "Art. 5 — Prohibited Practices",
         dependencies: [],
         priority: "High",
@@ -50,6 +52,7 @@ export const IMPLEMENTATION_GUIDES = {
       {
         area: "High-Risk AI — Conformity Assessment",
         phaseGroup: "Map & Discover",
+        isoMapping: ["Cl. 8.3 — AI System Operation", "Annex A.6.2 — System Deployment"],
         regulatoryRef: "Art. 43, Annex IV — Conformity Assessment",
         dependencies: ["AI System Inventory & Risk Classification"],
         priority: "High",
@@ -69,6 +72,7 @@ export const IMPLEMENTATION_GUIDES = {
       {
         area: "Training Data Governance & Bias Examination",
         phaseGroup: "Map & Discover",
+        isoMapping: ["Cl. 8.4 — Data for AI Systems", "Annex A.4 — Data Quality"],
         regulatoryRef: "Art. 10 — Data & Data Governance",
         dependencies: ["AI System Inventory & Risk Classification"],
         priority: "High",
@@ -88,6 +92,7 @@ export const IMPLEMENTATION_GUIDES = {
       {
         area: "Human Oversight & Override Controls",
         phaseGroup: "Map & Discover",
+        isoMapping: ["Cl. 8.5 — Information to Users", "Annex A.8 — Human Oversight"],
         regulatoryRef: "Art. 14 — Human Oversight",
         dependencies: ["High-Risk AI — Conformity Assessment"],
         priority: "Medium",
@@ -107,6 +112,7 @@ export const IMPLEMENTATION_GUIDES = {
       {
         area: "Fundamental Rights Impact Assessment",
         phaseGroup: "Map & Discover",
+        isoMapping: ["Cl. 6.1 — Risk Assessment", "Cl. 8.2 — AI Impact Assessment"],
         regulatoryRef: "Art. 27 — FRIA",
         dependencies: ["AI System Inventory & Risk Classification"],
         priority: "High",
