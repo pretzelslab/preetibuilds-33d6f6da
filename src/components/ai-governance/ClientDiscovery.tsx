@@ -1109,13 +1109,13 @@ const PHASES = [
   { num: 5, label: "Monitor",              sub: "Ongoing review · Drift tracking", built: false },
 ];
 
-function PhaseNav({ activePhase, onPhaseClick }: { activePhase: number; onPhaseClick: (n: number) => void }) {
+function PhaseNav({ activePhase, onPhaseClick }: { activePhase: number | null; onPhaseClick: (n: number) => void }) {
   return (
     <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, padding: "14px 20px", marginBottom: 24, overflowX: "auto" }}>
       <div style={{ display: "flex", gap: 0, minWidth: 560 }}>
         {PHASES.map((ph, idx) => {
           const isActive = ph.num === activePhase;
-          const isDone = ph.num < activePhase;
+          const isDone = activePhase !== null && ph.num < activePhase;
           const isLocked = !ph.built;
           return (
             <div key={ph.num} style={{ display: "flex", alignItems: "center", flex: 1 }}>
@@ -1447,7 +1447,7 @@ function ClientDetailView({ client, onBack, onSelectPolicy, onOpenRiskRegister }
   client: Client; onBack: () => void; onSelectPolicy: (pid: string) => void; onOpenRiskRegister: () => void;
 }) {
   const [clients, setClients] = useState<Client[]>(loadClients);
-  const [activePhase, setActivePhase] = useState(1);
+  const [activePhase, setActivePhase] = useState<number | null>(null);
   const [showAddPolicy, setShowAddPolicy] = useState(false);
   const [showEditFrameworks, setShowEditFrameworks] = useState(false);
   const [editFrameworkSet, setEditFrameworkSet] = useState<Set<string>>(new Set());
@@ -1554,7 +1554,7 @@ function ClientDetailView({ client, onBack, onSelectPolicy, onOpenRiskRegister }
       <ClientProfilePanel client={thisClient} onUpdate={updateClient} />
 
       {/* ── Phase Navigation ── */}
-      <PhaseNav activePhase={activePhase} onPhaseClick={setActivePhase} />
+      <PhaseNav activePhase={activePhase} onPhaseClick={n => setActivePhase(prev => prev === n ? null : n)} />
 
       {/* ── Phase 1: Govern & Scope — AI System Profile ── */}
       {activePhase === 1 && (
@@ -1791,8 +1791,8 @@ function ReadinessReport({ client, policyId, areaStates, reportSummary, onSummar
 }
 
 // ─── VIEW 3: DISCOVERY WORKBOOK ───────────────────────────────────────────────
-function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
-  client: Client; policyId: string; onBack: () => void; onBackToClient: () => void;
+function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient, onPhaseSelect }: {
+  client: Client; policyId: string; onBack: () => void; onBackToClient: () => void; onPhaseSelect: (n: number) => void;
 }) {
   const stub = POLICY_STUBS.find(p => p.id === policyId) || POLICY_STUBS[0];
   const guide = (IMPLEMENTATION_GUIDES as Record<string, any>)[policyId];
@@ -1861,6 +1861,23 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
   return (
     <div style={{ maxWidth: 960, margin: "0 auto", padding: "28px 32px" }}>
       <Breadcrumb items={[{ label: "All Clients", onClick: onBackToClient }, { label: client.name, onClick: onBack }, { label: stub.name }]} />
+
+      {/* Compact phase strip — navigate between phases from within the workbook */}
+      <div style={{ display: "flex", gap: 6, margin: "16px 0 4px", overflowX: "auto", paddingBottom: 2 }}>
+        {PHASES.map(ph => {
+          const isCurrent = ph.num === 2;
+          return (
+            <button key={ph.num} onClick={() => !isCurrent && ph.built && onPhaseSelect(ph.num)}
+              style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 20, border: `1px solid ${isCurrent ? "#6366f1" : ph.built ? "#e2e8f0" : "#f1f5f9"}`, background: isCurrent ? "#eef2ff" : ph.built ? "#fff" : "#f8fafc", color: isCurrent ? "#4f46e5" : ph.built ? "#475569" : "#94a3b8", fontWeight: isCurrent ? 700 : 500, fontSize: 12, cursor: isCurrent ? "default" : ph.built ? "pointer" : "default", whiteSpace: "nowrap", flexShrink: 0 }}>
+              <span style={{ width: 18, height: 18, borderRadius: "50%", background: isCurrent ? "#6366f1" : ph.built ? "#e2e8f0" : "#f1f5f9", color: isCurrent ? "#fff" : ph.built ? "#475569" : "#94a3b8", fontSize: 9, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {ph.num}
+              </span>
+              {ph.label}
+              {!ph.built && <span style={{ fontSize: 9, background: "#e2e8f0", color: "#94a3b8", borderRadius: 3, padding: "1px 4px", fontWeight: 700 }}>SOON</span>}
+            </button>
+          );
+        })}
+      </div>
 
       <div style={{ margin: "20px 0 16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
         <div>
@@ -2739,7 +2756,11 @@ export default function ClientDiscovery() {
   if (view === "workbook" && selectedClient && selectedPolicy) {
     return <DiscoveryWorkbook client={selectedClient} policyId={selectedPolicy}
       onBack={() => workbookFrom === "list" ? (setView("clients"), setSelectedClient(null)) : setView("detail")}
-      onBackToClient={() => { setView("clients"); setSelectedClient(null); }} />;
+      onBackToClient={() => { setView("clients"); setSelectedClient(null); }}
+      onPhaseSelect={n => {
+        if (n === 3) setView("risk-register");
+        else setView("detail");           // Phase 1 or 4: back to client detail
+      }} />;
   }
   if (view === "detail" && selectedClient) {
     return <ClientDetailView client={selectedClient}
