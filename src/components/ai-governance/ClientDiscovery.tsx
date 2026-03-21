@@ -18,7 +18,7 @@ type ModelOwnership = "" | "Built In-House" | "Third-Party Vendor" | "Open Sourc
 type Client = {
   id: string;
   name: string;
-  country: string;
+  countries: string[];
   industry: string;
   geography: string;
   primaryAiUseCase: string;
@@ -47,12 +47,13 @@ type Client = {
 
 type QuestionState = {
   status: QStatus;
-  notes: string;
-  docExists: DocExists;
+  currentState: string;      // what exists today
+  gap: string;               // what is missing / insufficient
+  proposedAction: string;    // what needs to be done
+  evidenceStatus: DocExists; // Yes / Partial / No
+  evidenceRef: string;       // link or filename to supporting evidence
   dueDate: string;
   owner: string;
-  comment: string;
-  commentAnswer: string;
 };
 
 type AreaState = {
@@ -331,7 +332,7 @@ function migrateClient(c: any): Client {
     contactName: "",
     engagementType: "" as EngagementType,
     signOffStatus: "Pending" as SignOffStatus,
-    country: "",
+    countries: Array.isArray(c.countries) && c.countries.length > 0 ? c.countries : (c.country ? [c.country] : []),
     status: "active" as ClientStatus,
     aiSystemName: "",
     aiTypes: [],
@@ -431,6 +432,7 @@ function exportWorkbookExcel(client: Client, policyId: string, areaStates: AreaS
     [`${stub.name} — Discovery Workbook`],
     [],
     ["Client Name",       client.name],
+    ["Country / Jurisdiction", (client.countries || []).join(", ") || "—"],
     ["Industry",          client.industry],
     ["Geography",         client.geography || "—"],
     ["Primary AI Use Case", client.primaryAiUseCase || "—"],
@@ -446,17 +448,17 @@ function exportWorkbookExcel(client: Client, policyId: string, areaStates: AreaS
 
   // Sheet 2: Discovery Log
   const discRows: any[][] = [
-    ["Ref", "Area", "Pillar", "Stakeholder", "Priority", "Question", "Status", "Documentation?", "Notes"],
+    ["Ref", "Area", "Pillar", "Stakeholder", "Priority", "Question", "Status", "Owner", "Due Date", "Evidence?", "Evidence Ref", "Current State", "Gap / Finding", "Proposed Action"],
   ];
   guide.areas.forEach((area, ai) => {
     const st = areaStates[ai];
     area.questions.forEach((q, qi) => {
-      const qs = st.questions[qi] || { status: "Not Started", notes: "", docExists: "" };
-      discRows.push([`${ai + 1}.${qi + 1}`, area.area, area.pillar, area.stakeholder, area.priority, q, qs.status, qs.docExists || "—", qs.notes || ""]);
+      const qs = st.questions[qi] || { status: "Not Started", currentState: "", gap: "", proposedAction: "", evidenceStatus: "", evidenceRef: "", owner: "", dueDate: "" };
+      discRows.push([`${ai + 1}.${qi + 1}`, area.area, area.pillar, area.stakeholder, area.priority, q, qs.status, qs.owner || "—", qs.dueDate || "—", qs.evidenceStatus || "—", qs.evidenceRef || "—", qs.currentState || "", qs.gap || "", qs.proposedAction || ""]);
     });
   });
   const ws2 = XLSX.utils.aoa_to_sheet(discRows);
-  ws2["!cols"] = [{ wch: 6 }, { wch: 28 }, { wch: 14 }, { wch: 22 }, { wch: 10 }, { wch: 52 }, { wch: 16 }, { wch: 16 }, { wch: 40 }];
+  ws2["!cols"] = [{ wch: 6 }, { wch: 28 }, { wch: 12 }, { wch: 20 }, { wch: 10 }, { wch: 48 }, { wch: 14 }, { wch: 20 }, { wch: 12 }, { wch: 12 }, { wch: 36 }, { wch: 40 }, { wch: 40 }, { wch: 40 }];
   XLSX.utils.book_append_sheet(wb, ws2, "Discovery Log");
 
   // Sheet 3: Readiness Summary
@@ -562,7 +564,7 @@ function mergeSuggestions(countrySugs: Suggestion[], industrySugs: Suggestion[])
 // ─── NEW CLIENT FORM ──────────────────────────────────────────────────────────
 function NewClientForm({ onAdd, onCancel }: { onAdd: (c: Client) => void; onCancel: () => void }) {
   const [name, setName] = useState("");
-  const [country, setCountry] = useState("");
+  const [countries, setCountries] = useState<string[]>([]);
   const [industry, setIndustry] = useState("");
   const [customIndustry, setCustomIndustry] = useState("");
   const [geography, setGeography] = useState("");
@@ -575,25 +577,34 @@ function NewClientForm({ onAdd, onCancel }: { onAdd: (c: Client) => void; onCanc
   const isOther = industry === "Other (specify below)";
   const effectiveIndustry = isOther ? customIndustry.trim() : industry;
 
-  const countrySugs = COUNTRY_SUGGESTIONS[country] || [];
+  // Merge suggestions across all selected countries, then merge with industry
+  let countrySugs: Suggestion[] = [];
+  countries.forEach(c => { countrySugs = mergeSuggestions(countrySugs, COUNTRY_SUGGESTIONS[c] || []); });
   const industrySugs = (!isOther && INDUSTRY_SUGGESTIONS[industry]) ? INDUSTRY_SUGGESTIONS[industry] : [];
   const suggestions = mergeSuggestions(countrySugs, industrySugs);
   const suggestedIds = new Set(suggestions.map(s => s.id));
   const otherPolicies = POLICY_STUBS.filter(p => !suggestedIds.has(p.id));
 
   useEffect(() => {
-    if (!country && (!industry || isOther)) { setSelectedPolicies(new Set()); return; }
-    setSelectedPolicies(new Set(suggestions.filter(s => s.level === "Required").map(s => s.id)));
-  }, [country, industry]);
+    if (countries.length === 0 && (!industry || isOther)) { setSelectedPolicies(new Set()); return; }
+    let cSugs: Suggestion[] = [];
+    countries.forEach(c => { cSugs = mergeSuggestions(cSugs, COUNTRY_SUGGESTIONS[c] || []); });
+    const iSugs = (!isOther && INDUSTRY_SUGGESTIONS[industry]) ? INDUSTRY_SUGGESTIONS[industry] : [];
+    const merged = mergeSuggestions(cSugs, iSugs);
+    setSelectedPolicies(new Set(merged.filter(s => s.level === "Required").map(s => s.id)));
+  }, [countries.join(","), industry]);
+
+  const toggleCountry = (c: string) =>
+    setCountries(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
 
   const togglePolicy = (id: string) =>
     setSelectedPolicies(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
   const submit = () => {
-    if (!name.trim() || !country) return;
+    if (!name.trim() || countries.length === 0) return;
     onAdd({
       id: crypto.randomUUID(),
-      name: name.trim(), country, industry: effectiveIndustry || "(not specified)",
+      name: name.trim(), countries, industry: effectiveIndustry || "(not specified)",
       geography, primaryAiUseCase, contactName, engagementType,
       signOffStatus: "Pending",
       status: "active",
@@ -602,40 +613,48 @@ function NewClientForm({ onAdd, onCancel }: { onAdd: (c: Client) => void; onCanc
     });
   };
 
-  const canSubmit = !!name.trim() && !!country;
+  const canSubmit = !!name.trim() && countries.length > 0;
 
   return (
     <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: 28, marginBottom: 24, boxShadow: "0 4px 20px rgba(0,0,0,0.07)" }}>
       <h3 style={{ margin: "0 0 20px", fontSize: 16, fontWeight: 800, color: "#0f172a" }}>New Client</h3>
 
-      {/* Step 1: Name + Country (required) */}
+      {/* Step 1: Name + Countries (required) */}
       <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "16px 18px", marginBottom: 16 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12 }}>Step 1 — Client details</div>
-        <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-          <div style={{ flex: 2, minWidth: 200 }}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Client / Organisation Name *</label>
-            <input autoFocus value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === "Enter" && submit()}
-              placeholder="e.g. Apex Capital"
-              style={{ width: "100%", padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 14, outline: "none", boxSizing: "border-box" }} />
-          </div>
-          <div style={{ flex: 1.5, minWidth: 200 }}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Client Country / Region *</label>
-            <select value={country} onChange={e => setCountry(e.target.value)}
-              style={{ width: "100%", padding: "9px 12px", border: `1px solid ${country ? "#6366f1" : "#e2e8f0"}`, borderRadius: 8, fontSize: 13, background: "#fff", boxSizing: "border-box" }}>
-              <option value="">Select country / region…</option>
-              {COUNTRY_OPTIONS.map(c => <option key={c}>{c}</option>)}
-            </select>
+        <div style={{ marginBottom: 14 }}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Client / Organisation Name *</label>
+          <input autoFocus value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === "Enter" && submit()}
+            placeholder="e.g. Apex Capital"
+            style={{ width: "100%", padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+        </div>
+        <div>
+          <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 8 }}>
+            Country / Jurisdiction * <span style={{ fontSize: 11, fontWeight: 400, color: "#94a3b8" }}>— select all that apply</span>
+            {countries.length > 0 && <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, color: "#6366f1" }}>{countries.length} selected</span>}
+          </label>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 6 }}>
+            {COUNTRY_OPTIONS.map(opt => {
+              const checked = countries.includes(opt);
+              return (
+                <label key={opt} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", border: `1px solid ${checked ? "#a5b4fc" : "#e2e8f0"}`, borderRadius: 8, cursor: "pointer", background: checked ? "#eef2ff" : "#fff", fontSize: 12, fontWeight: checked ? 600 : 400, color: checked ? "#4f46e5" : "#334155", transition: "all 0.12s" }}>
+                  <input type="checkbox" checked={checked} onChange={() => toggleCountry(opt)} style={{ accentColor: "#6366f1", width: 13, height: 13, cursor: "pointer", flexShrink: 0 }} />
+                  {opt}
+                </label>
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* Step 2: Industry (optional refinement) */}
-      {country && (
+      {countries.length > 0 && (
         <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "16px 18px", marginBottom: 16 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12 }}>Step 2 — Industry <span style={{ fontSize: 10, fontWeight: 500, color: "#94a3b8", textTransform: "none" }}>(optional — refines framework suggestions)</span></div>
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
             <div style={{ flex: 1.5, minWidth: 200 }}>
               <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Industry</label>
+
               <select value={industry} onChange={e => setIndustry(e.target.value)}
                 style={{ width: "100%", padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, background: "#fff", boxSizing: "border-box" }}>
                 <option value="">Select industry…</option>
@@ -654,7 +673,7 @@ function NewClientForm({ onAdd, onCancel }: { onAdd: (c: Client) => void; onCanc
       )}
 
       {/* Optional scope fields */}
-      {country && (
+      {countries.length > 0 && (
         <details open={showScope} onToggle={e => setShowScope((e.target as HTMLDetailsElement).open)} style={{ marginBottom: 16 }}>
           <summary style={{ fontSize: 12, fontWeight: 600, color: "#6366f1", cursor: "pointer", listStyle: "none", display: "flex", alignItems: "center", gap: 6, marginBottom: showScope ? 14 : 0 }}>
             <span>{showScope ? "▾" : "▸"}</span> Add scope details (optional — geography, AI use case, contact)
@@ -687,11 +706,11 @@ function NewClientForm({ onAdd, onCancel }: { onAdd: (c: Client) => void; onCanc
       )}
 
       {/* Step 3: Framework suggestions */}
-      {country && suggestions.length > 0 && (
+      {countries.length > 0 && suggestions.length > 0 && (
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>
             Step 3 — Applicable frameworks
-            <span style={{ fontSize: 10, fontWeight: 500, color: "#94a3b8", textTransform: "none", marginLeft: 8 }}>based on {country}{industry && !isOther ? ` · ${industry}` : ""} — tick or untick to adjust</span>
+            <span style={{ fontSize: 10, fontWeight: 500, color: "#94a3b8", textTransform: "none", marginLeft: 8 }}>based on {countries.join(", ")}{industry && !isOther ? ` · ${industry}` : ""} — tick or untick to adjust</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 10 }}>
             {suggestions.map(s => {
@@ -733,7 +752,7 @@ function NewClientForm({ onAdd, onCancel }: { onAdd: (c: Client) => void; onCanc
         </div>
       )}
 
-      {country && suggestions.length === 0 && (
+      {countries.length > 0 && suggestions.length === 0 && (
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 10 }}>Select applicable frameworks</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -888,7 +907,7 @@ function ClientListView({ onSelectClient, onOpenWorkbook }: {
                                   {isHidden && <span style={{ fontSize: 10, background: "#e2e8f0", color: "#475569", borderRadius: 4, padding: "1px 6px", fontWeight: 700 }}>HIDDEN</span>}
                                 </div>
                                 <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>
-                                  {[client.country, client.geography, client.engagementType, `Added ${client.createdAt}`].filter(Boolean).join(" · ")}
+                                  {[(client.countries || []).join(", "), client.geography, client.engagementType, `Added ${client.createdAt}`].filter(Boolean).join(" · ")}
                                 </div>
                               </div>
                               <SignOffBadge status={client.signOffStatus} />
@@ -1209,7 +1228,9 @@ function ClientDetailView({ client, onBack, onSelectPolicy }: {
   const [showEditFrameworks, setShowEditFrameworks] = useState(false);
   const [editFrameworkSet, setEditFrameworkSet] = useState<Set<string>>(new Set());
   const thisClient = clients.find(c => c.id === client.id) || client;
-  const suggestions = INDUSTRY_SUGGESTIONS[thisClient.industry] || [];
+  let countrySugsDetail: Suggestion[] = [];
+  (thisClient.countries || []).forEach(c => { countrySugsDetail = mergeSuggestions(countrySugsDetail, COUNTRY_SUGGESTIONS[c] || []); });
+  const suggestions = mergeSuggestions(countrySugsDetail, INDUSTRY_SUGGESTIONS[thisClient.industry] || []);
 
   const updateClient = (patch: Partial<Client>) => {
     const updated = clients.map(c => c.id === client.id ? { ...c, ...patch } : c);
@@ -1252,7 +1273,7 @@ function ClientDetailView({ client, onBack, onSelectPolicy }: {
           <div>
             <h2 style={{ margin: "0 0 4px", fontSize: 20, fontWeight: 800, color: "#0f172a" }}>{thisClient.name}</h2>
             <div style={{ fontSize: 13, color: "#64748b" }}>
-              {[thisClient.country, thisClient.industry, thisClient.geography].filter(Boolean).join(" · ")}
+              {[(thisClient.countries || []).join(", "), thisClient.industry, thisClient.geography].filter(Boolean).join(" · ")}
             </div>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -1517,7 +1538,6 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
   const [showReport, setShowReport] = useState(false);
   const [lastSaved, setLastSaved] = useState("");
   const [reportSummary, setReportSummary] = useState(() => loadReportSummary(client.id, policyId));
-  const [openComments, setOpenComments] = useState<Set<string>>(new Set());
   const [areaStates, setAreaStates] = useState<AreaState[]>(() =>
     guide ? guide.areas.map((_a: any, i: number) => loadArea(client.id, policyId, i)) : []
   );
@@ -1533,7 +1553,7 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
     setAreaStates(prev => {
       const updated = prev.map((a, i) => {
         if (i !== areaIdx) return a;
-        return { ...a, questions: { ...a.questions, [qIdx]: { ...(a.questions[qIdx] || { status: "Not Started", notes: "", docExists: "" }), [field]: value } } };
+        return { ...a, questions: { ...a.questions, [qIdx]: { ...(a.questions[qIdx] || { status: "Not Started", currentState: "", gap: "", proposedAction: "", evidenceStatus: "" as DocExists, evidenceRef: "", dueDate: "", owner: "" }), [field]: value } } };
       });
       saveArea(client.id, policyId, areaIdx, updated[areaIdx]);
       setLastSaved(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
@@ -1549,10 +1569,6 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
       return updated;
     });
   }, [client.id, policyId]);
-
-  const toggleComment = useCallback((key: string) => {
-    setOpenComments(prev => { const s = new Set(prev); s.has(key) ? s.delete(key) : s.add(key); return s; });
-  }, []);
 
   // Safe early return after all hooks
   if (!guide) return (
@@ -1687,26 +1703,30 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
                   {/* Question rows */}
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {area.questions.map((question: string, qIdx: number) => {
-                      const qState = aState.questions[qIdx] || { status: "Not Started", notes: "", docExists: "", dueDate: "", owner: "", comment: "", commentAnswer: "" };
+                      const qState = aState.questions[qIdx] || { status: "Not Started", currentState: "", gap: "", proposedAction: "", evidenceStatus: "" as DocExists, evidenceRef: "", dueDate: "", owner: "" };
                       const scfg = STATUS_CONFIG[qState.status as QStatus];
                       const isNA = qState.status === "Not Applicable";
-                      const commentKey = `${areaIdx}-${qIdx}`;
-                      const showComment = openComments.has(commentKey);
+                      // Dependency: if this question depends on the prior one, check if prior has any entry
+                      const depIdx: number | undefined = (area as any).questionDeps?.[qIdx];
+                      const depState = depIdx !== undefined ? (aState.questions[depIdx] || { status: "Not Started", currentState: "" }) : undefined;
+                      const isBlocked = depState !== undefined && !depState.currentState?.trim() && depState.status === "Not Started";
                       return (
-                        <div key={qIdx} style={{ background: "#fff", border: `1px solid ${scfg.border}`, borderLeft: `4px solid ${scfg.border}`, borderRadius: 9, padding: "12px 14px", opacity: isNA ? 0.55 : 1 }}>
-                          {/* Question text + comment toggle */}
-                          <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 10 }}>
+                        <div key={qIdx} style={{ background: "#fff", border: `1px solid ${scfg.border}`, borderLeft: `4px solid ${isBlocked ? "#e2e8f0" : scfg.border}`, borderRadius: 9, padding: "12px 14px", opacity: isNA ? 0.55 : isBlocked ? 0.7 : 1 }}>
+                          {/* Question text */}
+                          <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: isBlocked ? 6 : 10 }}>
                             <span style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", minWidth: 18, marginTop: 2 }}>{qIdx + 1}.</span>
                             <p style={{ margin: 0, fontSize: 13, color: "#0f172a", lineHeight: 1.65, flex: 1, fontWeight: 500, textDecoration: isNA ? "line-through" : "none" }}>{question}</p>
-                            <button onClick={() => toggleComment(commentKey)}
-                              title={showComment ? "Hide comment" : "Add comment / question"}
-                              style={{ flexShrink: 0, background: showComment ? "#ede9fe" : "#f8fafc", color: showComment ? "#7c3aed" : "#94a3b8", border: `1px solid ${showComment ? "#c4b5fd" : "#e2e8f0"}`, borderRadius: 6, padding: "3px 7px", fontSize: 11, cursor: "pointer", marginTop: 1 }}>
-                              💬
-                            </button>
                           </div>
 
-                          {/* Status / Doc / Notes / Due / Owner row */}
-                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end" }}>
+                          {/* Dependency hint */}
+                          {isBlocked && (
+                            <div style={{ marginLeft: 28, marginBottom: 10, fontSize: 11, color: "#a16207", background: "#fefce8", border: "1px solid #fde047", borderRadius: 6, padding: "5px 10px", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                              ↑ Complete Q{(depIdx! + 1)} above first — this question builds on that answer
+                            </div>
+                          )}
+
+                          {/* Status / Owner / Due row */}
+                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end", marginBottom: isNA ? 0 : 10 }}>
                             <div>
                               <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Status</label>
                               <select value={qState.status} onChange={e => updateQuestion(areaIdx, qIdx, "status", e.target.value)}
@@ -1715,14 +1735,6 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
                               </select>
                             </div>
                             {!isNA && (<>
-                              <div>
-                                <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Documentation?</label>
-                                <select value={qState.docExists} onChange={e => updateQuestion(areaIdx, qIdx, "docExists", e.target.value)}
-                                  style={{ padding: "5px 9px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, background: "#fff", cursor: "pointer" }}>
-                                  <option value="">—</option>
-                                  <option>Yes</option><option>Partial</option><option>No</option>
-                                </select>
-                              </div>
                               <div>
                                 <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Owner / Role</label>
                                 <input value={qState.owner || ""} onChange={e => updateQuestion(areaIdx, qIdx, "owner", e.target.value)}
@@ -1734,31 +1746,48 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
                                 <input type="date" value={qState.dueDate || ""} onChange={e => updateQuestion(areaIdx, qIdx, "dueDate", e.target.value)}
                                   style={{ padding: "5px 9px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, outline: "none", cursor: "pointer" }} />
                               </div>
-                              <div style={{ flex: 1, minWidth: 180 }}>
-                                <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Notes / Evidence</label>
-                                <input value={qState.notes} onChange={e => updateQuestion(areaIdx, qIdx, "notes", e.target.value)}
-                                  placeholder="Evidence, observations, follow-up actions…"
-                                  style={{ width: "100%", padding: "5px 9px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, outline: "none", boxSizing: "border-box" }} />
-                              </div>
                             </>)}
                           </div>
 
-                          {/* Comment / Answer panel */}
-                          {showComment && (
-                            <div style={{ marginTop: 10, background: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: 8, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
+                          {/* Gap analysis fields */}
+                          {!isNA && (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                               <div>
-                                <label style={{ fontSize: 10, fontWeight: 700, color: "#7c3aed", display: "block", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>Comment / Question</label>
-                                <textarea value={qState.comment || ""} onChange={e => updateQuestion(areaIdx, qIdx, "comment", e.target.value)}
-                                  placeholder="Leave a comment, flag an issue, or ask a clarifying question…"
+                                <label style={{ fontSize: 10, fontWeight: 700, color: "#0369a1", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Current State</label>
+                                <textarea value={qState.currentState || ""} onChange={e => updateQuestion(areaIdx, qIdx, "currentState", e.target.value)}
+                                  placeholder="Describe what currently exists in the organisation for this control area…"
                                   rows={2}
-                                  style={{ width: "100%", padding: "6px 9px", border: "1px solid #c4b5fd", borderRadius: 6, fontSize: 12, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit" }} />
+                                  style={{ width: "100%", padding: "6px 9px", border: "1px solid #bae6fd", borderRadius: 6, fontSize: 12, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit", background: "#f0f9ff" }} />
                               </div>
                               <div>
-                                <label style={{ fontSize: 10, fontWeight: 700, color: "#5b21b6", display: "block", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>Answer / Response</label>
-                                <textarea value={qState.commentAnswer || ""} onChange={e => updateQuestion(areaIdx, qIdx, "commentAnswer", e.target.value)}
-                                  placeholder="Response, resolution, or agreed action…"
+                                <label style={{ fontSize: 10, fontWeight: 700, color: "#b45309", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Gap / Finding</label>
+                                <textarea value={qState.gap || ""} onChange={e => updateQuestion(areaIdx, qIdx, "gap", e.target.value)}
+                                  placeholder="What is missing or insufficient relative to what this requirement demands?"
                                   rows={2}
-                                  style={{ width: "100%", padding: "6px 9px", border: "1px solid #c4b5fd", borderRadius: 6, fontSize: 12, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit", background: "#ede9fe" }} />
+                                  style={{ width: "100%", padding: "6px 9px", border: "1px solid #fde68a", borderRadius: 6, fontSize: 12, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit", background: "#fffbeb" }} />
+                              </div>
+                              <div>
+                                <label style={{ fontSize: 10, fontWeight: 700, color: "#15803d", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Proposed Action</label>
+                                <textarea value={qState.proposedAction || ""} onChange={e => updateQuestion(areaIdx, qIdx, "proposedAction", e.target.value)}
+                                  placeholder="What needs to be built, documented, or assigned to close this gap?"
+                                  rows={2}
+                                  style={{ width: "100%", padding: "6px 9px", border: "1px solid #bbf7d0", borderRadius: 6, fontSize: 12, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit", background: "#f0fdf4" }} />
+                              </div>
+                              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end" }}>
+                                <div>
+                                  <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Evidence?</label>
+                                  <select value={qState.evidenceStatus || ""} onChange={e => updateQuestion(areaIdx, qIdx, "evidenceStatus", e.target.value)}
+                                    style={{ padding: "5px 9px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, background: "#fff", cursor: "pointer" }}>
+                                    <option value="">—</option>
+                                    <option>Yes</option><option>Partial</option><option>No</option>
+                                  </select>
+                                </div>
+                                <div style={{ flex: 1, minWidth: 220 }}>
+                                  <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Evidence Reference</label>
+                                  <input value={qState.evidenceRef || ""} onChange={e => updateQuestion(areaIdx, qIdx, "evidenceRef", e.target.value)}
+                                    placeholder="Link, filename, or location of supporting documentation…"
+                                    style={{ width: "100%", padding: "5px 9px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, outline: "none", boxSizing: "border-box" }} />
+                                </div>
                               </div>
                             </div>
                           )}

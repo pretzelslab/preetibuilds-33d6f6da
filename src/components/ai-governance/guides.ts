@@ -23,6 +23,7 @@ export const IMPLEMENTATION_GUIDES = {
           "Is there a documented process for classifying new AI systems before development begins?",
           "Who is accountable for maintaining the AI system register and keeping classifications current?",
         ],
+        questionDeps: { 1: 0 }, // Q2 depends on Q1 — unlock when Q1 has any entry
         evidenceToCollect: ["AI system inventory spreadsheet or register", "Risk classification methodology document", "RACI for AI governance"],
         maturityIndicators: { notStarted: "No inventory exists. AI use cases are not tracked centrally.", developing: "Inventory exists but incomplete. No formal risk classification applied.", defined: "Complete inventory. Risk classification applied. Owner designated.", optimised: "Register is live, audited quarterly, integrated with change management." },
       },
