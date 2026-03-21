@@ -10,6 +10,7 @@ export const IMPLEMENTATION_GUIDES = {
     areas: [
       {
         area: "AI System Inventory & Risk Classification",
+        phaseGroup: "Govern & Scope",
         regulatoryRef: "Art. 6–9, Annex III — Risk Classification",
         dependencies: [],
         priority: "High",
@@ -29,6 +30,7 @@ export const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Prohibited AI Uses — Identification & Cessation",
+        phaseGroup: "Govern & Scope",
         regulatoryRef: "Art. 5 — Prohibited Practices",
         dependencies: [],
         priority: "High",
@@ -47,6 +49,7 @@ export const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "High-Risk AI — Conformity Assessment",
+        phaseGroup: "Map & Discover",
         regulatoryRef: "Art. 43, Annex IV — Conformity Assessment",
         dependencies: ["AI System Inventory & Risk Classification"],
         priority: "High",
@@ -65,6 +68,7 @@ export const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Training Data Governance & Bias Examination",
+        phaseGroup: "Map & Discover",
         regulatoryRef: "Art. 10 — Data & Data Governance",
         dependencies: ["AI System Inventory & Risk Classification"],
         priority: "High",
@@ -83,6 +87,7 @@ export const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Human Oversight & Override Controls",
+        phaseGroup: "Map & Discover",
         regulatoryRef: "Art. 14 — Human Oversight",
         dependencies: ["High-Risk AI — Conformity Assessment"],
         priority: "Medium",
@@ -101,6 +106,7 @@ export const IMPLEMENTATION_GUIDES = {
       },
       {
         area: "Fundamental Rights Impact Assessment",
+        phaseGroup: "Map & Discover",
         regulatoryRef: "Art. 27 — FRIA",
         dependencies: ["AI System Inventory & Risk Classification"],
         priority: "High",

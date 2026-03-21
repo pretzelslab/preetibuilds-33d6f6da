@@ -1218,6 +1218,104 @@ function AISystemProfileForm({ client, onSave }: { client: Client; onSave: (patc
   );
 }
 
+// ─── CLIENT PROFILE PANEL ─────────────────────────────────────────────────────
+function ClientProfilePanel({ client, onUpdate }: { client: Client; onUpdate: (patch: Partial<Client>) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState<Partial<Client>>({});
+
+  const openEdit = () => { setForm({ name: client.name, countries: [...(client.countries || [])], industry: client.industry, geography: client.geography, primaryAiUseCase: client.primaryAiUseCase, contactName: client.contactName, engagementType: client.engagementType }); setEditing(true); };
+  const save = () => { onUpdate(form); setEditing(false); };
+  const set = (k: keyof Client, v: any) => setForm(prev => ({ ...prev, [k]: v }));
+  const toggleC = (c: string) => setForm(prev => { const arr = prev.countries || []; return { ...prev, countries: arr.includes(c) ? arr.filter(x => x !== c) : [...arr, c] }; });
+
+  const inp = () => ({ width: "100%", padding: "7px 10px", border: "1px solid #e2e8f0", borderRadius: 7, fontSize: 13, outline: "none", boxSizing: "border-box" as const, fontFamily: "inherit" });
+
+  if (!editing) {
+    return (
+      <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 11, padding: "14px 18px", marginBottom: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>Client Profile</div>
+          <button onClick={openEdit} style={{ background: "none", border: "1px solid #e2e8f0", borderRadius: 6, padding: "3px 10px", fontSize: 11, fontWeight: 600, color: "#6366f1", cursor: "pointer" }}>✎ Edit</button>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "8px 20px" }}>
+          {[
+            { label: "Organisation",   value: client.name },
+            { label: "Country / Jurisdiction", value: (client.countries || []).join(", ") || "—" },
+            { label: "Industry",       value: client.industry || "—" },
+            { label: "Geography",      value: client.geography || "—" },
+            { label: "AI Use Case",    value: client.primaryAiUseCase || "—" },
+            { label: "Contact",        value: client.contactName || "—" },
+            { label: "Engagement",     value: client.engagementType || "—" },
+          ].map(f => (
+            <div key={f.label}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>{f.label}</div>
+              <div style={{ fontSize: 13, color: "#0f172a", fontWeight: f.value === "—" ? 400 : 500 }}>{f.value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ background: "#fff", border: "1px solid #c7d2fe", borderRadius: 11, padding: "18px 20px", marginBottom: 16, boxShadow: "0 4px 16px rgba(99,102,241,0.08)" }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 16 }}>Edit Client Profile</div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+        <div>
+          <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 5 }}>Organisation Name *</label>
+          <input value={form.name || ""} onChange={e => set("name", e.target.value)} style={inp()} />
+        </div>
+        <div>
+          <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 5 }}>Industry</label>
+          <select value={form.industry || ""} onChange={e => set("industry", e.target.value)} style={{ ...inp(), background: "#fff", cursor: "pointer" }}>
+            <option value="">Select…</option>
+            {INDUSTRY_OPTIONS.map(o => <option key={o}>{o}</option>)}
+          </select>
+        </div>
+        <div>
+          <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 5 }}>Geography / Region</label>
+          <input value={form.geography || ""} onChange={e => set("geography", e.target.value)} placeholder="e.g. EMEA, UK, US" style={inp()} />
+        </div>
+        <div>
+          <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 5 }}>Primary AI Use Case</label>
+          <input value={form.primaryAiUseCase || ""} onChange={e => set("primaryAiUseCase", e.target.value)} placeholder="e.g. Credit scoring, fraud detection" style={inp()} />
+        </div>
+        <div>
+          <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 5 }}>Client Contact</label>
+          <input value={form.contactName || ""} onChange={e => set("contactName", e.target.value)} placeholder="Name / role" style={inp()} />
+        </div>
+        <div>
+          <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 5 }}>Engagement Type</label>
+          <select value={form.engagementType || ""} onChange={e => set("engagementType", e.target.value as EngagementType)} style={{ ...inp(), background: "#fff", cursor: "pointer" }}>
+            {ENGAGEMENT_TYPES.map(t => <option key={t} value={t}>{t || "Select…"}</option>)}
+          </select>
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 8 }}>Country / Jurisdiction <span style={{ fontSize: 11, fontWeight: 400, color: "#94a3b8" }}>— select all that apply</span></label>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 5 }}>
+          {COUNTRY_OPTIONS.map(opt => {
+            const checked = (form.countries || []).includes(opt);
+            return (
+              <label key={opt} style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 9px", border: `1px solid ${checked ? "#a5b4fc" : "#e2e8f0"}`, borderRadius: 7, cursor: "pointer", background: checked ? "#eef2ff" : "#fff", fontSize: 12, color: checked ? "#4f46e5" : "#334155" }}>
+                <input type="checkbox" checked={checked} onChange={() => toggleC(opt)} style={{ accentColor: "#6366f1", flexShrink: 0 }} />
+                {opt}
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 8, borderTop: "1px solid #e2e8f0", paddingTop: 14 }}>
+        <button onClick={save} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", cursor: "pointer", fontSize: 13, fontWeight: 700 }}>Save Profile</button>
+        <button onClick={() => setEditing(false)} style={{ background: "#f1f5f9", color: "#64748b", border: "none", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontSize: 13 }}>Cancel</button>
+      </div>
+    </div>
+  );
+}
+
 // ─── VIEW 2: CLIENT DETAIL ────────────────────────────────────────────────────
 function ClientDetailView({ client, onBack, onSelectPolicy }: {
   client: Client; onBack: () => void; onSelectPolicy: (pid: string) => void;
@@ -1324,15 +1422,10 @@ function ClientDetailView({ client, onBack, onSelectPolicy }: {
           </div>
         )}
 
-        {/* Scope summary */}
-        {(thisClient.primaryAiUseCase || thisClient.contactName || thisClient.engagementType) && (
-          <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "12px 16px", marginBottom: 16, display: "flex", gap: 20, flexWrap: "wrap" }}>
-            {thisClient.primaryAiUseCase && <div><span style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase" }}>AI Use Case</span><div style={{ fontSize: 13, color: "#0f172a", marginTop: 2 }}>{thisClient.primaryAiUseCase}</div></div>}
-            {thisClient.engagementType && <div><span style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase" }}>Engagement</span><div style={{ fontSize: 13, color: "#0f172a", marginTop: 2 }}>{thisClient.engagementType}</div></div>}
-            {thisClient.contactName && <div><span style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase" }}>Contact</span><div style={{ fontSize: 13, color: "#0f172a", marginTop: 2 }}>{thisClient.contactName}</div></div>}
-          </div>
-        )}
       </div>
+
+      {/* Client Profile Panel — always visible, editable */}
+      <ClientProfilePanel client={thisClient} onUpdate={updateClient} />
 
       {/* ── Phase Navigation ── */}
       <PhaseNav activePhase={activePhase} onPhaseClick={setActivePhase} />
@@ -1535,6 +1628,7 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
   const guide = (IMPLEMENTATION_GUIDES as Record<string, any>)[policyId];
   // All hooks must be declared before any early return
   const [openArea, setOpenArea] = useState<number | null>(null);
+  const [openQuestions, setOpenQuestions] = useState<Record<number, number | null>>({});
   const [showReport, setShowReport] = useState(false);
   const [lastSaved, setLastSaved] = useState("");
   const [reportSummary, setReportSummary] = useState(() => loadReportSummary(client.id, policyId));
@@ -1640,12 +1734,34 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
           const { pct, done, total } = getAreaProgress(client.id, policyId, areaIdx, area.questions);
           const isOpen = openArea === areaIdx;
           const aState = areaStates[areaIdx];
+          const prevPhase = areaIdx > 0 ? guide.areas[areaIdx - 1].phaseGroup : null;
+          const showPhaseHeader = area.phaseGroup && area.phaseGroup !== prevPhase;
 
           const clauseHints = getClauseSummaries(area.regulatoryRef || "");
           const isRiskClass = (area.area || "").toLowerCase().includes("risk classification");
 
+          const PHASE_COLORS: Record<string, { bg: string; text: string; border: string; icon: string }> = {
+            "Govern & Scope":   { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0", icon: "🏛" },
+            "Map & Discover":   { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe", icon: "🗺" },
+            "Measure & Assess": { bg: "#fefce8", text: "#a16207", border: "#fde068", icon: "📏" },
+          };
+          const phaseColor = area.phaseGroup ? (PHASE_COLORS[area.phaseGroup] || { bg: "#f8fafc", text: "#475569", border: "#e2e8f0", icon: "📋" }) : null;
+
           return (
-            <div key={areaIdx} ref={el => { areaRefs.current[areaIdx] = el; }} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 11, overflow: "hidden" }}>
+            <div key={areaIdx}>
+              {showPhaseHeader && phaseColor && (
+                <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: phaseColor.bg, border: `1px solid ${phaseColor.border}`, borderRadius: 9, marginBottom: 6, marginTop: areaIdx > 0 ? 8 : 0 }}>
+                  <span style={{ fontSize: 16 }}>{phaseColor.icon}</span>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: phaseColor.text, textTransform: "uppercase", letterSpacing: "0.06em" }}>{area.phaseGroup}</div>
+                    <div style={{ fontSize: 11, color: phaseColor.text, opacity: 0.75, marginTop: 1 }}>
+                      {area.phaseGroup === "Govern & Scope" && "Establish accountability, AI inventory, and prohibited use boundaries"}
+                      {area.phaseGroup === "Map & Discover" && "Assess technical compliance, data practices, and safeguard controls"}
+                    </div>
+                  </div>
+                </div>
+              )}
+            <div ref={el => { areaRefs.current[areaIdx] = el; }} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 11, overflow: "hidden" }}>
               <button onClick={() => setOpenArea(isOpen ? null : areaIdx)}
                 style={{ width: "100%", background: isOpen ? "#f0f4ff" : "#fff", border: "none", padding: "13px 18px", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 12, borderBottom: isOpen ? "1px solid #c7d2fe" : "none" }}>
                 <span style={{ fontSize: 12, fontWeight: 700, color: "#6366f1", minWidth: 26 }}>{String(areaIdx + 1).padStart(2, "0")}</span>
@@ -1700,95 +1816,107 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
                     </div>
                   )}
 
-                  {/* Question rows */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {/* Question rows — accordion: one open at a time per area */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {area.questions.map((question: string, qIdx: number) => {
                       const qState = aState.questions[qIdx] || { status: "Not Started", currentState: "", gap: "", proposedAction: "", evidenceStatus: "" as DocExists, evidenceRef: "", dueDate: "", owner: "" };
                       const scfg = STATUS_CONFIG[qState.status as QStatus];
                       const isNA = qState.status === "Not Applicable";
-                      // Dependency: if this question depends on the prior one, check if prior has any entry
+                      const isQOpen = openQuestions[areaIdx] === qIdx;
                       const depIdx: number | undefined = (area as any).questionDeps?.[qIdx];
                       const depState = depIdx !== undefined ? (aState.questions[depIdx] || { status: "Not Started", currentState: "" }) : undefined;
                       const isBlocked = depState !== undefined && !depState.currentState?.trim() && depState.status === "Not Started";
+                      const hasContent = !!(qState.currentState || qState.gap || qState.proposedAction || qState.owner);
+
                       return (
-                        <div key={qIdx} style={{ background: "#fff", border: `1px solid ${scfg.border}`, borderLeft: `4px solid ${isBlocked ? "#e2e8f0" : scfg.border}`, borderRadius: 9, padding: "12px 14px", opacity: isNA ? 0.55 : isBlocked ? 0.7 : 1 }}>
-                          {/* Question text */}
-                          <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: isBlocked ? 6 : 10 }}>
-                            <span style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", minWidth: 18, marginTop: 2 }}>{qIdx + 1}.</span>
-                            <p style={{ margin: 0, fontSize: 13, color: "#0f172a", lineHeight: 1.65, flex: 1, fontWeight: 500, textDecoration: isNA ? "line-through" : "none" }}>{question}</p>
-                          </div>
+                        <div key={qIdx} style={{ border: `1px solid ${isQOpen ? scfg.border : "#e2e8f0"}`, borderLeft: `4px solid ${isQOpen ? scfg.border : (hasContent ? "#94a3b8" : "#e2e8f0")}`, borderRadius: 9, overflow: "hidden", opacity: isNA ? 0.55 : isBlocked && !isQOpen ? 0.65 : 1 }}>
 
-                          {/* Dependency hint */}
-                          {isBlocked && (
-                            <div style={{ marginLeft: 28, marginBottom: 10, fontSize: 11, color: "#a16207", background: "#fefce8", border: "1px solid #fde047", borderRadius: 6, padding: "5px 10px", display: "inline-flex", alignItems: "center", gap: 6 }}>
-                              ↑ Complete Q{(depIdx! + 1)} above first — this question builds on that answer
+                          {/* Collapsed header — always visible, click to expand */}
+                          <button onClick={() => setOpenQuestions(prev => ({ ...prev, [areaIdx]: prev[areaIdx] === qIdx ? null : qIdx }))}
+                            style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: isQOpen ? scfg.bg : "#fff", border: "none", cursor: "pointer", textAlign: "left" }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", minWidth: 20, flexShrink: 0 }}>{qIdx + 1}.</span>
+                            <p style={{ margin: 0, fontSize: 13, color: isNA ? "#94a3b8" : "#0f172a", lineHeight: 1.5, flex: 1, fontWeight: 500, textDecoration: isNA ? "line-through" : "none", textAlign: "left" }}>{question}</p>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                              {qState.owner && !isQOpen && <span style={{ fontSize: 10, color: "#64748b", background: "#f1f5f9", borderRadius: 4, padding: "1px 6px" }}>{qState.owner}</span>}
+                              {qState.evidenceStatus && !isQOpen && <span style={{ fontSize: 10, fontWeight: 700, color: qState.evidenceStatus === "Yes" ? "#15803d" : qState.evidenceStatus === "Partial" ? "#a16207" : "#dc2626", background: qState.evidenceStatus === "Yes" ? "#f0fdf4" : qState.evidenceStatus === "Partial" ? "#fefce8" : "#fef2f2", borderRadius: 4, padding: "1px 6px" }}>{qState.evidenceStatus}</span>}
+                              <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: scfg.bg, color: scfg.text, border: `1px solid ${scfg.border}`, whiteSpace: "nowrap" }}>{qState.status}</span>
+                              <span style={{ fontSize: 11, color: "#94a3b8" }}>{isQOpen ? "▾" : "▸"}</span>
                             </div>
-                          )}
+                          </button>
 
-                          {/* Status / Owner / Due row */}
-                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end", marginBottom: isNA ? 0 : 10 }}>
-                            <div>
-                              <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Status</label>
-                              <select value={qState.status} onChange={e => updateQuestion(areaIdx, qIdx, "status", e.target.value)}
-                                style={{ padding: "5px 9px", border: `1px solid ${scfg.border}`, borderRadius: 6, fontSize: 12, fontWeight: 600, background: scfg.bg, color: scfg.text, cursor: "pointer" }}>
-                                {(["Not Started", "In Progress", "Complete", "On Hold", "Not Applicable"] as QStatus[]).map(s => <option key={s}>{s}</option>)}
-                              </select>
-                            </div>
-                            {!isNA && (<>
-                              <div>
-                                <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Owner / Role</label>
-                                <input value={qState.owner || ""} onChange={e => updateQuestion(areaIdx, qIdx, "owner", e.target.value)}
-                                  placeholder="e.g. Legal, CTO, DPO"
-                                  style={{ padding: "5px 9px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, outline: "none", width: 130 }} />
-                              </div>
-                              <div>
-                                <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Due Date</label>
-                                <input type="date" value={qState.dueDate || ""} onChange={e => updateQuestion(areaIdx, qIdx, "dueDate", e.target.value)}
-                                  style={{ padding: "5px 9px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, outline: "none", cursor: "pointer" }} />
-                              </div>
-                            </>)}
-                          </div>
+                          {/* Expanded body */}
+                          {isQOpen && (
+                            <div style={{ padding: "12px 14px 14px", background: "#fafafa", borderTop: `1px solid ${scfg.border}` }}>
+                              {/* Dependency hint */}
+                              {isBlocked && (
+                                <div style={{ marginBottom: 10, fontSize: 11, color: "#a16207", background: "#fefce8", border: "1px solid #fde047", borderRadius: 6, padding: "5px 10px", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                  ↑ Complete Q{(depIdx! + 1)} above first — this question builds on that answer
+                                </div>
+                              )}
 
-                          {/* Gap analysis fields */}
-                          {!isNA && (
-                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                              <div>
-                                <label style={{ fontSize: 10, fontWeight: 700, color: "#0369a1", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Current State</label>
-                                <textarea value={qState.currentState || ""} onChange={e => updateQuestion(areaIdx, qIdx, "currentState", e.target.value)}
-                                  placeholder="Describe what currently exists in the organisation for this control area…"
-                                  rows={2}
-                                  style={{ width: "100%", padding: "6px 9px", border: "1px solid #bae6fd", borderRadius: 6, fontSize: 12, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit", background: "#f0f9ff" }} />
-                              </div>
-                              <div>
-                                <label style={{ fontSize: 10, fontWeight: 700, color: "#b45309", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Gap / Finding</label>
-                                <textarea value={qState.gap || ""} onChange={e => updateQuestion(areaIdx, qIdx, "gap", e.target.value)}
-                                  placeholder="What is missing or insufficient relative to what this requirement demands?"
-                                  rows={2}
-                                  style={{ width: "100%", padding: "6px 9px", border: "1px solid #fde68a", borderRadius: 6, fontSize: 12, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit", background: "#fffbeb" }} />
-                              </div>
-                              <div>
-                                <label style={{ fontSize: 10, fontWeight: 700, color: "#15803d", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Proposed Action</label>
-                                <textarea value={qState.proposedAction || ""} onChange={e => updateQuestion(areaIdx, qIdx, "proposedAction", e.target.value)}
-                                  placeholder="What needs to be built, documented, or assigned to close this gap?"
-                                  rows={2}
-                                  style={{ width: "100%", padding: "6px 9px", border: "1px solid #bbf7d0", borderRadius: 6, fontSize: 12, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit", background: "#f0fdf4" }} />
-                              </div>
-                              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end" }}>
+                              {/* Status / Owner / Due row */}
+                              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end", marginBottom: isNA ? 0 : 10 }}>
                                 <div>
-                                  <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Evidence?</label>
-                                  <select value={qState.evidenceStatus || ""} onChange={e => updateQuestion(areaIdx, qIdx, "evidenceStatus", e.target.value)}
-                                    style={{ padding: "5px 9px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, background: "#fff", cursor: "pointer" }}>
-                                    <option value="">—</option>
-                                    <option>Yes</option><option>Partial</option><option>No</option>
+                                  <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Status</label>
+                                  <select value={qState.status} onChange={e => updateQuestion(areaIdx, qIdx, "status", e.target.value)}
+                                    style={{ padding: "5px 9px", border: `1px solid ${scfg.border}`, borderRadius: 6, fontSize: 12, fontWeight: 600, background: scfg.bg, color: scfg.text, cursor: "pointer" }}>
+                                    {(["Not Started", "In Progress", "Complete", "On Hold", "Not Applicable"] as QStatus[]).map(s => <option key={s}>{s}</option>)}
                                   </select>
                                 </div>
-                                <div style={{ flex: 1, minWidth: 220 }}>
-                                  <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Evidence Reference</label>
-                                  <input value={qState.evidenceRef || ""} onChange={e => updateQuestion(areaIdx, qIdx, "evidenceRef", e.target.value)}
-                                    placeholder="Link, filename, or location of supporting documentation…"
-                                    style={{ width: "100%", padding: "5px 9px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, outline: "none", boxSizing: "border-box" }} />
-                                </div>
+                                {!isNA && (<>
+                                  <div>
+                                    <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Owner / Role</label>
+                                    <input value={qState.owner || ""} onChange={e => updateQuestion(areaIdx, qIdx, "owner", e.target.value)}
+                                      placeholder="e.g. Legal, CTO, DPO"
+                                      style={{ padding: "5px 9px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, outline: "none", width: 130 }} />
+                                  </div>
+                                  <div>
+                                    <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Due Date</label>
+                                    <input type="date" value={qState.dueDate || ""} onChange={e => updateQuestion(areaIdx, qIdx, "dueDate", e.target.value)}
+                                      style={{ padding: "5px 9px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, outline: "none", cursor: "pointer" }} />
+                                  </div>
+                                </>)}
                               </div>
+
+                              {/* Gap analysis fields */}
+                              {!isNA && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                  <div>
+                                    <label style={{ fontSize: 10, fontWeight: 700, color: "#0369a1", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Current State</label>
+                                    <textarea value={qState.currentState || ""} onChange={e => updateQuestion(areaIdx, qIdx, "currentState", e.target.value)}
+                                      placeholder="Describe what currently exists in the organisation for this control area…"
+                                      rows={2} style={{ width: "100%", padding: "6px 9px", border: "1px solid #bae6fd", borderRadius: 6, fontSize: 12, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit", background: "#f0f9ff" }} />
+                                  </div>
+                                  <div>
+                                    <label style={{ fontSize: 10, fontWeight: 700, color: "#b45309", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Gap / Finding</label>
+                                    <textarea value={qState.gap || ""} onChange={e => updateQuestion(areaIdx, qIdx, "gap", e.target.value)}
+                                      placeholder="What is missing or insufficient relative to what this requirement demands?"
+                                      rows={2} style={{ width: "100%", padding: "6px 9px", border: "1px solid #fde68a", borderRadius: 6, fontSize: 12, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit", background: "#fffbeb" }} />
+                                  </div>
+                                  <div>
+                                    <label style={{ fontSize: 10, fontWeight: 700, color: "#15803d", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Proposed Action</label>
+                                    <textarea value={qState.proposedAction || ""} onChange={e => updateQuestion(areaIdx, qIdx, "proposedAction", e.target.value)}
+                                      placeholder="What needs to be built, documented, or assigned to close this gap?"
+                                      rows={2} style={{ width: "100%", padding: "6px 9px", border: "1px solid #bbf7d0", borderRadius: 6, fontSize: 12, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit", background: "#f0fdf4" }} />
+                                  </div>
+                                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end" }}>
+                                    <div>
+                                      <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Evidence?</label>
+                                      <select value={qState.evidenceStatus || ""} onChange={e => updateQuestion(areaIdx, qIdx, "evidenceStatus", e.target.value)}
+                                        style={{ padding: "5px 9px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, background: "#fff", cursor: "pointer" }}>
+                                        <option value="">—</option>
+                                        <option>Yes</option><option>Partial</option><option>No</option>
+                                      </select>
+                                    </div>
+                                    <div style={{ flex: 1, minWidth: 220 }}>
+                                      <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.05em" }}>Evidence Reference</label>
+                                      <input value={qState.evidenceRef || ""} onChange={e => updateQuestion(areaIdx, qIdx, "evidenceRef", e.target.value)}
+                                        placeholder="Link, filename, or location of supporting documentation…"
+                                        style={{ width: "100%", padding: "5px 9px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, outline: "none", boxSizing: "border-box" }} />
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
@@ -1836,6 +1964,7 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient }: {
                   </div>
                 </div>
               )}
+            </div>
             </div>
           );
         })}
