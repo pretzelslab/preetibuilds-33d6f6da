@@ -32,6 +32,29 @@ function HL({ text, q }: { text: string; q: string }) {
 }
 
 
+// ─── TOOLTIP ─────────────────────────────────────────────────────────────────
+function Tip({ text, children, width = 240 }: { text: string; children: React.ReactNode; width?: number }) {
+  const [show, setShow] = useState(false);
+  return (
+    <span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}
+      onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
+      {children}
+      {show && (
+        <span style={{
+          position: "absolute", bottom: "calc(100% + 8px)", left: "50%",
+          transform: "translateX(-50%)", background: "#0f172a", color: "#e2e8f0",
+          padding: "9px 13px", borderRadius: 8, fontSize: 11, lineHeight: 1.65,
+          width, zIndex: 9999, boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+          pointerEvents: "none", whiteSpace: "normal",
+        }}>
+          {text}
+          <span style={{ position: "absolute", top: "100%", left: "50%", transform: "translateX(-50%)", borderWidth: 5, borderStyle: "solid", borderColor: "#0f172a transparent transparent transparent" }} />
+        </span>
+      )}
+    </span>
+  );
+}
+
 // ─── FOUR PILLARS ─────────────────────────────────────────────────────────────
 const PILLARS = [
   {
@@ -752,19 +775,33 @@ function parseDiscoveryExcel(file, policy, guide, onResult) {
 }
 
 // ─── PILLAR BADGE ────────────────────────────────────────────────────────────
+const RISK_TOOLTIPS = {
+  Critical: "Immediate regulatory, safety, or fundamental rights violation risk. Requires urgent action — typically within 30 days or prior to any deployment.",
+  High:     "Significant risk of harm, regulatory breach, or operational failure. Must be addressed in the short term, typically within 30–90 days.",
+  Medium:   "Moderate risk requiring planned mitigation. Address within 90–180 days as part of your compliance roadmap.",
+};
+
 function PillarBadge({ pillarId }) {
   const p = PILLAR_LOOKUP[pillarId];
   if (!p) return null;
+  const tipText = `${p.label}: ${p.definition}`;
   return (
-    <span style={{ background: p.color.badge, color: p.color.text, border: `1px solid ${p.color.border}`, borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>
-      {p.emoji} {p.label}
-    </span>
+    <Tip text={tipText} width={260}>
+      <span style={{ background: p.color.badge, color: p.color.text, border: `1px solid ${p.color.border}`, borderRadius: 20, padding: "2px 10px", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", cursor: "help" }}>
+        {p.emoji} {p.label}
+      </span>
+    </Tip>
   );
 }
 
 function RiskBadge({ level }) {
   const c = RISK_COLORS[level] || RISK_COLORS.Medium;
-  return <span style={{ background: c.bg, color: c.text, border: `1px solid ${c.border}`, borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 600 }}>{level}</span>;
+  const tip = RISK_TOOLTIPS[level] || "";
+  return (
+    <Tip text={tip} width={260}>
+      <span style={{ background: c.bg, color: c.text, border: `1px solid ${c.border}`, borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 600, cursor: "help" }}>{level}</span>
+    </Tip>
+  );
 }
 
 // ─── SOLUTION DOCUMENT ────────────────────────────────────────────────────────
@@ -1687,6 +1724,10 @@ function PolicyDetail({ policy, onBack }) {
   const [filterCat, setFilterCat] = useState("All");
   const [filterRisk, setFilterRisk] = useState("All");
   const [filterPillar, setFilterPillar] = useState("All");
+  const [expandedClauses, setExpandedClauses] = useState<Set<number>>(new Set());
+  const toggleClause = (i: number) => setExpandedClauses(prev => { const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n; });
+  const expandAll = () => setExpandedClauses(new Set(filtered.map((_, i) => i)));
+  const collapseAll = () => setExpandedClauses(new Set());
 
   const categories = ["All", ...new Set(policy.clauses.map(c => c.category))];
   const pillarMapping = POLICY_PILLAR_MAP[policy.id] || [];
@@ -1772,43 +1813,75 @@ function PolicyDetail({ policy, onBack }) {
           {["All", ...PILLARS.map(p => p.id)].map(id => <option key={id} value={id}>{id === "All" ? "All Pillars" : `${PILLAR_LOOKUP[id]?.emoji} ${PILLAR_LOOKUP[id]?.label}`}</option>)}
         </select>
         <span style={{ fontSize: 11, color: "#94a3b8" }}>{filtered.length} clauses</span>
+        <div style={{ display: "flex", gap: 6, marginLeft: "auto" }}>
+          <button onClick={expandAll} style={{ fontSize: 11, color: "#6366f1", background: "#eef2ff", border: "none", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontWeight: 600 }}>Expand all</button>
+          <button onClick={collapseAll} style={{ fontSize: 11, color: "#64748b", background: "#f1f5f9", border: "none", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontWeight: 600 }}>Collapse all</button>
+        </div>
       </div>
 
       {/* Clause Cards */}
-      <div style={{ padding: "24px 32px", display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fill, minmax(480px, 1fr))" }}>
-        {filtered.map((c, i) => (
-          <div key={i} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-              <div>
-                <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 4, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: "#6366f1", background: "#eef2ff", borderRadius: 4, padding: "2px 8px" }}><HL text={c.category} q={search} /></span>
-                  <span style={{ fontSize: 11, color: "#94a3b8", fontFamily: "monospace" }}>{c.clause}</span>
+      <div style={{ padding: "24px 32px", display: "flex", flexDirection: "column", gap: 10 }}>
+        {filtered.map((c, i) => {
+          const isOpen = expandedClauses.has(i);
+          return (
+            <div key={i} style={{ background: "#fff", border: `1px solid ${isOpen ? "#c7d2fe" : "#e2e8f0"}`, borderRadius: 12, overflow: "hidden", transition: "border-color 0.15s" }}>
+              {/* Always-visible header — click to expand/collapse */}
+              <button onClick={() => toggleClause(i)}
+                style={{ width: "100%", background: isOpen ? "#f8fafc" : "#fff", border: "none", padding: "14px 20px", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ fontSize: 13, color: "#94a3b8", flexShrink: 0 }}>{isOpen ? "▾" : "▸"}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 4, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: "#6366f1", background: "#eef2ff", borderRadius: 4, padding: "2px 8px" }}>
+                      <HL text={c.category} q={search} />
+                    </span>
+                    <Tip text={`Reference: ${c.clause} — click to expand for full detail`} width={220}>
+                      <span style={{ fontSize: 11, color: "#94a3b8", fontFamily: "monospace", cursor: "help" }}>{c.clause}</span>
+                    </Tip>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                    <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0f172a" }}>
+                      <HL text={c.parameter} q={search} />
+                    </h3>
+                    <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                      {c.pillars.map(pid => <PillarBadge key={pid} pillarId={pid} />)}
+                    </div>
+                  </div>
                 </div>
-                <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#0f172a" }}><HL text={c.parameter} q={search} /></h3>
-              </div>
-              <RiskBadge level={c.riskLevel} />
+                <div style={{ flexShrink: 0 }}>
+                  <RiskBadge level={c.riskLevel} />
+                </div>
+              </button>
+
+              {/* Expanded detail */}
+              {isOpen && (
+                <div style={{ padding: "0 20px 18px", display: "flex", flexDirection: "column", gap: 12, borderTop: "1px solid #e2e8f0" }}>
+                  <p style={{ margin: "14px 0 0", fontSize: 13, color: "#475569", lineHeight: 1.7 }}>
+                    <HL text={c.description} q={search} />
+                  </p>
+                  {[
+                    { label: "Bias Consideration", value: c.biasConsideration, color: "#fef3c7", border: "#fde68a", text: "#92400e",
+                      tip: "How this clause specifically addresses or creates bias risk — particularly around protected characteristics and demographic groups." },
+                    { label: "Gender Consideration", value: c.genderConsideration, color: "#fdf2f8", border: "#f9a8d4", text: "#9d174d",
+                      tip: "How this clause applies to gender equity — including design, data, and outcome requirements." },
+                    { label: "Compliance Action", value: c.complianceAction, color: "#f0fdf4", border: "#bbf7d0", text: "#166534",
+                      tip: "The specific steps your organisation must take to meet this requirement. These form the basis of your compliance evidence." },
+                  ].map(field => (
+                    <div key={field.label} style={{ background: field.color, border: `1px solid ${field.border}`, borderRadius: 8, padding: "10px 14px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: field.text, textTransform: "uppercase", letterSpacing: "0.05em" }}>{field.label}</span>
+                        <Tip text={field.tip} width={270}>
+                          <span style={{ fontSize: 11, color: field.text, opacity: 0.6, cursor: "help" }}>ⓘ</span>
+                        </Tip>
+                      </div>
+                      <p style={{ margin: 0, fontSize: 12, color: "#334155", lineHeight: 1.65 }}>{field.value}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-
-            {/* Pillar Tags */}
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {c.pillars.map(pid => <PillarBadge key={pid} pillarId={pid} />)}
-            </div>
-
-            <p style={{ margin: 0, fontSize: 13, color: "#475569", lineHeight: 1.65 }}><HL text={c.description} q={search} /></p>
-
-            {[
-              { label: "Bias Consideration", value: c.biasConsideration, color: "#fef3c7", border: "#fde68a", text: "#92400e" },
-              { label: "Gender Consideration", value: c.genderConsideration, color: "#fdf2f8", border: "#f9a8d4", text: "#9d174d" },
-              { label: "Compliance Action", value: c.complianceAction, color: "#f0fdf4", border: "#bbf7d0", text: "#166534" },
-            ].map(field => (
-              <div key={field.label} style={{ background: field.color, border: `1px solid ${field.border}`, borderRadius: 8, padding: "8px 12px" }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: field.text, textTransform: "uppercase", letterSpacing: "0.05em" }}>{field.label}</span>
-                <p style={{ margin: "4px 0 0", fontSize: 12, color: "#334155", lineHeight: 1.6 }}>{field.value}</p>
-              </div>
-            ))}
-          </div>
-        ))}
-        {filtered.length === 0 && <div style={{ gridColumn: "1/-1", textAlign: "center", padding: 48, color: "#94a3b8" }}>No clauses match your filters.</div>}
+          );
+        })}
+        {filtered.length === 0 && <div style={{ textAlign: "center", padding: 48, color: "#94a3b8" }}>No clauses match your filters.</div>}
       </div>
     </div>
   );

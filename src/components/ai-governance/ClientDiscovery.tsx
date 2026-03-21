@@ -10,6 +10,11 @@ type DocExists = "" | "Yes" | "No" | "Partial";
 
 type ClientStatus = "active" | "archived" | "hidden";
 
+type AIType = "Machine Learning" | "Natural Language Processing" | "Computer Vision" | "Generative AI" | "Robotic Process Automation" | "Automation / Rules-Based" | "Other";
+type DecisionAuthority = "" | "Fully Autonomous" | "Human-in-the-Loop" | "Human-on-the-Loop" | "Advisory Only";
+type DeploymentStatus = "" | "Planning" | "Development" | "Pilot / Testing" | "Production" | "Decommissioning";
+type ModelOwnership = "" | "Built In-House" | "Third-Party Vendor" | "Open Source" | "Hybrid";
+
 type Client = {
   id: string;
   name: string;
@@ -23,6 +28,21 @@ type Client = {
   createdAt: string;
   activePolicies: string[];
   status: ClientStatus;
+  // AI System Profile (Phase 1 — Govern & Scope)
+  aiSystemName: string;
+  aiTypes: AIType[];
+  systemDescription: string;
+  vendor: string;
+  modelOwnership: ModelOwnership;
+  decisionAuthority: DecisionAuthority;
+  deploymentStatus: DeploymentStatus;
+  timeInProduction: string;
+  decisionsPerPeriod: string;
+  internalUsersAffected: string;
+  externalUsersAffected: string;
+  trainingDataSource: string;
+  trainingDataPeriod: string;
+  lastRetrainingDate: string;
 };
 
 type QuestionState = {
@@ -313,6 +333,20 @@ function migrateClient(c: any): Client {
     signOffStatus: "Pending" as SignOffStatus,
     country: "",
     status: "active" as ClientStatus,
+    aiSystemName: "",
+    aiTypes: [],
+    systemDescription: "",
+    vendor: "",
+    modelOwnership: "" as ModelOwnership,
+    decisionAuthority: "" as DecisionAuthority,
+    deploymentStatus: "" as DeploymentStatus,
+    timeInProduction: "",
+    decisionsPerPeriod: "",
+    internalUsersAffected: "",
+    externalUsersAffected: "",
+    trainingDataSource: "",
+    trainingDataPeriod: "",
+    lastRetrainingDate: "",
     ...c,
   };
 }
@@ -912,11 +946,265 @@ function ClientListView({ onSelectClient, onOpenWorkbook }: {
   );
 }
 
+// ─── TOOLTIP ─────────────────────────────────────────────────────────────────
+function Tip({ text, children, width = 240 }: { text: string; children: React.ReactNode; width?: number }) {
+  const [show, setShow] = useState(false);
+  return (
+    <span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}
+      onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
+      {children}
+      {show && (
+        <span style={{
+          position: "absolute", bottom: "calc(100% + 8px)", left: "50%",
+          transform: "translateX(-50%)", background: "#0f172a", color: "#e2e8f0",
+          padding: "9px 13px", borderRadius: 8, fontSize: 11, lineHeight: 1.65,
+          width, zIndex: 9999, boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+          pointerEvents: "none", whiteSpace: "normal",
+        }}>
+          {text}
+          <span style={{ position: "absolute", top: "100%", left: "50%", transform: "translateX(-50%)", borderWidth: 5, borderStyle: "solid", borderColor: "#0f172a transparent transparent transparent" }} />
+        </span>
+      )}
+    </span>
+  );
+}
+
+// ─── PHASE NAVIGATION ────────────────────────────────────────────────────────
+const PHASES = [
+  { num: 1, label: "Govern & Scope",       sub: "System info · Frameworks",        built: true  },
+  { num: 2, label: "Map & Discover",       sub: "Gap assessment · Questionnaire",  built: true  },
+  { num: 3, label: "Measure & Assess",     sub: "Risk register · Scoring",         built: false },
+  { num: 4, label: "Report & Recommend",   sub: "Findings · Exec summary",         built: false },
+  { num: 5, label: "Monitor",              sub: "Ongoing review · Drift tracking", built: false },
+];
+
+function PhaseNav({ activePhase, onPhaseClick }: { activePhase: number; onPhaseClick: (n: number) => void }) {
+  return (
+    <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, padding: "14px 20px", marginBottom: 24, overflowX: "auto" }}>
+      <div style={{ display: "flex", gap: 0, minWidth: 560 }}>
+        {PHASES.map((ph, idx) => {
+          const isActive = ph.num === activePhase;
+          const isDone = ph.num < activePhase;
+          const isLocked = !ph.built;
+          return (
+            <div key={ph.num} style={{ display: "flex", alignItems: "center", flex: 1 }}>
+              <button onClick={() => ph.built && onPhaseClick(ph.num)}
+                style={{ flex: 1, background: isActive ? "#0f172a" : isDone ? "#f0fdf4" : "#fff", border: `1px solid ${isActive ? "#0f172a" : isDone ? "#bbf7d0" : "#e2e8f0"}`, borderRadius: 10, padding: "10px 12px", cursor: ph.built ? "pointer" : "default", textAlign: "left", opacity: isLocked && !isActive ? 0.6 : 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
+                  <span style={{ width: 20, height: 20, borderRadius: "50%", background: isActive ? "#6366f1" : isDone ? "#15803d" : "#e2e8f0", color: isActive || isDone ? "#fff" : "#94a3b8", fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    {isDone ? "✓" : ph.num}
+                  </span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: isActive ? "#fff" : isDone ? "#15803d" : "#475569" }}>{ph.label}</span>
+                  {isLocked && <span style={{ fontSize: 9, background: "#e2e8f0", color: "#94a3b8", borderRadius: 4, padding: "1px 5px", fontWeight: 700 }}>SOON</span>}
+                </div>
+                <div style={{ fontSize: 10, color: isActive ? "#a5b4fc" : "#94a3b8", paddingLeft: 27 }}>{ph.sub}</div>
+              </button>
+              {idx < PHASES.length - 1 && (
+                <div style={{ width: 20, height: 1, background: "#e2e8f0", flexShrink: 0 }} />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── AI SYSTEM PROFILE FORM ───────────────────────────────────────────────────
+const AI_TYPES: AIType[] = ["Machine Learning", "Natural Language Processing", "Computer Vision", "Generative AI", "Robotic Process Automation", "Automation / Rules-Based", "Other"];
+const DECISION_AUTHORITY_OPTIONS: { value: DecisionAuthority; label: string; desc: string }[] = [
+  { value: "",                    label: "Select…",              desc: "" },
+  { value: "Fully Autonomous",    label: "Fully Autonomous",     desc: "AI makes decisions and takes action without any human review." },
+  { value: "Human-in-the-Loop",   label: "Human-in-the-Loop",   desc: "A human reviews and approves every AI decision before it is actioned." },
+  { value: "Human-on-the-Loop",   label: "Human-on-the-Loop",   desc: "AI acts autonomously but a human monitors and can intervene or override." },
+  { value: "Advisory Only",       label: "Advisory Only",       desc: "AI provides recommendations only. A human always makes the final decision." },
+];
+const DEPLOYMENT_STATUS_OPTIONS: DeploymentStatus[] = ["", "Planning", "Development", "Pilot / Testing", "Production", "Decommissioning"];
+const MODEL_OWNERSHIP_OPTIONS: ModelOwnership[] = ["", "Built In-House", "Third-Party Vendor", "Open Source", "Hybrid"];
+
+function FieldLabel({ label, tip, required }: { label: string; tip?: string; required?: boolean }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 5 }}>
+      <span style={{ fontSize: 12, fontWeight: 600, color: "#475569" }}>{label}{required && <span style={{ color: "#dc2626", marginLeft: 2 }}>*</span>}</span>
+      {tip && (
+        <Tip text={tip} width={260}>
+          <span style={{ fontSize: 12, color: "#94a3b8", cursor: "help" }}>ⓘ</span>
+        </Tip>
+      )}
+    </div>
+  );
+}
+
+function FieldHelper({ text }: { text: string }) {
+  return <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4, lineHeight: 1.5 }}>{text}</div>;
+}
+
+function AISystemProfileForm({ client, onSave }: { client: Client; onSave: (patch: Partial<Client>) => void }) {
+  const [form, setForm] = useState({
+    aiSystemName:           client.aiSystemName || "",
+    aiTypes:                client.aiTypes || [] as AIType[],
+    systemDescription:      client.systemDescription || "",
+    vendor:                 client.vendor || "",
+    modelOwnership:         client.modelOwnership || "" as ModelOwnership,
+    decisionAuthority:      client.decisionAuthority || "" as DecisionAuthority,
+    deploymentStatus:       client.deploymentStatus || "" as DeploymentStatus,
+    timeInProduction:       client.timeInProduction || "",
+    decisionsPerPeriod:     client.decisionsPerPeriod || "",
+    internalUsersAffected:  client.internalUsersAffected || "",
+    externalUsersAffected:  client.externalUsersAffected || "",
+    trainingDataSource:     client.trainingDataSource || "",
+    trainingDataPeriod:     client.trainingDataPeriod || "",
+    lastRetrainingDate:     client.lastRetrainingDate || "",
+  });
+  const [saved, setSaved] = useState(false);
+
+  const set = (k: string, v: any) => { setForm(f => ({ ...f, [k]: v })); setSaved(false); };
+  const toggleAiType = (t: AIType) => set("aiTypes", form.aiTypes.includes(t) ? form.aiTypes.filter(x => x !== t) : [...form.aiTypes, t]);
+
+  const save = () => { onSave(form); setSaved(true); setTimeout(() => setSaved(false), 3000); };
+
+  const inp = (style?: any) => ({ width: "100%", padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none", boxSizing: "border-box" as const, background: "#fff", ...style });
+  const sel = { ...inp(), appearance: "auto" as const };
+
+  return (
+    <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: 24, marginBottom: 20 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "#0f172a" }}>Phase 1 — AI System Profile</div>
+          <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>Document the AI system being assessed. Complete as much as possible — every field helps ensure your compliance analysis is accurate.</div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {saved && <span style={{ fontSize: 11, color: "#15803d", fontWeight: 600 }}>✓ Saved</span>}
+          <button onClick={save} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 700 }}>Save Profile</button>
+        </div>
+      </div>
+
+      {/* System Identity */}
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 14, paddingBottom: 6, borderBottom: "1px solid #e2e8f0" }}>System Identity</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div>
+            <FieldLabel label="AI System Name" required tip="The commercial or internal name of the AI system being assessed. If third-party, use the vendor's product name." />
+            <input value={form.aiSystemName} onChange={e => set("aiSystemName", e.target.value)} placeholder="e.g. HireRight AI, CreditSense v3, ChatBot Pro" style={inp()} />
+          </div>
+          <div>
+            <FieldLabel label="Vendor / Supplier" tip="Name of the company that built or supplies this AI system. Leave blank if built entirely in-house." />
+            <input value={form.vendor} onChange={e => set("vendor", e.target.value)} placeholder="e.g. HireRight Inc. — leave blank if in-house" style={inp()} />
+          </div>
+        </div>
+        <div style={{ marginTop: 16 }}>
+          <FieldLabel label="AI Type" required tip="Select all that apply. This determines which regulatory obligations and risk categories are relevant." />
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
+            {AI_TYPES.map(t => {
+              const checked = form.aiTypes.includes(t);
+              return (
+                <label key={t} style={{ display: "flex", alignItems: "center", gap: 7, padding: "6px 12px", border: `1px solid ${checked ? "#6366f1" : "#e2e8f0"}`, borderRadius: 8, cursor: "pointer", background: checked ? "#eef2ff" : "#f8fafc", fontSize: 12, fontWeight: checked ? 700 : 500, color: checked ? "#4f46e5" : "#475569" }}>
+                  <input type="checkbox" checked={checked} onChange={() => toggleAiType(t)} style={{ accentColor: "#6366f1" }} />
+                  {t}
+                </label>
+              );
+            })}
+          </div>
+          <FieldHelper text="Generative AI = LLMs, image/text generators. Machine Learning = predictive models, classifiers. Rules-Based = decision trees, scoring engines." />
+        </div>
+        <div style={{ marginTop: 16 }}>
+          <FieldLabel label="System Description" required tip="Describe what the system does, how it works at a high level, and what business problem it solves. Be specific — vague descriptions lead to incomplete risk assessments." />
+          <textarea value={form.systemDescription} onChange={e => set("systemDescription", e.target.value)}
+            placeholder="What does it do? (e.g. Automatically screens job applications and ranks candidates) — How does it work? (e.g. ML model trained on 5 years of hiring data, scores applications 0–100) — Business problem it solves? (e.g. Reduces manual screening time for 15,000 applications per quarter)"
+            rows={4} style={{ ...inp(), resize: "vertical", lineHeight: 1.65 }} />
+        </div>
+      </div>
+
+      {/* Governance & Control */}
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 14, paddingBottom: 6, borderBottom: "1px solid #e2e8f0" }}>Governance & Control</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div>
+            <FieldLabel label="Model Ownership" required tip="Who built or owns this AI model? This determines whether you are a Provider (built it) or Deployer (using it) under regulations like the EU AI Act — which carry different obligations." />
+            <select value={form.modelOwnership} onChange={e => set("modelOwnership", e.target.value)} style={sel}>
+              {MODEL_OWNERSHIP_OPTIONS.map(o => <option key={o} value={o}>{o || "Select…"}</option>)}
+            </select>
+            <FieldHelper text="Provider obligations (EU AI Act) apply if you built the model. Deployer obligations apply if you use a third-party system." />
+          </div>
+          <div>
+            <FieldLabel label="Decision Authority" required tip="How much autonomy does the AI have? This is critical for EU AI Act human oversight obligations and NIST AI RMF accountability requirements." />
+            <select value={form.decisionAuthority} onChange={e => set("decisionAuthority", e.target.value as DecisionAuthority)} style={sel}>
+              {DECISION_AUTHORITY_OPTIONS.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+            {form.decisionAuthority && (
+              <FieldHelper text={DECISION_AUTHORITY_OPTIONS.find(o => o.value === form.decisionAuthority)?.desc || ""} />
+            )}
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 16 }}>
+          <div>
+            <FieldLabel label="Deployment Status" tip="Current lifecycle stage of this AI system. Systems in Production carry the highest compliance urgency." />
+            <select value={form.deploymentStatus} onChange={e => set("deploymentStatus", e.target.value as DeploymentStatus)} style={sel}>
+              {DEPLOYMENT_STATUS_OPTIONS.map(o => <option key={o} value={o}>{o || "Select…"}</option>)}
+            </select>
+          </div>
+          <div>
+            <FieldLabel label="Time in Production" tip="How long has this system been running in a live environment? Longer deployment periods may indicate accumulated risk that has not been assessed." />
+            <input value={form.timeInProduction} onChange={e => set("timeInProduction", e.target.value)} placeholder="e.g. 14 months — or 'Not yet deployed'" style={inp()} />
+          </div>
+        </div>
+      </div>
+
+      {/* Scale of Impact */}
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 14, paddingBottom: 6, borderBottom: "1px solid #e2e8f0" }}>Scale of Impact</div>
+        <div style={{ background: "#fef9c3", border: "1px solid #fde047", borderRadius: 8, padding: "10px 14px", marginBottom: 14, fontSize: 12, color: "#713f12" }}>
+          ⚠ Scale matters for risk rating. A 5% bias rate sounds low — but at 15,000 decisions per quarter that is 750 biased decisions. Always think in totals, not percentages.
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+          <div>
+            <FieldLabel label="Decisions per Period" required tip="How many AI-driven decisions does this system make per day, month, or quarter? Include the period (e.g. '15,000 per quarter')." />
+            <input value={form.decisionsPerPeriod} onChange={e => set("decisionsPerPeriod", e.target.value)} placeholder="e.g. 15,000 per quarter" style={inp()} />
+          </div>
+          <div>
+            <FieldLabel label="Internal Users Affected" tip="How many employees or internal staff interact with or are affected by this system's decisions?" />
+            <input value={form.internalUsersAffected} onChange={e => set("internalUsersAffected", e.target.value)} placeholder="e.g. 12 HR staff, 200 managers" style={inp()} />
+          </div>
+          <div>
+            <FieldLabel label="External / Public Affected" tip="How many external individuals (customers, applicants, patients, citizens) are subject to decisions made by this system? This is the most important number for regulatory assessment." />
+            <input value={form.externalUsersAffected} onChange={e => set("externalUsersAffected", e.target.value)} placeholder="e.g. 15,000 job applicants per quarter" style={inp()} />
+          </div>
+        </div>
+      </div>
+
+      {/* Training Data */}
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 14, paddingBottom: 6, borderBottom: "1px solid #e2e8f0" }}>Training Data</div>
+        <div style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 8, padding: "10px 14px", marginBottom: 14, fontSize: 12, color: "#0369a1" }}>
+          ℹ If this is a third-party system, request this information from your vendor. Under EU AI Act Article 10, providers must disclose data governance practices. Deployers have a right to this information.
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+          <div>
+            <FieldLabel label="Training Data Source" tip="Where did the training data come from? e.g. historical internal records, public datasets, synthetic data, licensed third-party data." />
+            <input value={form.trainingDataSource} onChange={e => set("trainingDataSource", e.target.value)} placeholder="e.g. 5 years of internal hiring records" style={inp()} />
+          </div>
+          <div>
+            <FieldLabel label="Training Data Period" tip="The date range of data used to train the model. Older training data may encode historical biases or outdated patterns." />
+            <input value={form.trainingDataPeriod} onChange={e => set("trainingDataPeriod", e.target.value)} placeholder="e.g. 2019–2024" style={inp()} />
+          </div>
+          <div>
+            <FieldLabel label="Last Model Retraining Date" tip="When was the model last retrained or updated? Models not retrained regularly may drift — producing increasingly inaccurate or biased outputs over time." />
+            <input value={form.lastRetrainingDate} onChange={e => set("lastRetrainingDate", e.target.value)} placeholder="e.g. March 2025 — or 'Never / Unknown'" style={inp()} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── VIEW 2: CLIENT DETAIL ────────────────────────────────────────────────────
 function ClientDetailView({ client, onBack, onSelectPolicy }: {
   client: Client; onBack: () => void; onSelectPolicy: (pid: string) => void;
 }) {
   const [clients, setClients] = useState<Client[]>(loadClients);
+  const [activePhase, setActivePhase] = useState(1);
   const [showAddPolicy, setShowAddPolicy] = useState(false);
   const [showEditFrameworks, setShowEditFrameworks] = useState(false);
   const [editFrameworkSet, setEditFrameworkSet] = useState<Set<string>>(new Set());
@@ -973,11 +1261,13 @@ function ClientDetailView({ client, onBack, onSelectPolicy }: {
               style={{ padding: "6px 10px", border: `1px solid ${sof.border}`, borderRadius: 8, fontSize: 12, fontWeight: 700, background: sof.bg, color: sof.text, cursor: "pointer" }}>
               {(["Pending", "In Review", "Signed Off"] as SignOffStatus[]).map(s => <option key={s}>{s}</option>)}
             </select>
-            <button onClick={openEditFrameworks}
-              style={{ background: "#f0f9ff", color: "#0369a1", border: "1px solid #bae6fd", borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
-              ✎ Edit Frameworks
-            </button>
-            {availableToAdd.length > 0 && !showEditFrameworks && (
+            {activePhase === 2 && (
+              <button onClick={openEditFrameworks}
+                style={{ background: "#f0f9ff", color: "#0369a1", border: "1px solid #bae6fd", borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
+                ✎ Edit Frameworks
+              </button>
+            )}
+            {activePhase === 2 && availableToAdd.length > 0 && !showEditFrameworks && (
               <button onClick={() => setShowAddPolicy(v => !v)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "7px 16px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
                 + Add Framework
               </button>
@@ -986,7 +1276,7 @@ function ClientDetailView({ client, onBack, onSelectPolicy }: {
         </div>
 
         {/* Edit Frameworks panel */}
-        {showEditFrameworks && (
+        {activePhase === 2 && showEditFrameworks && (
           <div style={{ background: "#fff", border: "1px solid #bae6fd", borderRadius: 12, padding: 18, marginBottom: 18, boxShadow: "0 4px 16px rgba(0,0,0,0.06)" }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>Select frameworks for {thisClient.name}</div>
             <div style={{ fontSize: 12, color: "#64748b", marginBottom: 14 }}>Tick or untick any framework. Removing an existing one will clear its discovery data.</div>
@@ -1023,7 +1313,16 @@ function ClientDetailView({ client, onBack, onSelectPolicy }: {
         )}
       </div>
 
-      {showAddPolicy && availableToAdd.length > 0 && (
+      {/* ── Phase Navigation ── */}
+      <PhaseNav activePhase={activePhase} onPhaseClick={setActivePhase} />
+
+      {/* ── Phase 1: Govern & Scope — AI System Profile ── */}
+      {activePhase === 1 && (
+        <AISystemProfileForm client={thisClient} onSave={updateClient} />
+      )}
+
+      {/* ── Phase 2: Map & Discover — Frameworks + Questionnaire ── */}
+      {activePhase === 2 && showAddPolicy && availableToAdd.length > 0 && (
         <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: 18, marginBottom: 18, boxShadow: "0 4px 16px rgba(0,0,0,0.06)" }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 12 }}>Add frameworks for {thisClient.name}:</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
@@ -1042,7 +1341,7 @@ function ClientDetailView({ client, onBack, onSelectPolicy }: {
         </div>
       )}
 
-      {thisClient.activePolicies.length === 0 ? (
+      {activePhase === 2 && (thisClient.activePolicies.length === 0 ? (
         <div style={{ textAlign: "center", padding: "40px 0", color: "#94a3b8", background: "#f8fafc", borderRadius: 12, border: "1px dashed #e2e8f0" }}>
           <div style={{ fontSize: 28, marginBottom: 10 }}>➕</div>
           <div style={{ fontSize: 14, fontWeight: 600 }}>No frameworks added yet</div>
@@ -1077,7 +1376,7 @@ function ClientDetailView({ client, onBack, onSelectPolicy }: {
             );
           })}
         </div>
-      )}
+      ))}
     </div>
   );
 }
