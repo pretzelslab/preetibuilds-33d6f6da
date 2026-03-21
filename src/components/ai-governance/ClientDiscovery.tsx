@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import * as XLSX from "xlsx";
 import { IMPLEMENTATION_GUIDES } from "./guides";
+import { seedDemoClient, DEMO_CLIENT_ID } from "./demoData";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 type EngagementType = "" | "Readiness Assessment" | "Gap Analysis" | "Implementation Support" | "Audit Preparation";
@@ -48,6 +49,16 @@ type RiskEntry = {
   status: RiskStatus;
 };
 
+type StakeholderEntry = {
+  id: string;
+  name: string;
+  role: string;
+  organisation: string;
+  consulted: boolean;
+  consultationDate: string;
+  notes: string;
+};
+
 type AIType = "Machine Learning" | "Natural Language Processing" | "Computer Vision" | "Generative AI" | "Robotic Process Automation" | "Automation / Rules-Based" | "Other";
 type DecisionAuthority = "" | "Fully Autonomous" | "Human-in-the-Loop" | "Human-on-the-Loop" | "Advisory Only";
 type DeploymentStatus = "" | "Planning" | "Development" | "Pilot / Testing" | "Production" | "Decommissioning";
@@ -82,6 +93,13 @@ type Client = {
   trainingDataSource: string;
   trainingDataPeriod: string;
   lastRetrainingDate: string;
+  // AIIA — Performance & Evaluation (ISO 42001 Cl. 8)
+  modelAccuracy: string;
+  falsePositiveRate: string;
+  lastEvaluationDate: string;
+  evaluationMethod: string;
+  knownLimitations: string;
+  stakeholders: StakeholderEntry[];
 };
 
 type QuestionState = {
@@ -388,6 +406,12 @@ function migrateClient(c: any): Client {
     trainingDataSource: "",
     trainingDataPeriod: "",
     lastRetrainingDate: "",
+    modelAccuracy: "",
+    falsePositiveRate: "",
+    lastEvaluationDate: "",
+    evaluationMethod: "",
+    knownLimitations: "",
+    stakeholders: [],
     ...c,
   };
 }
@@ -595,6 +619,131 @@ function exportFullReportExcel(client: Client) {
   XLSX.utils.book_append_sheet(wb, ws4, "Remediation Roadmap");
 
   XLSX.writeFile(wb, `${client.name.replace(/\s/g, "")}_AIGovernanceReport_${new Date().toISOString().slice(0, 10)}.xlsx`);
+}
+
+// ─── AIIA EXPORT (ISO 42001 Clause 8 format) ─────────────────────────────────
+function exportAIIA(client: Client) {
+  const wb = XLSX.utils.book_new();
+  const today = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  const risks = loadRisks(client.id);
+
+  // Sheet 1: AIIA Header & System Profile
+  const ws1 = XLSX.utils.aoa_to_sheet([
+    ["AI SYSTEM IMPACT ASSESSMENT (AIIA)"],
+    ["ISO 42001:2023 — Clause 8 Compliant Format"],
+    [],
+    ["SECTION 1 — DOCUMENT INFORMATION"],
+    ["AI System Name",     client.aiSystemName || "—"],
+    ["Organisation",       client.name],
+    ["Assessment Date",    today],
+    ["Prepared by",        localStorage.getItem(`pl_p4_prep_${client.id}`) || "—"],
+    ["Reviewed by",        localStorage.getItem(`pl_p4_rev_${client.id}`) || "—"],
+    ["Version",            "1.0"],
+    [],
+    ["SECTION 2 — SYSTEM DESCRIPTION (Cl. 8.2)"],
+    ["Intended Purpose",       client.systemDescription || "—"],
+    ["AI Types",               (client.aiTypes || []).join(", ") || "—"],
+    ["Model Ownership",        client.modelOwnership || "—"],
+    ["Vendor / Builder",       client.vendor || "—"],
+    ["Deployment Status",      client.deploymentStatus || "—"],
+    ["Time in Production",     client.timeInProduction || "—"],
+    [],
+    ["SECTION 3 — DECISION AUTHORITY & SCALE (Cl. 8.2)"],
+    ["Decision Authority",     client.decisionAuthority || "—"],
+    ["Decisions per Period",   client.decisionsPerPeriod || "—"],
+    ["Internal Users Affected",client.internalUsersAffected || "—"],
+    ["External Users Affected",client.externalUsersAffected || "—"],
+    [],
+    ["SECTION 4 — TRAINING DATA (Cl. 8.4 / Annex A.4)"],
+    ["Training Data Source",   client.trainingDataSource || "—"],
+    ["Training Data Period",   client.trainingDataPeriod || "—"],
+    ["Last Retraining Date",   client.lastRetrainingDate || "—"],
+    [],
+    ["SECTION 5 — PERFORMANCE METRICS (Cl. 8.2 / Annex A.8.2)"],
+    ["Model Accuracy / Performance", client.modelAccuracy || "—"],
+    ["False Positive / Rejection Rate", client.falsePositiveRate || "—"],
+    ["Last Evaluation Date",   client.lastEvaluationDate || "—"],
+    ["Evaluation Method",      client.evaluationMethod || "—"],
+    [],
+    ["SECTION 6 — KNOWN LIMITATIONS (Cl. 8.2)"],
+    [client.knownLimitations || "—"],
+  ]);
+  ws1["!cols"] = [{ wch: 32 }, { wch: 80 }];
+  XLSX.utils.book_append_sheet(wb, ws1, "AIIA — System Profile");
+
+  // Sheet 2: Stakeholder Consultation (Cl. 8.2)
+  const stakeholders: StakeholderEntry[] = client.stakeholders || [];
+  const ws2 = XLSX.utils.aoa_to_sheet([
+    ["SECTION 7 — STAKEHOLDER CONSULTATION LOG (Cl. 8.2)"],
+    [],
+    ["Name", "Role", "Organisation", "Consulted", "Consultation Date", "Notes"],
+    ...stakeholders.map(s => [s.name, s.role, s.organisation, s.consulted ? "Yes" : "Pending", s.consultationDate || "—", s.notes]),
+    ...(stakeholders.length === 0 ? [["No stakeholders recorded"]] : []),
+  ]);
+  ws2["!cols"] = [{ wch: 24 }, { wch: 24 }, { wch: 28 }, { wch: 10 }, { wch: 18 }, { wch: 60 }];
+  XLSX.utils.book_append_sheet(wb, ws2, "Stakeholder Consultation");
+
+  // Sheet 3: Impact Assessment (Phase 2 FRIA + societal impact)
+  const friaAreaIdx = 5; // Area 6 in EU AI Act = index 5
+  const friaGuide = (IMPLEMENTATION_GUIDES as Record<string, any>)["eu-ai-act"];
+  const friaState = friaGuide ? loadArea(client.id, "eu-ai-act", friaAreaIdx) : null;
+  const impactRows: any[][] = [
+    ["SECTION 8 — IMPACT ASSESSMENT (Cl. 6.1 / Cl. 8.2 / Art. 27)"],
+    [],
+    ["Frameworks in Scope", client.activePolicies.map(id => POLICY_STUBS.find(p => p.id === id)?.name || id).join(", ")],
+    [],
+    ["Fundamental Rights Impact Assessment (FRIA) — EU AI Act Art. 27"],
+    [],
+  ];
+  if (friaGuide && friaState) {
+    friaGuide.areas[friaAreaIdx]?.questions?.forEach((q: string, qi: number) => {
+      const qs = friaState.questions[qi];
+      impactRows.push([`Q${qi + 1}: ${q}`, ""]);
+      impactRows.push(["Status", qs?.status || "Not Started"]);
+      impactRows.push(["Current State", qs?.currentState || "—"]);
+      impactRows.push(["Gap / Finding", qs?.gap || "—"]);
+      impactRows.push(["Proposed Action", qs?.proposedAction || "—"]);
+      impactRows.push([]);
+    });
+  } else {
+    impactRows.push(["No EU AI Act FRIA area data found. Complete Phase 2 questionnaire first."]);
+  }
+  const ws3 = XLSX.utils.aoa_to_sheet(impactRows);
+  ws3["!cols"] = [{ wch: 40 }, { wch: 80 }];
+  XLSX.utils.book_append_sheet(wb, ws3, "Impact Assessment");
+
+  // Sheet 4: Risk Register (Phase 3)
+  const rrRows: any[][] = [
+    ["SECTION 9 — RISK REGISTER (Cl. 6.1 / Cl. 8)"],
+    [],
+    ["Risk ID", "Category", "Description", "Inherent Level", "Residual Level", "Controls", "Recommendation", "Owner", "Due Date", "Status"],
+  ];
+  risks.forEach(r => rrRows.push([
+    r.riskId,
+    r.riskCategory,
+    r.description,
+    riskLevel(r.inherentLikelihood, r.inherentImpact),
+    riskLevel(r.residualLikelihood, r.residualImpact),
+    r.controls.map(c => `[${c.type}] ${c.description} (${c.status})`).join(" | ") || "None",
+    r.recommendation,
+    r.owner,
+    r.dueDate,
+    r.status,
+  ]));
+  if (risks.length === 0) rrRows.push(["No risks recorded. Complete Phase 3 Risk Register first."]);
+  const ws4 = XLSX.utils.aoa_to_sheet(rrRows);
+  ws4["!cols"] = [{ wch: 10 }, { wch: 28 }, { wch: 50 }, { wch: 14 }, { wch: 14 }, { wch: 60 }, { wch: 60 }, { wch: 20 }, { wch: 12 }, { wch: 14 }];
+  XLSX.utils.book_append_sheet(wb, ws4, "Risk Register");
+
+  // Sheet 5: Controls & Mitigations
+  const ctrlRows: any[][] = [["SECTION 10 — CONTROLS & MITIGATIONS (Cl. 8 / Annex A)"], [], ["Risk ID", "Control Type", "Description", "Owner", "Status", "Effectiveness"]];
+  risks.forEach(r => r.controls.forEach(c => ctrlRows.push([r.riskId, c.type, c.description, c.owner, c.status, c.effectiveness || "Not Assessed"])));
+  if (ctrlRows.length === 3) ctrlRows.push(["No controls recorded."]);
+  const ws5 = XLSX.utils.aoa_to_sheet(ctrlRows);
+  ws5["!cols"] = [{ wch: 10 }, { wch: 14 }, { wch: 60 }, { wch: 24 }, { wch: 22 }, { wch: 20 }];
+  XLSX.utils.book_append_sheet(wb, ws5, "Controls");
+
+  XLSX.writeFile(wb, `AIIA_${client.aiSystemName || client.name}_${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
 
 // ─── PROGRESS HELPERS ─────────────────────────────────────────────────────────
@@ -941,6 +1090,10 @@ function ClientListView({ onSelectClient, onOpenWorkbook }: {
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {clients.length > 0 && (
             <>
+              <button onClick={() => { seedDemoClient(); setClients(loadClients()); }}
+                style={{ background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
+                🎯 Load Demo
+              </button>
               <button onClick={exportBackupJSON}
                 style={{ background: "#f1f5f9", color: "#0f172a", border: "1px solid #e2e8f0", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
                 ⬇ Export Backup
@@ -980,7 +1133,16 @@ function ClientListView({ onSelectClient, onOpenWorkbook }: {
         <div style={{ textAlign: "center", padding: "64px 0", color: "#94a3b8" }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
           <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>No clients yet</div>
-          <div style={{ fontSize: 14 }}>Add your first client to start a discovery workbook.</div>
+          <div style={{ fontSize: 14, marginBottom: 24 }}>Add your first client to start a discovery workbook.</div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+            <button onClick={() => { seedDemoClient(); setClients(loadClients()); }}
+              style={{ background: "#eef2ff", color: "#4f46e5", border: "1px solid #a5b4fc", borderRadius: 10, padding: "12px 28px", cursor: "pointer", fontSize: 14, fontWeight: 700 }}>
+              🎯 Load Demo Client — Apex Lending Group
+            </button>
+            <div style={{ fontSize: 12, color: "#94a3b8", maxWidth: 360 }}>
+              Loads a fully pre-populated EU AI Act readiness assessment — all phases, questionnaire answers, risk register, and report — so you can explore the workbook immediately.
+            </div>
+          </div>
         </div>
       ) : visibleClients.length === 0 ? (
         <div style={{ textAlign: "center", padding: "48px 0", color: "#94a3b8", background: "#f8fafc", borderRadius: 12, border: "1px dashed #e2e8f0" }}>
@@ -1186,13 +1348,23 @@ function AISystemProfileForm({ client, onSave }: { client: Client; onSave: (patc
     trainingDataSource:     client.trainingDataSource || "",
     trainingDataPeriod:     client.trainingDataPeriod || "",
     lastRetrainingDate:     client.lastRetrainingDate || "",
+    modelAccuracy:          client.modelAccuracy || "",
+    falsePositiveRate:      client.falsePositiveRate || "",
+    lastEvaluationDate:     client.lastEvaluationDate || "",
+    evaluationMethod:       client.evaluationMethod || "",
+    knownLimitations:       client.knownLimitations || "",
   });
+  const [stakeholders, setStakeholders] = useState<StakeholderEntry[]>(client.stakeholders || []);
   const [saved, setSaved] = useState(false);
 
   const set = (k: string, v: any) => { setForm(f => ({ ...f, [k]: v })); setSaved(false); };
   const toggleAiType = (t: AIType) => set("aiTypes", form.aiTypes.includes(t) ? form.aiTypes.filter(x => x !== t) : [...form.aiTypes, t]);
 
-  const save = () => { onSave(form); setSaved(true); setTimeout(() => setSaved(false), 3000); };
+  const addStakeholder = () => setStakeholders(prev => [...prev, { id: crypto.randomUUID(), name: "", role: "", organisation: client.name, consulted: false, consultationDate: "", notes: "" }]);
+  const updateStakeholder = (id: string, patch: Partial<StakeholderEntry>) => setStakeholders(prev => prev.map(s => s.id === id ? { ...s, ...patch } : s));
+  const removeStakeholder = (id: string) => setStakeholders(prev => prev.filter(s => s.id !== id));
+
+  const save = () => { onSave({ ...form, stakeholders }); setSaved(true); setTimeout(() => setSaved(false), 3000); };
 
   const inp = (style?: any) => ({ width: "100%", padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none", boxSizing: "border-box" as const, background: "#fff", ...style });
   const sel = { ...inp(), appearance: "auto" as const };
@@ -1324,6 +1496,93 @@ function AISystemProfileForm({ client, onSave }: { client: Client; onSave: (patc
             <FieldLabel label="Last Model Retraining Date" tip="When was the model last retrained or updated? Models not retrained regularly may drift — producing increasingly inaccurate or biased outputs over time." />
             <input value={form.lastRetrainingDate} onChange={e => set("lastRetrainingDate", e.target.value)} placeholder="e.g. March 2025 — or 'Never / Unknown'" style={inp()} />
           </div>
+        </div>
+      </div>
+
+      {/* Performance & Evaluation — AIIA (ISO 42001 Cl. 8) */}
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4, paddingBottom: 6, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span>Performance & Evaluation <span style={{ fontSize: 9, fontWeight: 700, background: "#ecfeff", color: "#0891b2", border: "1px solid #a5f3fc", borderRadius: 4, padding: "1px 6px", marginLeft: 6, letterSpacing: "0.04em" }}>AIIA — ISO 42001 Cl. 8</span></span>
+        </div>
+        <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 14 }}>Required for AI System Impact Assessment (AIIA) under ISO 42001 Clause 8. Enables AIIA export.</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
+          <div>
+            <FieldLabel label="Model Accuracy / Performance Metrics" tip="Key performance indicators: accuracy, AUC, F1 score, Gini coefficient, KS statistic. Include the metric names and values." />
+            <input value={form.modelAccuracy} onChange={e => set("modelAccuracy", e.target.value)} placeholder="e.g. AUC 0.91 · Accuracy 94.2% · Gini 0.81" style={inp()} />
+          </div>
+          <div>
+            <FieldLabel label="False Positive / False Rejection Rate" tip="Critical for fairness assessment. The rate at which the model incorrectly approves or rejects. Include both directions where known." />
+            <input value={form.falsePositiveRate} onChange={e => set("falsePositiveRate", e.target.value)} placeholder="e.g. 3.1% false approvals · 4.7% false rejections" style={inp()} />
+          </div>
+          <div>
+            <FieldLabel label="Last Evaluation Date" tip="When was the model last formally evaluated against its performance metrics? Infrequent evaluation is a drift risk." />
+            <input type="date" value={form.lastEvaluationDate} onChange={e => set("lastEvaluationDate", e.target.value)} style={inp()} />
+          </div>
+          <div>
+            <FieldLabel label="Evaluation Method" tip="How was the model evaluated? e.g. hold-out test set, k-fold cross-validation, third-party audit. Note any limitations." />
+            <input value={form.evaluationMethod} onChange={e => set("evaluationMethod", e.target.value)} placeholder="e.g. Hold-out test set (20%), internal model risk team" style={inp()} />
+          </div>
+        </div>
+        <div>
+          <FieldLabel label="Known Limitations" tip="Document any known limitations, edge cases, or failure modes. Required by ISO 42001 Cl. 8.2 and EU AI Act Annex IV." />
+          <textarea value={form.knownLimitations} onChange={e => set("knownLimitations", e.target.value)} rows={4} placeholder="e.g. Model not evaluated for fairness across protected groups. Training data pre-dates open banking era. No adversarial testing conducted." style={{ ...inp(), resize: "vertical" as const }} />
+        </div>
+      </div>
+
+      {/* Stakeholder Consultation Log — AIIA (ISO 42001 Cl. 8) */}
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4, paddingBottom: 6, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span>Stakeholder Consultation Log <span style={{ fontSize: 9, fontWeight: 700, background: "#ecfeff", color: "#0891b2", border: "1px solid #a5f3fc", borderRadius: 4, padding: "1px 6px", marginLeft: 6 }}>AIIA — ISO 42001 Cl. 8.2</span></span>
+          <button onClick={addStakeholder} style={{ background: "#f0f9ff", color: "#0369a1", border: "1px solid #bae6fd", borderRadius: 7, padding: "4px 12px", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>+ Add</button>
+        </div>
+        <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 12 }}>Record everyone consulted as part of this AI system assessment — internal and external.</div>
+        {stakeholders.length === 0
+          ? <div style={{ fontSize: 12, color: "#94a3b8", fontStyle: "italic", marginBottom: 10 }}>No stakeholders added yet.</div>
+          : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
+              {stakeholders.map(s => (
+                <div key={s.id} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto 1fr auto", gap: 8, alignItems: "end", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "10px 12px" }}>
+                  <div>
+                    <label style={{ fontSize: 10, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 3 }}>Name</label>
+                    <input value={s.name} onChange={e => updateStakeholder(s.id, { name: e.target.value })} placeholder="Full name" style={{ ...inp(), fontSize: 12 }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 10, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 3 }}>Role</label>
+                    <input value={s.role} onChange={e => updateStakeholder(s.id, { role: e.target.value })} placeholder="e.g. CRO, DPO" style={{ ...inp(), fontSize: 12 }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 10, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 3 }}>Organisation</label>
+                    <input value={s.organisation} onChange={e => updateStakeholder(s.id, { organisation: e.target.value })} style={{ ...inp(), fontSize: 12 }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 10, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 3 }}>Consulted</label>
+                    <select value={s.consulted ? "yes" : "no"} onChange={e => updateStakeholder(s.id, { consulted: e.target.value === "yes" })} style={{ ...inp(), fontSize: 12 }}>
+                      <option value="no">Pending</option>
+                      <option value="yes">Yes</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 10, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 3 }}>Consultation Date</label>
+                    <input type="date" value={s.consultationDate} onChange={e => updateStakeholder(s.id, { consultationDate: e.target.value })} style={{ ...inp(), fontSize: 12 }} />
+                  </div>
+                  <button onClick={() => removeStakeholder(s.id)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 14, paddingBottom: 2 }}>✕</button>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <label style={{ fontSize: 10, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 3 }}>Notes</label>
+                    <input value={s.notes} onChange={e => updateStakeholder(s.id, { notes: e.target.value })} placeholder="Key points from this consultation…" style={{ ...inp(), fontSize: 12 }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+      </div>
+
+      {/* AIIA Export */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 14, borderTop: "1px solid #e2e8f0", marginTop: 4 }}>
+        <div style={{ fontSize: 11, color: "#94a3b8" }}>Save the profile first, then export the AIIA.</div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={() => exportAIIA(client)} style={{ background: "#ecfeff", color: "#0891b2", border: "1px solid #a5f3fc", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
+            🌐 Export AIIA (ISO 42001 Cl. 8)
+          </button>
         </div>
       </div>
     </div>
