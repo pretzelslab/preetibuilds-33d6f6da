@@ -247,7 +247,13 @@ const POLICIES = [
         { ref: "Art. 5(1)(g)", text: "Predictive policing: AI making individual risk assessments of natural persons for the purpose of predicting the commission of a criminal offence based solely on profiling or personality traits." },
         { ref: "Art. 5(1)(h)", text: "Emotion recognition: AI systems used to infer the emotions of natural persons in the areas of workplace and educational institutions, except for medical or safety reasons." },
       ], biasConsideration: "Prohibits AI exploiting vulnerabilities of specific demographic groups. Sub-clauses (a)–(d) directly address protected characteristics — bias screening must check against each.", genderConsideration: "Prohibition in (b) explicitly covers gender identity; (c) covers biometric inference of sex; (h) covers workplace surveillance that disproportionately affects women.", complianceAction: "Screen every current and planned AI use case against all 8 sub-clauses. Document the review in writing. Escalate any match to legal counsel immediately. No transitional period — prohibitions applied from August 2025.", riskLevel: "Critical" },
-      { category: "Transparency", clause: "Article 13", parameter: "High-Risk Transparency", pillars: ["ethics","governance"], description: "High-risk AI must be transparent enough for deployers to interpret outputs. Instructions for use required.", biasConsideration: "Disclosure of training data characteristics and known bias limitations mandatory.", genderConsideration: "Deployers must understand how system handles gender-related data inputs.", complianceAction: "Produce technical documentation and plain-language user instructions.", riskLevel: "High" },
+      { category: "Conformity Assessment", clause: "Article 43", subClauseRange: "Art. 43, Annex IV", parameter: "High-Risk Conformity Assessment", pillars: ["governance","risk"], description: "Before market placement, providers of high-risk AI must complete a conformity assessment. Most Annex III systems: internal self-assessment against Annex IV technical documentation. Biometric / emotion recognition AI: third-party notified body assessment required.", subClauses: [
+        { ref: "Art. 43(1)", text: "Most high-risk Annex III AI: internal conformity assessment by the provider against the Annex IV technical documentation requirements — no notified body required." },
+        { ref: "Art. 43(2)", text: "Biometric identification, emotion recognition, and real-time biometric ID in public: third-party assessment by a EU-recognised notified body is mandatory." },
+        { ref: "Annex IV §1", text: "Technical documentation must cover: system description, design/development methods, training/validation/test data, monitoring procedures, standards applied, and EU declaration of conformity." },
+        { ref: "Art. 49 — EU AI Database", text: "High-risk AI systems must be registered in the EU AI Act database before market placement. Registration is public and identifies system, provider, and intended purpose." },
+      ], biasConsideration: "Annex IV documentation requires a bias examination of training data and performance metrics disaggregated by demographic groups — this is the evidentiary backbone of the conformity assessment.", genderConsideration: "Fairness evaluation must be included in technical documentation — performance should be disaggregated by gender and other protected characteristics to demonstrate non-discrimination.", complianceAction: "For each high-risk AI: complete Annex IV technical documentation; determine whether self-assessment or notified body route applies; register in EU AI database before go-live; retain documentation for 10 years.", riskLevel: "High" },
+      { category: "Transparency", clause: "Article 13", parameter: "High-Risk Transparency", pillars: ["ethics","governance"], description: "High-risk AI must be transparent enough for deployers to understand and interpret outputs. Instructions for use required. Deployers must be informed of system capabilities, limitations, and intended purpose.", biasConsideration: "Disclosure of training data characteristics, known bias limitations, and demographic performance gaps mandatory in instructions for use.", genderConsideration: "Instructions for use must explain how the system handles gender-related data inputs and any performance variation by demographic group.", complianceAction: "Produce technical documentation and plain-language instructions for use. Document known limitations and edge cases. Update on significant change.", riskLevel: "High" },
       { category: "Human Oversight", clause: "Article 14", parameter: "Human-in-the-Loop", pillars: ["governance","ethics"], description: "High-risk AI must allow humans to oversee, intervene, and override during operation.", biasConsideration: "Override required where outputs may affect protected groups.", genderConsideration: "Override capability mandatory in systems making decisions on gender or protected grounds.", complianceAction: "Design override controls and audit trails. Train operators.", riskLevel: "High" },
       { category: "Data Governance", clause: "Article 10", parameter: "Training Data Requirements", pillars: ["privacy","ethics"], description: "Training and test datasets must be relevant, representative, and free of errors. Bias examination mandatory.", biasConsideration: "Datasets examined for biases affecting health, safety, or fundamental rights.", genderConsideration: "Gender balance and representativeness in training data explicitly required.", complianceAction: "Document data sources, lineage, and bias examination results.", riskLevel: "High" },
       { category: "GPAI Models", clause: "Article 51–55", parameter: "General Purpose AI", pillars: ["risk","governance"], description: "GPAI models above 10^25 FLOPs classified as systemic risk with additional obligations.", biasConsideration: "Systemic GPAI models must assess and mitigate discriminatory outputs at scale.", genderConsideration: "Adversarial testing must include gender bias and stereotyping scenarios.", complianceAction: "Register in EU AI database. Submit technical documentation to AI Office.", riskLevel: "High" },
@@ -274,10 +280,10 @@ const POLICIES = [
       { category: "GOVERN", clause: "GOVERN 4", parameter: "Organisational Culture", pillars: ["governance","ethics"], description: "Foster AI risk awareness across all functions including non-technical staff.", biasConsideration: "Training must include AI fairness and bias literacy.", genderConsideration: "Inclusive team composition reduces gender-related blind spots.", complianceAction: "Deliver AI risk training. Measure awareness. Include in performance expectations.", riskLevel: "Medium" },
       { category: "MAP", clause: "MAP 1", parameter: "Context Establishment", pillars: ["ethics","risk"], description: "Identify context: intended users, affected groups, and operational environment.", biasConsideration: "Explicitly identify vulnerable populations disproportionately impacted.", genderConsideration: "Disaggregate impact analysis by gender and intersectional characteristics.", complianceAction: "Complete stakeholder mapping. Document affected populations.", riskLevel: "High" },
       { category: "MAP", clause: "MAP 3", parameter: "Risk Categorisation", pillars: ["risk","ethics"], description: "Categorise AI risks by likelihood and impact across technical, societal, and organisational dimensions.", biasConsideration: "Bias and fairness risks included as explicit risk categories.", genderConsideration: "Gender-related harms included in societal risk register.", complianceAction: "Populate risk register with AI-specific categories. Review quarterly.", riskLevel: "High" },
-      { category: "MEASURE", clause: "MEASURE 2", parameter: "Risk Measurement", pillars: ["risk","ethics"], description: "Quantify AI risks. Evaluate fairness, explainability, privacy, and robustness.", biasConsideration: "Measure disparate impact across demographic groups using fairness metrics.", genderConsideration: "Disaggregate performance metrics by gender. Track gaps across model versions.", complianceAction: "Define measurement methodology. Baseline before deployment. Monitor post-launch.", riskLevel: "High" },
+      { category: "MEASURE", clause: "MEASURE 2", parameter: "Risk Measurement", pillars: ["risk","ethics"], description: "Quantify AI risks using defined metrics. Fairness metrics include: demographic parity, equalised odds, and calibration. Performance results must be disaggregated by gender, age, ethnicity, and other protected characteristics. A baseline established pre-deployment is compared against ongoing production metrics.", biasConsideration: "Measure disparate impact across demographic groups using demographic parity and equalised odds. A named person with authority to intervene reviews results when thresholds are breached.", genderConsideration: "Disaggregate performance metrics by gender across every model version. Track gaps over time. Flag statistically significant divergence from baseline.", complianceAction: "Define fairness metric thresholds before deployment. Establish disaggregated baseline. Monitor post-launch. Assign a reviewer with authority to halt or retrain the model.", riskLevel: "High" },
       { category: "MEASURE", clause: "MEASURE 4", parameter: "Feedback Mechanisms", pillars: ["ethics","governance"], description: "Channels for affected individuals to report AI-related harms.", biasConsideration: "Feedback channels accessible to underrepresented and vulnerable groups.", genderConsideration: "Disaggregate feedback reports by gender where lawful.", complianceAction: "Build feedback portal. Assign review owner. Set SLA for response.", riskLevel: "Medium" },
       { category: "MANAGE", clause: "MANAGE 1", parameter: "Risk Response", pillars: ["risk","governance"], description: "Prioritise and respond to AI risks: mitigate, transfer, accept, or avoid.", biasConsideration: "Bias risks above threshold trigger mandatory mitigation, not acceptance.", genderConsideration: "Systems with gender performance gaps should be retrained or restricted.", complianceAction: "Implement risk treatment plans. Track to closure. Report to leadership.", riskLevel: "High" },
-      { category: "MANAGE", clause: "MANAGE 3", parameter: "Incident Response", pillars: ["risk","governance"], description: "Define and rehearse incident response for AI failures and harmful outputs.", biasConsideration: "Bias incidents follow same escalation path as security incidents.", genderConsideration: "Gender discrimination defined as an AI incident type with specific response steps.", complianceAction: "Document AI incident playbook. Run tabletop exercise annually.", riskLevel: "High" },
+      { category: "MANAGE", clause: "MANAGE 3", parameter: "Incident Response", pillars: ["risk","governance"], description: "Defined AI incident response playbook covering bias events, model failures, and harmful outputs. Playbook must be tested via a tabletop exercise at least annually. AI incidents are logged, investigated, root-cause analysed, and tracked to resolution.", biasConsideration: "Bias incidents follow the same escalation path as security incidents — defined severity levels, named owners, mandatory root cause analysis.", genderConsideration: "Gender discrimination is defined as a specific AI incident type with its own response steps, affected-party notification, and remediation timeline.", complianceAction: "Document AI incident playbook. Run annual tabletop exercise. Maintain AI incident log. Review playbook after each real incident.", riskLevel: "High" },
     ],
   },
   {
@@ -324,7 +330,7 @@ const POLICIES = [
       { category: "Leadership", clause: "Clause 5", parameter: "AI Policy", pillars: ["governance","ethics"], description: "Top management establishes AI policy including commitments to responsible AI.", biasConsideration: "AI policy must commit to fairness, non-discrimination, and bias mitigation.", genderConsideration: "Policy commitment to gender equity in AI design and outcomes required.", complianceAction: "Draft and approve AI policy at board level. Communicate internally and externally.", riskLevel: "High" },
       { category: "Planning", clause: "Clause 6", parameter: "AI Risk Assessment", pillars: ["risk","ethics"], description: "Process for identifying, analysing, and evaluating AI risks across full lifecycle.", biasConsideration: "Bias risk formally assessed using documented methodology for each AI system.", genderConsideration: "Gender impact included as mandatory risk dimension in AI risk register.", complianceAction: "Complete AI risk assessment for all in-scope systems. Review on significant change.", riskLevel: "High" },
       { category: "Support", clause: "Clause 7", parameter: "Competence & Awareness", pillars: ["governance","ethics"], description: "Persons affecting AI performance must be competent. Awareness across all roles.", biasConsideration: "AI fairness competency included in role requirements for developers and deployers.", genderConsideration: "Gender bias awareness training included in competency framework.", complianceAction: "Assess competency gaps. Deliver training. Maintain records.", riskLevel: "Medium" },
-      { category: "Operation", clause: "Clause 8", parameter: "AI Impact Assessment", pillars: ["ethics","privacy","risk"], description: "Impact assessment before deployment. Assess impacts on individuals, groups, and society.", biasConsideration: "Disparate impact assessment required across demographic segments before go-live.", genderConsideration: "Gender impact assessment is a mandatory component of pre-deployment review.", complianceAction: "Complete impact assessment. Document mitigation. Obtain sign-off.", riskLevel: "High" },
+      { category: "Operation", clause: "Clause 8", parameter: "AI Impact Assessment (AIIA)", pillars: ["ethics","privacy","risk"], description: "AI Impact Assessment (Annex B) is mandatory before deployment. Assesses impacts on individuals, groups, and society. Must include disparate impact analysis across demographic groups — gender, ethnicity, age, disability. Person with authority to halt deployment must review findings before go-live.", biasConsideration: "Disparate impact analysis across demographic segments is a required output of the AIIA. Unacceptable bias findings must trigger a stop/redesign — not just a note to monitor.", genderConsideration: "Gender impact is a mandatory dimension of the AIIA. The assessment must document gender-specific risks, mitigation measures, and residual risk acceptance rationale.", complianceAction: "Complete AIIA using Annex B template for all in-scope AI systems. Include disparate impact analysis. Obtain sign-off from a person with authority to halt deployment. Retain records.", riskLevel: "High" },
       { category: "Operation", clause: "Clause 8.4", parameter: "Responsible AI Use", pillars: ["ethics","governance"], description: "Controls for responsible AI use: human oversight, data quality, transparency, accountability.", biasConsideration: "Controls must detect and respond to biased outputs in production.", genderConsideration: "Monitoring for gender performance disparity included in operational controls.", complianceAction: "Implement monitoring dashboard. Set alert thresholds. Assign ownership.", riskLevel: "High" },
       { category: "Evaluation", clause: "Clause 9", parameter: "AI Audit", pillars: ["governance","risk"], description: "Internal audits of AI management system at planned intervals.", biasConsideration: "Internal audit scope includes fairness metrics and bias incident review.", genderConsideration: "Gender equity in AI outcomes reviewed as standing management review agenda item.", complianceAction: "Plan and execute annual internal audit. Present findings to top management.", riskLevel: "High" },
       { category: "Improvement", clause: "Clause 10", parameter: "Continual Improvement", pillars: ["governance","ethics"], description: "Continually improve AI management system. Correct nonconformities.", biasConsideration: "Bias-related nonconformities trigger root cause analysis and preventive action.", genderConsideration: "Gender performance gaps treated as nonconformities requiring corrective action.", complianceAction: "Maintain corrective action register. Track to closure. Report improvement trends.", riskLevel: "Medium" },
@@ -346,7 +352,7 @@ const POLICIES = [
     emoji: "📊",
     clauses: [
       { category: "Risk Taxonomy", clause: "FAIR Core", parameter: "Loss Event Frequency", pillars: ["risk"], description: "Measure how often a loss event is likely to occur: Threat Event Frequency × Vulnerability.", biasConsideration: "Biased AI outputs modelled as a loss event type with frequency estimation.", genderConsideration: "Gender-discriminatory AI decisions quantified as a loss event category.", complianceAction: "Map AI risk scenarios to FAIR loss taxonomy. Estimate frequency from historical data.", riskLevel: "High" },
-      { category: "Risk Taxonomy", clause: "FAIR Core", parameter: "Loss Magnitude", pillars: ["risk"], description: "Estimate size of loss: Primary Loss (direct) and Secondary Loss (reputational, regulatory).", biasConsideration: "Regulatory fines from discriminatory AI (GDPR, EU AI Act) modelled as secondary loss.", genderConsideration: "Gender discrimination litigation and reputational damage quantified as loss magnitude inputs.", complianceAction: "Build loss magnitude tables for AI risk scenarios. Validate with legal and finance.", riskLevel: "High" },
+      { category: "Risk Taxonomy", clause: "FAIR Core", parameter: "Loss Magnitude", pillars: ["risk"], description: "Estimate size of loss: Primary Loss (direct operational cost, remediation) and Secondary Loss (reputational, regulatory). EU AI Act fine ranges — €35M or 7% global turnover for prohibited AI, €15M or 3% for high-risk violations — and GDPR fine ranges (€20M or 4%) are incorporated into Secondary Loss Magnitude estimates.", biasConsideration: "Regulatory fines from discriminatory AI under GDPR (Art. 83), EU AI Act (Art. 99), and US equal credit/fair lending laws modelled as probability-weighted secondary loss.", genderConsideration: "Gender discrimination litigation (employment tribunal awards, class action settlements) and brand reputational damage quantified as loss magnitude inputs.", complianceAction: "Build loss magnitude tables for AI risk scenarios incorporating EU AI Act and GDPR penalty ranges. Validate ranges with legal counsel. Present as exceedance curves to board.", riskLevel: "High" },
       { category: "Threat Analysis", clause: "FAIR-AI", parameter: "Threat Actor Identification", pillars: ["risk","ethics"], description: "Identify threat communities: adversarial attackers, malicious insiders, third-party vendors, unintentional actors.", biasConsideration: "Biased training data providers identified as unintentional threat actors.", genderConsideration: "Systemic underrepresentation of gender groups in training data modelled as a threat scenario.", complianceAction: "Document AI threat landscape. Map to asset inventory. Prioritise by likelihood.", riskLevel: "High" },
       { category: "Vulnerability", clause: "FAIR-AI", parameter: "AI Model Vulnerability", pillars: ["risk","ethics"], description: "Assess susceptibility to adversarial attacks, data poisoning, model inversion, prompt injection.", biasConsideration: "Bias amplification through fine-tuning assessed as a vulnerability dimension.", genderConsideration: "Gender stereotype reinforcement in generative AI modelled as an exploitable vulnerability.", complianceAction: "Conduct AI penetration test and red team exercise. Document findings.", riskLevel: "High" },
       { category: "Quantification", clause: "FAIR-AI", parameter: "Probabilistic Quantification", pillars: ["risk"], description: "Monte Carlo simulation produces probability distributions of risk exposure in dollar terms.", biasConsideration: "Bias-related regulatory fine distributions modelled using EU AI Act and GDPR penalty ranges.", genderConsideration: "Gender discrimination settlement probability distributions in loss exceedance curves.", complianceAction: "Build FAIR risk models. Present results to board as financial exposure.", riskLevel: "Medium" },
@@ -1751,47 +1757,40 @@ function PolicyDetail({ policy, onBack, onViewDigest }: { policy: any; onBack: (
 
   return (
     <div style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "'Inter','Segoe UI',sans-serif" }}>
-      {/* Sticky: Header + Pillar Coverage Banner together */}
-      <div className="no-print" style={{ position: "sticky", top: 57, zIndex: 1000 }}>
-        <div style={{ background: "#fff", borderBottom: "1px solid #e2e8f0", padding: "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <button onClick={onBack} style={{ color: "#6366f1", background: "none", border: "1px solid #e0e7ff", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>
-              ← Back
-            </button>
+      {/* ── Sticky header: name + summary + Latest only ── */}
+      <div style={{ position: "sticky", top: 57, zIndex: 1000, background: "#fff", borderBottom: `2px solid ${policy.color.border}`, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+        <div style={{ padding: "12px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <button onClick={onBack} style={{ color: "#6366f1", background: "none", border: "1px solid #e0e7ff", borderRadius: 8, padding: "5px 12px", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>← Back</button>
+            <span style={{ fontSize: 22 }}>{policy.emoji}</span>
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 22 }}>{policy.emoji}</span>
-                <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#0f172a" }}>{policy.name}</h1>
-                <span style={{ background: policy.color.badge, color: policy.color.text, border: `1px solid ${policy.color.border}`, borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 600 }}>{policy.type}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#0f172a" }}>{policy.name}</h1>
+                <span style={{ background: policy.color.badge, color: policy.color.text, border: `1px solid ${policy.color.border}`, borderRadius: 6, padding: "2px 9px", fontSize: 11, fontWeight: 600 }}>{policy.type}</span>
+                {policy.regulatingBody && <span style={{ fontSize: 11, color: "#94a3b8" }}>🏛 {policy.regulatingBody}</span>}
               </div>
-              <p style={{ margin: "3px 0 0", fontSize: 12, color: "#64748b" }}>{policy.geography} · {policy.yearReleased} · Updated {policy.latestUpdateDate}</p>
-              {policy.regulatingBody && <p style={{ margin: "2px 0 0", fontSize: 11, color: "#94a3b8" }}>🏛 {policy.regulatingBody}</p>}
+              <p style={{ margin: "2px 0 0", fontSize: 11, color: "#64748b" }}>{policy.geography} · {policy.yearReleased} · <strong>Latest:</strong> {policy.latestUpdateSummary}</p>
             </div>
           </div>
-          <button onClick={() => exportDetailToCSV(policy)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>Export CSV</button>
+          <button onClick={() => exportDetailToCSV(policy)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "7px 16px", cursor: "pointer", fontSize: 12, fontWeight: 500 }}>Export CSV</button>
         </div>
-        {/* Pillar Coverage Banner */}
-        <div style={{ background: "#0f172a", padding: "12px 32px", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
-          <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em" }}>Pillar Coverage:</span>
-          {pillarMapping.map(m => {
-            const p = PILLAR_LOOKUP[m.pillar];
-            return p ? (
-              <span key={m.pillar} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ background: p.color.badge, color: p.color.text, border: `1px solid ${p.color.border}`, borderRadius: 20, padding: "3px 12px", fontSize: 11, fontWeight: 600 }}>
-                  {p.emoji} {p.label}
-                </span>
-                <span style={{ fontSize: 10, color: m.strength === "Primary" ? "#a78bfa" : "#64748b", fontWeight: 600 }}>{m.strength}</span>
-              </span>
-            ) : null;
-          })}
-        </div>
-
-      {/* Summary + Latest — sticky ends here */}
-      <div style={{ background: policy.color.bg, borderBottom: `1px solid ${policy.color.border}`, padding: "10px 32px" }}>
-        <p style={{ margin: 0, fontSize: 12, color: "#334155", lineHeight: 1.65, maxWidth: 900 }}>{policy.summary}</p>
-        <p style={{ margin: "4px 0 0", fontSize: 11, color: "#64748b" }}><strong>Latest:</strong> {policy.latestUpdateSummary}</p>
-      </div>
       </div>{/* end sticky block */}
+
+      {/* Pillar Coverage Banner — scrolls with page */}
+      <div style={{ background: "#0f172a", padding: "10px 32px", display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em" }}>Pillar Coverage:</span>
+        {pillarMapping.map(m => {
+          const p = PILLAR_LOOKUP[m.pillar];
+          return p ? (
+            <span key={m.pillar} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <span style={{ background: p.color.badge, color: p.color.text, border: `1px solid ${p.color.border}`, borderRadius: 20, padding: "3px 11px", fontSize: 11, fontWeight: 600 }}>
+                {p.emoji} {p.label}
+              </span>
+              <span style={{ fontSize: 10, color: m.strength === "Primary" ? "#a78bfa" : "#64748b", fontWeight: 600 }}>{m.strength}</span>
+            </span>
+          ) : null;
+        })}
+      </div>
 
       {/* Digest TL;DR — persisted from Digest Library */}
       {(() => {
@@ -1812,22 +1811,6 @@ function PolicyDetail({ policy, onBack, onViewDigest }: { policy: any; onBack: (
           </div>
         );
       })()}
-
-      {/* Pillar Impact per this Policy */}
-      <div style={{ background: "#fff", borderBottom: "1px solid #f1f5f9", padding: "12px 32px" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>What This Policy Requires Across Each Pillar</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 8 }}>
-          {pillarMapping.map(m => {
-            const p = PILLAR_LOOKUP[m.pillar];
-            return p ? (
-              <div key={m.pillar} style={{ background: p.color.bg, border: `1px solid ${p.color.border}`, borderRadius: 8, padding: "8px 12px" }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: p.color.text, marginBottom: 3 }}>{p.emoji} {p.label} <span style={{ fontSize: 10, fontWeight: 500, color: "#94a3b8" }}>— {m.strength}</span></div>
-                <p style={{ margin: 0, fontSize: 11, color: "#475569", lineHeight: 1.5 }}>{m.impact}</p>
-              </div>
-            ) : null;
-          })}
-        </div>
-      </div>
 
       {/* Filters */}
       <div style={{ padding: "10px 32px", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", background: "#fff", borderBottom: "2px solid #e2e8f0" }}>
@@ -1933,6 +1916,22 @@ function PolicyDetail({ policy, onBack, onViewDigest }: { policy: any; onBack: (
           );
         })}
         {filtered.length === 0 && <div style={{ textAlign: "center", padding: 48, color: "#94a3b8" }}>No clauses match your filters.</div>}
+      </div>
+
+      {/* Pillar Impact — moved to bottom so clause reading is uninterrupted */}
+      <div style={{ background: "#fff", borderTop: "2px solid #e2e8f0", padding: "20px 32px 32px" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>What This Policy Requires Across Each Pillar</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 8 }}>
+          {pillarMapping.map(m => {
+            const p = PILLAR_LOOKUP[m.pillar];
+            return p ? (
+              <div key={m.pillar} style={{ background: p.color.bg, border: `1px solid ${p.color.border}`, borderRadius: 8, padding: "8px 12px" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: p.color.text, marginBottom: 3 }}>{p.emoji} {p.label} <span style={{ fontSize: 10, fontWeight: 500, color: "#94a3b8" }}>— {m.strength}</span></div>
+                <p style={{ margin: 0, fontSize: 11, color: "#475569", lineHeight: 1.5 }}>{m.impact}</p>
+              </div>
+            ) : null;
+          })}
+        </div>
       </div>
     </div>
   );
