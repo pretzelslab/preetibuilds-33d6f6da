@@ -1,7 +1,12 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import * as XLSX from "xlsx";
-import { IMPLEMENTATION_GUIDES } from "./guides";
+import { IMPLEMENTATION_GUIDES as STATIC_GUIDES } from "./guides";
+import { usePolicyGuides } from "../../hooks/usePolicyGuides";
 import { seedDemoClient, DEMO_CLIENT_ID } from "./demoData";
+
+// Live policy data from Supabase — falls back to static guides while loading or on error
+// Updated synchronously during each render so all sub-components see current data
+let IMPLEMENTATION_GUIDES: Record<string, any> = STATIC_GUIDES;
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 type EngagementType = "" | "Readiness Assessment" | "Gap Analysis" | "Implementation Support" | "Audit Preparation";
@@ -2270,6 +2275,8 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient, onPhaseSe
                   {/* Question rows — accordion: one open at a time per area */}
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {area.questions.map((question: string, qIdx: number) => {
+                      const clauseRef: string | null = (area as any).clauseRefs?.[qIdx] ?? null;
+                      const clauseGuidance: string | null = (area as any).guidance?.[qIdx] ?? null;
                       const qState = aState.questions[qIdx] || { status: "Not Started", currentState: "", gap: "", proposedAction: "", evidenceStatus: "" as DocExists, evidenceRef: "", dueDate: "", owner: "" };
                       const scfg = STATUS_CONFIG[qState.status as QStatus];
                       const isNA = qState.status === "Not Applicable";
@@ -2286,7 +2293,10 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient, onPhaseSe
                           <button onClick={() => setOpenQuestions(prev => ({ ...prev, [areaIdx]: prev[areaIdx] === qIdx ? null : qIdx }))}
                             style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: isQOpen ? scfg.bg : "#fff", border: "none", cursor: "pointer", textAlign: "left" }}>
                             <span style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", minWidth: 20, flexShrink: 0 }}>{qIdx + 1}.</span>
-                            <p style={{ margin: 0, fontSize: 13, color: isNA ? "#94a3b8" : "#0f172a", lineHeight: 1.5, flex: 1, fontWeight: 500, textDecoration: isNA ? "line-through" : "none", textAlign: "left" }}>{question}</p>
+                            <div style={{ flex: 1 }}>
+                              <p style={{ margin: 0, fontSize: 13, color: isNA ? "#94a3b8" : "#0f172a", lineHeight: 1.5, fontWeight: 500, textDecoration: isNA ? "line-through" : "none", textAlign: "left" }}>{question}</p>
+                              {clauseRef && <span style={{ fontSize: 10, fontWeight: 700, color: "#6366f1", background: "#eef2ff", borderRadius: 4, padding: "1px 6px", marginTop: 3, display: "inline-block" }}>{clauseRef}</span>}
+                            </div>
                             <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                               {qState.owner && !isQOpen && <span style={{ fontSize: 10, color: "#64748b", background: "#f1f5f9", borderRadius: 4, padding: "1px 6px" }}>{qState.owner}</span>}
                               {qState.evidenceStatus && !isQOpen && <span style={{ fontSize: 10, fontWeight: 700, color: qState.evidenceStatus === "Yes" ? "#15803d" : qState.evidenceStatus === "Partial" ? "#a16207" : "#dc2626", background: qState.evidenceStatus === "Yes" ? "#f0fdf4" : qState.evidenceStatus === "Partial" ? "#fefce8" : "#fef2f2", borderRadius: 4, padding: "1px 6px" }}>{qState.evidenceStatus}</span>}
@@ -2302,6 +2312,14 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient, onPhaseSe
                               {isBlocked && (
                                 <div style={{ marginBottom: 10, fontSize: 11, color: "#a16207", background: "#fefce8", border: "1px solid #fde047", borderRadius: 6, padding: "5px 10px", display: "inline-flex", alignItems: "center", gap: 6 }}>
                                   ↑ Complete Q{(depIdx! + 1)} above first — this question builds on that answer
+                                </div>
+                              )}
+
+                              {/* Clause reference + guidance panel */}
+                              {clauseGuidance && (
+                                <div style={{ marginBottom: 10, background: "#f5f3ff", border: "1px solid #ddd6fe", borderLeft: "3px solid #6366f1", borderRadius: 7, padding: "8px 12px" }}>
+                                  {clauseRef && <div style={{ fontSize: 10, fontWeight: 800, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>{clauseRef}</div>}
+                                  <div style={{ fontSize: 12, color: "#4c1d95", lineHeight: 1.65 }}>{clauseGuidance}</div>
                                 </div>
                               )}
 
@@ -3002,6 +3020,12 @@ function Phase4Report({ client, onExportFull }: { client: Client; onExportFull: 
 type View = "clients" | "detail" | "workbook" | "risk-register";
 
 export default function ClientDiscovery() {
+  const { guides: liveGuides, loading: guidesLoading, lastFetched, refresh: refreshGuides } = usePolicyGuides();
+
+  // Synchronously update the module-level reference so all child components
+  // see live Supabase data on every re-render triggered by the hook
+  if (Object.keys(liveGuides).length > 0) IMPLEMENTATION_GUIDES = liveGuides;
+
   const [view, setView] = useState<View>("clients");
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [selectedPolicy, setSelectedPolicy] = useState<string | null>(null);
@@ -3013,13 +3037,29 @@ export default function ClientDiscovery() {
       onBackToClients={() => { setView("clients"); setSelectedClient(null); }} />;
   }
   if (view === "workbook" && selectedClient && selectedPolicy) {
-    return <DiscoveryWorkbook client={selectedClient} policyId={selectedPolicy}
-      onBack={() => workbookFrom === "list" ? (setView("clients"), setSelectedClient(null)) : setView("detail")}
-      onBackToClient={() => { setView("clients"); setSelectedClient(null); }}
-      onPhaseSelect={n => {
-        if (n === 3) setView("risk-register");
-        else setView("detail");           // Phase 1 or 4: back to client detail
-      }} />;
+    return (
+      <>
+        {guidesLoading && (
+          <div style={{ background: "#eef2ff", borderBottom: "1px solid #c7d2fe", padding: "6px 20px", fontSize: 11, color: "#4f46e5", display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⟳</span>
+            Loading latest policy data from database…
+          </div>
+        )}
+        {!guidesLoading && lastFetched && (
+          <div style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0", padding: "5px 20px", fontSize: 11, color: "#64748b", display: "flex", alignItems: "center", gap: 8 }}>
+            Policy data verified {lastFetched.toLocaleTimeString()} ·
+            <button onClick={refreshGuides} style={{ background: "none", border: "none", color: "#6366f1", cursor: "pointer", fontSize: 11, fontWeight: 600, padding: 0 }}>🔄 Refresh</button>
+          </div>
+        )}
+        <DiscoveryWorkbook client={selectedClient} policyId={selectedPolicy}
+          onBack={() => workbookFrom === "list" ? (setView("clients"), setSelectedClient(null)) : setView("detail")}
+          onBackToClient={() => { setView("clients"); setSelectedClient(null); }}
+          onPhaseSelect={n => {
+            if (n === 3) setView("risk-register");
+            else setView("detail");
+          }} />
+      </>
+    );
   }
   if (view === "detail" && selectedClient) {
     return <ClientDetailView client={selectedClient}
