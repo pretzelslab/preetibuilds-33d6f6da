@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { govDb, DbPolicy, DbArea, DbQuestion, DbComplianceDeadline } from "../lib/supabase-governance";
+import { govDb, DbPolicy, DbArea, DbQuestion, DbComplianceDeadline, DbQuestionTag } from "../lib/supabase-governance";
 
 // ── Shape that ClientDiscovery.tsx already consumes ───────────────────────────
 
@@ -26,6 +26,7 @@ export type GuideArea = {
   // enrichment fields
   clauseRefs: (string | null)[];   // one per question, same index
   guidance: (string | null)[];     // one per question, same index
+  industryTags: { industry: string; relevance: string }[][];  // one array per question
 };
 
 export type PolicyGuide = {
@@ -65,8 +66,15 @@ function buildGuidesMap(
   policies: DbPolicy[],
   areas: DbArea[],
   questions: DbQuestion[],
-  deadlines: DbComplianceDeadline[]
+  deadlines: DbComplianceDeadline[],
+  tags: DbQuestionTag[]
 ): GuidesMap {
+  // Build a quick lookup: question_id → tags[]
+  const tagsByQuestion: Record<string, { industry: string; relevance: string }[]> = {};
+  for (const tag of tags) {
+    if (!tagsByQuestion[tag.question_id]) tagsByQuestion[tag.question_id] = [];
+    tagsByQuestion[tag.question_id].push({ industry: tag.industry, relevance: tag.relevance });
+  }
   const map: GuidesMap = {};
 
   for (const policy of policies) {
@@ -106,6 +114,7 @@ function buildGuidesMap(
         },
         clauseRefs: areaQuestions.map(q => q.clause_ref),
         guidance: areaQuestions.map(q => q.guidance),
+        industryTags: areaQuestions.map(q => tagsByQuestion[q.id] ?? []),
       };
     });
 
@@ -148,22 +157,25 @@ export function usePolicyGuides() {
         { data: areas, error: aErr },
         { data: questions, error: qErr },
         { data: deadlines, error: dErr },
+        { data: tags, error: tErr },
       ] = await Promise.all([
         govDb.from("policies").select("*").order("sort_order"),
         govDb.from("areas").select("*").order("sort_order"),
         govDb.from("questions").select("*").order("sort_order"),
         govDb.from("compliance_deadlines").select("*").order("sort_order"),
+        govDb.from("question_tags").select("*"),
       ]);
 
-      if (pErr || aErr || qErr || dErr) {
-        throw new Error(pErr?.message || aErr?.message || qErr?.message || dErr?.message);
+      if (pErr || aErr || qErr || dErr || tErr) {
+        throw new Error(pErr?.message || aErr?.message || qErr?.message || dErr?.message || tErr?.message);
       }
 
       const result = buildGuidesMap(
         policies as DbPolicy[],
         areas as DbArea[],
         questions as DbQuestion[],
-        deadlines as DbComplianceDeadline[]
+        deadlines as DbComplianceDeadline[],
+        (tags ?? []) as DbQuestionTag[]
       );
 
       writeCache(result);

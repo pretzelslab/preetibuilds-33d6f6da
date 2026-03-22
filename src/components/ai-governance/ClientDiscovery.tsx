@@ -8,6 +8,38 @@ import { seedDemoClient, DEMO_CLIENT_ID } from "./demoData";
 // Updated synchronously during each render so all sub-components see current data
 let IMPLEMENTATION_GUIDES: Record<string, any> = STATIC_GUIDES;
 
+// ─── INDUSTRY → TAG SLUG MAPPING ─────────────────────────────────────────────
+// Maps a client's free-text industry to the tag slugs used in question_tags table
+const INDUSTRY_SLUG_MAP: { match: string[]; slugs: string[] }[] = [
+  { match: ["fintech", "financial tech", "lending", "credit", "payments", "neo bank", "neobank"], slugs: ["fintech", "banking"] },
+  { match: ["bank", "financial services", "finance", "wealth", "asset management", "capital markets"], slugs: ["banking", "fintech", "insurance"] },
+  { match: ["insur"], slugs: ["insurance"] },
+  { match: ["health", "med", "pharma", "biotech", "clinic", "hospital"], slugs: ["healthcare"] },
+  { match: ["hr tech", "hr-tech", "hrtech", "human resource", "recruitment", "talent", "hiring", "workforce"], slugs: ["hr-tech"] },
+  { match: ["edtech", "ed tech", "education", "learning", "school", "university", "academic"], slugs: ["edtech"] },
+  { match: ["public sector", "government", "gov tech", "govtech", "council", "agency", "ministry"], slugs: ["public-sector", "government"] },
+];
+
+function industryToSlugs(industry: string): string[] {
+  if (!industry) return [];
+  const lower = industry.toLowerCase();
+  for (const entry of INDUSTRY_SLUG_MAP) {
+    if (entry.match.some(m => lower.includes(m))) return entry.slugs;
+  }
+  return [];
+}
+
+function getQuestionRelevance(
+  industryTags: { industry: string; relevance: string }[],
+  clientSlugs: string[]
+): "critical" | "high" | null {
+  if (!clientSlugs.length || !industryTags.length) return null;
+  const matches = industryTags.filter(t => clientSlugs.includes(t.industry));
+  if (matches.some(t => t.relevance === "critical")) return "critical";
+  if (matches.some(t => t.relevance === "high")) return "high";
+  return null;
+}
+
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 type EngagementType = "" | "Readiness Assessment" | "Gap Analysis" | "Implementation Support" | "Audit Preparation";
 type SignOffStatus = "Pending" | "In Review" | "Signed Off";
@@ -2274,9 +2306,13 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient, onPhaseSe
 
                   {/* Question rows — accordion: one open at a time per area */}
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {area.questions.map((question: string, qIdx: number) => {
+                    {(() => {
+                      const clientSlugs = industryToSlugs(client.industry || "");
+                      return area.questions.map((question: string, qIdx: number) => {
                       const clauseRef: string | null = (area as any).clauseRefs?.[qIdx] ?? null;
                       const clauseGuidance: string | null = (area as any).guidance?.[qIdx] ?? null;
+                      const industryTags: { industry: string; relevance: string }[] = (area as any).industryTags?.[qIdx] ?? [];
+                      const relevance = getQuestionRelevance(industryTags, clientSlugs);
                       const qState = aState.questions[qIdx] || { status: "Not Started", currentState: "", gap: "", proposedAction: "", evidenceStatus: "" as DocExists, evidenceRef: "", dueDate: "", owner: "" };
                       const scfg = STATUS_CONFIG[qState.status as QStatus];
                       const isNA = qState.status === "Not Applicable";
@@ -2296,6 +2332,8 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient, onPhaseSe
                             <div style={{ flex: 1 }}>
                               <p style={{ margin: 0, fontSize: 13, color: isNA ? "#94a3b8" : "#0f172a", lineHeight: 1.5, fontWeight: 500, textDecoration: isNA ? "line-through" : "none", textAlign: "left" }}>{question}</p>
                               {clauseRef && <span style={{ fontSize: 10, fontWeight: 700, color: "#6366f1", background: "#eef2ff", borderRadius: 4, padding: "1px 6px", marginTop: 3, display: "inline-block" }}>{clauseRef}</span>}
+                              {relevance === "critical" && <span style={{ fontSize: 10, fontWeight: 700, color: "#b45309", background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 4, padding: "1px 6px", marginTop: 3, display: "inline-block", marginLeft: clauseRef ? 4 : 0 }}>⚡ Critical for your sector</span>}
+                              {relevance === "high" && <span style={{ fontSize: 10, fontWeight: 600, color: "#a16207", background: "#fefce8", border: "1px solid #fde68a", borderRadius: 4, padding: "1px 6px", marginTop: 3, display: "inline-block", marginLeft: clauseRef ? 4 : 0 }}>↑ High relevance for your sector</span>}
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                               {qState.owner && !isQOpen && <span style={{ fontSize: 10, color: "#64748b", background: "#f1f5f9", borderRadius: 4, padding: "1px 6px" }}>{qState.owner}</span>}
@@ -2390,7 +2428,7 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient, onPhaseSe
                           )}
                         </div>
                       );
-                    })}
+                    }); })()}
                   </div>
 
                   {/* Evidence to collect */}
