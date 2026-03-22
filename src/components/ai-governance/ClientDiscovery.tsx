@@ -1957,6 +1957,11 @@ function ClientDetailView({ client, onBack, onSelectPolicy, onOpenRiskRegister }
       {activePhase === 4 && (
         <Phase4Report client={thisClient} onExportFull={() => exportFullReportExcel(thisClient)} />
       )}
+
+      {/* ── Phase 5: Monitor ── */}
+      {activePhase === 5 && (
+        <Phase5Monitor client={thisClient} />
+      )}
     </div>
   );
 }
@@ -2082,6 +2087,344 @@ function ReadinessReport({ client, policyId, areaStates, reportSummary, onSummar
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+// ─── PHASE 5: MONITOR ─────────────────────────────────────────────────────────
+
+type KpiTrend = "↑ Improving" | "→ Stable" | "↓ Degrading" | "—";
+type ReviewDecision = "" | "Continue Monitoring" | "Targeted Review" | "Full Re-assessment" | "Escalate";
+
+type MonitorKpi = {
+  id: string; name: string; unit: string;
+  currentValue: string; threshold: string; direction: "higher_better" | "lower_better";
+  trend: KpiTrend; notes: string;
+};
+type DriftTrigger = { id: string; name: string; active: boolean; lastOccurred: string; notes: string };
+type ChangeEntry = { id: string; date: string; changeType: string; description: string; impact: string; approvedBy: string };
+type Phase5Data = {
+  reviewFrequency: string; nextReviewDate: string; reviewType: string;
+  kpis: MonitorKpi[]; triggers: DriftTrigger[]; changes: ChangeEntry[];
+  decision: ReviewDecision; decisionRationale: string; decisionOwner: string; decisionDate: string;
+};
+
+const DEFAULT_KPIS: MonitorKpi[] = [
+  { id: "kpi-1", name: "Model Accuracy",              unit: "%", currentValue: "", threshold: "≥ 85", direction: "higher_better", trend: "—", notes: "" },
+  { id: "kpi-2", name: "False Positive Rate",          unit: "%", currentValue: "", threshold: "≤ 15", direction: "lower_better", trend: "—", notes: "" },
+  { id: "kpi-3", name: "Demographic Parity Gap",       unit: "%", currentValue: "", threshold: "≤ 5",  direction: "lower_better", trend: "—", notes: "" },
+  { id: "kpi-4", name: "Human Override Rate",          unit: "%", currentValue: "", threshold: "≤ 10", direction: "lower_better", trend: "—", notes: "" },
+  { id: "kpi-5", name: "AI Incident Count (period)",   unit: "#", currentValue: "", threshold: "0",    direction: "lower_better", trend: "—", notes: "" },
+];
+
+const DEFAULT_TRIGGERS: DriftTrigger[] = [
+  { id: "t-1", name: "Model retrained or updated",                   active: false, lastOccurred: "", notes: "" },
+  { id: "t-2", name: "New training data source added",               active: false, lastOccurred: "", notes: "" },
+  { id: "t-3", name: "Regulatory change affecting this system",      active: false, lastOccurred: "", notes: "" },
+  { id: "t-4", name: "Bias metric threshold breached",               active: false, lastOccurred: "", notes: "" },
+  { id: "t-5", name: "Decision volume change >20%",                  active: false, lastOccurred: "", notes: "" },
+  { id: "t-6", name: "Adverse customer or regulatory incident",      active: false, lastOccurred: "", notes: "" },
+  { id: "t-7", name: "Deployment context change",                    active: false, lastOccurred: "", notes: "" },
+];
+
+function computeKpiStatus(kpi: MonitorKpi): { label: string; bg: string; text: string } {
+  const val = parseFloat(kpi.currentValue);
+  const raw = kpi.threshold.replace(/[≥≤<>]/g, "").trim();
+  const thresh = parseFloat(raw);
+  if (isNaN(val) || isNaN(thresh)) return { label: "—", bg: "#f1f5f9", text: "#64748b" };
+  const isHigherBetter = kpi.direction === "higher_better";
+  const breached = isHigherBetter ? val < thresh : val > thresh;
+  const approaching = isHigherBetter ? (val >= thresh * 0.9 && val < thresh) : (val <= thresh * 1.1 && val > thresh);
+  if (breached)    return { label: "Breached",    bg: "#fef2f2", text: "#dc2626" };
+  if (approaching) return { label: "Approaching", bg: "#fff7ed", text: "#c2410c" };
+  return { label: "Within", bg: "#f0fdf4", text: "#15803d" };
+}
+
+function loadPhase5(clientId: string): Phase5Data {
+  try {
+    const raw = localStorage.getItem(`pl_p5_${clientId}`);
+    if (raw) return JSON.parse(raw);
+  } catch { /* ignore */ }
+  return {
+    reviewFrequency: "", nextReviewDate: "", reviewType: "",
+    kpis: DEFAULT_KPIS, triggers: DEFAULT_TRIGGERS, changes: [],
+    decision: "", decisionRationale: "", decisionOwner: "", decisionDate: "",
+  };
+}
+function savePhase5(clientId: string, data: Phase5Data) {
+  localStorage.setItem(`pl_p5_${clientId}`, JSON.stringify(data));
+}
+
+function Phase5Monitor({ client }: { client: Client }) {
+  const [data, setData] = useState<Phase5Data>(() => loadPhase5(client.id));
+  const [lastSaved, setLastSaved] = useState("");
+
+  const persist = (next: Phase5Data) => {
+    savePhase5(client.id, next);
+    setLastSaved(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+  };
+  const update = (patch: Partial<Phase5Data>) => {
+    const next = { ...data, ...patch };
+    setData(next); persist(next);
+  };
+  const updateKpi = (id: string, patch: Partial<MonitorKpi>) => {
+    const next = { ...data, kpis: data.kpis.map(k => k.id === id ? { ...k, ...patch } : k) };
+    setData(next); persist(next);
+  };
+  const addKpi = () => {
+    const next = { ...data, kpis: [...data.kpis, { id: crypto.randomUUID(), name: "", unit: "%", currentValue: "", threshold: "", direction: "lower_better" as const, trend: "—" as KpiTrend, notes: "" }] };
+    setData(next); persist(next);
+  };
+  const removeKpi = (id: string) => {
+    const next = { ...data, kpis: data.kpis.filter(k => k.id !== id) };
+    setData(next); persist(next);
+  };
+  const updateTrigger = (id: string, patch: Partial<DriftTrigger>) => {
+    const next = { ...data, triggers: data.triggers.map(t => t.id === id ? { ...t, ...patch } : t) };
+    setData(next); persist(next);
+  };
+  const addChange = () => {
+    const next = { ...data, changes: [...data.changes, { id: crypto.randomUUID(), date: "", changeType: "Model", description: "", impact: "", approvedBy: "" }] };
+    setData(next); persist(next);
+  };
+  const updateChange = (id: string, patch: Partial<ChangeEntry>) => {
+    const next = { ...data, changes: data.changes.map(c => c.id === id ? { ...c, ...patch } : c) };
+    setData(next); persist(next);
+  };
+  const removeChange = (id: string) => {
+    const next = { ...data, changes: data.changes.filter(c => c.id !== id) };
+    setData(next); persist(next);
+  };
+
+  const activeTriggers = data.triggers.filter(t => t.active).length;
+  const breachedKpis = data.kpis.filter(k => computeKpiStatus(k).label === "Breached").length;
+
+  const inp: React.CSSProperties = { width: "100%", padding: "6px 9px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 12, outline: "none", boxSizing: "border-box", fontFamily: "inherit" };
+  const sel: React.CSSProperties = { ...inp, background: "#fff", cursor: "pointer" };
+
+  const DECISION_COLORS: Record<string, { bg: string; border: string; text: string }> = {
+    "Continue Monitoring": { bg: "#f0fdf4", border: "#bbf7d0", text: "#15803d" },
+    "Targeted Review":      { bg: "#fefce8", border: "#fde68a", text: "#a16207" },
+    "Full Re-assessment":   { bg: "#fff7ed", border: "#fed7aa", text: "#c2410c" },
+    "Escalate":             { bg: "#fef2f2", border: "#fecaca", text: "#dc2626" },
+  };
+  const dc = data.decision ? (DECISION_COLORS[data.decision] || {}) : null;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+      {/* Auto-save */}
+      {lastSaved && <div style={{ textAlign: "right", fontSize: 11, color: "#64748b" }}>✓ Saved · {lastSaved}</div>}
+
+      {/* Status chips */}
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <div style={{ background: breachedKpis > 0 ? "#fef2f2" : "#f0fdf4", border: `1px solid ${breachedKpis > 0 ? "#fecaca" : "#bbf7d0"}`, borderRadius: 8, padding: "8px 14px", textAlign: "center" }}>
+          <div style={{ fontSize: 20, fontWeight: 800, color: breachedKpis > 0 ? "#dc2626" : "#15803d" }}>{breachedKpis}</div>
+          <div style={{ fontSize: 10, fontWeight: 600, color: breachedKpis > 0 ? "#dc2626" : "#15803d" }}>KPI{breachedKpis !== 1 ? "s" : ""} Breached</div>
+        </div>
+        <div style={{ background: activeTriggers > 0 ? "#fff7ed" : "#f0fdf4", border: `1px solid ${activeTriggers > 0 ? "#fed7aa" : "#bbf7d0"}`, borderRadius: 8, padding: "8px 14px", textAlign: "center" }}>
+          <div style={{ fontSize: 20, fontWeight: 800, color: activeTriggers > 0 ? "#c2410c" : "#15803d" }}>{activeTriggers}</div>
+          <div style={{ fontSize: 10, fontWeight: 600, color: activeTriggers > 0 ? "#c2410c" : "#15803d" }}>Drift Trigger{activeTriggers !== 1 ? "s" : ""} Active</div>
+        </div>
+        <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "8px 14px", textAlign: "center" }}>
+          <div style={{ fontSize: 20, fontWeight: 800, color: "#0f172a" }}>{data.changes.length}</div>
+          <div style={{ fontSize: 10, fontWeight: 600, color: "#64748b" }}>Change{data.changes.length !== 1 ? "s" : ""} Logged</div>
+        </div>
+        {data.decision && dc && (
+          <div style={{ background: dc.bg, border: `1px solid ${dc.border}`, borderRadius: 8, padding: "8px 14px", display: "flex", alignItems: "center" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: dc.text }}>Decision: {data.decision}</div>
+          </div>
+        )}
+      </div>
+
+      {/* Section 1: Review Schedule */}
+      <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 11, padding: "16px 20px" }}>
+        <div style={{ fontSize: 12, fontWeight: 800, color: "#0f172a", marginBottom: 12 }}>📅 Review Schedule</div>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: 150 }}>
+            <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 4, textTransform: "uppercase" }}>Frequency</label>
+            <select value={data.reviewFrequency} onChange={e => update({ reviewFrequency: e.target.value })} style={sel}>
+              <option value="">— Select —</option>
+              {["Monthly", "Quarterly", "Bi-annual", "Annual"].map(f => <option key={f}>{f}</option>)}
+            </select>
+          </div>
+          <div style={{ flex: 1, minWidth: 150 }}>
+            <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 4, textTransform: "uppercase" }}>Next Review Date</label>
+            <input type="date" value={data.nextReviewDate} onChange={e => update({ nextReviewDate: e.target.value })} style={inp} />
+          </div>
+          <div style={{ flex: 1, minWidth: 150 }}>
+            <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 4, textTransform: "uppercase" }}>Review Type</label>
+            <select value={data.reviewType} onChange={e => update({ reviewType: e.target.value })} style={sel}>
+              <option value="">— Select —</option>
+              {["Full Re-assessment", "Targeted Review", "Desk-based Check"].map(f => <option key={f}>{f}</option>)}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Section 2: Monitoring KPIs */}
+      <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 11, padding: "16px 20px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: "#0f172a" }}>📊 Monitoring KPIs</div>
+          <button onClick={addKpi} style={{ fontSize: 11, fontWeight: 600, color: "#6366f1", background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>+ Add KPI</button>
+        </div>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+            <thead>
+              <tr style={{ background: "#f8fafc" }}>
+                {["Metric", "Unit", "Current Value", "Threshold", "Status", "Trend", "Notes", ""].map(h => (
+                  <th key={h} style={{ padding: "6px 10px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", borderBottom: "1px solid #e2e8f0", whiteSpace: "nowrap" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {data.kpis.map(kpi => {
+                const status = computeKpiStatus(kpi);
+                return (
+                  <tr key={kpi.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                    <td style={{ padding: "6px 8px" }}>
+                      <input value={kpi.name} onChange={e => updateKpi(kpi.id, { name: e.target.value })} style={{ ...inp, minWidth: 160 }} />
+                    </td>
+                    <td style={{ padding: "6px 8px" }}>
+                      <input value={kpi.unit} onChange={e => updateKpi(kpi.id, { unit: e.target.value })} style={{ ...inp, width: 50 }} />
+                    </td>
+                    <td style={{ padding: "6px 8px" }}>
+                      <input value={kpi.currentValue} onChange={e => updateKpi(kpi.id, { currentValue: e.target.value })} placeholder="—" style={{ ...inp, width: 70 }} />
+                    </td>
+                    <td style={{ padding: "6px 8px" }}>
+                      <input value={kpi.threshold} onChange={e => updateKpi(kpi.id, { threshold: e.target.value })} style={{ ...inp, width: 70 }} />
+                    </td>
+                    <td style={{ padding: "6px 8px" }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: status.bg, color: status.text, whiteSpace: "nowrap" }}>{status.label}</span>
+                    </td>
+                    <td style={{ padding: "6px 8px" }}>
+                      <select value={kpi.trend} onChange={e => updateKpi(kpi.id, { trend: e.target.value as KpiTrend })} style={{ ...sel, width: 120 }}>
+                        {(["—", "↑ Improving", "→ Stable", "↓ Degrading"] as KpiTrend[]).map(t => <option key={t}>{t}</option>)}
+                      </select>
+                    </td>
+                    <td style={{ padding: "6px 8px" }}>
+                      <input value={kpi.notes} onChange={e => updateKpi(kpi.id, { notes: e.target.value })} placeholder="Notes…" style={{ ...inp, minWidth: 140 }} />
+                    </td>
+                    <td style={{ padding: "6px 8px" }}>
+                      <button onClick={() => removeKpi(kpi.id)} style={{ background: "none", border: "none", color: "#dc2626", cursor: "pointer", fontSize: 13, padding: "0 4px" }}>✕</button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Section 3: Drift Triggers */}
+      <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 11, padding: "16px 20px" }}>
+        <div style={{ fontSize: 12, fontWeight: 800, color: "#0f172a", marginBottom: 4 }}>⚡ Drift Triggers</div>
+        <div style={{ fontSize: 11, color: "#64748b", marginBottom: 12 }}>Check any condition that has occurred since the last review — this drives the re-assessment decision below.</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {data.triggers.map(trigger => (
+            <div key={trigger.id} style={{ background: trigger.active ? "#fff7ed" : "#f8fafc", border: `1px solid ${trigger.active ? "#fed7aa" : "#e2e8f0"}`, borderRadius: 8, padding: "10px 14px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <input type="checkbox" checked={trigger.active} onChange={e => updateTrigger(trigger.id, { active: e.target.checked })}
+                  style={{ width: 16, height: 16, cursor: "pointer", accentColor: "#c2410c", flexShrink: 0 }} />
+                <span style={{ fontSize: 13, fontWeight: trigger.active ? 700 : 500, color: trigger.active ? "#c2410c" : "#334155", flex: 1 }}>{trigger.name}</span>
+                {trigger.active && (
+                  <>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", whiteSpace: "nowrap" }}>Date:</label>
+                      <input type="date" value={trigger.lastOccurred} onChange={e => updateTrigger(trigger.id, { lastOccurred: e.target.value })}
+                        style={{ padding: "3px 7px", border: "1px solid #e2e8f0", borderRadius: 5, fontSize: 11, outline: "none", cursor: "pointer" }} />
+                    </div>
+                    <input value={trigger.notes} onChange={e => updateTrigger(trigger.id, { notes: e.target.value })}
+                      placeholder="Notes…" style={{ padding: "3px 8px", border: "1px solid #e2e8f0", borderRadius: 5, fontSize: 11, outline: "none", minWidth: 160 }} />
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Section 4: Change Log */}
+      <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 11, padding: "16px 20px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 800, color: "#0f172a" }}>📋 Change Log</div>
+            <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>Record material changes to the AI system since the last review.</div>
+          </div>
+          <button onClick={addChange} style={{ fontSize: 11, fontWeight: 600, color: "#6366f1", background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>+ Add Entry</button>
+        </div>
+        {data.changes.length === 0 ? (
+          <div style={{ fontSize: 12, color: "#94a3b8", textAlign: "center", padding: "18px 0" }}>No changes recorded yet</div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {data.changes.map(c => (
+              <div key={c.id} style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "10px 14px" }}>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end", marginBottom: 6 }}>
+                  <div>
+                    <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase" }}>Date</label>
+                    <input type="date" value={c.date} onChange={e => updateChange(c.id, { date: e.target.value })} style={{ ...inp, width: 140 }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase" }}>Type</label>
+                    <select value={c.changeType} onChange={e => updateChange(c.id, { changeType: e.target.value })} style={{ ...sel, width: 130 }}>
+                      {["Model", "Data", "Deployment", "Policy", "Governance"].map(t => <option key={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase" }}>Approved By</label>
+                    <input value={c.approvedBy} onChange={e => updateChange(c.id, { approvedBy: e.target.value })} placeholder="Name / Role" style={{ ...inp, width: 150 }} />
+                  </div>
+                  <button onClick={() => removeChange(c.id)} style={{ background: "none", border: "none", color: "#dc2626", cursor: "pointer", fontSize: 13, marginBottom: 2 }}>✕</button>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <div style={{ flex: 2 }}>
+                    <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase" }}>Description</label>
+                    <input value={c.description} onChange={e => updateChange(c.id, { description: e.target.value })} placeholder="What changed?" style={inp} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 3, textTransform: "uppercase" }}>Impact Assessment</label>
+                    <input value={c.impact} onChange={e => updateChange(c.id, { impact: e.target.value })} placeholder="Risk / compliance impact" style={inp} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Section 5: Re-assessment Decision */}
+      <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 11, padding: "16px 20px" }}>
+        <div style={{ fontSize: 12, fontWeight: 800, color: "#0f172a", marginBottom: 12 }}>✅ Re-assessment Decision</div>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+          {(["Continue Monitoring", "Targeted Review", "Full Re-assessment", "Escalate"] as ReviewDecision[]).map(d => {
+            const c = DECISION_COLORS[d];
+            const isSelected = data.decision === d;
+            return (
+              <button key={d} onClick={() => update({ decision: isSelected ? "" : d })}
+                style={{ padding: "8px 16px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", border: `2px solid ${isSelected ? c.border : "#e2e8f0"}`, background: isSelected ? c.bg : "#fff", color: isSelected ? c.text : "#64748b" }}>
+                {d}
+              </button>
+            );
+          })}
+        </div>
+        <div style={{ marginBottom: 10 }}>
+          <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 4, textTransform: "uppercase" }}>Rationale</label>
+          <textarea value={data.decisionRationale} onChange={e => update({ decisionRationale: e.target.value })}
+            placeholder="Summarise the basis for this decision — KPI trends, active triggers, regulatory context, and agreed next steps…"
+            rows={3} style={{ ...inp, resize: "vertical" }} />
+        </div>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: 180 }}>
+            <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 4, textTransform: "uppercase" }}>Decision Owner</label>
+            <input value={data.decisionOwner} onChange={e => update({ decisionOwner: e.target.value })} placeholder="Name / Role" style={inp} />
+          </div>
+          <div>
+            <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 4, textTransform: "uppercase" }}>Decision Date</label>
+            <input type="date" value={data.decisionDate} onChange={e => update({ decisionDate: e.target.value })} style={inp} />
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }
