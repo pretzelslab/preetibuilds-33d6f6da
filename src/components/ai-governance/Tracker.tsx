@@ -237,7 +237,16 @@ const POLICIES = [
     emoji: "🇪🇺",
     clauses: [
       { category: "Risk Classification", clause: "Article 6", parameter: "High-Risk AI", pillars: ["governance","risk"], description: "AI systems in Annex III sectors classified as high-risk with conformity assessment requirements.", biasConsideration: "High-risk classification explicitly targets systems affecting employment, education, and law enforcement where bias risk is greatest.", genderConsideration: "High-risk systems must not discriminate on grounds of sex or other protected characteristics.", complianceAction: "Conduct conformity assessment. Register in EU AI database before market placement.", riskLevel: "High" },
-      { category: "Prohibited Practices", clause: "Article 5", parameter: "Unacceptable Risk AI", pillars: ["ethics","governance"], description: "Bans real-time biometric ID in public, social scoring by governments, manipulation of vulnerable groups.", biasConsideration: "Prohibits AI exploiting vulnerabilities of specific demographic groups.", genderConsideration: "Prohibition extends to manipulation based on gender identity or expression.", complianceAction: "Cease development of prohibited systems. Legal review of all biometric AI use cases.", riskLevel: "Critical" },
+      { category: "Prohibited Practices", clause: "Article 5", subClauseRange: "Art. 5(1)(a)–(h)", parameter: "Unacceptable Risk AI", pillars: ["ethics","governance"], description: "Prohibits 8 categories of AI outright — no exemption, no conformity assessment path. All current AI use cases must be screened against every category. The review must be documented in writing.", subClauses: [
+        { ref: "Art. 5(1)(a)", text: "Subliminal manipulation: AI using techniques below the threshold of consciousness to distort a person's behaviour in a way that causes or is reasonably likely to cause psychological or physical harm." },
+        { ref: "Art. 5(1)(b)", text: "Exploitation of vulnerabilities: AI that exploits vulnerabilities of specific groups (age, disability, social or economic situation) to distort behaviour causing or likely to cause harm." },
+        { ref: "Art. 5(1)(c)", text: "Biometric categorisation: Systems that categorise individuals based on biometric data to infer or deduce race, political opinions, trade-union membership, religious beliefs, sexual orientation or health data." },
+        { ref: "Art. 5(1)(d)", text: "Social scoring by public authorities: Evaluation or classification of natural persons by public authorities based on social behaviour or personal characteristics leading to detrimental or unfavourable treatment." },
+        { ref: "Art. 5(1)(e)", text: "Real-time remote biometric identification in public spaces for law enforcement — with narrow exceptions (missing children, imminent terror threat, serious criminal suspect) requiring prior authorisation." },
+        { ref: "Art. 5(1)(f)", text: "Retrospective remote biometric identification: Use of 'post' real-time biometric identification systems against untargeted databases of biometric data scraped from the internet or CCTV footage." },
+        { ref: "Art. 5(1)(g)", text: "Predictive policing: AI making individual risk assessments of natural persons for the purpose of predicting the commission of a criminal offence based solely on profiling or personality traits." },
+        { ref: "Art. 5(1)(h)", text: "Emotion recognition: AI systems used to infer the emotions of natural persons in the areas of workplace and educational institutions, except for medical or safety reasons." },
+      ], biasConsideration: "Prohibits AI exploiting vulnerabilities of specific demographic groups. Sub-clauses (a)–(d) directly address protected characteristics — bias screening must check against each.", genderConsideration: "Prohibition in (b) explicitly covers gender identity; (c) covers biometric inference of sex; (h) covers workplace surveillance that disproportionately affects women.", complianceAction: "Screen every current and planned AI use case against all 8 sub-clauses. Document the review in writing. Escalate any match to legal counsel immediately. No transitional period — prohibitions applied from August 2025.", riskLevel: "Critical" },
       { category: "Transparency", clause: "Article 13", parameter: "High-Risk Transparency", pillars: ["ethics","governance"], description: "High-risk AI must be transparent enough for deployers to interpret outputs. Instructions for use required.", biasConsideration: "Disclosure of training data characteristics and known bias limitations mandatory.", genderConsideration: "Deployers must understand how system handles gender-related data inputs.", complianceAction: "Produce technical documentation and plain-language user instructions.", riskLevel: "High" },
       { category: "Human Oversight", clause: "Article 14", parameter: "Human-in-the-Loop", pillars: ["governance","ethics"], description: "High-risk AI must allow humans to oversee, intervene, and override during operation.", biasConsideration: "Override required where outputs may affect protected groups.", genderConsideration: "Override capability mandatory in systems making decisions on gender or protected grounds.", complianceAction: "Design override controls and audit trails. Train operators.", riskLevel: "High" },
       { category: "Data Governance", clause: "Article 10", parameter: "Training Data Requirements", pillars: ["privacy","ethics"], description: "Training and test datasets must be relevant, representative, and free of errors. Bias examination mandatory.", biasConsideration: "Datasets examined for biases affecting health, safety, or fundamental rights.", genderConsideration: "Gender balance and representativeness in training data explicitly required.", complianceAction: "Document data sources, lineage, and bias examination results.", riskLevel: "High" },
@@ -1719,7 +1728,7 @@ function TopicsView({ onSelectPolicy }) {
 }
 
 // ─── POLICY DETAIL ────────────────────────────────────────────────────────────
-function PolicyDetail({ policy, onBack }) {
+function PolicyDetail({ policy, onBack, onViewDigest }: { policy: any; onBack: () => void; onViewDigest?: () => void }) {
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState("All");
   const [filterRisk, setFilterRisk] = useState("All");
@@ -1784,6 +1793,26 @@ function PolicyDetail({ policy, onBack }) {
       </div>
       </div>{/* end sticky block */}
 
+      {/* Digest TL;DR — persisted from Digest Library */}
+      {(() => {
+        const digest = POLICY_DIGESTS[policy.id];
+        if (!digest) return null;
+        return (
+          <div style={{ background: "#f0f4ff", borderBottom: "1px solid #c7d2fe", padding: "12px 32px", display: "flex", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
+            <div style={{ flex: 1, minWidth: 260 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 5 }}>📖 Plain-English Summary</div>
+              <p style={{ margin: 0, fontSize: 12, color: "#1e1b4b", lineHeight: 1.7 }}>{digest.tldr}</p>
+            </div>
+            {onViewDigest && (
+              <button onClick={onViewDigest}
+                style={{ flexShrink: 0, background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "7px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", alignSelf: "center" }}>
+                Read full digest →
+              </button>
+            )}
+          </div>
+        );
+      })()}
+
       {/* Pillar Impact per this Policy */}
       <div style={{ background: "#fff", borderBottom: "1px solid #f1f5f9", padding: "12px 32px" }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>What This Policy Requires Across Each Pillar</div>
@@ -1802,7 +1831,7 @@ function PolicyDetail({ policy, onBack }) {
 
       {/* Filters */}
       <div style={{ padding: "10px 32px", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", background: "#fff", borderBottom: "2px solid #e2e8f0" }}>
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search clauses..." style={{ flex: 1, minWidth: 200, padding: "7px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none" }} />
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Free-text search — try 'Article 5', 'bias', 'transparency', 'training data'…" style={{ flex: 1, minWidth: 240, padding: "7px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none" }} />
         <select value={filterCat} onChange={e => setFilterCat(e.target.value)} style={{ padding: "7px 10px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 12, background: "#fff" }}>
           {categories.map((c: any) => <option key={c as string}>{c as string}</option>)}
         </select>
@@ -1834,8 +1863,10 @@ function PolicyDetail({ policy, onBack }) {
                     <span style={{ fontSize: 11, fontWeight: 600, color: "#6366f1", background: "#eef2ff", borderRadius: 4, padding: "2px 8px" }}>
                       <HL text={c.category} q={search} />
                     </span>
-                    <Tip text={`Reference: ${c.clause} — click to expand for full detail`} width={220}>
-                      <span style={{ fontSize: 11, color: "#94a3b8", fontFamily: "monospace", cursor: "help" }}>{c.clause}</span>
+                    <Tip text={`Reference: ${c.clause}${(c as any).subClauseRange ? " " + (c as any).subClauseRange : ""} — click to expand for full detail`} width={260}>
+                      <span style={{ fontSize: 11, color: "#94a3b8", fontFamily: "monospace", cursor: "help" }}>
+                        {c.clause}{(c as any).subClauseRange && <span style={{ color: "#6366f1", marginLeft: 4 }}>{(c as any).subClauseRange}</span>}
+                      </span>
                     </Tip>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -1858,6 +1889,26 @@ function PolicyDetail({ policy, onBack }) {
                   <p style={{ margin: "14px 0 0", fontSize: 13, color: "#475569", lineHeight: 1.7 }}>
                     <HL text={c.description} q={search} />
                   </p>
+                  {/* Sub-clauses — e.g. Art. 5(1)(a)–(h) */}
+                  {(c as any).subClauses?.length > 0 && (
+                    <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "12px 16px" }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 10 }}>
+                        Sub-clause breakdown · {(c as any).subClauseRange}
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {(c as any).subClauses.map((sc: { ref: string; text: string }, si: number) => (
+                          <div key={si} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, color: "#6366f1", background: "#eef2ff", borderRadius: 4, padding: "2px 7px", flexShrink: 0, marginTop: 1, fontFamily: "monospace" }}>
+                              <HL text={sc.ref} q={search} />
+                            </span>
+                            <span style={{ fontSize: 12, color: "#334155", lineHeight: 1.65 }}>
+                              <HL text={sc.text} q={search} />
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {[
                     { label: "Bias Consideration", value: c.biasConsideration, color: "#fef3c7", border: "#fde68a", text: "#92400e",
                       tip: "How this clause specifically addresses or creates bias risk — particularly around protected characteristics and demographic groups." },
@@ -2366,7 +2417,7 @@ export default function AIGovernanceTracker() {
   }), [search, filterType, filterGeo]);
 
   if (selectedGuide) return <PolicyGuide policy={selectedGuide} onBack={() => setSelectedGuide(null)} />;
-  if (selected) return <PolicyDetail policy={selected} onBack={() => setSelected(null)} />;
+  if (selected) return <PolicyDetail policy={selected} onBack={() => setSelected(null)} onViewDigest={() => { setSelectedDigest(selected); setSelected(null); }} />;
   if (selectedDigest) return <PolicyDigestDetail policy={selectedDigest} onBack={() => setSelectedDigest(null)} />;
 
   return (
