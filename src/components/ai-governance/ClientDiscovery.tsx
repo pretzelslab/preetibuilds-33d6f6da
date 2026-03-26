@@ -92,10 +92,16 @@ type PendingGap = {
   policyId: string;
   policyName: string;
   area: string;
+  areaPriority: string;
   gap: string;
   proposedAction: string;
   owner: string;
   dueDate: string;
+  questionStatus: string;
+  evidenceStatus: string;
+  recommended: boolean;
+  recommendReason: string;
+  alreadyImported: boolean;
 };
 
 function isOverdue(risk: RiskEntry): boolean {
@@ -2903,6 +2909,7 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
   };
 
   const openImportModal = () => {
+    const existingDescs = new Set(risks.map(r => r.description.trim().toLowerCase()));
     const gaps: PendingGap[] = [];
     client.activePolicies.forEach(policyId => {
       const guide = (IMPLEMENTATION_GUIDES as Record<string, any>)[policyId];
@@ -2913,21 +2920,46 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
         area.questions.forEach((_q: string, qi: number) => {
           const qs = st.questions[qi];
           if (!qs?.gap?.trim()) return;
+          const gapText = qs.gap.trim();
+          const alreadyImported = existingDescs.has(gapText.toLowerCase());
+          // Recommendation logic
+          const isWellManaged = (qs.status === "In Progress" || qs.status === "Complete")
+            && qs.proposedAction?.trim() && qs.owner?.trim() && qs.dueDate?.trim();
+          const isHighPriority = area.priority === "High";
+          const noEvidence = qs.evidenceStatus === "No";
+          const notActioned = !qs.status || qs.status === "Not Started";
+          const onHold = qs.status === "On Hold";
+          const recommended = !alreadyImported && !isWellManaged && (isHighPriority || noEvidence || notActioned || onHold);
+          let recommendReason = "";
+          if (recommended) {
+            if (isHighPriority && notActioned) recommendReason = "High priority · not started";
+            else if (isHighPriority && onHold) recommendReason = "High priority · on hold";
+            else if (isHighPriority) recommendReason = "High priority area";
+            else if (onHold) recommendReason = "On hold — needs escalation";
+            else if (noEvidence) recommendReason = "No mitigation evidence";
+            else if (notActioned) recommendReason = "Gap not yet actioned";
+          }
           gaps.push({
-            id: crypto.randomUUID(),
-            policyId, policyName,
-            area: area.area,
-            gap: qs.gap.trim(),
-            proposedAction: qs.proposedAction?.trim() || "",
-            owner: qs.owner || "",
-            dueDate: qs.dueDate || "",
+            id: crypto.randomUUID(), policyId, policyName,
+            area: area.area, areaPriority: area.priority || "Medium",
+            gap: gapText, proposedAction: qs.proposedAction?.trim() || "",
+            owner: qs.owner || "", dueDate: qs.dueDate || "",
+            questionStatus: qs.status || "Not Started",
+            evidenceStatus: qs.evidenceStatus || "",
+            recommended, recommendReason, alreadyImported,
           });
         });
       });
     });
     if (gaps.length === 0) { alert("No Phase 2 gap fields found. Fill in Gap / Finding fields in the questionnaire first."); return; }
+    // Sort: recommended first, then not-recommended, then already imported at bottom
+    gaps.sort((a, b) => {
+      if (a.alreadyImported !== b.alreadyImported) return a.alreadyImported ? 1 : -1;
+      if (a.recommended !== b.recommended) return a.recommended ? -1 : 1;
+      return 0;
+    });
     setPendingGaps(gaps);
-    setSelectedGapIds(new Set(gaps.map(g => g.id)));
+    setSelectedGapIds(new Set(gaps.filter(g => g.recommended).map(g => g.id)));
     setShowImportModal(true);
   };
 
@@ -3311,13 +3343,20 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div>
                   <div style={{ fontSize: 16, fontWeight: 800, color: "#0f172a", marginBottom: 4 }}>Select gaps to import as risks</div>
-                  <div style={{ fontSize: 12, color: "#64748b" }}>{pendingGaps.length} gaps found across your active frameworks</div>
+                  <div style={{ fontSize: 12, color: "#64748b" }}>
+                    {pendingGaps.filter(g => !g.alreadyImported).length} new gaps · {pendingGaps.filter(g => g.recommended).length} recommended · {pendingGaps.filter(g => g.alreadyImported).length} already in register
+                  </div>
                 </div>
                 <button onClick={() => setShowImportModal(false)} style={{ background: "none", border: "none", fontSize: 18, color: "#94a3b8", cursor: "pointer", lineHeight: 1 }}>✕</button>
               </div>
-              <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-                <button onClick={() => setSelectedGapIds(new Set(pendingGaps.map(g => g.id)))}
-                  style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 6, padding: "4px 12px", cursor: "pointer" }}>Select all</button>
+              <div style={{ marginTop: 10, padding: "8px 12px", background: "#f0f4ff", borderRadius: 8, fontSize: 11, color: "#3730a3", lineHeight: 1.6 }}>
+                💡 <strong>Recommended</strong> gaps are pre-selected — these are high priority, unactioned, or have no mitigation evidence. Gaps already being actively managed are not pre-selected.
+              </div>
+              <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+                <button onClick={() => setSelectedGapIds(new Set(pendingGaps.filter(g => !g.alreadyImported).map(g => g.id)))}
+                  style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 6, padding: "4px 12px", cursor: "pointer" }}>Select all new</button>
+                <button onClick={() => setSelectedGapIds(new Set(pendingGaps.filter(g => g.recommended).map(g => g.id)))}
+                  style={{ fontSize: 11, fontWeight: 700, color: "#15803d", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 6, padding: "4px 12px", cursor: "pointer" }}>Recommended only</button>
                 <button onClick={() => setSelectedGapIds(new Set())}
                   style={{ fontSize: 11, fontWeight: 700, color: "#64748b", background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 6, padding: "4px 12px", cursor: "pointer" }}>Deselect all</button>
                 <span style={{ fontSize: 11, color: "#64748b", alignSelf: "center" }}>{selectedGapIds.size} selected</span>
@@ -3325,21 +3364,37 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
             </div>
             {/* Gap list */}
             <div style={{ overflowY: "auto", flex: 1, padding: "12px 24px" }}>
-              {pendingGaps.map(g => (
-                <div key={g.id} onClick={() => setSelectedGapIds(prev => { const n = new Set(prev); n.has(g.id) ? n.delete(g.id) : n.add(g.id); return n; })}
-                  style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "10px 12px", marginBottom: 6, borderRadius: 8, cursor: "pointer", border: `1px solid ${selectedGapIds.has(g.id) ? "#c7d2fe" : "#e2e8f0"}`, background: selectedGapIds.has(g.id) ? "#f5f3ff" : "#fff" }}>
-                  <input type="checkbox" checked={selectedGapIds.has(g.id)} onChange={() => {}} style={{ marginTop: 2, flexShrink: 0, accentColor: "#6366f1" }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12, color: "#334155", lineHeight: 1.5, marginBottom: 4 }}>{g.gap}</div>
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                      <span style={{ fontSize: 10, fontWeight: 600, color: "#6366f1", background: "#eef2ff", borderRadius: 4, padding: "1px 6px" }}>{g.policyName}</span>
-                      <span style={{ fontSize: 10, color: "#64748b", background: "#f1f5f9", borderRadius: 4, padding: "1px 6px" }}>{g.area}</span>
-                      {g.proposedAction && <span style={{ fontSize: 10, color: "#15803d", background: "#f0fdf4", borderRadius: 4, padding: "1px 6px" }}>Action: {g.proposedAction.slice(0, 50)}{g.proposedAction.length > 50 ? "…" : ""}</span>}
-                      {g.dueDate && <span style={{ fontSize: 10, color: "#92400e", background: "#fef3c7", borderRadius: 4, padding: "1px 6px" }}>Due: {g.dueDate}</span>}
+              {pendingGaps.map(g => {
+                const isSelected = selectedGapIds.has(g.id);
+                const disabled = g.alreadyImported;
+                return (
+                  <div key={g.id}
+                    onClick={() => { if (disabled) return; setSelectedGapIds(prev => { const n = new Set(prev); n.has(g.id) ? n.delete(g.id) : n.add(g.id); return n; }); }}
+                    style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "10px 12px", marginBottom: 6, borderRadius: 8,
+                      cursor: disabled ? "default" : "pointer",
+                      border: `1px solid ${disabled ? "#f1f5f9" : isSelected ? "#c7d2fe" : "#e2e8f0"}`,
+                      background: disabled ? "#f8fafc" : isSelected ? "#f5f3ff" : "#fff",
+                      opacity: disabled ? 0.6 : 1 }}>
+                    <input type="checkbox" checked={isSelected} disabled={disabled} onChange={() => {}} style={{ marginTop: 2, flexShrink: 0, accentColor: "#6366f1" }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 4, flexWrap: "wrap" }}>
+                        {g.recommended && <span style={{ fontSize: 10, fontWeight: 700, color: "#15803d", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 4, padding: "1px 7px" }}>★ {g.recommendReason}</span>}
+                        {g.alreadyImported && <span style={{ fontSize: 10, fontWeight: 700, color: "#64748b", background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 4, padding: "1px 7px" }}>✓ Already in register</span>}
+                        {!g.recommended && !g.alreadyImported && <span style={{ fontSize: 10, color: "#94a3b8", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 4, padding: "1px 7px" }}>Being managed — optional</span>}
+                      </div>
+                      <div style={{ fontSize: 12, color: disabled ? "#94a3b8" : "#334155", lineHeight: 1.5, marginBottom: 5 }}>{g.gap}</div>
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 10, fontWeight: 600, color: "#6366f1", background: "#eef2ff", borderRadius: 4, padding: "1px 6px" }}>{g.policyName}</span>
+                        <span style={{ fontSize: 10, color: "#64748b", background: "#f1f5f9", borderRadius: 4, padding: "1px 6px" }}>{g.area}</span>
+                        <span style={{ fontSize: 10, color: "#64748b", background: "#f1f5f9", borderRadius: 4, padding: "1px 6px" }}>Status: {g.questionStatus}</span>
+                        {g.evidenceStatus && <span style={{ fontSize: 10, color: g.evidenceStatus === "Yes" ? "#15803d" : g.evidenceStatus === "Partial" ? "#a16207" : "#dc2626", background: g.evidenceStatus === "Yes" ? "#f0fdf4" : g.evidenceStatus === "Partial" ? "#fefce8" : "#fef2f2", borderRadius: 4, padding: "1px 6px" }}>Evidence: {g.evidenceStatus}</span>}
+                        {g.proposedAction && <span style={{ fontSize: 10, color: "#15803d", background: "#f0fdf4", borderRadius: 4, padding: "1px 6px" }}>Action: {g.proposedAction.slice(0, 50)}{g.proposedAction.length > 50 ? "…" : ""}</span>}
+                        {g.dueDate && <span style={{ fontSize: 10, color: "#92400e", background: "#fef3c7", borderRadius: 4, padding: "1px 6px" }}>Due: {g.dueDate}</span>}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             {/* Modal footer */}
             <div style={{ padding: "16px 24px", borderTop: "1px solid #e2e8f0", display: "flex", justifyContent: "flex-end", gap: 10 }}>
