@@ -1763,11 +1763,11 @@ function ClientProfilePanel({ client, onUpdate }: { client: Client; onUpdate: (p
 }
 
 // ─── VIEW 2: CLIENT DETAIL ────────────────────────────────────────────────────
-function ClientDetailView({ client, onBack, onSelectPolicy, onOpenRiskRegister }: {
-  client: Client; onBack: () => void; onSelectPolicy: (pid: string) => void; onOpenRiskRegister: () => void;
+function ClientDetailView({ client, onBack, onSelectPolicy, onOpenRiskRegister, defaultPhase }: {
+  client: Client; onBack: () => void; onSelectPolicy: (pid: string) => void; onOpenRiskRegister: () => void; defaultPhase?: number;
 }) {
   const [clients, setClients] = useState<Client[]>(loadClients);
-  const [activePhase, setActivePhase] = useState<number | null>(null);
+  const [activePhase, setActivePhase] = useState<number | null>(defaultPhase ?? null);
   const [showAddPolicy, setShowAddPolicy] = useState(false);
   const [showEditFrameworks, setShowEditFrameworks] = useState(false);
   const [editFrameworkSet, setEditFrameworkSet] = useState<Set<string>>(new Set());
@@ -2877,8 +2877,23 @@ const FINDING_FIELDS: Array<{ key: "condition" | "criteria" | "cause" | "effect"
 ];
 
 // ─── VIEW 4: RISK REGISTER ────────────────────────────────────────────────────
-function RiskRegisterView({ client, onBack, onBackToClients }: {
-  client: Client; onBack: () => void; onBackToClients: () => void;
+function inferRiskCategory(areaName: string): string {
+  const a = areaName.toLowerCase();
+  if (a.includes("bias") || a.includes("fairness") || a.includes("discriminat")) return "Data Bias & Fairness";
+  if (a.includes("transparency") || a.includes("explainab") || a.includes("interpret")) return "Transparency & Explainability";
+  if (a.includes("security") || a.includes("adversarial") || a.includes("cybersec") || a.includes("robustness")) return "Security & Adversarial Risk";
+  if (a.includes("privacy") || a.includes("data protection") || a.includes("personal data")) return "Privacy & Data Protection";
+  if (a.includes("compliance") || a.includes("regulatory") || a.includes("legal") || a.includes("regulation")) return "Regulatory Non-Compliance";
+  if (a.includes("oversight") || a.includes("human-in") || a.includes("human in")) return "Human Oversight Failure";
+  if (a.includes("vendor") || a.includes("third") || a.includes("supply chain") || a.includes("procurement")) return "Third-Party / Vendor Risk";
+  if (a.includes("performance") || a.includes("drift") || a.includes("monitor") || a.includes("accuracy") || a.includes("evaluat")) return "Model Performance & Drift";
+  if (a.includes("rights") || a.includes("fundamental") || a.includes("impact assess")) return "Fundamental Rights Violation";
+  if (a.includes("governance") || a.includes("accountability") || a.includes("responsibility") || a.includes("risk manag")) return "Governance & Accountability";
+  return "";
+}
+
+function RiskRegisterView({ client, onBack, onBackToClients, onNextPhase }: {
+  client: Client; onBack: () => void; onBackToClients: () => void; onNextPhase?: () => void;
 }) {
   const [risks, setRisks] = useState<RiskEntry[]>(() => loadRisks(client.id));
   const [openRisk, setOpenRisk] = useState<string | null>(null);
@@ -2888,6 +2903,8 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
   const [pendingGaps, setPendingGaps] = useState<PendingGap[]>([]);
   const [selectedGapIds, setSelectedGapIds] = useState<Set<string>>(new Set());
   const [overdueOnly, setOverdueOnly] = useState(false);
+  const [riskLevelFilter, setRiskLevelFilter] = useState<RiskLevel | null>(null);
+  const [sortBy, setSortBy] = useState<"default" | "score-desc" | "due-asc" | "status">("default");
 
   const persist = (updated: RiskEntry[]) => {
     saveRisks(client.id, updated);
@@ -2967,7 +2984,7 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
     const toImport = pendingGaps.filter(g => selectedGapIds.has(g.id));
     const seeds: RiskEntry[] = toImport.map((g, idx) => ({
       id: crypto.randomUUID(), riskId: `R-${String(risks.length + idx + 1).padStart(3, "0")}`,
-      sourceArea: g.area, affectedSystem: client.aiSystemName || "", riskCategory: "",
+      sourceArea: g.area, affectedSystem: client.aiSystemName || "", riskCategory: inferRiskCategory(g.area),
       description: g.gap, likelihoodAtScale: "",
       inherentLikelihood: 3, inherentImpact: 3, residualLikelihood: 2, residualImpact: 2,
       controls: [], condition: g.gap, criteria: g.area, cause: "",
@@ -2984,7 +3001,7 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
   };
 
   const deleteRisk = (id: string) => {
-    if (!confirm("Delete this risk entry?")) return;
+    if (!confirm("Delete this risk entry? The associated gap will re-appear as importable in Phase 2 next time you open the import modal.")) return;
     setRisks(prev => { const updated = prev.filter(r => r.id !== id); persist(updated); return updated; });
   };
 
@@ -3009,7 +3026,11 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
   const counts: Record<RiskLevel, number> = { Critical: 0, High: 0, Medium: 0, Low: 0 };
   risks.forEach(r => counts[riskLevel(r.residualLikelihood, r.residualImpact)]++);
   const overdueCount = risks.filter(isOverdue).length;
-  const visibleRisks = overdueOnly ? risks.filter(isOverdue) : risks;
+  let visibleRisks = overdueOnly ? risks.filter(isOverdue) : [...risks];
+  if (riskLevelFilter) visibleRisks = visibleRisks.filter(r => riskLevel(r.residualLikelihood, r.residualImpact) === riskLevelFilter);
+  if (sortBy === "score-desc") visibleRisks = [...visibleRisks].sort((a, b) => b.residualLikelihood * b.residualImpact - a.residualLikelihood * a.residualImpact);
+  else if (sortBy === "due-asc") visibleRisks = [...visibleRisks].sort((a, b) => (a.dueDate || "9999").localeCompare(b.dueDate || "9999"));
+  else if (sortBy === "status") { const order = ["Open", "In Progress", "On Hold", "Accepted", "Resolved"]; visibleRisks = [...visibleRisks].sort((a, b) => order.indexOf(a.status) - order.indexOf(b.status)); }
 
   const ipt: React.CSSProperties = { width: "100%", padding: "7px 10px", border: "1px solid #e2e8f0", borderRadius: 7, fontSize: 12, outline: "none", boxSizing: "border-box", fontFamily: "inherit" };
   const ta: React.CSSProperties  = { ...ipt, resize: "vertical" };
@@ -3041,14 +3062,19 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
       </div>
 
       {/* Risk summary bar */}
-      <div style={{ display: "flex", gap: 10, marginBottom: 24, flexWrap: "wrap" }}>
+      <div style={{ fontSize: 11, color: "#64748b", marginBottom: 10, background: "#f8fafc", borderRadius: 8, padding: "7px 12px", border: "1px solid #e2e8f0" }}>
+        <strong>Risk scoring:</strong> Likelihood × Impact (1–5 each). Score ≥16 = Critical · ≥9 = High · ≥4 = Medium · &lt;4 = Low. <span style={{ color: "#6366f1" }}>Click a level to filter.</span>
+      </div>
+      <div style={{ display: "flex", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
         {(["Critical", "High", "Medium", "Low"] as RiskLevel[]).map(lvl => {
           const cfg = RISK_LEVEL_CONFIG[lvl];
+          const isActive = riskLevelFilter === lvl;
           return (
-            <div key={lvl} style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 10, padding: "10px 18px", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 80 }}>
-              <span style={{ fontSize: 22, fontWeight: 800, color: cfg.text }}>{counts[lvl]}</span>
-              <span style={{ fontSize: 11, fontWeight: 700, color: cfg.text }}>{lvl}</span>
-            </div>
+            <button key={lvl} onClick={() => setRiskLevelFilter(isActive ? null : lvl)}
+              style={{ background: isActive ? cfg.text : cfg.bg, border: `2px solid ${isActive ? cfg.text : cfg.border}`, borderRadius: 10, padding: "10px 18px", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 80, cursor: "pointer" }}>
+              <span style={{ fontSize: 22, fontWeight: 800, color: isActive ? "#fff" : cfg.text }}>{counts[lvl]}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: isActive ? "#fff" : cfg.text }}>{lvl}</span>
+            </button>
           );
         })}
         <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "10px 18px", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 80 }}>
@@ -3062,6 +3088,25 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
             <span style={{ fontSize: 11, fontWeight: 700, color: "#dc2626" }}>Overdue</span>
           </button>
         )}
+      </div>
+      {/* Active filter + sort */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "center", flexWrap: "wrap" }}>
+        {riskLevelFilter && (
+          <div style={{ fontSize: 12, color: "#6366f1", fontWeight: 600, background: "#eef2ff", padding: "4px 10px", borderRadius: 6, border: "1px solid #c7d2fe", display: "flex", alignItems: "center", gap: 6 }}>
+            Showing: {riskLevelFilter} only
+            <button onClick={() => setRiskLevelFilter(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#6366f1", fontSize: 13, fontWeight: 700, lineHeight: 1, padding: 0 }}>✕</button>
+          </div>
+        )}
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
+          <label style={{ fontSize: 11, color: "#64748b", fontWeight: 600, whiteSpace: "nowrap" }}>Sort by:</label>
+          <select value={sortBy} onChange={e => setSortBy(e.target.value as typeof sortBy)}
+            style={{ fontSize: 12, padding: "4px 8px", border: "1px solid #e2e8f0", borderRadius: 6, background: "#fff", cursor: "pointer", outline: "none" }}>
+            <option value="default">Added order</option>
+            <option value="score-desc">Highest risk first</option>
+            <option value="due-asc">Due date (soonest first)</option>
+            <option value="status">Status</option>
+          </select>
+        </div>
       </div>
 
       {/* Risk register */}
@@ -3334,6 +3379,19 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
         {lastSaved && <div style={{ fontSize: 11, color: "#15803d", fontWeight: 600, marginTop: 6 }}>✓ Saved · {lastSaved}</div>}
       </div>
 
+      {/* ── Phase 4 CTA ── */}
+      <div style={{ marginTop: 8, marginBottom: 24, padding: "16px 20px", background: "#f0f4ff", border: "1px solid #c7d2fe", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 3 }}>Ready to report?</div>
+          <div style={{ fontSize: 12, color: "#64748b" }}>Proceed to Phase 4 — Report & Recommend to finalise findings and generate the client report.</div>
+        </div>
+        {onNextPhase && (
+          <button onClick={onNextPhase} style={{ background: "#4f46e5", color: "#fff", border: "none", borderRadius: 8, padding: "10px 22px", cursor: "pointer", fontSize: 13, fontWeight: 700, whiteSpace: "nowrap", flexShrink: 0 }}>
+            Phase 4: Report & Recommend →
+          </button>
+        )}
+      </div>
+
       {/* ── Import Modal ── */}
       {showImportModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)", zIndex: 9000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
@@ -3413,6 +3471,33 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
 }
 
 // ─── PHASE 4: REPORT & RECOMMEND ─────────────────────────────────────────────
+const POLICY_BRIEF: Record<string, { headline: string; keyObligation: string }> = {
+  "eu-ai-act": {
+    headline: "Binding EU regulation for AI placed on the EU/EEA market",
+    keyObligation: "High-risk AI systems require conformity assessment, technical documentation, human oversight, and registration in the EU AI database before deployment. Prohibited practices (Art. 5) must be confirmed absent. GPAI models face transparency and copyright compliance obligations.",
+  },
+  "nist-ai-rmf": {
+    headline: "US voluntary AI risk management framework (NIST)",
+    keyObligation: "Govern, Map, Measure, and Manage AI risks across four core functions. Prioritise trustworthiness dimensions: reliability, explainability, privacy, security, and bias mitigation throughout the AI lifecycle.",
+  },
+  "nist-csf": {
+    headline: "US cybersecurity framework applicable to AI systems (NIST CSF 2.0)",
+    keyObligation: "Govern, Identify, Protect, Detect, Respond, and Recover. Secure AI system supply chain, third-party model integrity, and incident response capabilities. Align AI security controls to broader organisational cybersecurity posture.",
+  },
+  "iso-42001": {
+    headline: "International AI management system standard (ISO/IEC 42001:2023)",
+    keyObligation: "Establish a certified AI management system covering context, leadership commitment, planning, support, operations, performance evaluation, and continual improvement (PDCA cycle). Requires documented AI policy and risk assessment processes.",
+  },
+  "fair": {
+    headline: "Factor Analysis of Information Risk — quantitative AI risk model",
+    keyObligation: "Quantify AI-related risk in financial terms using Loss Event Frequency and Loss Magnitude. Prioritise controls by expected financial impact and justify risk investment decisions with defensible, data-driven figures.",
+  },
+  "aaia": {
+    headline: "Australia's AI Ethics Framework / Interim Guidance",
+    keyObligation: "Align AI systems with 8 voluntary ethics principles: human & societal wellbeing; human-centred values; fairness; privacy protection; reliability & safety; transparency & explainability; contestability; and accountability.",
+  },
+};
+
 function Phase4Report({ client, onExportFull }: { client: Client; onExportFull: () => void }) {
   const risks = loadRisks(client.id);
   const [execSummary, setExecSummary] = useState(() => localStorage.getItem(`pl_p4_exec_${client.id}`) || "");
@@ -3465,6 +3550,55 @@ function Phase4Report({ client, onExportFull }: { client: Client; onExportFull: 
           </div>
         )}
       </div>
+
+      {/* Applicable Frameworks & Key Obligations */}
+      {client.activePolicies.length > 0 && (
+        <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "20px 24px" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 14 }}>
+            Applicable Frameworks & Key Obligations
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {client.activePolicies.map(pid => {
+              const stub = POLICY_STUBS.find(p => p.id === pid);
+              const brief = POLICY_BRIEF[pid];
+              if (!stub) return null;
+              const policyRisks = risks.filter(r => {
+                const guide = (IMPLEMENTATION_GUIDES as Record<string, any>)[pid];
+                if (!guide) return false;
+                return guide.areas.some((a: any) => a.area === r.sourceArea);
+              });
+              const guide = (IMPLEMENTATION_GUIDES as Record<string, any>)[pid];
+              const deadlines: { date: string; requirement: string }[] = guide?.complianceDeadlines ?? [];
+              return (
+                <div key={pid} style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "14px 18px" }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 6 }}>
+                    <span style={{ fontSize: 18, flexShrink: 0 }}>{stub.emoji}</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{stub.name}</div>
+                      {brief && <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{brief.headline}</div>}
+                    </div>
+                    {policyRisks.length > 0 && (
+                      <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 10px", borderRadius: 20, background: "#fef2f2", color: "#b91c1c", border: "1px solid #fecaca", whiteSpace: "nowrap" }}>
+                        {policyRisks.length} risk{policyRisks.length !== 1 ? "s" : ""} identified
+                      </span>
+                    )}
+                  </div>
+                  {brief && <div style={{ fontSize: 12, color: "#334155", lineHeight: 1.6, marginBottom: deadlines.length ? 10 : 0 }}>{brief.keyObligation}</div>}
+                  {deadlines.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                      {deadlines.map((d, i) => (
+                        <span key={i} style={{ fontSize: 10, padding: "2px 8px", background: "#fff7ed", color: "#c2410c", borderRadius: 5, border: "1px solid #fed7aa", fontWeight: 600 }}>
+                          📅 {d.date}: {d.requirement}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Executive Summary */}
       <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "20px 24px" }}>
@@ -3606,11 +3740,13 @@ export default function ClientDiscovery() {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [selectedPolicy, setSelectedPolicy] = useState<string | null>(null);
   const [workbookFrom, setWorkbookFrom] = useState<"detail" | "list">("detail");
+  const [pendingPhase, setPendingPhase] = useState<number | undefined>(undefined);
 
   if (view === "risk-register" && selectedClient) {
     return <RiskRegisterView client={selectedClient}
-      onBack={() => setView("detail")}
-      onBackToClients={() => { setView("clients"); setSelectedClient(null); }} />;
+      onBack={() => { setPendingPhase(undefined); setView("detail"); }}
+      onBackToClients={() => { setView("clients"); setSelectedClient(null); }}
+      onNextPhase={() => { setPendingPhase(4); setView("detail"); }} />;
   }
   if (view === "workbook" && selectedClient && selectedPolicy) {
     return (
@@ -3641,7 +3777,8 @@ export default function ClientDiscovery() {
     return <ClientDetailView client={selectedClient}
       onBack={() => { setView("clients"); setSelectedClient(null); }}
       onSelectPolicy={pid => { setSelectedPolicy(pid); setWorkbookFrom("detail"); setView("workbook"); }}
-      onOpenRiskRegister={() => setView("risk-register")} />;
+      onOpenRiskRegister={() => setView("risk-register")}
+      defaultPhase={pendingPhase} />;
   }
   return <ClientListView
     onSelectClient={c => { setSelectedClient(c); setView("detail"); }}
