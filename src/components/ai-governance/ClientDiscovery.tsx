@@ -84,7 +84,25 @@ type RiskEntry = {
   owner: string;
   dueDate: string;
   status: RiskStatus;
+  escalationNotes: string;
 };
+
+type PendingGap = {
+  id: string;
+  policyId: string;
+  policyName: string;
+  area: string;
+  gap: string;
+  proposedAction: string;
+  owner: string;
+  dueDate: string;
+};
+
+function isOverdue(risk: RiskEntry): boolean {
+  if (!risk.dueDate || risk.status === "Resolved" || risk.status === "Accepted") return false;
+  const [y, m, d] = risk.dueDate.split("-").map(Number);
+  return new Date(y, m - 1, d) < new Date(new Date().setHours(0, 0, 0, 0));
+}
 
 type StakeholderEntry = {
   id: string;
@@ -2860,6 +2878,10 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
   const [openRisk, setOpenRisk] = useState<string | null>(null);
   const [riskSummaryText, setRiskSummaryText] = useState(() => localStorage.getItem(riskSummaryKey(client.id)) || "");
   const [lastSaved, setLastSaved] = useState("");
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [pendingGaps, setPendingGaps] = useState<PendingGap[]>([]);
+  const [selectedGapIds, setSelectedGapIds] = useState<Set<string>>(new Set());
+  const [overdueOnly, setOverdueOnly] = useState(false);
 
   const persist = (updated: RiskEntry[]) => {
     saveRisks(client.id, updated);
@@ -2874,39 +2896,55 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
       description: "", likelihoodAtScale: "",
       inherentLikelihood: 3, inherentImpact: 3, residualLikelihood: 2, residualImpact: 2,
       controls: [], condition: "", criteria: "", cause: "", effect: "", recommendation: "",
-      owner: "", dueDate: "", status: "Open",
+      owner: "", dueDate: "", status: "Open", escalationNotes: "",
     };
     const updated = [...risks, r];
     setRisks(updated); persist(updated); setOpenRisk(r.id);
   };
 
-  const importFromPhase2 = () => {
-    const seeds: RiskEntry[] = [];
+  const openImportModal = () => {
+    const gaps: PendingGap[] = [];
     client.activePolicies.forEach(policyId => {
       const guide = (IMPLEMENTATION_GUIDES as Record<string, any>)[policyId];
       if (!guide) return;
+      const policyName = POLICY_STUBS.find(p => p.id === policyId)?.shortName || policyId;
       guide.areas.forEach((area: any, ai: number) => {
         const st = loadArea(client.id, policyId, ai);
         area.questions.forEach((_q: string, qi: number) => {
           const qs = st.questions[qi];
           if (!qs?.gap?.trim()) return;
-          const num = risks.length + seeds.length + 1;
-          seeds.push({
-            id: crypto.randomUUID(), riskId: `R-${String(num).padStart(3, "0")}`,
-            sourceArea: area.area, affectedSystem: client.aiSystemName || "", riskCategory: "",
-            description: qs.gap.trim(), likelihoodAtScale: "",
-            inherentLikelihood: 3, inherentImpact: 3, residualLikelihood: 2, residualImpact: 2,
-            controls: [], condition: qs.gap.trim(), criteria: area.area, cause: "",
-            effect: "", recommendation: qs.proposedAction?.trim() || "",
-            owner: qs.owner || "", dueDate: qs.dueDate || "", status: "Open",
+          gaps.push({
+            id: crypto.randomUUID(),
+            policyId, policyName,
+            area: area.area,
+            gap: qs.gap.trim(),
+            proposedAction: qs.proposedAction?.trim() || "",
+            owner: qs.owner || "",
+            dueDate: qs.dueDate || "",
           });
         });
       });
     });
-    if (seeds.length === 0) { alert("No Phase 2 gap fields found. Complete the questionnaire first."); return; }
-    if (!confirm(`Import ${seeds.length} gap(s) from Phase 2 as risk entries? Existing risks will be preserved.`)) return;
+    if (gaps.length === 0) { alert("No Phase 2 gap fields found. Fill in Gap / Finding fields in the questionnaire first."); return; }
+    setPendingGaps(gaps);
+    setSelectedGapIds(new Set(gaps.map(g => g.id)));
+    setShowImportModal(true);
+  };
+
+  const confirmImport = () => {
+    const toImport = pendingGaps.filter(g => selectedGapIds.has(g.id));
+    const seeds: RiskEntry[] = toImport.map((g, idx) => ({
+      id: crypto.randomUUID(), riskId: `R-${String(risks.length + idx + 1).padStart(3, "0")}`,
+      sourceArea: g.area, affectedSystem: client.aiSystemName || "", riskCategory: "",
+      description: g.gap, likelihoodAtScale: "",
+      inherentLikelihood: 3, inherentImpact: 3, residualLikelihood: 2, residualImpact: 2,
+      controls: [], condition: g.gap, criteria: g.area, cause: "",
+      effect: "", recommendation: g.proposedAction,
+      owner: g.owner, dueDate: g.dueDate, status: "Open" as RiskStatus, escalationNotes: "",
+    }));
     const updated = [...risks, ...seeds];
     setRisks(updated); persist(updated);
+    setShowImportModal(false); setPendingGaps([]); setSelectedGapIds(new Set());
   };
 
   const updateRisk = (id: string, patch: Partial<RiskEntry>) => {
@@ -2938,6 +2976,8 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
 
   const counts: Record<RiskLevel, number> = { Critical: 0, High: 0, Medium: 0, Low: 0 };
   risks.forEach(r => counts[riskLevel(r.residualLikelihood, r.residualImpact)]++);
+  const overdueCount = risks.filter(isOverdue).length;
+  const visibleRisks = overdueOnly ? risks.filter(isOverdue) : risks;
 
   const ipt: React.CSSProperties = { width: "100%", padding: "7px 10px", border: "1px solid #e2e8f0", borderRadius: 7, fontSize: 12, outline: "none", boxSizing: "border-box", fontFamily: "inherit" };
   const ta: React.CSSProperties  = { ...ipt, resize: "vertical" };
@@ -2959,7 +2999,7 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           {lastSaved && <span style={{ fontSize: 11, color: "#15803d", fontWeight: 600 }}>✓ Saved · {lastSaved}</span>}
-          <button onClick={importFromPhase2} style={{ background: "#f0f9ff", color: "#0369a1", border: "1px solid #bae6fd", borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
+          <button onClick={openImportModal} style={{ background: "#f0f9ff", color: "#0369a1", border: "1px solid #bae6fd", borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
             ⬇ Import from Phase 2
           </button>
           <button onClick={addRisk} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "7px 16px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
@@ -2983,6 +3023,13 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
           <span style={{ fontSize: 22, fontWeight: 800, color: "#0f172a" }}>{risks.length}</span>
           <span style={{ fontSize: 11, fontWeight: 700, color: "#64748b" }}>Total</span>
         </div>
+        {overdueCount > 0 && (
+          <button onClick={() => setOverdueOnly(v => !v)}
+            style={{ background: overdueOnly ? "#fef2f2" : "#fff", border: `1px solid ${overdueOnly ? "#fca5a5" : "#fecaca"}`, borderRadius: 10, padding: "10px 18px", display: "flex", flexDirection: "column", alignItems: "center", minWidth: 80, cursor: "pointer" }}>
+            <span style={{ fontSize: 22, fontWeight: 800, color: "#dc2626" }}>{overdueCount}</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#dc2626" }}>Overdue</span>
+          </button>
+        )}
       </div>
 
       {/* Risk register */}
@@ -2992,7 +3039,7 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
           <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>No risks identified yet</div>
           <div style={{ fontSize: 12, marginBottom: 18 }}>Import gaps from Phase 2 or add a risk manually.</div>
           <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-            <button onClick={importFromPhase2} style={{ background: "#f0f9ff", color: "#0369a1", border: "1px solid #bae6fd", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
+            <button onClick={openImportModal} style={{ background: "#f0f9ff", color: "#0369a1", border: "1px solid #bae6fd", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
               ⬇ Import from Phase 2
             </button>
             <button onClick={addRisk} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>
@@ -3002,9 +3049,11 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
-          {risks.map(risk => {
+          {overdueOnly && <div style={{ fontSize: 12, color: "#dc2626", fontWeight: 600, padding: "6px 10px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8 }}>Showing {overdueCount} overdue risk{overdueCount !== 1 ? "s" : ""} — <button onClick={() => setOverdueOnly(false)} style={{ background: "none", border: "none", color: "#dc2626", cursor: "pointer", fontWeight: 700, textDecoration: "underline", fontSize: 12 }}>Show all</button></div>}
+          {visibleRisks.map(risk => {
             const isOpen = openRisk === risk.id;
             const sCfg = STATUS_COLORS[risk.status];
+            const overdue = isOverdue(risk);
             return (
               <div key={risk.id} style={{ background: "#fff", border: `1px solid ${isOpen ? "#a5b4fc" : "#e2e8f0"}`, borderRadius: 12, overflow: "hidden", boxShadow: isOpen ? "0 4px 16px rgba(99,102,241,0.1)" : "0 1px 4px rgba(0,0,0,0.04)" }}>
 
@@ -3021,6 +3070,7 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
                   <span style={{ fontSize: 10, fontWeight: 600, color: "#64748b", flexShrink: 0 }}>R:</span>
                   <RiskLevelBadge l={risk.residualLikelihood} i={risk.residualImpact} />
                   <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 5, background: sCfg.bg, color: sCfg.text, border: `1px solid ${sCfg.border}`, whiteSpace: "nowrap", flexShrink: 0 }}>{risk.status}</span>
+                  {overdue && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 5, background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca", whiteSpace: "nowrap", flexShrink: 0 }}>⚠ Overdue</span>}
                   <span style={{ fontSize: 12, color: "#94a3b8", flexShrink: 0 }}>{isOpen ? "▲" : "▼"}</span>
                 </div>
 
@@ -3187,6 +3237,44 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
                           🗑 Delete
                         </button>
                       </div>
+
+                      {/* Overdue escalation panel */}
+                      {overdue && (
+                        <div style={{ marginTop: 14, background: "#fef2f2", border: "1px solid #fecaca", borderLeft: "4px solid #dc2626", borderRadius: 8, padding: "12px 16px" }}>
+                          <div style={{ fontSize: 11, fontWeight: 800, color: "#dc2626", marginBottom: 6 }}>⚠ Deadline missed — action required</div>
+                          <div style={{ fontSize: 11, color: "#7f1d1d", marginBottom: 10, lineHeight: 1.6 }}>
+                            This risk was due <strong>{risk.dueDate}</strong> and is still {risk.status.toLowerCase()}. Choose one of the following steps:
+                          </div>
+                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+                            <button onClick={() => updateRisk(risk.id, { dueDate: "" })}
+                              style={{ fontSize: 11, fontWeight: 600, background: "#fff", border: "1px solid #fca5a5", color: "#dc2626", borderRadius: 6, padding: "4px 12px", cursor: "pointer" }}>
+                              📅 Extend due date
+                            </button>
+                            <button onClick={() => updateRisk(risk.id, { status: "Accepted" })}
+                              style={{ fontSize: 11, fontWeight: 600, background: "#fff", border: "1px solid #fca5a5", color: "#dc2626", borderRadius: 6, padding: "4px 12px", cursor: "pointer" }}>
+                              ✓ Accept risk formally
+                            </button>
+                            <button onClick={() => updateRisk(risk.id, { status: "In Progress" })}
+                              style={{ fontSize: 11, fontWeight: 600, background: "#fff", border: "1px solid #fca5a5", color: "#dc2626", borderRadius: 6, padding: "4px 12px", cursor: "pointer" }}>
+                              ↑ Escalate — mark In Progress
+                            </button>
+                          </div>
+                          <label style={{ fontSize: 11, fontWeight: 600, color: "#7f1d1d", display: "block", marginBottom: 4 }}>Escalation notes / action taken</label>
+                          <textarea value={risk.escalationNotes} onChange={e => updateRisk(risk.id, { escalationNotes: e.target.value })}
+                            rows={2} placeholder="Record reason for delay, who was notified, new timeline, or formal risk acceptance rationale…"
+                            style={{ ...ta, borderColor: "#fca5a5", background: "#fff" }} />
+                        </div>
+                      )}
+
+                      {/* Escalation notes (non-overdue) */}
+                      {!overdue && (
+                        <div style={{ marginTop: 10 }}>
+                          <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Escalation / Follow-up Notes</label>
+                          <textarea value={risk.escalationNotes} onChange={e => updateRisk(risk.id, { escalationNotes: e.target.value })}
+                            rows={2} placeholder="Record any escalations, owner changes, or follow-up actions taken…"
+                            style={ta} />
+                        </div>
+                      )}
                     </div>
 
                   </div>
@@ -3213,6 +3301,58 @@ function RiskRegisterView({ client, onBack, onBackToClients }: {
         />
         {lastSaved && <div style={{ fontSize: 11, color: "#15803d", fontWeight: 600, marginTop: 6 }}>✓ Saved · {lastSaved}</div>}
       </div>
+
+      {/* ── Import Modal ── */}
+      {showImportModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)", zIndex: 9000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <div style={{ background: "#fff", borderRadius: 16, width: "100%", maxWidth: 700, maxHeight: "80vh", display: "flex", flexDirection: "column", boxShadow: "0 24px 80px rgba(0,0,0,0.25)" }}>
+            {/* Modal header */}
+            <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid #e2e8f0" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#0f172a", marginBottom: 4 }}>Select gaps to import as risks</div>
+                  <div style={{ fontSize: 12, color: "#64748b" }}>{pendingGaps.length} gaps found across your active frameworks</div>
+                </div>
+                <button onClick={() => setShowImportModal(false)} style={{ background: "none", border: "none", fontSize: 18, color: "#94a3b8", cursor: "pointer", lineHeight: 1 }}>✕</button>
+              </div>
+              <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+                <button onClick={() => setSelectedGapIds(new Set(pendingGaps.map(g => g.id)))}
+                  style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 6, padding: "4px 12px", cursor: "pointer" }}>Select all</button>
+                <button onClick={() => setSelectedGapIds(new Set())}
+                  style={{ fontSize: 11, fontWeight: 700, color: "#64748b", background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 6, padding: "4px 12px", cursor: "pointer" }}>Deselect all</button>
+                <span style={{ fontSize: 11, color: "#64748b", alignSelf: "center" }}>{selectedGapIds.size} selected</span>
+              </div>
+            </div>
+            {/* Gap list */}
+            <div style={{ overflowY: "auto", flex: 1, padding: "12px 24px" }}>
+              {pendingGaps.map(g => (
+                <div key={g.id} onClick={() => setSelectedGapIds(prev => { const n = new Set(prev); n.has(g.id) ? n.delete(g.id) : n.add(g.id); return n; })}
+                  style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "10px 12px", marginBottom: 6, borderRadius: 8, cursor: "pointer", border: `1px solid ${selectedGapIds.has(g.id) ? "#c7d2fe" : "#e2e8f0"}`, background: selectedGapIds.has(g.id) ? "#f5f3ff" : "#fff" }}>
+                  <input type="checkbox" checked={selectedGapIds.has(g.id)} onChange={() => {}} style={{ marginTop: 2, flexShrink: 0, accentColor: "#6366f1" }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, color: "#334155", lineHeight: 1.5, marginBottom: 4 }}>{g.gap}</div>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 10, fontWeight: 600, color: "#6366f1", background: "#eef2ff", borderRadius: 4, padding: "1px 6px" }}>{g.policyName}</span>
+                      <span style={{ fontSize: 10, color: "#64748b", background: "#f1f5f9", borderRadius: 4, padding: "1px 6px" }}>{g.area}</span>
+                      {g.proposedAction && <span style={{ fontSize: 10, color: "#15803d", background: "#f0fdf4", borderRadius: 4, padding: "1px 6px" }}>Action: {g.proposedAction.slice(0, 50)}{g.proposedAction.length > 50 ? "…" : ""}</span>}
+                      {g.dueDate && <span style={{ fontSize: 10, color: "#92400e", background: "#fef3c7", borderRadius: 4, padding: "1px 6px" }}>Due: {g.dueDate}</span>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Modal footer */}
+            <div style={{ padding: "16px 24px", borderTop: "1px solid #e2e8f0", display: "flex", justifyContent: "flex-end", gap: 10 }}>
+              <button onClick={() => setShowImportModal(false)}
+                style={{ background: "#f8fafc", color: "#64748b", border: "1px solid #e2e8f0", borderRadius: 8, padding: "8px 20px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Cancel</button>
+              <button onClick={confirmImport} disabled={selectedGapIds.size === 0}
+                style={{ background: selectedGapIds.size === 0 ? "#e2e8f0" : "#0f172a", color: selectedGapIds.size === 0 ? "#94a3b8" : "#fff", border: "none", borderRadius: 8, padding: "8px 22px", cursor: selectedGapIds.size === 0 ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 700 }}>
+                Import {selectedGapIds.size} risk{selectedGapIds.size !== 1 ? "s" : ""}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
