@@ -4,6 +4,11 @@ import * as XLSX from "xlsx";
 import { POLICY_DIGESTS, type CriticalPoint, type Misconception } from "./digests";
 import { IMPLEMENTATION_GUIDES } from "./guides";
 
+// ─── PREVIEW MODE ─────────────────────────────────────────────────────────────
+// Set VITE_PREVIEW_MODE=true in Netlify environment variables to enable.
+// Disables right-click, text selection, exports, and blurs deep content.
+const PREVIEW_MODE = import.meta.env.VITE_PREVIEW_MODE === "true";
+
 // ─── HIGHLIGHT HELPER ────────────────────────────────────────────────────────
 function HL({ text, q }: { text: string; q: string }) {
   if (!q.trim() || !text) return <>{text}</>;
@@ -969,16 +974,16 @@ function PolicyGuide({ policy, onBack }) {
           ← Back
         </button>
         <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-          <button onClick={() => setShowClientModal(true)} style={{ background: "#f0fdf4", color: "#166534", border: "1px solid #bbf7d0", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+          {!PREVIEW_MODE && <button onClick={() => setShowClientModal(true)} style={{ background: "#f0fdf4", color: "#166534", border: "1px solid #bbf7d0", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
             ⬇ Download Excel
-          </button>
-          <label style={{ background: "#eff6ff", color: "#1d4ed8", border: "1px solid #bfdbfe", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+          </button>}
+          {!PREVIEW_MODE && <label style={{ background: "#eff6ff", color: "#1d4ed8", border: "1px solid #bfdbfe", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
             {uploading ? "Processing…" : "⬆ Upload Completed Discovery"}
             <input ref={uploadRef} type="file" accept=".xlsx,.xls" onChange={handleUpload} style={{ display: "none" }} />
-          </label>
-          <button onClick={() => window.print()} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+          </label>}
+          {!PREVIEW_MODE && <button onClick={() => window.print()} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
             Print / PDF
-          </button>
+          </button>}
         </div>
       </div>
       {uploadError && (
@@ -1772,7 +1777,7 @@ function PolicyDetail({ policy, onBack, onViewDigest }: { policy: any; onBack: (
               <p style={{ margin: "2px 0 0", fontSize: 11, color: "#64748b" }}>{policy.geography} · {policy.yearReleased} · <strong>Latest:</strong> {policy.latestUpdateSummary}</p>
             </div>
           </div>
-          <button onClick={() => exportDetailToCSV(policy)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "7px 16px", cursor: "pointer", fontSize: 12, fontWeight: 500 }}>Export CSV</button>
+          {!PREVIEW_MODE && <button onClick={() => exportDetailToCSV(policy)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "7px 16px", cursor: "pointer", fontSize: 12, fontWeight: 500 }}>Export CSV</button>}
         </div>
       </div>{/* end sticky block */}
 
@@ -1832,8 +1837,21 @@ function PolicyDetail({ policy, onBack, onViewDigest }: { policy: any; onBack: (
       </div>
 
       {/* Clause Cards */}
-      <div style={{ padding: "24px 32px", display: "flex", flexDirection: "column", gap: 10 }}>
-        {filtered.map((c, i) => {
+      <div style={{ padding: "24px 32px", display: "flex", flexDirection: "column", gap: 10, position: "relative" }}>
+        {PREVIEW_MODE && filtered.length > 3 && (
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "60%", background: "linear-gradient(to bottom, rgba(248,250,252,0) 0%, rgba(248,250,252,0.97) 45%)", zIndex: 10, display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 32, pointerEvents: "none" }}>
+            <div style={{ pointerEvents: "auto", textAlign: "center", background: "#fff", border: "1px solid #c7d2fe", borderRadius: 14, padding: "20px 32px", boxShadow: "0 4px 24px rgba(99,102,241,0.12)" }}>
+              <div style={{ fontSize: 22, marginBottom: 6 }}>🔒</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>Full clause detail protected</div>
+              <div style={{ fontSize: 12, color: "#64748b", marginBottom: 14 }}>Showing {Math.min(3, filtered.length)} of {filtered.length} clauses · Contact Preeti for full platform access</div>
+              <a href="https://www.linkedin.com/in/preetilal/" target="_blank" rel="noopener noreferrer"
+                style={{ display: "inline-block", background: "#4f46e5", color: "#fff", borderRadius: 8, padding: "8px 22px", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>
+                Request Access →
+              </a>
+            </div>
+          </div>
+        )}
+        {(PREVIEW_MODE ? filtered.slice(0, 3) : filtered).map((c, i) => {
           const isOpen = expandedClauses.has(i);
           return (
             <div key={i} style={{ background: "#fff", border: `1px solid ${isOpen ? "#c7d2fe" : "#e2e8f0"}`, borderRadius: 12, overflow: "hidden", transition: "border-color 0.15s" }}>
@@ -2420,7 +2438,16 @@ export default function AIGovernanceTracker() {
   if (selectedDigest) return <PolicyDigestDetail policy={selectedDigest} onBack={() => setSelectedDigest(null)} />;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "'Inter','Segoe UI',sans-serif" }}>
+    <div
+      onContextMenu={PREVIEW_MODE ? e => e.preventDefault() : undefined}
+      style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "'Inter','Segoe UI',sans-serif", userSelect: PREVIEW_MODE ? "none" : undefined }}>
+
+      {/* Preview mode banner */}
+      {PREVIEW_MODE && (
+        <div style={{ background: "#0f172a", color: "#94a3b8", fontSize: 11, fontWeight: 600, textAlign: "center", padding: "6px 16px", letterSpacing: "0.05em" }}>
+          📖 PREVIEW — Content protected · Contact Preeti to discuss full platform access
+        </div>
+      )}
 
       {/* Header */}
       <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", padding: "32px 32px 20px", color: "#fff" }}>
@@ -2432,8 +2459,8 @@ export default function AIGovernanceTracker() {
               <p style={{ margin: "8px 0 0", color: "#94a3b8", fontSize: 14 }}>Policy grid with clause-level detail · Four-pillar framework · Bias, gender & compliance analysis · Export</p>
             </div>
             <div style={{ display: "flex", gap: 10 }}>
-              {unlocked && <button onClick={() => exportToCSV(filtered)} style={{ background: "#fff", color: "#0f172a", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Export CSV</button>}
-              <button onClick={() => window.print()} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Print / PDF</button>
+              {unlocked && !PREVIEW_MODE && <button onClick={() => exportToCSV(filtered)} style={{ background: "#fff", color: "#0f172a", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Export CSV</button>}
+              {!PREVIEW_MODE && <button onClick={() => window.print()} style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Print / PDF</button>}
             </div>
           </div>
 

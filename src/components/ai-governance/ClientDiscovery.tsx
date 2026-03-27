@@ -51,9 +51,11 @@ type ClientStatus = "active" | "archived" | "hidden";
 // ─── RISK REGISTER TYPES ──────────────────────────────────────────────────────
 type RiskLevel = "Critical" | "High" | "Medium" | "Low";
 type RiskStatus = "Open" | "In Progress" | "Resolved" | "Accepted";
+type RiskTreatment = "" | "Treat" | "Transfer" | "Tolerate" | "Terminate";
 type ControlType = "Preventive" | "Detective" | "Corrective";
 type ControlStatus = "Not Implemented" | "Partially Implemented" | "Implemented" | "N/A";
 type ControlEffectiveness = "" | "Effective" | "Partially Effective" | "Ineffective" | "Not Tested";
+type AuditLogEntry = { ts: string; note: string };
 
 type RiskControl = {
   type: ControlType;
@@ -85,6 +87,14 @@ type RiskEntry = {
   dueDate: string;
   status: RiskStatus;
   escalationNotes: string;
+  // ── Audit fields ────────────────────────────────────────────────────────────
+  treatmentDecision: RiskTreatment;
+  clauseRef: string;               // e.g. "EU AI Act Art. 9(2)(b)"
+  residualAcceptedBy: string;
+  residualAcceptedDate: string;
+  controlTestDate: string;
+  nextReviewDate: string;
+  auditLog: AuditLogEntry[];
 };
 
 type PendingGap = {
@@ -526,17 +536,48 @@ const RISK_CATEGORIES = ["Data Bias & Fairness", "Transparency & Explainability"
 // ─── BACKUP EXPORT / IMPORT ───────────────────────────────────────────────────
 function exportBackupJSON() {
   const clients = loadClients();
-  const backup: Record<string, any> = { version: 1, exportedAt: new Date().toISOString(), clients, discoveryData: {} };
+  const backup: Record<string, any> = {
+    version: 2, exportedAt: new Date().toISOString(), clients,
+    discoveryData: {}, clientData: {},
+  };
   clients.forEach(client => {
+    // Phase 2 questionnaire area data
     client.activePolicies.forEach(policyId => {
       const guide = IMPLEMENTATION_GUIDES[policyId];
       if (!guide) return;
-      guide.areas.forEach((_a, i) => {
+      guide.areas.forEach((_a: any, i: number) => {
         const key = areaKey(client.id, policyId, i);
         const raw = localStorage.getItem(key);
         if (raw) backup.discoveryData[key] = JSON.parse(raw);
       });
+      // Per-policy report summary
+      const rptRaw = localStorage.getItem(reportSummaryKey(client.id, policyId));
+      if (rptRaw !== null) {
+        backup.clientData[client.id] = backup.clientData[client.id] || {};
+        backup.clientData[client.id].reportSummaries = backup.clientData[client.id].reportSummaries || {};
+        backup.clientData[client.id].reportSummaries[policyId] = rptRaw;
+      }
     });
+    // Risk register + summaries
+    const risksRaw = localStorage.getItem(riskKey(client.id));
+    const riskSumRaw = localStorage.getItem(riskSummaryKey(client.id));
+    // Phase 4 sign-off fields
+    const p4exec  = localStorage.getItem(`pl_p4_exec_${client.id}`);
+    const p4prep  = localStorage.getItem(`pl_p4_prep_${client.id}`);
+    const p4rev   = localStorage.getItem(`pl_p4_rev_${client.id}`);
+    const p4date  = localStorage.getItem(`pl_p4_date_${client.id}`);
+    // Phase 5
+    const p5raw   = localStorage.getItem(`pl_p5_${client.id}`);
+    backup.clientData[client.id] = {
+      ...(backup.clientData[client.id] || {}),
+      ...(risksRaw  ? { risks: JSON.parse(risksRaw) }   : {}),
+      ...(riskSumRaw ? { riskSummary: riskSumRaw }       : {}),
+      ...(p4exec  !== null ? { p4exec }  : {}),
+      ...(p4prep  !== null ? { p4prep }  : {}),
+      ...(p4rev   !== null ? { p4rev }   : {}),
+      ...(p4date  !== null ? { p4date }  : {}),
+      ...(p5raw   ? { p5: JSON.parse(p5raw) } : {}),
+    };
   });
   const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -551,9 +592,27 @@ function importBackupJSON(file: File, onDone: () => void) {
     try {
       const backup = JSON.parse(e.target?.result as string);
       if (backup.clients) saveClients(backup.clients);
+      // Phase 2 questionnaire data (v1 + v2)
       if (backup.discoveryData) {
         Object.entries(backup.discoveryData).forEach(([key, value]) => {
           try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+        });
+      }
+      // v2: risk register, Phase 4/5 per client
+      if (backup.clientData) {
+        Object.entries(backup.clientData).forEach(([clientId, data]: [string, any]) => {
+          if (data.risks)       saveRisks(clientId, data.risks);
+          if (data.riskSummary !== undefined) try { localStorage.setItem(riskSummaryKey(clientId), data.riskSummary); } catch {}
+          if (data.p4exec  !== undefined) try { localStorage.setItem(`pl_p4_exec_${clientId}`,  data.p4exec);  } catch {}
+          if (data.p4prep  !== undefined) try { localStorage.setItem(`pl_p4_prep_${clientId}`,  data.p4prep);  } catch {}
+          if (data.p4rev   !== undefined) try { localStorage.setItem(`pl_p4_rev_${clientId}`,   data.p4rev);   } catch {}
+          if (data.p4date  !== undefined) try { localStorage.setItem(`pl_p4_date_${clientId}`,  data.p4date);  } catch {}
+          if (data.p5)    try { localStorage.setItem(`pl_p5_${clientId}`, JSON.stringify(data.p5)); } catch {}
+          if (data.reportSummaries) {
+            Object.entries(data.reportSummaries).forEach(([pid, summary]) => {
+              try { localStorage.setItem(reportSummaryKey(clientId, pid), summary as string); } catch {}
+            });
+          }
         });
       }
       onDone();
@@ -1329,7 +1388,7 @@ const PHASES = [
   { num: 2, label: "Map & Discover",       sub: "Gap assessment · Questionnaire",  built: true  },
   { num: 3, label: "Measure & Assess",     sub: "Risk register · Scoring",         built: true  },
   { num: 4, label: "Report & Recommend",   sub: "Findings · Exec summary",         built: true  },
-  { num: 5, label: "Monitor",              sub: "Ongoing review · Drift tracking", built: false },
+  { num: 5, label: "Monitor",              sub: "Ongoing review · Drift tracking", built: true  },
 ];
 
 function PhaseNav({ activePhase, onPhaseClick }: { activePhase: number | null; onPhaseClick: (n: number) => void }) {
@@ -2858,6 +2917,22 @@ const STATUS_COLORS: Record<RiskStatus, { bg: string; text: string; border: stri
   "Accepted":    { bg: "#f5f3ff", text: "#7c3aed", border: "#ddd6fe" },
 };
 
+function AuditLogInput({ onAdd }: { onAdd: (note: string) => void }) {
+  const [note, setNote] = useState("");
+  return (
+    <div style={{ display: "flex", gap: 6 }}>
+      <input value={note} onChange={e => setNote(e.target.value)} placeholder="Add audit note…"
+        style={{ flex: 1, padding: "5px 8px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 11, outline: "none", fontFamily: "inherit" }}
+        onKeyDown={e => { if (e.key === "Enter" && note.trim()) { onAdd(note.trim()); setNote(""); } }}
+      />
+      <button onClick={() => { if (note.trim()) { onAdd(note.trim()); setNote(""); } }}
+        style={{ fontSize: 11, fontWeight: 700, background: "#0f172a", color: "#fff", border: "none", borderRadius: 6, padding: "5px 12px", cursor: "pointer", whiteSpace: "nowrap" }}>
+        + Add
+      </button>
+    </div>
+  );
+}
+
 function RiskLevelBadge({ l, i }: { l: number; i: number }) {
   const lvl = riskLevel(l, i);
   const cfg = RISK_LEVEL_CONFIG[lvl];
@@ -2920,6 +2995,8 @@ function RiskRegisterView({ client, onBack, onBackToClients, onNextPhase }: {
       inherentLikelihood: 3, inherentImpact: 3, residualLikelihood: 2, residualImpact: 2,
       controls: [], condition: "", criteria: "", cause: "", effect: "", recommendation: "",
       owner: "", dueDate: "", status: "Open", escalationNotes: "",
+      treatmentDecision: "", clauseRef: "", residualAcceptedBy: "", residualAcceptedDate: "",
+      controlTestDate: "", nextReviewDate: "", auditLog: [],
     };
     const updated = [...risks, r];
     setRisks(updated); persist(updated); setOpenRisk(r.id);
@@ -2990,6 +3067,8 @@ function RiskRegisterView({ client, onBack, onBackToClients, onNextPhase }: {
       controls: [], condition: g.gap, criteria: g.area, cause: "",
       effect: "", recommendation: g.proposedAction,
       owner: g.owner, dueDate: g.dueDate, status: "Open" as RiskStatus, escalationNotes: "",
+      treatmentDecision: "" as RiskTreatment, clauseRef: "", residualAcceptedBy: "", residualAcceptedDate: "",
+      controlTestDate: "", nextReviewDate: "", auditLog: [],
     }));
     const updated = [...risks, ...seeds];
     setRisks(updated); persist(updated);
@@ -3172,7 +3251,7 @@ function RiskRegisterView({ client, onBack, onBackToClients, onNextPhase }: {
                           <input value={risk.affectedSystem} onChange={e => updateRisk(risk.id, { affectedSystem: e.target.value })} style={ipt} />
                         </div>
                       </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 12 }}>
                         <div>
                           <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Risk Category</label>
                           <select value={risk.riskCategory} onChange={e => updateRisk(risk.id, { riskCategory: e.target.value })} style={sel}>
@@ -3181,9 +3260,23 @@ function RiskRegisterView({ client, onBack, onBackToClients, onNextPhase }: {
                           </select>
                         </div>
                         <div>
-                          <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Likelihood at Scale (qualitative)</label>
-                          <input value={risk.likelihoodAtScale} onChange={e => updateRisk(risk.id, { likelihoodAtScale: e.target.value })} placeholder="e.g. High volume automated decisions → systemic impact" style={ipt} />
+                          <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Treatment Decision (4T)</label>
+                          <select value={risk.treatmentDecision} onChange={e => updateRisk(risk.id, { treatmentDecision: e.target.value as RiskTreatment })} style={sel}>
+                            <option value="">Select…</option>
+                            <option value="Treat">Treat — implement controls</option>
+                            <option value="Transfer">Transfer — insurance / vendor liability</option>
+                            <option value="Tolerate">Tolerate — accept within appetite</option>
+                            <option value="Terminate">Terminate — decommission / stop use</option>
+                          </select>
                         </div>
+                        <div>
+                          <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Regulatory Clause Ref</label>
+                          <input value={risk.clauseRef} onChange={e => updateRisk(risk.id, { clauseRef: e.target.value })} placeholder="e.g. EU AI Act Art. 9(2)(b)" style={ipt} />
+                        </div>
+                      </div>
+                      <div style={{ marginBottom: 12 }}>
+                        <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Likelihood at Scale (qualitative)</label>
+                        <input value={risk.likelihoodAtScale} onChange={e => updateRisk(risk.id, { likelihoodAtScale: e.target.value })} placeholder="e.g. High volume automated decisions → systemic impact" style={ipt} />
                       </div>
                       <div>
                         <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Risk Description</label>
@@ -3352,6 +3445,48 @@ function RiskRegisterView({ client, onBack, onBackToClients, onNextPhase }: {
                             style={ta} />
                         </div>
                       )}
+                    </div>
+
+                    {/* F: Audit & Review */}
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 12 }}>F — Audit & Review</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 12 }}>
+                        <div>
+                          <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Residual Risk Accepted By</label>
+                          <input value={risk.residualAcceptedBy} onChange={e => updateRisk(risk.id, { residualAcceptedBy: e.target.value })} placeholder="Name / Role" style={ipt} />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Acceptance Date</label>
+                          <input type="date" value={risk.residualAcceptedDate} onChange={e => updateRisk(risk.id, { residualAcceptedDate: e.target.value })} style={ipt} />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Controls Last Tested</label>
+                          <input type="date" value={risk.controlTestDate} onChange={e => updateRisk(risk.id, { controlTestDate: e.target.value })} style={ipt} />
+                        </div>
+                      </div>
+                      <div style={{ marginBottom: 14 }}>
+                        <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 4 }}>Next Scheduled Review Date</label>
+                        <input type="date" value={risk.nextReviewDate} onChange={e => updateRisk(risk.id, { nextReviewDate: e.target.value })} style={{ ...ipt, width: "calc(33% - 6px)" }} />
+                      </div>
+                      {/* Audit log */}
+                      <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "12px 14px" }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8 }}>Audit Log</div>
+                        {(risk.auditLog || []).length === 0 ? (
+                          <div style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", marginBottom: 8 }}>No entries yet.</div>
+                        ) : (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 8 }}>
+                            {(risk.auditLog || []).map((entry, ei) => (
+                              <div key={ei} style={{ fontSize: 11, color: "#334155", background: "#fff", border: "1px solid #e2e8f0", borderRadius: 6, padding: "5px 10px" }}>
+                                <span style={{ fontWeight: 700, color: "#94a3b8", marginRight: 8 }}>{entry.ts}</span>{entry.note}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <AuditLogInput onAdd={note => {
+                          const entry: AuditLogEntry = { ts: new Date().toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }), note };
+                          updateRisk(risk.id, { auditLog: [...(risk.auditLog || []), entry] });
+                        }} />
+                      </div>
                     </div>
 
                   </div>
