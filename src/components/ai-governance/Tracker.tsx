@@ -2390,10 +2390,21 @@ export default function AIGovernanceTracker() {
   const [unlockCode, setUnlockCode] = useState("");
   const [unlockError, setUnlockError] = useState(false);
 
+  // Visitor access — granted when user clicks "Explore Policy Grid →" on the gate page.
+  // Stored in sessionStorage so it resets each browser session.
+  const [visitorAccess, setVisitorAccess] = useState(() => {
+    try { return sessionStorage.getItem("pl_visitor_access") === "1"; } catch { return false; }
+  });
+
+  const grantVisitorAccess = () => {
+    try { sessionStorage.setItem("pl_visitor_access", "1"); } catch {}
+    setVisitorAccess(true);
+  };
+
   const tryUnlock = () => {
     if (unlockCode.toUpperCase().trim() === "PRL2026") {
       try { localStorage.setItem("pl_session_access", "1"); } catch {}
-      setUnlocked(true); setShowUnlockModal(false); setUnlockCode("");
+      setUnlocked(true); setShowUnlockModal(false); setUnlockCode(""); setVisitorAccess(true);
     } else {
       setUnlockError(true); setTimeout(() => setUnlockError(false), 800); setUnlockCode("");
     }
@@ -2401,7 +2412,8 @@ export default function AIGovernanceTracker() {
 
   const doLock = () => {
     try { localStorage.removeItem("pl_session_access"); } catch {}
-    setUnlocked(false);
+    try { sessionStorage.removeItem("pl_visitor_access"); } catch {}
+    setUnlocked(false); setVisitorAccess(false);
   };
   const navigate = useNavigate();
   const [view, setView] = useState("policies");   // "policies" | "topics" | "digests"
@@ -2440,6 +2452,91 @@ export default function AIGovernanceTracker() {
   if (selected) return <PolicyDetail policy={selected} onBack={() => setSelected(null)} onViewDigest={() => { setSelectedDigest(selected); setSelected(null); }} />;
   if (selectedDigest) return <PolicyDigestDetail policy={selectedDigest} onBack={() => setSelectedDigest(null)} />;
 
+  // ── Gate page — shown to first-time visitors before they request access ──
+  if (!visitorAccess && !unlocked) {
+    return (
+      <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0f2040 100%)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", fontFamily: "'Inter','Segoe UI',sans-serif" }}>
+        {/* Logo mark */}
+        <div style={{ width: 64, height: 64, borderRadius: 18, background: "linear-gradient(135deg,#6366f1,#818cf8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, marginBottom: 28, boxShadow: "0 8px 32px rgba(99,102,241,0.4)" }}>⚖️</div>
+
+        <div style={{ textAlign: "center", maxWidth: 560 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#6366f1", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>AI Ethics & Governance Intelligence</div>
+          <h1 style={{ margin: "0 0 16px", fontSize: 32, fontWeight: 800, color: "#fff", lineHeight: 1.2 }}>Global AI Policy Tracker</h1>
+          <p style={{ margin: "0 0 12px", fontSize: 15, color: "#94a3b8", lineHeight: 1.7 }}>
+            Clause-level detail across EU AI Act, NIST AI RMF, ISO 42001, FAIR & AAIA.
+            Four-pillar framework covering Governance, Ethics, Privacy & Risk.
+          </p>
+          <p style={{ margin: "0 0 36px", fontSize: 14, color: "#64748b", lineHeight: 1.6 }}>
+            Includes bias & gender analysis, compliance deadlines, and a GRC bridge.
+            Built for AI practitioners, policy teams, and governance consultants.
+          </p>
+
+          {/* Stats row */}
+          <div style={{ display: "flex", gap: 32, justifyContent: "center", marginBottom: 40, flexWrap: "wrap" }}>
+            {[
+              { v: POLICIES.length, l: "Policies" },
+              { v: POLICIES.reduce((s, p) => s + p.clauses.length, 0), l: "Clauses" },
+              { v: PILLARS.length, l: "Pillars" },
+              { v: new Set(POLICIES.flatMap(p => p.industries)).size, l: "Industries" },
+            ].map(s => (
+              <div key={s.l} style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 26, fontWeight: 800, color: "#818cf8" }}>{s.v}</div>
+                <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{s.l}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* CTAs */}
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+            <button
+              onClick={grantVisitorAccess}
+              style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 12, padding: "14px 32px", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 20px rgba(99,102,241,0.4)" }}
+            >
+              Explore Policy Grid →
+            </button>
+            <a
+              href="https://www.linkedin.com/in/preetilal/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ background: "transparent", color: "#94a3b8", border: "1px solid #334155", borderRadius: 12, padding: "14px 32px", fontSize: 15, fontWeight: 600, cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center" }}
+            >
+              Request Full Access
+            </a>
+          </div>
+
+          {/* Owner login — subtle link */}
+          <div style={{ marginTop: 32 }}>
+            <button
+              onClick={() => setShowUnlockModal(true)}
+              style={{ background: "none", border: "none", color: "#475569", fontSize: 12, cursor: "pointer", textDecoration: "underline", fontFamily: "inherit" }}
+            >
+              Owner login
+            </button>
+          </div>
+        </div>
+
+        {/* Unlock modal (owner) */}
+        {showUnlockModal && (
+          <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.85)", backdropFilter: "blur(4px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+            <div style={{ background: "#fff", borderRadius: 20, padding: "44px 48px", maxWidth: 420, width: "100%", textAlign: "center", boxShadow: "0 25px 60px rgba(0,0,0,0.4)" }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>🔑</div>
+              <h2 style={{ margin: "0 0 8px", fontSize: 22, fontWeight: 800, color: "#0f172a" }}>Owner Access</h2>
+              <p style={{ margin: "0 0 28px", fontSize: 14, color: "#64748b", lineHeight: 1.6 }}>Enter your access code to unlock the full platform.</p>
+              <input type="password" placeholder="Access code" value={unlockCode} autoFocus
+                onChange={e => setUnlockCode(e.target.value)} onKeyDown={e => e.key === "Enter" && tryUnlock()}
+                style={{ width: "100%", padding: "13px 16px", border: `2px solid ${unlockError ? "#dc2626" : "#e2e8f0"}`, borderRadius: 10, fontSize: 16, outline: "none", marginBottom: 14, boxSizing: "border-box", fontFamily: "monospace", letterSpacing: "0.15em", textAlign: "center", background: unlockError ? "#fef2f2" : "#fff" }} />
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={() => { setShowUnlockModal(false); setUnlockCode(""); }} style={{ flex: 1, padding: 13, borderRadius: 10, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#64748b", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+                <button onClick={tryUnlock} style={{ flex: 2, padding: 13, borderRadius: 10, border: "none", background: "#0f172a", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Unlock →</button>
+              </div>
+              {unlockError && <p style={{ color: "#dc2626", fontSize: 13, marginTop: 12 }}>Incorrect code — please try again.</p>}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       onContextMenu={PREVIEW_MODE ? e => e.preventDefault() : undefined}
@@ -2449,6 +2546,19 @@ export default function AIGovernanceTracker() {
       {PREVIEW_MODE && (
         <div style={{ background: "#0f172a", color: "#94a3b8", fontSize: 11, fontWeight: 600, textAlign: "center", padding: "6px 16px", letterSpacing: "0.05em" }}>
           📖 PREVIEW — Content protected · Contact Preeti to discuss full platform access
+        </div>
+      )}
+
+      {/* Visitor mode banner — shown when visitor access but not owner */}
+      {visitorAccess && !unlocked && !PREVIEW_MODE && (
+        <div style={{ background: "#eff6ff", borderBottom: "1px solid #bfdbfe", padding: "10px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+          <div style={{ fontSize: 13, color: "#1e40af" }}>
+            <span style={{ fontWeight: 700 }}>Visitor view</span> — Policy Grid is open. Additional tabs require full access.
+          </div>
+          <a href="https://www.linkedin.com/in/preetilal/" target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 12, fontWeight: 700, color: "#2563eb", textDecoration: "none", background: "#dbeafe", padding: "5px 14px", borderRadius: 20, border: "1px solid #bfdbfe" }}>
+            Request Full Access →
+          </a>
         </div>
       )}
 

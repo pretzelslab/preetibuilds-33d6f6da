@@ -420,7 +420,7 @@ export default function Pipeline() {
     <div className="pipeline-root" style={{ fontFamily: "system-ui, sans-serif", background: "#f8fafc", minHeight: "100vh", color: "#0f172a" }}>
 <style>{`
         .pipeline-root *, .pipeline-root *::before, .pipeline-root *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        .pipeline-root .syne { font-family: 'Syne', sans-serif; }
+        .pipeline-root .syne { font-family: 'Syne', sans-serif; line-height: 1.25; }
         .pipeline-root .mono { font-family: 'JetBrains Mono', monospace; }
         .pipeline-root .card { background: #fff; border: 1px solid #e4e8ef; border-radius: 10px; }
         .pipeline-root .btn { background: none; border: none; cursor: pointer; transition: all 0.12s; }
@@ -682,7 +682,7 @@ export default function Pipeline() {
           {syncStage === "idle" && (
             <div style={{ textAlign: "center", padding: "80px 20px" }} className="fade">
               <div style={{ fontSize: 42, marginBottom: 12 }}>⚡</div>
-              <div className="syne" style={{ fontSize: 20, fontWeight: 800, color: "#334155", marginBottom: 8 }}>Ready to run the pipeline</div>
+              <div className="syne" style={{ fontSize: 20, fontWeight: 700, color: "#334155", marginBottom: 8 }}>Ready to run the pipeline</div>
               <div className="mono" style={{ fontSize: 11, color: "#94a3b8", marginBottom: 24 }}>Select vertical · source · cluster dimension · date range — then Run Pipeline</div>
               <div style={{ display: "inline-flex", gap: 0, background: "#fff", border: "1px solid #e4e8ef", borderRadius: 10, padding: "12px 24px" }}>
                 {["Auth", "Fetch + Paginate", "Aggregate Clusters", "Map Workers", "Reduce + Report"].map((s, i) => (
@@ -919,7 +919,7 @@ export default function Pipeline() {
                               return (
                                 <div key={i} className="card fade" style={{ padding: "14px 16px", borderLeft: `3px solid ${sc.text || "#94a3b8"}` }}>
                                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-                                    <div className="syne" style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", flex: 1, marginRight: 12 }}>{item.theme}</div>
+                                    <div className="syne" style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", flex: 1, marginRight: 12 }}>{item.theme}</div>
                                     <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
                                       <span className="tag" style={{ background: sc.bg, color: sc.text, fontSize: 9 }}>{item.severity}</span>
                                       <span className="tag" style={{ background: "#f1f5f9", color: "#475569", fontSize: 9 }}>{item.effort} effort</span>
@@ -962,7 +962,7 @@ export default function Pipeline() {
                               return (
                                 <div key={i} className="card fade" style={{ padding: "14px 16px" }}>
                                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-                                    <div className="syne" style={{ fontSize: 12, fontWeight: 800, color: "#0f172a", flex: 1, marginRight: 8 }}>{g.opportunity}</div>
+                                    <div className="syne" style={{ fontSize: 12, fontWeight: 700, color: "#0f172a", flex: 1, marginRight: 8 }}>{g.opportunity}</div>
                                     <span className="tag" style={{ background: tvC, color: tvT, fontSize: 9, flexShrink: 0 }}>{g.timeToValue}</span>
                                   </div>
                                   <div className="mono" style={{ fontSize: 9, color: "#94a3b8", marginBottom: 3 }}>SUGGESTED FEATURE</div>
