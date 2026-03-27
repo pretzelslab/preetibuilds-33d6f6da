@@ -417,37 +417,37 @@ export default function Pipeline() {
   });
 
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", background: "#f8fafc", minHeight: "100vh", color: "#0f172a" }}>
+    <div className="pipeline-root" style={{ fontFamily: "system-ui, sans-serif", background: "#f8fafc", minHeight: "100vh", color: "#0f172a" }}>
 <style>{`
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        .syne { font-family: 'Syne', sans-serif; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
-        .card { background: #fff; border: 1px solid #e4e8ef; border-radius: 10px; }
-        .btn { background: none; border: none; cursor: pointer; transition: all 0.12s; }
-        .btn:hover { opacity: 0.85; }
-        .btn-ghost { background: #f8fafc; border: 1px solid #e4e8ef; border-radius: 8px; cursor: pointer; transition: all 0.12s; }
-        .btn-ghost:hover { background: #f1f5f9; }
-        .tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; }
-        .fade { animation: fadeIn 0.25s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-        .pulse { animation: pulse 1.4s ease-in-out infinite; }
-        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-        .spin { animation: spin 0.9s linear infinite; display: inline-block; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        select, input { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
-        .case-row { cursor: pointer; transition: background 0.1s; }
-        .case-row:hover { background: #f8fafc !important; }
-        .account-pill { cursor: pointer; transition: all 0.12s; }
-        .account-pill:hover { opacity: 0.8; }
-        .dropdown { position: absolute; background: #fff; border: 1px solid #e4e8ef; border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); z-index: 100; min-width: 190px; overflow: hidden; }
-        .dropdown-item { padding: 9px 14px; cursor: pointer; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600; color: #334155; display: flex; align-items: center; gap: 8px; transition: background 0.1s; }
-        .dropdown-item:hover { background: #f8fafc; }
-        .sidebar-section { margin-bottom: 18px; }
-        .risk-badge { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; margin-bottom: 6px; }
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
-        .cluster-bar { height: 4px; border-radius: 2px; background: #e2e8f0; overflow: hidden; margin-top: 4px; }
-        .cluster-bar-fill { height: 100%; border-radius: 2px; transition: width 0.4s ease; }
+        .pipeline-root *, .pipeline-root *::before, .pipeline-root *::after { box-sizing: border-box; }
+        .pipeline-root .syne { font-family: 'Syne', sans-serif; }
+        .pipeline-root .mono { font-family: 'JetBrains Mono', monospace; }
+        .pipeline-root .card { background: #fff; border: 1px solid #e4e8ef; border-radius: 10px; }
+        .pipeline-root .btn { background: none; border: none; cursor: pointer; transition: all 0.12s; }
+        .pipeline-root .btn:hover { opacity: 0.85; }
+        .pipeline-root .btn-ghost { background: #f8fafc; border: 1px solid #e4e8ef; border-radius: 8px; cursor: pointer; transition: all 0.12s; }
+        .pipeline-root .btn-ghost:hover { background: #f1f5f9; }
+        .pipeline-root .tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; }
+        .pipeline-root .fade { animation: plFadeIn 0.25s ease; }
+        @keyframes plFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+        .pipeline-root .pulse { animation: plPulse 1.4s ease-in-out infinite; }
+        @keyframes plPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .pipeline-root .spin { animation: plSpin 0.9s linear infinite; display: inline-block; }
+        @keyframes plSpin { to { transform: rotate(360deg); } }
+        .pipeline-root select, .pipeline-root input { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+        .pipeline-root .case-row { cursor: pointer; transition: background 0.1s; }
+        .pipeline-root .case-row:hover { background: #f8fafc !important; }
+        .pipeline-root .account-pill { cursor: pointer; transition: all 0.12s; }
+        .pipeline-root .account-pill:hover { opacity: 0.8; }
+        .pipeline-root .dropdown { position: absolute; background: #fff; border: 1px solid #e4e8ef; border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); z-index: 100; min-width: 190px; overflow: hidden; }
+        .pipeline-root .dropdown-item { padding: 9px 14px; cursor: pointer; font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600; color: #334155; display: flex; align-items: center; gap: 8px; transition: background 0.1s; }
+        .pipeline-root .dropdown-item:hover { background: #f8fafc; }
+        .pipeline-root .sidebar-section { margin-bottom: 18px; }
+        .pipeline-root .risk-badge { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; margin-bottom: 6px; }
+        .pipeline-root ::-webkit-scrollbar { width: 4px; height: 4px; }
+        .pipeline-root ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+        .pipeline-root .cluster-bar { height: 4px; border-radius: 2px; background: #e2e8f0; overflow: hidden; margin-top: 4px; }
+        .pipeline-root .cluster-bar-fill { height: 100%; border-radius: 2px; transition: width 0.4s ease; }
       `}</style>
 
       {/* ── Top Bar ── */}
