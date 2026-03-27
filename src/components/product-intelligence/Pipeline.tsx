@@ -419,7 +419,7 @@ export default function Pipeline() {
   return (
     <div className="pipeline-root" style={{ fontFamily: "system-ui, sans-serif", background: "#f8fafc", minHeight: "100vh", color: "#0f172a" }}>
 <style>{`
-        .pipeline-root *, .pipeline-root *::before, .pipeline-root *::after { box-sizing: border-box; }
+        .pipeline-root *, .pipeline-root *::before, .pipeline-root *::after { box-sizing: border-box; margin: 0; padding: 0; }
         .pipeline-root .syne { font-family: 'Syne', sans-serif; }
         .pipeline-root .mono { font-family: 'JetBrains Mono', monospace; }
         .pipeline-root .card { background: #fff; border: 1px solid #e4e8ef; border-radius: 10px; }
