@@ -490,7 +490,7 @@ export default function Pipeline() {
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", minHeight: "calc(100vh - 52px)" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(200px, 260px) 1fr", minHeight: "calc(100vh - 52px)", overflow: "hidden" }}>
 
         {/* ── Sidebar ── */}
         <div style={{ background: "#fff", borderRight: "1px solid #e4e8ef", padding: "16px 12px", overflowY: "auto" }}>
@@ -676,7 +676,7 @@ export default function Pipeline() {
         </div>
 
         {/* ── Main Content ── */}
-        <div style={{ padding: "20px 24px", overflow: "auto" }}>
+        <div style={{ padding: "20px 24px", overflow: "auto", minWidth: 0 }}>
 
           {/* Empty state */}
           {syncStage === "idle" && (
