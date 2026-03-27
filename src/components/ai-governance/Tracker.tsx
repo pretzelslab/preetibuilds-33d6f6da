@@ -5,9 +5,12 @@ import { POLICY_DIGESTS, type CriticalPoint, type Misconception } from "./digest
 import { IMPLEMENTATION_GUIDES } from "./guides";
 
 // ─── PREVIEW MODE ─────────────────────────────────────────────────────────────
-// Set VITE_PREVIEW_MODE=true in Netlify environment variables to enable.
+// Automatically enabled on Lovable's hosted URL (*.lovable.app).
 // Disables right-click, text selection, exports, and blurs deep content.
-const PREVIEW_MODE = import.meta.env.VITE_PREVIEW_MODE === "true";
+// Can also be forced via VITE_PREVIEW_MODE=true env var on any host.
+const PREVIEW_MODE =
+  (typeof window !== "undefined" && window.location.hostname.endsWith("lovable.app")) ||
+  import.meta.env.VITE_PREVIEW_MODE === "true";
 
 // ─── HIGHLIGHT HELPER ────────────────────────────────────────────────────────
 function HL({ text, q }: { text: string; q: string }) {
