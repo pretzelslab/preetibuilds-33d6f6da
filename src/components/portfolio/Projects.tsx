@@ -11,114 +11,108 @@ type ProjectCard = {
   applicationLayer?: string[];
   upcoming?: boolean;
   inProgress?: boolean;
-  previewOnly?: boolean;
   link?: string;
   externalLink?: string;
 };
 
 const businessAIUseCases: ProjectCard[] = [
-  {
-    title: "GTM Tech Stack",
-    description: "A lean Python-powered GTM system replacing expensive enterprise tooling with one pipeline for lead capture, enrichment, scoring, nurture, CRM sync, and reporting.",
-    tags: ["Python", "Pandas", "Faker", "Streamlit", "Plotly"],
-    applicationLayer: ["Hunter.io API", "HubSpot CRM", "CSV Pipeline"],
-    link: "/gtm-techstack",
-  },
-  {
-    title: "Product Intelligence Pipeline",
-    description: "Built an AI-powered pipeline integrating Salesforce Cases with Claude to surface product insights at scale. Focused on Fintech and Healthtech verticals. Stack: React, Python, Claude Sonnet API.",
-    tags: ["AI", "Python", "Salesforce", "React"],
-    applicationLayer: ["Claude Sonnet API", "Salesforce Cases", "Fintech · Healthtech"],
-    link: "/product-intelligence",
-  },
-];
+{
+  title: "GTM Tech Stack",
+  description: "A lean Python-powered GTM system replacing expensive enterprise tooling with one pipeline for lead capture, enrichment, scoring, nurture, CRM sync, and reporting.",
+  tags: ["Python", "Pandas", "Faker", "Streamlit", "Plotly"],
+  applicationLayer: ["Hunter.io API", "HubSpot CRM", "CSV Pipeline"],
+  link: "/gtm-techstack"
+},
+{
+  title: "Product Intelligence Pipeline",
+  description: "Built an AI-powered pipeline integrating Salesforce Cases with Claude to surface product insights at scale. Focused on Fintech and Healthtech verticals. Stack: React, Python, Claude Sonnet API.",
+  tags: ["AI", "Python", "Salesforce", "React"],
+  applicationLayer: ["Claude Sonnet API", "Salesforce Cases", "Fintech · Healthtech"],
+  link: "/product-intelligence"
+}];
+
 
 const aiEthicsGovernance: ProjectCard[] = [
-  {
-    title: "AI Ethics & Governance",
-    description: "On-demand global AI policy tracker — EU AI Act, NIST AI RMF, ISO 42001, FAIR, AAIA — with clause-level detail, four-pillar framework (Governance, Ethics, Privacy, Risk), bias & gender analysis, and client workbook.",
-    tags: ["React", "Policy Intelligence", "TypeScript"],
-    applicationLayer: ["EU AI Act", "NIST AI RMF", "ISO 42001", "FAIR · AAIA"],
-    previewOnly: true,
-  },
-];
+{
+  title: "AI Ethics & Governance",
+  description: "On-demand global AI policy tracker — EU AI Act, NIST AI RMF, ISO 42001, FAIR, AAIA — with clause-level detail, four-pillar framework (Governance, Ethics, Privacy, Risk), bias & gender analysis, and export.",
+  tags: ["React", "Policy Intelligence", "TypeScript"],
+  applicationLayer: ["EU AI Act", "NIST AI RMF", "ISO 42001", "FAIR · AAIA"],
+  link: "/ai-governance"
+}];
+
 
 const ProjectTile = ({
   project,
   index,
   thumbs,
-  onThumb,
-}: {
-  project: ProjectCard;
-  index: number;
-  thumbs: Record<string, number>;
-  onThumb: (title: string) => void;
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 15 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    transition={{ delay: index * 0.1 }}
-    className="bg-muted/40 border border-border/50 rounded-xl p-5 hover:bg-muted/60 transition-colors flex flex-col"
-  >
+  onThumb
+
+
+
+
+
+}: {project: ProjectCard;index: number;thumbs: Record<string, number>;onThumb: (title: string) => void;}) =>
+<motion.div
+  initial={{ opacity: 0, y: 15 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true }}
+  transition={{ delay: index * 0.1 }}
+  className="bg-muted/40 border border-border/50 rounded-xl p-5 hover:bg-muted/60 transition-colors flex flex-col opacity-100">
+  
     <div className="flex items-center justify-between mb-2">
       <h4 className="text-sm font-semibold text-foreground">{project.title}</h4>
-      {project.upcoming && (
-        <span className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground bg-background/60 px-2 py-0.5 rounded-full">
+      {project.upcoming &&
+    <span className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground bg-background/60 px-2 py-0.5 rounded-full">
           <Clock className="w-3 h-3" /> Upcoming
         </span>
-      )}
-      {project.inProgress && (
-        <span className="flex items-center gap-1.5 text-[10px] font-medium text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 rounded-full">
+    }
+      {project.inProgress &&
+    <span className="flex items-center gap-1.5 text-[10px] font-medium text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 rounded-full">
           <Clock className="w-3 h-3" /> In Progress
         </span>
-      )}
+    }
     </div>
     <p className="text-foreground/70 text-xs leading-relaxed mb-3">{project.description}</p>
     <div className="flex flex-wrap gap-1.5 mb-2">
-      {project.tags.map((tag) => (
-        <Badge key={tag} variant="secondary" className="font-mono text-[10px] rounded-full px-2 py-0.5">
+      {project.tags.map((tag) =>
+    <Badge key={tag} variant="secondary" className="font-mono text-[10px] rounded-full px-2 py-0.5">
           {tag}
         </Badge>
-      ))}
+    )}
     </div>
-    {project.applicationLayer && (
-      <div className="flex flex-wrap gap-1.5 mb-3">
-        {project.applicationLayer.map((tag) => (
-          <Badge key={tag} variant="outline" className="font-mono text-[10px] rounded-full px-2 py-0.5 text-muted-foreground">
+    {project.applicationLayer &&
+  <div className="flex flex-wrap gap-1.5 mb-3">
+        {project.applicationLayer.map((tag) =>
+    <Badge key={tag} variant="outline" className="font-mono text-[10px] rounded-full px-2 py-0.5 text-muted-foreground">
             {tag}
           </Badge>
-        ))}
-      </div>
     )}
+      </div>
+  }
     <div className="flex items-center justify-between mt-auto pt-2">
       <div className="flex items-center gap-3">
-        {project.previewOnly && (
-          <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground border border-border rounded-full px-3 py-0.5">
-            🔒 Preview on request
-          </span>
-        )}
-        {!project.previewOnly && project.link && (
-          <Link to={project.link} className="text-sm font-medium text-primary hover:underline">
+        {project.link &&
+      <Link to={project.link} className="text-sm font-medium text-primary hover:underline">
             View Project →
           </Link>
-        )}
-        {project.externalLink && (
-          <a href={project.externalLink} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-primary hover:underline">
+      }
+        {project.externalLink &&
+      <a href={project.externalLink} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-primary hover:underline">
             GitHub ↗
           </a>
-        )}
+      }
       </div>
       <button
-        onClick={() => onThumb(project.title)}
-        className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
-      >
+      onClick={() => onThumb(project.title)}
+      className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors">
+      
         <ThumbsUp className="w-4 h-4" />
         <span className="text-xs font-mono">{thumbs[project.title] || 0}</span>
       </button>
     </div>
-  </motion.div>
-);
+  </motion.div>;
+
 
 const Projects = () => {
   const [thumbs, setThumbs] = useState<Record<string, number>>({});
@@ -134,8 +128,8 @@ const Projects = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mb-10"
-        >
+          className="mb-10">
+          
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             <span className="text-gradient">Portfolio</span>
           </h2>
@@ -149,17 +143,17 @@ const Projects = () => {
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
+            viewport={{ once: true }}>
+            
             <div className="bg-card rounded-2xl border overflow-hidden shadow-card h-full">
               <div className="bg-gradient-to-br from-primary/30 to-accent/30 px-6 py-5 flex items-center gap-3">
                 <Briefcase className="w-5 h-5 text-primary" />
                 <h3 className="text-lg font-semibold">Business AI Solutions</h3>
               </div>
               <div className="p-4 flex flex-col gap-4">
-                {businessAIUseCases.map((useCase, i) => (
-                  <ProjectTile key={useCase.title} project={useCase} index={i} thumbs={thumbs} onThumb={handleThumb} />
-                ))}
+                {businessAIUseCases.map((useCase, i) =>
+                <ProjectTile key={useCase.title} project={useCase} index={i} thumbs={thumbs} onThumb={handleThumb} />
+                )}
               </div>
             </div>
           </motion.div>
@@ -169,24 +163,24 @@ const Projects = () => {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-          >
+            transition={{ delay: 0.1 }}>
+            
             <div className="bg-card rounded-2xl border overflow-hidden shadow-card h-full">
               <div className="bg-gradient-to-br from-primary/30 to-accent/30 px-6 py-5 flex items-center gap-3">
                 <Shield className="w-5 h-5 text-primary" />
                 <h3 className="text-lg font-semibold">AI Ethics & Governance</h3>
               </div>
               <div className="p-4 flex flex-col gap-4">
-                {aiEthicsGovernance.map((project, i) => (
-                  <ProjectTile key={project.title} project={project} index={i} thumbs={thumbs} onThumb={handleThumb} />
-                ))}
+                {aiEthicsGovernance.map((project, i) =>
+                <ProjectTile key={project.title} project={project} index={i} thumbs={thumbs} onThumb={handleThumb} />
+                )}
               </div>
             </div>
           </motion.div>
         </div>
       </div>
-    </section>
-  );
+    </section>);
+
 };
 
 export default Projects;
