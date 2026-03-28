@@ -2782,8 +2782,11 @@ export default function AIGovernanceTracker() {
                             <button
                               key={r.id}
                               onMouseDown={() => {
-                                if (r.type === "policy") { setSelected(r.item); }
-                                else { setView("grc-bridge"); }
+                                if (r.type === "policy") {
+                                  unlocked ? setSelected(r.item) : setShowUnlockModal(true);
+                                } else {
+                                  unlocked ? setView("grc-bridge") : setShowUnlockModal(true);
+                                }
                                 setGlobalSearch(""); setShowGlobalResults(false);
                               }}
                               style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", background: "none", border: "none", borderBottom: "1px solid #f8fafc", cursor: "pointer", textAlign: "left" }}
@@ -2942,8 +2945,11 @@ export default function AIGovernanceTracker() {
                             Client Discovery →
                           </button>
                         )}
-                        <button onClick={() => setSelected(p)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
-                          View Detail →
+                        <button
+                          onClick={() => unlocked ? setSelected(p) : setShowUnlockModal(true)}
+                          style={{ background: unlocked ? "#0f172a" : "#64748b", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", cursor: unlocked ? "pointer" : "not-allowed", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}
+                        >
+                          {unlocked ? "View Detail →" : "🔒 View Detail"}
                         </button>
                       </div>
                     </div>

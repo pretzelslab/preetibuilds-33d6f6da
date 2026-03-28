@@ -37,10 +37,17 @@ const WORK: Project[] = [
 const PET_PROJECTS: Project[] = [
   {
     title: "MedLog",
-    description: "Family health event tracker with per-member login, symptom trends, AI analysis, and exportable health reports.",
+    description: "Family health event tracker with per-member login, symptom trends, AI analysis, and exportable health reports. Private.",
     tags: ["React", "Supabase", "TypeScript"],
     status: "preview",
     link: "/medlog",
+  },
+  {
+    title: "AI Risk Client Workbook",
+    description: "5-phase client engagement tool — Govern, Map, Measure, Report, Monitor — with risk register, compliance deadlines, audit fields, and backup/restore. Private.",
+    tags: ["React", "TypeScript", "Supabase"],
+    status: "preview",
+    link: "/client-discovery",
   },
   {
     title: "Music → Art",
