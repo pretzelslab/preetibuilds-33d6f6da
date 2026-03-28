@@ -3,8 +3,8 @@ import { Linkedin } from "lucide-react";
 
 const CREDENTIALS = [
   "18+ years across B2B SaaS — HR tech, CRM, BI, and AI-driven platforms",
-  "Currently leading enterprise AI & SaaS commercialization",
-  "Turning early product ideas into programs that product, engineering, and GTM teams can execute on",
+  "Product management, product launch, and technical program delivery across enterprise systems and cloud",
+  "Commercial GTM launch across product strategy, partner ecosystems, and M&A scenarios",
 ];
 
 const Hero = () => (

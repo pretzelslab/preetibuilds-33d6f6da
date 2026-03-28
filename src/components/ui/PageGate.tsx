@@ -1,4 +1,5 @@
 import { useState, useEffect, ReactNode } from "react";
+import { Link } from "react-router-dom";
 
 // ─── Access configuration ─────────────────────────────────────────────────────
 // Change ACCESS_CODE to any value you want. Case-insensitive.
@@ -22,7 +23,7 @@ export function useGateUnlocked(): boolean {
 }
 
 // ─── Gate component ───────────────────────────────────────────────────────────
-export function PageGate({ children }: { children: ReactNode }) {
+export function PageGate({ children, backTo = "/" }: { children: ReactNode; backTo?: string }) {
   const [unlocked, setUnlocked] = useState(() =>
     safeGet(STORAGE_KEY) === "1"
   );
@@ -149,6 +150,12 @@ export function PageGate({ children }: { children: ReactNode }) {
             <p style={{ marginTop: 24, fontSize: 11, color: "#94a3b8" }}>
               pretzelslab · authorised access only
             </p>
+            <Link
+              to={backTo}
+              style={{ display: "inline-block", marginTop: 14, fontSize: 12, color: "#64748b", textDecoration: "none" }}
+            >
+              ← Back to portfolio
+            </Link>
           </div>
         </div>
       )}

@@ -10,7 +10,7 @@ type Project = {
   externalLink?: string;
 };
 
-const WORK: Project[] = [
+const USE_CASES: Project[] = [
   {
     title: "Product Intelligence Pipeline",
     description: "AI-powered pipeline integrating Salesforce Cases with Claude to surface product insights at scale. Fintech and Healthtech verticals.",
@@ -25,12 +25,22 @@ const WORK: Project[] = [
     status: "live",
     link: "/gtm-techstack",
   },
+];
+
+const AI_GOVERNANCE: Project[] = [
   {
     title: "AI Ethics & Governance Tracker",
     description: "On-demand policy tracker — EU AI Act, NIST AI RMF, ISO 42001, FAIR, AAIA — with clause-level detail, four-pillar framework, and client risk workbook. Private.",
     tags: ["React", "TypeScript", "Supabase"],
     status: "preview",
     link: "/ai-governance",
+  },
+  {
+    title: "AI Risk Client Workbook",
+    description: "5-phase client engagement tool — Govern, Map, Measure, Report, Monitor — with risk register, compliance deadlines, audit fields, and backup/restore. Private.",
+    tags: ["React", "TypeScript", "Supabase"],
+    status: "preview",
+    link: "/client-discovery",
   },
 ];
 
@@ -43,25 +53,18 @@ const PET_PROJECTS: Project[] = [
     link: "/medlog",
   },
   {
-    title: "AI Risk Client Workbook",
-    description: "5-phase client engagement tool — Govern, Map, Measure, Report, Monitor — with risk register, compliance deadlines, audit fields, and backup/restore. Private.",
-    tags: ["React", "TypeScript", "Supabase"],
-    status: "preview",
-    link: "/client-discovery",
-  },
-  {
     title: "Music → Art",
-    description: "Upload a track or paste a link — the app reads the audio frequency signal and generates a generative painting. Pick your art style: watercolour, oil, abstract.",
+    description: "Upload a track or paste a link — reads the audio frequency signal and generates a generative painting. Pick your style: watercolour, oil, abstract.",
     tags: ["React", "Web Audio API", "Canvas"],
     status: "building",
   },
 ];
 
 const STATUS_BADGE: Record<string, { label: string; classes: string }> = {
-  live:     { label: "Live",      classes: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
-  preview:  { label: "Preview",   classes: "bg-amber-500/10  text-amber-600  dark:text-amber-400  border-amber-500/20"  },
-  building: { label: "Building",  classes: "bg-blue-500/10   text-blue-600   dark:text-blue-400   border-blue-500/20"   },
-  upcoming: { label: "Upcoming",  classes: "bg-muted text-muted-foreground border-border"                                },
+  live:     { label: "Live",     classes: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
+  preview:  { label: "Preview",  classes: "bg-amber-500/10  text-amber-600  dark:text-amber-400  border-amber-500/20"  },
+  building: { label: "Building", classes: "bg-blue-500/10   text-blue-600   dark:text-blue-400   border-blue-500/20"   },
+  upcoming: { label: "Upcoming", classes: "bg-muted text-muted-foreground border-border"                                },
 };
 
 const ProjectRow = ({ project, index }: { project: Project; index: number }) => {
@@ -131,12 +134,17 @@ const Projects = () => (
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
       >
-        <span className="text-gradient">Work</span>
+        <span className="text-gradient">Use Cases</span>
       </motion.h2>
 
-      <SectionHeader label="Projects" />
+      <SectionHeader label="GTM & Product Ops" />
       <div className="mb-8">
-        {WORK.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+        {USE_CASES.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+      </div>
+
+      <SectionHeader label="AI Governance & Tools" />
+      <div className="mb-8">
+        {AI_GOVERNANCE.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
 
       <SectionHeader label="Pet Projects" />
