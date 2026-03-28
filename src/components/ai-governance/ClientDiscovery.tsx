@@ -1307,7 +1307,7 @@ function ClientListView({ onSelectClient, onOpenWorkbook }: {
                       return (
                         <div key={client.id} style={{ background: "#fff", border: `1px solid ${isArchived ? "#fed7aa" : isHidden ? "#e9d5ff" : "#e2e8f0"}`, borderRadius: 12, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.04)", opacity: isArchived || isHidden ? 0.85 : 1 }}>
                           <div style={{ background: isArchived ? "#7c3aed" : isHidden ? "#475569" : "#0f172a", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, flexWrap: "wrap" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0 }}>
                               <div>
                                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                   <span style={{ fontSize: 15, fontWeight: 800, color: "#fff" }}>{client.name}</span>
@@ -1318,10 +1318,10 @@ function ClientListView({ onSelectClient, onOpenWorkbook }: {
                                   {[(client.countries || []).join(", "), client.geography, client.engagementType, `Added ${client.createdAt}`].filter(Boolean).join(" · ")}
                                 </div>
                               </div>
-                              <SignOffBadge status={client.signOffStatus} />
                             </div>
-                            {/* Framework progress pills */}
+                            {/* Framework progress pills + sign-off badge */}
                             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+                              <SignOffBadge status={client.signOffStatus} />
                               {client.activePolicies.map(pid => {
                                 const stub = POLICY_STUBS.find(p => p.id === pid);
                                 const { pct } = getPolicyProgress(client.id, pid);
@@ -2792,6 +2792,10 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient, onPhaseSe
                             <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                               {qState.owner && !isQOpen && <span style={{ fontSize: 10, color: "#64748b", background: "#f1f5f9", borderRadius: 4, padding: "1px 6px" }}>{qState.owner}</span>}
                               {qState.evidenceStatus && !isQOpen && <span style={{ fontSize: 10, fontWeight: 700, color: qState.evidenceStatus === "Yes" ? "#15803d" : qState.evidenceStatus === "Partial" ? "#a16207" : "#dc2626", background: qState.evidenceStatus === "Yes" ? "#f0fdf4" : qState.evidenceStatus === "Partial" ? "#fefce8" : "#fef2f2", borderRadius: 4, padding: "1px 6px" }}>{qState.evidenceStatus}</span>}
+                              {!isQOpen && !isNA && (() => {
+                                const filled = [qState.currentState, qState.gap, qState.proposedAction].filter(s => s?.trim()).length;
+                                return <span style={{ fontSize: 10, color: filled === 3 ? "#15803d" : filled > 0 ? "#a16207" : "#cbd5e1", fontWeight: 600, minWidth: 22, textAlign: "right" }}>{filled}/3</span>;
+                              })()}
                               <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: scfg.bg, color: scfg.text, border: `1px solid ${scfg.border}`, whiteSpace: "nowrap" }}>{qState.status}</span>
                               <span style={{ fontSize: 11, color: "#94a3b8" }}>{isQOpen ? "▾" : "▸"}</span>
                             </div>
