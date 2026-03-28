@@ -566,7 +566,9 @@ const MedLog = () => {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: "#f7f4ef", color: "#1a1a2e", fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="min-h-screen" style={{ background: "#f7f4ef", color: "#1a1a2e", fontFamily: "'DM Sans', sans-serif" }}
+      onContextMenu={!unlocked ? e => e.preventDefault() : undefined}
+    >
       {showLockModal && !unlocked && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(26,26,46,0.8)", backdropFilter: "blur(4px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
           <div style={{ background: "#fff", borderRadius: 20, padding: "40px 44px", maxWidth: 400, width: "100%", textAlign: "center", boxShadow: "0 25px 60px rgba(0,0,0,0.3)" }}>
@@ -593,8 +595,11 @@ const MedLog = () => {
         </div>
         <nav className="flex gap-1 flex-wrap justify-end">
           {navItems.filter(item => !item.ownerOnly || (unlocked && !memberName)).map((item) => (
-            <button key={item.id} onClick={() => setActiveView(item.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeView === item.id ? "bg-white/10 text-[#74c69d]" : "text-white/60 hover:bg-white/5 hover:text-white"}`}>
+            <button key={item.id}
+              onClick={() => unlocked ? setActiveView(item.id) : setShowLockModal(true)}
+              onContextMenu={e => e.preventDefault()}
+              style={{ cursor: unlocked ? "pointer" : "not-allowed", opacity: unlocked ? 1 : 0.45 }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${unlocked && activeView === item.id ? "bg-white/10 text-[#74c69d]" : "text-white/60"}`}>
               <item.icon className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{item.label}</span>
             </button>

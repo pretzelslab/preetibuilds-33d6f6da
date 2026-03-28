@@ -2668,10 +2668,9 @@ export default function AIGovernanceTracker() {
 
   return (
     <div
-      onContextMenu={PREVIEW_MODE ? e => e.preventDefault() : undefined}
+      onContextMenu={!unlocked ? e => e.preventDefault() : undefined}
       style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "'Inter','Segoe UI',sans-serif",
-        userSelect: (PREVIEW_MODE || (visitorAccess && !unlocked)) ? "none" : undefined,
-        pointerEvents: (visitorAccess && !unlocked) ? "none" : undefined,
+        userSelect: !unlocked ? "none" : undefined,
       }}>
 
       {/* Preview mode banner */}
@@ -2738,11 +2737,12 @@ export default function AIGovernanceTracker() {
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setView(tab.id)}
-              style={{ background: view === tab.id ? "#fff" : "transparent", color: view === tab.id ? "#0f172a" : "#94a3b8", border: "none", borderRadius: "8px 8px 0 0", padding: "8px 20px", cursor: "pointer", fontSize: 13, fontWeight: 600, transition: "all 0.15s", display: "flex", alignItems: "center", gap: 5 }}
+              onClick={() => tab.locked ? setShowUnlockModal(true) : setView(tab.id)}
+              onContextMenu={e => e.preventDefault()}
+              style={{ background: view === tab.id ? "#fff" : "transparent", color: view === tab.id ? "#0f172a" : (tab.locked ? "#475569" : "#94a3b8"), border: "none", borderRadius: "8px 8px 0 0", padding: "8px 20px", cursor: tab.locked ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 600, transition: "all 0.15s", display: "flex", alignItems: "center", gap: 5, opacity: tab.locked ? 0.6 : 1 }}
             >
               {tab.label}
-              {tab.locked && <span style={{ fontSize: 10, opacity: 0.6 }}>🔒</span>}
+              {tab.locked && <span style={{ fontSize: 10 }}>🔒</span>}
             </button>
           ))}
           {/* Client Workbook link — only for unlocked users */}

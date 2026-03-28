@@ -12,13 +12,6 @@ type Project = {
 
 const WORK: Project[] = [
   {
-    title: "AI Ethics & Governance Tracker",
-    description: "On-demand policy tracker — EU AI Act, NIST AI RMF, ISO 42001, FAIR, AAIA — with clause-level detail, four-pillar framework, and client risk workbook.",
-    tags: ["React", "TypeScript", "Supabase"],
-    status: "preview",
-    link: "/ai-governance",
-  },
-  {
     title: "Product Intelligence Pipeline",
     description: "AI-powered pipeline integrating Salesforce Cases with Claude to surface product insights at scale. Fintech and Healthtech verticals.",
     tags: ["Python", "Claude API", "Salesforce", "React"],
@@ -31,6 +24,13 @@ const WORK: Project[] = [
     tags: ["Python", "Pandas", "Streamlit", "HubSpot"],
     status: "live",
     link: "/gtm-techstack",
+  },
+  {
+    title: "AI Ethics & Governance Tracker",
+    description: "On-demand policy tracker — EU AI Act, NIST AI RMF, ISO 42001, FAIR, AAIA — with clause-level detail, four-pillar framework, and client risk workbook. Private.",
+    tags: ["React", "TypeScript", "Supabase"],
+    status: "preview",
+    link: "/ai-governance",
   },
 ];
 
