@@ -4,7 +4,7 @@ import { Linkedin } from "lucide-react";
 const CREDENTIALS = [
   "18+ years across B2B SaaS — HR tech, CRM, BI, and AI-driven platforms",
   "Product management, product launch, and technical program delivery across enterprise systems and cloud",
-  "Commercial GTM launch across product strategy, partner ecosystems, and M&A scenarios",
+  "Product general availability, business transformation, and strategic initiatives — commercial GTM, partner ecosystems, and M&A scenarios",
 ];
 
 const Hero = () => (
@@ -18,7 +18,7 @@ const Hero = () => (
         <p className="font-mono text-xs text-muted-foreground mb-3 tracking-widest uppercase">
           Product · Program · GTM
         </p>
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-5">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-5">
           <span className="text-gradient">Preethi Raghuveeran</span>
         </h1>
         <p className="text-base text-muted-foreground mb-5 leading-relaxed">
