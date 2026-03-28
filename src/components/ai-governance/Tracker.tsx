@@ -2540,7 +2540,10 @@ export default function AIGovernanceTracker() {
   return (
     <div
       onContextMenu={PREVIEW_MODE ? e => e.preventDefault() : undefined}
-      style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "'Inter','Segoe UI',sans-serif", userSelect: PREVIEW_MODE ? "none" : undefined }}>
+      style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "'Inter','Segoe UI',sans-serif",
+        userSelect: (PREVIEW_MODE || (visitorAccess && !unlocked)) ? "none" : undefined,
+        pointerEvents: (visitorAccess && !unlocked) ? "none" : undefined,
+      }}>
 
       {/* Preview mode banner */}
       {PREVIEW_MODE && (
@@ -2551,7 +2554,7 @@ export default function AIGovernanceTracker() {
 
       {/* Visitor mode banner — shown when visitor access but not owner */}
       {visitorAccess && !unlocked && !PREVIEW_MODE && (
-        <div style={{ background: "#eff6ff", borderBottom: "1px solid #bfdbfe", padding: "10px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+        <div style={{ pointerEvents: "auto", userSelect: "text", background: "#eff6ff", borderBottom: "1px solid #bfdbfe", padding: "10px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
           <div style={{ fontSize: 13, color: "#1e40af" }}>
             <span style={{ fontWeight: 700 }}>Visitor view</span> — Policy Grid is open. Additional tabs require full access.
           </div>

@@ -11,6 +11,7 @@ type ProjectCard = {
   applicationLayer?: string[];
   upcoming?: boolean;
   inProgress?: boolean;
+  previewOnly?: boolean;
   link?: string;
   externalLink?: string;
 };
@@ -33,14 +34,15 @@ const businessAIUseCases: ProjectCard[] = [
 
 
 const aiEthicsGovernance: ProjectCard[] = [
-{
-  title: "AI Ethics & Governance",
-  description: "On-demand global AI policy tracker — EU AI Act, NIST AI RMF, ISO 42001, FAIR, AAIA — with clause-level detail, four-pillar framework (Governance, Ethics, Privacy, Risk), bias & gender analysis, and export.",
-  tags: ["React", "Policy Intelligence", "TypeScript"],
-  applicationLayer: ["EU AI Act", "NIST AI RMF", "ISO 42001", "FAIR · AAIA"],
-  link: "/ai-governance"
-}];
-
+  {
+    title: "AI Ethics & Governance",
+    description: "On-demand global AI policy tracker — EU AI Act, NIST AI RMF, ISO 42001, FAIR, AAIA — with clause-level detail, four-pillar framework (Governance, Ethics, Privacy, Risk), bias & gender analysis, and client workbook.",
+    tags: ["React", "Policy Intelligence", "TypeScript"],
+    applicationLayer: ["EU AI Act", "NIST AI RMF", "ISO 42001", "FAIR · AAIA"],
+    previewOnly: true,
+    link: "/ai-governance",
+  },
+];
 
 const ProjectTile = ({
   project,
@@ -92,11 +94,21 @@ const ProjectTile = ({
   }
     <div className="flex items-center justify-between mt-auto pt-2">
       <div className="flex items-center gap-3">
-        {project.link &&
-      <Link to={project.link} className="text-sm font-medium text-primary hover:underline">
+        {project.previewOnly && project.link && (
+          <Link to={project.link} className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground border border-border rounded-full px-3 py-0.5 hover:border-primary hover:text-primary transition-colors">
+            🔒 Request Access →
+          </Link>
+        )}
+        {project.previewOnly && !project.link && (
+          <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground border border-border rounded-full px-3 py-0.5">
+            🔒 Preview on request
+          </span>
+        )}
+        {!project.previewOnly && project.link && (
+          <Link to={project.link} className="text-sm font-medium text-primary hover:underline">
             View Project →
           </Link>
-      }
+        )}
         {project.externalLink &&
       <a href={project.externalLink} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-primary hover:underline">
             GitHub ↗

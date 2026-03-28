@@ -952,6 +952,7 @@ function NewClientForm({ onAdd, onCancel }: { onAdd: (c: Client) => void; onCanc
   const [primaryAiUseCase, setPrimaryAiUseCase] = useState("");
   const [contactName, setContactName] = useState("");
   const [engagementType, setEngagementType] = useState<EngagementType>("");
+  const [aboutClient, setAboutClient] = useState("");
   const [selectedPolicies, setSelectedPolicies] = useState<Set<string>>(new Set());
   const [showScope, setShowScope] = useState(false);
 
@@ -986,7 +987,7 @@ function NewClientForm({ onAdd, onCancel }: { onAdd: (c: Client) => void; onCanc
     onAdd({
       id: crypto.randomUUID(),
       name: name.trim(), countries, industry: effectiveIndustry || "(not specified)",
-      geography, primaryAiUseCase, contactName, engagementType,
+      geography, primaryAiUseCase, contactName, engagementType, aboutClient,
       signOffStatus: "Pending",
       status: "active",
       createdAt: new Date().toISOString().slice(0, 10),
@@ -998,7 +999,12 @@ function NewClientForm({ onAdd, onCancel }: { onAdd: (c: Client) => void; onCanc
 
   return (
     <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: 28, marginBottom: 24, boxShadow: "0 4px 20px rgba(0,0,0,0.07)" }}>
-      <h3 style={{ margin: "0 0 20px", fontSize: 16, fontWeight: 800, color: "#0f172a" }}>New Client</h3>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+        <button onClick={onCancel} style={{ background: "none", border: "1px solid #e2e8f0", borderRadius: 8, padding: "5px 12px", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#64748b", display: "flex", alignItems: "center", gap: 5 }}>
+          ← Back to Clients
+        </button>
+        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#0f172a" }}>New Client</h3>
+      </div>
 
       {/* Step 1: Name + Countries (required) */}
       <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, padding: "16px 18px", marginBottom: 16 }}>
@@ -1081,6 +1087,12 @@ function NewClientForm({ onAdd, onCancel }: { onAdd: (c: Client) => void; onCanc
                 style={{ width: "100%", padding: "8px 11px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, background: "#fff", boxSizing: "border-box" }}>
                 {ENGAGEMENT_TYPES.map(t => <option key={t} value={t}>{t || "Select…"}</option>)}
               </select>
+            </div>
+            <div style={{ flex: "0 0 100%", minWidth: 0 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>About this Client</label>
+              <textarea value={aboutClient} onChange={e => setAboutClient(e.target.value)} rows={3}
+                placeholder="Brief context about the organisation, their AI maturity, scope of engagement, key stakeholders…"
+                style={{ width: "100%", padding: "8px 11px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none", resize: "vertical", boxSizing: "border-box", fontFamily: "inherit" }} />
             </div>
           </div>
         </details>
@@ -2372,7 +2384,7 @@ function Phase5Monitor({ client }: { client: Client }) {
                       <input value={kpi.unit} onChange={e => updateKpi(kpi.id, { unit: e.target.value })} style={{ ...inp, width: 50 }} />
                     </td>
                     <td style={{ padding: "6px 8px" }}>
-                      <input value={kpi.currentValue} onChange={e => updateKpi(kpi.id, { currentValue: e.target.value })} placeholder="—" style={{ ...inp, width: 70 }} />
+                      <input type="number" min="0" step="any" value={kpi.currentValue} onChange={e => updateKpi(kpi.id, { currentValue: e.target.value })} placeholder="0" style={{ ...inp, width: 70 }} />
                     </td>
                     <td style={{ padding: "6px 8px" }}>
                       <input value={kpi.threshold} onChange={e => updateKpi(kpi.id, { threshold: e.target.value })} style={{ ...inp, width: 70 }} />

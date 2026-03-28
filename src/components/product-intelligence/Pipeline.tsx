@@ -420,7 +420,7 @@ export default function Pipeline() {
     <div className="pipeline-root" style={{ fontFamily: "system-ui, sans-serif", background: "#f8fafc", minHeight: "100vh", color: "#0f172a" }}>
 <style>{`
         .pipeline-root *, .pipeline-root *::before, .pipeline-root *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        .pipeline-root .syne { font-family: 'Syne', sans-serif; line-height: 1.25; }
+        .pipeline-root .syne { font-family: 'Space Grotesk', sans-serif; line-height: 1.3; }
         .pipeline-root .mono { font-family: 'JetBrains Mono', monospace; }
         .pipeline-root .card { background: #fff; border: 1px solid #e4e8ef; border-radius: 10px; }
         .pipeline-root .btn { background: none; border: none; cursor: pointer; transition: all 0.12s; }
@@ -456,7 +456,7 @@ export default function Pipeline() {
           <div style={{ width: 28, height: 28, background: "linear-gradient(135deg,#0052cc,#0066ff)", borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ color: "#fff", fontSize: 14 }}>⚡</span>
           </div>
-          <span className="syne" style={{ fontSize: 14, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em" }}>Product Intelligence</span>
+          <span className="syne" style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>Product Intelligence</span>
           <span className="mono" style={{ fontSize: 9, color: "#94a3b8", background: "#f1f5f9", padding: "2px 7px", borderRadius: 4 }}>Any source · Any scale</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -568,15 +568,6 @@ export default function Pipeline() {
             </div>
           </div>
 
-          {/* Run button */}
-          <button className="btn" onClick={handleFullRun} disabled={isRunning || reportLoading}
-            style={{ padding: "10px", borderRadius: 10, background: isRunning || reportLoading ? "#e2e8f0" : "linear-gradient(135deg,#0052cc,#0066ff)",
-              color: isRunning || reportLoading ? "#94a3b8" : "#fff", fontWeight: 800, fontSize: 13,
-              width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              boxShadow: isRunning || reportLoading ? "none" : "0 3px 12px rgba(0,102,255,0.3)", marginBottom: 16, fontFamily: "Syne, sans-serif" }}>
-            {isRunning ? <><span className="spin">⟳</span> Syncing…</> : reportLoading ? <><span className="pulse">●</span> Analysing…</> : report ? "⟳ Re-Sync" : "▶ Run Pipeline"}
-          </button>
-
           {/* Pipeline stages */}
           {syncStage !== "idle" && (
             <div className="fade sidebar-section">
@@ -676,7 +667,28 @@ export default function Pipeline() {
         </div>
 
         {/* ── Main Content ── */}
-        <div style={{ padding: "20px 24px", overflow: "auto", minWidth: 0 }}>
+        <div style={{ display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
+
+          {/* ── Run Pipeline bar ── */}
+          <div style={{ background: "#fff", borderBottom: "1px solid #e4e8ef", padding: "10px 20px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+            <button className="btn syne" onClick={handleFullRun} disabled={isRunning || reportLoading}
+              style={{ padding: "10px 24px", borderRadius: 10,
+                background: isRunning || reportLoading ? "#e2e8f0" : "linear-gradient(135deg,#0052cc,#0066ff)",
+                color: isRunning || reportLoading ? "#94a3b8" : "#fff",
+                fontWeight: 700, fontSize: 13, display: "flex", alignItems: "center", gap: 8,
+                boxShadow: isRunning || reportLoading ? "none" : "0 3px 12px rgba(0,102,255,0.3)", border: "none", cursor: isRunning || reportLoading ? "not-allowed" : "pointer" }}>
+              {isRunning ? <><span className="spin">⟳</span> Syncing…</> : reportLoading ? <><span className="pulse">●</span> Analysing…</> : report ? <>⟳ Re-Sync</> : <>▶ Run Pipeline</>}
+            </button>
+            {lastSync && !isRunning && (
+              <span className="mono" style={{ fontSize: 10, color: "#94a3b8" }}>Last sync: {lastSync.toLocaleTimeString()}</span>
+            )}
+            {syncStage === "done" && report && (
+              <span className="mono" style={{ fontSize: 10, color: "#22c55e" }}>✓ {cases.length} cases · {clusters.length} clusters analysed</span>
+            )}
+          </div>
+
+          {/* scrollable body */}
+          <div style={{ padding: "20px 24px", overflow: "auto", flex: 1 }}>
 
           {/* Empty state */}
           {syncStage === "idle" && (
@@ -1010,6 +1022,7 @@ export default function Pipeline() {
               )}
             </div>
           )}
+          </div>{/* end scrollable body */}
         </div>
       </div>
     </div>
