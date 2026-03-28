@@ -1958,6 +1958,73 @@ function PolicyDetail({ policy, onBack, onViewDigest }: { policy: any; onBack: (
   );
 }
 
+// ─── ACRONYM GLOSSARY ────────────────────────────────────────────────────────
+const GLOSSARY: { acronym: string; full: string; note?: string }[] = [
+  { acronym: "AAIA",     full: "AI Auditing & Assurance Intelligence Framework", note: "Structured internal audit methodology for AI systems" },
+  { acronym: "AIIA",     full: "AI Impact Assessment", note: "ISO 42001 Annex B mandatory pre-deployment assessment" },
+  { acronym: "CAAIA",    full: "Certified AI Auditor (AAIA)", note: "Professional certification for AI audit practitioners" },
+  { acronym: "CMDB",     full: "Configuration Management Database" },
+  { acronym: "COBIT",    full: "Control Objectives for Information and Related Technologies" },
+  { acronym: "CSF",      full: "Cybersecurity Framework", note: "NIST CSF — NIST's cybersecurity risk management framework" },
+  { acronym: "DORA",     full: "Digital Operational Resilience Act", note: "EU regulation for financial sector ICT resilience" },
+  { acronym: "DPO",      full: "Data Protection Officer" },
+  { acronym: "DPIA",     full: "Data Protection Impact Assessment", note: "GDPR-required privacy risk assessment" },
+  { acronym: "EU AI Act",full: "European Union Artificial Intelligence Act" },
+  { acronym: "FAIR",     full: "Factor Analysis of Information Risk", note: "Quantitative financial risk modelling framework" },
+  { acronym: "FRIA",     full: "Fundamental Rights Impact Assessment", note: "EU AI Act Art. 27 — mandatory for high-risk AI deployers" },
+  { acronym: "GDPR",     full: "General Data Protection Regulation" },
+  { acronym: "GOVERN",   full: "NIST AI RMF — Govern function", note: "Establishes AI risk policies, roles, and culture" },
+  { acronym: "GPAI",     full: "General Purpose AI", note: "Foundation/frontier models with broad capabilities (EU AI Act Art. 51–55)" },
+  { acronym: "GRC",      full: "Governance, Risk & Compliance" },
+  { acronym: "HHS",      full: "US Department of Health & Human Services" },
+  { acronym: "HIPAA",    full: "Health Insurance Portability and Accountability Act" },
+  { acronym: "ICT",      full: "Information & Communications Technology" },
+  { acronym: "IIA",      full: "Institute of Internal Auditors" },
+  { acronym: "ISO",      full: "International Organization for Standardization" },
+  { acronym: "ISO 42001",full: "AI Management System Standard (ISO/IEC 42001:2023)", note: "Certifiable AI governance standard" },
+  { acronym: "ISMS",     full: "Information Security Management System", note: "Governed by ISO 27001" },
+  { acronym: "MAP",      full: "NIST AI RMF — Map function", note: "Identifies AI context, stakeholders, and risk categories" },
+  { acronym: "MANAGE",   full: "NIST AI RMF — Manage function", note: "Risk response, treatment plans, and incident handling" },
+  { acronym: "MEASURE",  full: "NIST AI RMF — Measure function", note: "Quantifies AI risks using defined metrics and fairness analysis" },
+  { acronym: "NIST",     full: "National Institute of Standards and Technology", note: "US federal standards body" },
+  { acronym: "NIST AI RMF", full: "NIST Artificial Intelligence Risk Management Framework" },
+  { acronym: "NIST CSF", full: "NIST Cybersecurity Framework 2.0" },
+  { acronym: "PCI DSS",  full: "Payment Card Industry Data Security Standard" },
+  { acronym: "PCAOB",    full: "Public Company Accounting Oversight Board" },
+  { acronym: "PDCA",     full: "Plan-Do-Check-Act", note: "ISO management system continual improvement cycle" },
+  { acronym: "PHI",      full: "Protected Health Information", note: "HIPAA-covered personal health data" },
+  { acronym: "QSA",      full: "Qualified Security Assessor", note: "PCI DSS certified third-party auditor" },
+  { acronym: "RMF",      full: "Risk Management Framework" },
+  { acronym: "SOC 2",    full: "System and Organization Controls 2", note: "AICPA trust services criteria for SaaS/cloud providers" },
+  { acronym: "SOX",      full: "Sarbanes-Oxley Act", note: "US financial reporting and internal controls law" },
+];
+
+function AcronymGlossary() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ borderTop: "1px solid #e2e8f0", background: "#f8fafc" }}>
+      <button onClick={() => setOpen(o => !o)}
+        style={{ width: "100%", background: "none", border: "none", padding: "12px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#475569" }}>
+        <span>📖 Acronym Glossary — {GLOSSARY.length} terms</span>
+        <span style={{ fontSize: 11, color: "#94a3b8" }}>{open ? "▾ collapse" : "▸ expand"}</span>
+      </button>
+      {open && (
+        <div style={{ padding: "4px 32px 20px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "6px 24px" }}>
+          {GLOSSARY.map(g => (
+            <div key={g.acronym} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "5px 0", borderBottom: "1px solid #e2e8f0" }}>
+              <span style={{ minWidth: 110, fontSize: 11, fontWeight: 700, color: "#0f172a", fontFamily: "monospace" }}>{g.acronym}</span>
+              <div>
+                <span style={{ fontSize: 11, color: "#334155" }}>{g.full}</span>
+                {g.note && <span style={{ fontSize: 10, color: "#94a3b8", display: "block" }}>{g.note}</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── GRC BRIDGE DATA ─────────────────────────────────────────────────────────
 const BRIDGE_LEVEL_CONFIG = {
   Requires:    { bg: "#fef2f2", border: "#fecaca", text: "#dc2626", label: "Requires AI Governance" },
@@ -1968,7 +2035,7 @@ const BRIDGE_LEVEL_CONFIG = {
 const GRC_FRAMEWORKS = [
   {
     id: "iso-27001", name: "ISO 27001", emoji: "🔐", type: "Standard", category: "Information Security",
-    geography: "International",
+    geography: "International", industries: ["All Sectors", "Technology", "Healthcare", "Financial", "Government"],
     color: { bg: "#f0f9ff", badge: "#e0f2fe", text: "#0369a1", border: "#bae6fd" },
     summary: "Global standard for information security management systems (ISMS). Certifiable, widely required by enterprise procurement and regulators.",
     keyFacts: ["Certifiable by accredited third-party auditors", "2022 revision added cloud, threat intel & supply chain controls", "ISO 42001 follows identical Annex SL structure — fast integration path"],
@@ -1980,7 +2047,7 @@ const GRC_FRAMEWORKS = [
   },
   {
     id: "gdpr", name: "GDPR", emoji: "🌐", type: "Regulation", category: "Data Privacy",
-    geography: "EU / Europe + Extra-territorial",
+    geography: "EU / Europe + Extra-territorial", industries: ["All Sectors", "Technology", "Healthcare", "Financial"],
     color: { bg: "#f0fdf4", badge: "#dcfce7", text: "#15803d", border: "#bbf7d0" },
     summary: "EU foundational data protection law governing collection, processing, and rights over personal data. Article 22 directly restricts fully automated decisions with legal or significant effects.",
     keyFacts: ["Lawful basis required for all personal data processing", "Art. 22 restricts automated decisions — directly overlaps with AI Act obligations", "Extra-territorial: applies to any org processing EU residents' data"],
@@ -1992,7 +2059,7 @@ const GRC_FRAMEWORKS = [
   },
   {
     id: "soc2", name: "SOC 2", emoji: "☁️", type: "Audit Framework", category: "Cloud / SaaS",
-    geography: "United States (widely accepted globally)",
+    geography: "United States (widely accepted globally)", industries: ["Technology", "Cloud / SaaS", "Financial"],
     color: { bg: "#f5f3ff", badge: "#ede9fe", text: "#7c3aed", border: "#ddd6fe" },
     summary: "AICPA trust service criteria for SaaS and cloud providers. Type II demonstrates sustained operational controls over 6–12 months. Required by enterprise buyers and investors.",
     keyFacts: ["5 Trust Service Criteria: Security, Availability, Processing Integrity, Confidentiality, Privacy", "Type II covers 6–12 month audit period", "AI model behaviour is increasingly in scope for SOC 2 audits"],
@@ -2004,7 +2071,7 @@ const GRC_FRAMEWORKS = [
   },
   {
     id: "pci-dss", name: "PCI DSS", emoji: "💳", type: "Standard", category: "Financial",
-    geography: "Global",
+    geography: "Global", industries: ["Financial", "Retail", "Technology"],
     color: { bg: "#fefce8", badge: "#fef9c3", text: "#a16207", border: "#fde047" },
     summary: "Mandatory security standard for organisations storing, processing, or transmitting payment card data. v4.0 introduced requirements explicitly covering AI-assisted fraud detection systems.",
     keyFacts: ["12 requirements covering network, access, monitoring, and testing", "v4.0 (2024) customised approach covers AI fraud models", "Level 1 merchants require annual third-party QSA assessment"],
@@ -2016,7 +2083,7 @@ const GRC_FRAMEWORKS = [
   },
   {
     id: "hipaa", name: "HIPAA", emoji: "🏥", type: "Regulation", category: "Healthcare",
-    geography: "United States",
+    geography: "United States", industries: ["Healthcare"],
     color: { bg: "#fff1f2", badge: "#ffe4e6", text: "#be123c", border: "#fecdd3" },
     summary: "US federal law governing protected health information (PHI). HHS 2024 guidance extends HIPAA Security Rule expectations to AI clinical decision support tools and diagnostic models.",
     keyFacts: ["Security Rule: administrative, physical & technical safeguards for ePHI", "AI clinical decision support tools are in scope if they process ePHI", "HHS 2024 guidance extends HIPAA expectations to AI model training data"],
@@ -2028,7 +2095,7 @@ const GRC_FRAMEWORKS = [
   },
   {
     id: "sox", name: "SOX", emoji: "📊", type: "Regulation", category: "Financial",
-    geography: "United States",
+    geography: "United States", industries: ["Financial"],
     color: { bg: "#fff7ed", badge: "#ffedd5", text: "#c2410c", border: "#fed7aa" },
     summary: "US law requiring executives to certify financial report accuracy and auditors to assess internal controls. AI models in financial reporting, forecasting, or controls testing are increasingly in scope.",
     keyFacts: ["Section 404: annual management assessment of internal controls over financial reporting", "PCAOB 2024 guidance flags AI in audit processes as a key risk area", "AI influencing financial estimates or material disclosures falls within SOX scope"],
@@ -2040,7 +2107,7 @@ const GRC_FRAMEWORKS = [
   },
   {
     id: "cobit", name: "COBIT 2019", emoji: "⚙️", type: "Framework", category: "IT Governance",
-    geography: "International",
+    geography: "International", industries: ["All Sectors", "Technology", "Financial", "Government"],
     color: { bg: "#f8fafc", badge: "#f1f5f9", text: "#475569", border: "#e2e8f0" },
     summary: "ISACA's IT governance and management framework. 40 objectives across 5 domains. ISACA published AI-specific COBIT guidance (2023) extending governance objectives to AI systems.",
     keyFacts: ["40 governance and management objectives across 5 domains", "Integrates with ISO 27001, ITIL, and risk frameworks", "ISACA AI guidance (2023) extends COBIT objectives specifically to AI"],
@@ -2052,7 +2119,7 @@ const GRC_FRAMEWORKS = [
   },
   {
     id: "dora", name: "DORA", emoji: "🏛️", type: "Regulation", category: "Financial",
-    geography: "EU / Europe",
+    geography: "EU / Europe", industries: ["Financial"],
     color: { bg: "#eff6ff", badge: "#dbeafe", text: "#1d4ed8", border: "#bfdbfe" },
     summary: "EU regulation requiring financial entities to manage and test digital operational resilience including ICT risk, incident reporting, and third-party AI provider oversight. Fully in force Jan 2025.",
     keyFacts: ["Applies to banks, insurers, investment firms, crypto-asset service providers", "Requires ICT risk framework, incident classification & threat-led penetration testing", "Third-party AI providers used by financial entities fall under DORA oversight"],
@@ -2065,92 +2132,152 @@ const GRC_FRAMEWORKS = [
 ];
 
 // ─── GRC BRIDGE TAB ──────────────────────────────────────────────────────────
+const GRC_CATEGORIES = ["All", "Information Security", "Data Privacy", "Cloud / SaaS", "Financial", "Healthcare", "IT Governance"];
+const GRC_INDUSTRIES  = ["All", "All Sectors", "Technology", "Financial", "Healthcare", "Cloud / SaaS", "Retail", "Government"];
+
 function GRCBridgeTab({ onSelectAIPolicy }: { onSelectAIPolicy: (p: any) => void }) {
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [activeIndustry, setActiveIndustry] = useState("All");
+
+  const filtered = GRC_FRAMEWORKS.filter(f => {
+    const q = search.trim().toLowerCase();
+    const matchSearch = !q || [
+      f.name, f.category, f.geography, f.summary,
+      ...f.keyFacts,
+      ...f.aiPathways.map(p => {
+        const pol = POLICIES.find(x => x.id === p.policyId);
+        return pol ? pol.name + " " + pol.shortName : p.policyId;
+      }),
+    ].some(s => s.toLowerCase().includes(q));
+    const matchCat = activeCategory === "All" || f.category === activeCategory;
+    const matchInd = activeIndustry === "All" || f.industries.includes(activeIndustry);
+    return matchSearch && matchCat && matchInd;
+  });
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 32px" }}>
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: 20 }}>
         <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#0f172a" }}>GRC & IT Compliance Bridge</h2>
         <p style={{ margin: "6px 0 0", fontSize: 14, color: "#64748b" }}>
           Already compliant with a traditional GRC or IT security framework? See which AI governance frameworks you additionally need — and how your existing work accelerates the journey.
         </p>
       </div>
 
-      {/* Category chips */}
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
-        {["Information Security","Data Privacy","Cloud / SaaS","Financial","Healthcare","IT Governance"].map(cat => (
-          <span key={cat} style={{ background: "#f1f5f9", color: "#475569", borderRadius: 20, padding: "4px 12px", fontSize: 11, fontWeight: 600 }}>{cat}</span>
-        ))}
+      {/* Search + filters */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, padding: "14px 16px" }}>
+        <input
+          value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="Search frameworks or AI policies — try 'NIST', 'ISO', 'GDPR', 'data privacy'…"
+          style={{ width: "100%", padding: "8px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none", boxSizing: "border-box" }}
+        />
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", minWidth: 60 }}>Category</span>
+          {GRC_CATEGORIES.map(cat => (
+            <button key={cat} onClick={() => setActiveCategory(cat)}
+              style={{ background: activeCategory === cat ? "#0f172a" : "#fff", color: activeCategory === cat ? "#fff" : "#475569", border: `1px solid ${activeCategory === cat ? "#0f172a" : "#e2e8f0"}`, borderRadius: 20, padding: "3px 11px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+              {cat}
+            </button>
+          ))}
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", minWidth: 60 }}>Industry</span>
+          {GRC_INDUSTRIES.map(ind => (
+            <button key={ind} onClick={() => setActiveIndustry(ind)}
+              style={{ background: activeIndustry === ind ? "#6366f1" : "#fff", color: activeIndustry === ind ? "#fff" : "#475569", border: `1px solid ${activeIndustry === ind ? "#6366f1" : "#e2e8f0"}`, borderRadius: 20, padding: "3px 11px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+              {ind}
+            </button>
+          ))}
+        </div>
+        {(search || activeCategory !== "All" || activeIndustry !== "All") && (
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 12, color: "#64748b" }}>{filtered.length} of {GRC_FRAMEWORKS.length} frameworks</span>
+            <button onClick={() => { setSearch(""); setActiveCategory("All"); setActiveIndustry("All"); }}
+              style={{ background: "none", border: "none", color: "#6366f1", fontSize: 12, fontWeight: 600, cursor: "pointer", padding: 0 }}>
+              Clear filters ×
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Framework cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(380px, 1fr))", gap: 20 }}>
-        {GRC_FRAMEWORKS.map(f => {
-          const isOpen = expanded === f.id;
-          return (
-            <div key={f.id} style={{ background: "#fff", border: `1px solid #e2e8f0`, borderTop: `3px solid ${f.color.text}`, borderRadius: 14, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-              {/* Card header */}
-              <div style={{ background: f.color.bg, borderBottom: `1px solid ${f.color.border}`, padding: "14px 18px", display: "flex", alignItems: "center", gap: 12 }}>
-                <span style={{ fontSize: 26 }}>{f.emoji}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#0f172a" }}>{f.name}</h3>
-                    <span style={{ background: f.color.badge, color: f.color.text, border: `1px solid ${f.color.border}`, borderRadius: 6, padding: "2px 8px", fontSize: 10, fontWeight: 600 }}>{f.type}</span>
-                    <span style={{ background: "#f1f5f9", color: "#64748b", borderRadius: 6, padding: "2px 8px", fontSize: 10 }}>{f.category}</span>
-                  </div>
-                  <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{f.geography}</div>
-                </div>
-              </div>
-
-              {/* Body */}
-              <div style={{ padding: "14px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
-                <p style={{ margin: 0, fontSize: 12, color: "#475569", lineHeight: 1.65 }}>{f.summary}</p>
-                <div>
-                  {f.keyFacts.map((fact, i) => (
-                    <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}>
-                      <span style={{ color: f.color.text, fontSize: 12, flexShrink: 0 }}>→</span>
-                      <span style={{ fontSize: 11, color: "#64748b", lineHeight: 1.5 }}>{fact}</span>
+      {filtered.length === 0 ? (
+        <div style={{ textAlign: "center", color: "#94a3b8", padding: "48px 0", fontSize: 14 }}>No frameworks match your filters.</div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(380px, 1fr))", gap: 20 }}>
+          {filtered.map(f => {
+            const isOpen = expanded === f.id;
+            return (
+              <div key={f.id} style={{ background: "#fff", border: `1px solid #e2e8f0`, borderTop: `3px solid ${f.color.text}`, borderRadius: 14, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+                {/* Card header */}
+                <div style={{ background: f.color.bg, borderBottom: `1px solid ${f.color.border}`, padding: "14px 18px", display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ fontSize: 26 }}>{f.emoji}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#0f172a" }}>{f.name}</h3>
+                      <span style={{ background: f.color.badge, color: f.color.text, border: `1px solid ${f.color.border}`, borderRadius: 6, padding: "2px 8px", fontSize: 10, fontWeight: 600 }}>{f.type}</span>
+                      <span style={{ background: "#f1f5f9", color: "#64748b", borderRadius: 6, padding: "2px 8px", fontSize: 10 }}>{f.category}</span>
                     </div>
-                  ))}
+                    <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{f.geography}</div>
+                  </div>
                 </div>
 
-                {/* AI Pathways toggle */}
-                <button
-                  onClick={() => setExpanded(isOpen ? null : f.id)}
-                  style={{ background: isOpen ? "#0f172a" : "#f8fafc", color: isOpen ? "#fff" : "#0f172a", border: "1px solid #e2e8f0", borderRadius: 8, padding: "9px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600, display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}
-                >
-                  <span>🤖 AI Governance Pathways from {f.name}</span>
-                  <span style={{ fontSize: 11, opacity: 0.7 }}>{isOpen ? "▾" : "▸"} {f.aiPathways.length} frameworks</span>
-                </button>
-
-                {isOpen && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {f.aiPathways.map(pathway => {
-                      const aiPolicy = POLICIES.find(p => p.id === pathway.policyId);
-                      if (!aiPolicy) return null;
-                      const cfg = BRIDGE_LEVEL_CONFIG[pathway.bridgeLevel];
-                      return (
-                        <div key={pathway.policyId} style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 10, padding: "10px 14px" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
-                            <span style={{ fontSize: 16 }}>{aiPolicy.emoji}</span>
-                            <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{aiPolicy.name}</span>
-                            <span style={{ color: cfg.text, border: `1px solid ${cfg.border}`, borderRadius: 20, padding: "2px 10px", fontSize: 10, fontWeight: 700, background: cfg.bg }}>{cfg.label}</span>
-                          </div>
-                          <p style={{ margin: "0 0 8px", fontSize: 11, color: "#334155", lineHeight: 1.65 }}>{pathway.note}</p>
-                          <button onClick={() => onSelectAIPolicy(aiPolicy)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 6, padding: "5px 12px", cursor: "pointer", fontSize: 11, fontWeight: 600 }}>
-                            View AI Framework →
-                          </button>
-                        </div>
-                      );
-                    })}
+                {/* Body */}
+                <div style={{ padding: "14px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
+                  <p style={{ margin: 0, fontSize: 12, color: "#475569", lineHeight: 1.65 }}>{f.summary}</p>
+                  <div>
+                    {f.keyFacts.map((fact, i) => (
+                      <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}>
+                        <span style={{ color: f.color.text, fontSize: 12, flexShrink: 0 }}>→</span>
+                        <span style={{ fontSize: 11, color: "#64748b", lineHeight: 1.5 }}>{fact}</span>
+                      </div>
+                    ))}
                   </div>
-                )}
+                  {/* Industry tags */}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                    {f.industries.map(ind => (
+                      <span key={ind} style={{ background: f.color.badge, color: f.color.text, border: `1px solid ${f.color.border}`, borderRadius: 20, padding: "2px 8px", fontSize: 10 }}>{ind}</span>
+                    ))}
+                  </div>
+
+                  {/* AI Pathways toggle */}
+                  <button
+                    onClick={() => setExpanded(isOpen ? null : f.id)}
+                    style={{ background: isOpen ? "#0f172a" : "#f8fafc", color: isOpen ? "#fff" : "#0f172a", border: "1px solid #e2e8f0", borderRadius: 8, padding: "9px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600, display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}
+                  >
+                    <span>🤖 AI Governance Pathways from {f.name}</span>
+                    <span style={{ fontSize: 11, opacity: 0.7 }}>{isOpen ? "▾" : "▸"} {f.aiPathways.length} frameworks</span>
+                  </button>
+
+                  {isOpen && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {f.aiPathways.map(pathway => {
+                        const aiPolicy = POLICIES.find(p => p.id === pathway.policyId);
+                        if (!aiPolicy) return null;
+                        const cfg = BRIDGE_LEVEL_CONFIG[pathway.bridgeLevel];
+                        return (
+                          <div key={pathway.policyId} style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: 10, padding: "10px 14px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+                              <span style={{ fontSize: 16 }}>{aiPolicy.emoji}</span>
+                              <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{aiPolicy.name}</span>
+                              <span style={{ color: cfg.text, border: `1px solid ${cfg.border}`, borderRadius: 20, padding: "2px 10px", fontSize: 10, fontWeight: 700, background: cfg.bg }}>{cfg.label}</span>
+                            </div>
+                            <p style={{ margin: "0 0 8px", fontSize: 11, color: "#334155", lineHeight: 1.65 }}>{pathway.note}</p>
+                            <button onClick={() => onSelectAIPolicy(aiPolicy)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 6, padding: "5px 12px", cursor: "pointer", fontSize: 11, fontWeight: 600 }}>
+                              View AI Framework →
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Footer legend */}
       <div style={{ marginTop: 32, padding: "14px 18px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 10, fontSize: 12, color: "#64748b", lineHeight: 1.8 }}>
@@ -2825,6 +2952,9 @@ export default function AIGovernanceTracker() {
           </div>
         </>
       )}
+
+      {/* Acronym Glossary */}
+      <AcronymGlossary />
 
       <div style={{ textAlign: "center", padding: "20px 32px", borderTop: "1px solid #e2e8f0", color: "#94a3b8", fontSize: 12 }}>
         AI Ethics & Governance Tracker · March 2026 · Reference only — consult legal counsel for compliance decisions
