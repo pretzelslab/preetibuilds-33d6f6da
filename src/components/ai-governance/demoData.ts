@@ -249,3 +249,252 @@ export function seedDemoClient(): void {
   localStorage.setItem(`pl_p4_rev_${DEMO_CLIENT_ID}`, "Sarah Müller — Chief Risk Officer, Apex Lending Group");
   localStorage.setItem(`pl_p4_date_${DEMO_CLIENT_ID}`, "2026-03-21");
 }
+
+// ─── MEDISCAN DIAGNOSTICS GROUP — DEMO CLIENT #2 ─────────────────────────────
+// Healthcare / Radiology AI · NIST AI RMF primary · ISO 42001 secondary
+// Area indices after governance-fix-ordering.sql:
+//   0=GOVERN  1=GOVERN2  2=GOVERN3  3=GOVERN5
+//   4=MAP     5=MAP1     6=MAP2     7=MAP3  8=MAP4  9=MAP5
+//  10=MEASURE 11=MEASURE2 12=MEASURE3
+//  13=MANAGE  14=MANAGE3
+
+export const DEMO_MEDISCAN_ID = "demo-mediscan-001";
+const DEMO_MEDISCAN_POLICY = "nist-ai-rmf";
+
+export const DEMO_MEDISCAN_CLIENT = {
+  id: DEMO_MEDISCAN_ID,
+  name: "MediScan Diagnostics Group",
+  countries: ["United States"],
+  industry: "Healthtech / MedTech / Pharma",
+  geography: "North America · United States",
+  primaryAiUseCase: "Radiology diagnostic imaging — automated triage and anomaly detection for chest X-rays and CT scans",
+  contactName: "Dr. Priya Nair, Chief Medical Information Officer",
+  engagementType: "AI Risk Assessment",
+  signOffStatus: "Pending",
+  status: "active",
+  createdAt: "2026-03-01",
+  activePolicies: ["nist-ai-rmf", "iso-42001"],
+  aboutClient: "MediScan Diagnostics Group is a radiology network operating 34 imaging centres across the US. They deploy RadInsight AI to assist radiologists in prioritising urgent cases and flagging anomalies. The system processes approximately 2,400 scans per day. MediScan is subject to HIPAA, FDA Software as a Medical Device (SaMD) guidance, and is preparing for NIST AI RMF alignment per HHS supervisory expectations.",
+  aiSystemName: "RadInsight AI",
+  aiTypes: ["Computer Vision"],
+  systemDescription: "FDA SaMD Class II decision-support system for chest X-ray and CT scan triage and anomaly detection. Processes 2,400 scans/day across 34 imaging centres. Radiologist retains diagnostic authority and sign-off.",
+  vendor: "Luminary Medical AI (Third-Party Vendor)",
+  modelOwnership: "Third-Party Vendor",
+  decisionAuthority: "Human-in-the-Loop",
+  deploymentStatus: "Production",
+  timeInProduction: "18 months",
+  decisionsPerPeriod: "~2,400 scans/day · ~876,000/year",
+  internalUsersAffected: "~120 radiologists across 34 centres",
+  externalUsersAffected: "All patients presenting for chest X-ray and CT imaging at MediScan centres",
+  trainingDataSource: "Vendor training data (demographics undisclosed)",
+  trainingDataPeriod: "Not disclosed by vendor",
+  lastRetrainingDate: "",
+  modelAccuracy: "Vendor-reported sensitivity 92%, specificity 88% (aggregate). Disaggregated metrics not provided.",
+  falsePositiveRate: "Vendor-reported false positive rate 12% (aggregate only — no demographic breakdown).",
+  lastEvaluationDate: "",
+  evaluationMethod: "Vendor FDA 510(k) validation. No independent MediScan-specific evaluation conducted.",
+  knownLimitations: "1. Training data demographics not disclosed by vendor.\n2. No disaggregated performance metrics by gender, age, or ethnicity.\n3. No out-of-distribution testing conducted by MediScan.\n4. Two model updates deployed without formal risk reassessment.\n5. Override rates not tracked — radiologist disagreement with AI triage invisible.\n6. No AI-specific incident playbook.",
+  stakeholders: [
+    { id: "s1", name: "Dr. Priya Nair", role: "Chief Medical Information Officer", organisation: "MediScan Diagnostics Group", consulted: true, consultationDate: "2026-03-01", notes: "Engagement sponsor. AI risk owner — informal. Formally assigning AI risk accountability is a key action item." },
+    { id: "s2", name: "Dr. James Sutherland", role: "Radiology Operations Lead", organisation: "MediScan Diagnostics Group", consulted: true, consultationDate: "2026-03-05", notes: "Oversees RadInsight AI deployment. Key contact for clinical AI governance and system change reviews." },
+    { id: "s3", name: "IT Director", role: "IT Infrastructure & Security", organisation: "MediScan Diagnostics Group", consulted: false, consultationDate: "", notes: "To be consulted on vendor contract obligations, override tracking, and test evidence repository." },
+    { id: "s4", name: "Legal Counsel", role: "Legal / Compliance", organisation: "MediScan Diagnostics Group", consulted: false, consultationDate: "", notes: "To be consulted on FDA SaMD obligations, HIPAA AI obligations, and vendor contract AI addendum." },
+  ],
+};
+
+// Area 0 — GOVERN: AI Risk Policy & Accountability
+// Area 1 — GOVERN 2: AI Team Structure & Responsibilities
+// Area 2 — GOVERN 3: AI Workforce Skills & Training
+// Area 3 — GOVERN 5: Risk Tolerance, Legal & Regulatory Alignment
+// Area 4 — MAP: Identifying Affected Populations & Risks
+// Area 5 — MAP 1: Deployment Context & AI Use Case Scoping
+// Area 6 — MAP 2: Scientific Basis, Assumptions & Known Limitations
+// Area 7 — MAP 3: Impact on Individuals, Communities & Affected Groups
+// Area 8 — MAP 4: Third-Party AI Systems & Supply Chain Risk
+// Area 9 — MAP 5: Risk Likelihood, Prioritisation & Impact Estimation
+// Area 10 — MEASURE: Fairness Metrics & Monitoring
+// Area 11 — MEASURE 2: AI System Testing, Performance & Robustness
+// Area 12 — MEASURE 3: Disaggregated Evaluation & External Expert Review
+// Area 13 — MANAGE: Risk Treatment & Incident Response
+// Area 14 — MANAGE 3: Ongoing Monitoring, Drift Detection & Reassessment
+
+export const DEMO_MEDISCAN_AREA_STATES: Record<number, object> = {
+  // Area 0 — GOVERN: AI Risk Policy & Accountability
+  0: {
+    summary: "Board-level AI governance is absent. CMIO sponsors AI informally but this has not been formalised. The key gap is converting informal ownership into documented, board-approved accountability — this is the foundation for all downstream NIST AI RMF compliance work.",
+    lastUpdated: new Date().toISOString(),
+    questions: {
+      0: { status: "In Progress", owner: "CMIO", dueDate: "2026-06-30", evidenceStatus: "Partial", evidenceRef: "", currentState: "IT security policy exists. No standalone AI risk policy adopted at board level. AI mentioned as 'emerging technology risk' in annual risk appetite statement.", gap: "No board-approved AI-specific policy. Risk appetite for AI not quantified or separately documented.", proposedAction: "Draft AI risk policy covering RadInsight AI scope, risk appetite, and accountabilities. Table at next board meeting Q3 2026." },
+      1: { status: "In Progress", owner: "CMIO", dueDate: "2026-06-30", evidenceStatus: "Partial", evidenceRef: "", currentState: "Dr. Priya Nair (CMIO) sponsors AI initiatives. No formal AI risk ownership documented in organisational chart or risk register.", gap: "No named AI risk executive with documented accountability. Role is informal.", proposedAction: "Formally assign AI risk accountability to CMIO. Update organisational risk register and executive responsibility matrix." },
+      2: { status: "Not Started", owner: "CMIO", dueDate: "2026-07-31", evidenceStatus: "No", evidenceRef: "", currentState: "RadInsight AI managed informally across radiology operations, IT, and clinical governance. No RACI or responsibility matrix for AI risk.", gap: "No documented RACI for AI development, deployment, monitoring, or incident response.", proposedAction: "Develop AI RACI covering RadInsight AI. Include vendor management, clinical governance, data science, and legal." },
+      3: { status: "Not Started", owner: "CMIO", dueDate: "2026-07-31", evidenceStatus: "No", evidenceRef: "", currentState: "AI performance metrics reviewed informally in radiology operations meetings. No board-level AI risk reporting cadence in place.", gap: "No scheduled senior management AI risk review. No AI risk reporting template or dashboard.", proposedAction: "Add quarterly AI risk report to Clinical Governance Committee agenda. Define reporting template." },
+    },
+  },
+  // Area 1 — GOVERN 2: AI Team Structure & Responsibilities
+  1: {
+    summary: "Accountability for RadInsight AI is informal and distributed. No formal AI system owner exists, no cross-functional AI governance committee has been established, and staff have no clear escalation pathway for AI concerns. These structural gaps will hinder all other governance work.",
+    lastUpdated: new Date().toISOString(),
+    questions: {
+      0: { status: "In Progress", owner: "Radiology Lead", dueDate: "2026-06-30", evidenceStatus: "Partial", evidenceRef: "", currentState: "Radiology operations lead (Dr. James Sutherland) oversees RadInsight AI deployment. No formal AI system owner designation in writing.", gap: "Accountability is informal. No written designation.", proposedAction: "Document formal AI System Owner for RadInsight AI. Include in system register and governance charter." },
+      1: { status: "Not Started", owner: "CMIO", dueDate: "2026-07-31", evidenceStatus: "No", evidenceRef: "", currentState: "Product, IT, radiology, and legal teams each engage with RadInsight AI but responsibilities overlap and are undocumented.", gap: "No team-level responsibility mapping. Gaps in legal/compliance coverage.", proposedAction: "Complete team responsibility matrix covering product, clinical, IT, legal, and risk functions." },
+      2: { status: "Not Started", owner: "CMIO", dueDate: "2026-07-31", evidenceStatus: "No", evidenceRef: "", currentState: "No standing AI governance committee. Ad hoc reviews convened when issues arise.", gap: "No formal committee with documented authority to approve or halt AI deployments.", proposedAction: "Establish AI Clinical Governance Committee with radiology, legal, IT, risk, and patient safety representation. Define quorum and decision rights." },
+      3: { status: "Not Started", owner: "CMIO / HR", dueDate: "2026-08-31", evidenceStatus: "No", evidenceRef: "", currentState: "No AI-specific speak-up mechanism. General whistleblower policy exists but does not reference AI systems.", gap: "Staff have no clear route to escalate concerns about RadInsight AI outputs without informal management chain.", proposedAction: "Add AI-specific speak-up pathway to HR policy. Communicate to all radiology staff." },
+    },
+  },
+  // Area 2 — GOVERN 3: AI Workforce Skills & Training
+  2: {
+    summary: "No AI-specific training exists for any staff. Radiologists using RadInsight AI daily have no formal understanding of AI risk, bias, or escalation obligations. This is a material gap — oversight obligations cannot be met by staff who haven't been trained on what to look for.",
+    lastUpdated: new Date().toISOString(),
+    questions: {
+      0: { status: "Not Started", owner: "CMIO / HR", dueDate: "2026-09-30", evidenceStatus: "No", evidenceRef: "", currentState: "No AI competency framework. Radiologists have clinical training; no AI literacy component assessed at hiring or appraisal.", gap: "No AI competency baseline or gap assessment.", proposedAction: "Define AI competency requirements for radiologists and clinical staff using RadInsight AI. Integrate into role profiles." },
+      1: { status: "Not Started", owner: "CMIO / HR", dueDate: "2026-09-30", evidenceStatus: "No", evidenceRef: "", currentState: "No mandatory AI-specific training. General data privacy (HIPAA) training is complete for all staff.", gap: "No AI risk, bias, or ethics training delivered or planned.", proposedAction: "Commission AI literacy training module for all RadInsight AI users. Target completion Q4 2026." },
+      2: { status: "Not Started", owner: "CMIO / HR", dueDate: "2026-09-30", evidenceStatus: "No", evidenceRef: "", currentState: "Radiologists rely on professional judgment to identify unusual outputs. No formal process for flagging AI performance concerns.", gap: "No documented obligation or mechanism for flagging AI concerns. Staff unaware of escalation path.", proposedAction: "Include AI concern-reporting procedure in training. Define what constitutes a reportable AI performance event." },
+      3: { status: "Not Started", owner: "CMIO / HR", dueDate: "2026-09-30", evidenceStatus: "No", evidenceRef: "", currentState: "Not covered. No bias awareness component in any existing MediScan training programme.", gap: "Staff have no understanding of how demographic bias in radiology AI manifests or how to identify it.", proposedAction: "Include bias and fairness module in AI training. Use real-world radiology AI bias case studies (e.g. chest X-ray performance gaps by patient BMI and gender)." },
+    },
+  },
+  // Area 3 — GOVERN 5: Risk Tolerance, Legal & Regulatory Alignment
+  3: {
+    summary: "MediScan operates RadInsight AI with no defined AI risk tolerance and no formal mapping of HHS / FDA / NIST obligations to internal controls. HIPAA compliance is active but AI-specific regulatory requirements have not been systematically tracked. This is a foundational gap given HHS supervisory expectations.",
+    lastUpdated: new Date().toISOString(),
+    questions: {
+      0: { status: "Not Started", owner: "CMIO", dueDate: "2026-07-31", evidenceStatus: "No", evidenceRef: "", currentState: "No AI-specific risk tolerance statement. Enterprise risk appetite covers financial and operational risk only.", gap: "No defined threshold at which AI risk requires treatment vs. acceptance.", proposedAction: "Define AI risk tolerance for RadInsight AI covering false negative rate, demographic parity, and incident frequency. Obtain board approval." },
+      1: { status: "In Progress", owner: "Legal / Compliance", dueDate: "2026-06-30", evidenceStatus: "Partial", evidenceRef: "", currentState: "HIPAA compliance programme active. FDA SaMD classification acknowledged. HHS AI guidance noted but not formally mapped to controls.", gap: "No control mapping between HHS supervisory guidance / NIST AI RMF obligations and current controls.", proposedAction: "Complete regulatory obligation mapping: FDA SaMD → NIST AI RMF → internal controls. Assign control owners." },
+      2: { status: "Not Started", owner: "Legal", dueDate: "2026-07-31", evidenceStatus: "No", evidenceRef: "", currentState: "Legal counsel periodically reviews regulatory news. No formal horizon-scanning process or assigned owner.", gap: "No systematic monitoring. Risk of missing HHS, FDA, or CMS updates affecting RadInsight AI.", proposedAction: "Assign legal/compliance owner for AI regulatory monitoring. Establish quarterly review cadence." },
+      3: { status: "Not Started", owner: "CMIO", dueDate: "2026-07-31", evidenceStatus: "No", evidenceRef: "", currentState: "RadInsight AI has been updated twice since go-live. No change impact assessment conducted on either occasion.", gap: "No change management process linking model updates to risk tolerance review.", proposedAction: "Implement AI change management procedure requiring risk tolerance review before each model update or expansion." },
+    },
+  },
+  // Area 4 — MAP: Identifying Affected Populations & Risks
+  4: {
+    summary: "Patient populations are broadly described but not systematically mapped. Vulnerable groups (paediatric, elderly, underrepresented ethnicities) have not been explicitly identified or assessed. Bias and fairness are not formal risk categories. This gap is particularly significant given RadInsight AI's scale — 2,400 scans/day.",
+    lastUpdated: new Date().toISOString(),
+    questions: {
+      0: { status: "In Progress", owner: "CMIO", dueDate: "2026-07-31", evidenceStatus: "Partial", evidenceRef: "", currentState: "Patient population broadly described as 'adult patients presenting for chest and CT imaging.' No segmentation by age, gender, BMI, or ethnicity.", gap: "No disaggregated affected population mapping. Specific vulnerable groups not documented.", proposedAction: "Complete affected population map for RadInsight AI. Include paediatric patients, elderly, pregnant patients, and underrepresented ethnicities." },
+      1: { status: "Not Started", owner: "CMIO", dueDate: "2026-08-31", evidenceStatus: "No", evidenceRef: "", currentState: "Not addressed. Vendor documentation does not call out demographic performance variation.", gap: "No explicit identification of groups at higher risk of algorithmic harm (e.g. patients with atypical presentations, non-standard BMI, or underrepresented in training data).", proposedAction: "Request demographic performance data from vendor. Map against patient population mix across 34 MediScan centres." },
+      2: { status: "Not Started", owner: "CMIO", dueDate: "2026-08-31", evidenceStatus: "No", evidenceRef: "", currentState: "Technical risks reviewed informally during IT onboarding. No structured multi-dimension risk assessment.", gap: "No risk assessment framework covering technical, clinical, societal, and operational risk dimensions for RadInsight AI.", proposedAction: "Complete NIST AI RMF-aligned risk assessment covering all four dimensions. Use workbook as basis." },
+      3: { status: "Not Started", owner: "CMIO", dueDate: "2026-08-31", evidenceStatus: "No", evidenceRef: "", currentState: "IT risk register covers cybersecurity and data privacy. No bias or fairness risk category.", gap: "Algorithmic bias not recognised as a formal risk category. No risk owner assigned.", proposedAction: "Add bias and fairness as formal risk categories in enterprise risk register. Assign to CMIO. Set initial risk rating." },
+    },
+  },
+  // Area 5 — MAP 1: Deployment Context & AI Use Case Scoping
+  5: {
+    summary: "The intended purpose of RadInsight AI is formally documented via FDA 510(k) submission — this is a strong foundation. Risk classification is clear (FDA SaMD Class II / High Clinical Risk). Key gaps are that vendor exclusion criteria have not been embedded in operational SOPs, and model updates have not triggered risk reclassification reviews.",
+    lastUpdated: new Date().toISOString(),
+    questions: {
+      0: { status: "Complete", owner: "Radiology Lead", dueDate: "", evidenceStatus: "Yes", evidenceRef: "FDA_510k_RadInsight_Submission.pdf", currentState: "RadInsight AI intended purpose documented in FDA 510(k) submission and vendor contract: automated triage prioritisation and anomaly detection for chest X-rays and CT scans. Decision-support only — radiologist retains diagnostic authority.", gap: "None identified. FDA documentation provides formal scope baseline.", proposedAction: "Reference FDA submission as primary scope document. Keep under change control." },
+      1: { status: "In Progress", owner: "Radiology Lead", dueDate: "2026-06-30", evidenceStatus: "Partial", evidenceRef: "", currentState: "Vendor instructions for use include some exclusion criteria. Not integrated into MediScan's operational SOPs.", gap: "Exclusions not communicated to radiologists in day-to-day operating procedures. No documented contraindications for specific patient populations.", proposedAction: "Extract vendor exclusion criteria and embed in radiology SOP. Cover paediatric patients, implants, and motion artefacts." },
+      2: { status: "Complete", owner: "Radiology Lead", dueDate: "", evidenceStatus: "Yes", evidenceRef: "RadInsight_ClinicalGovernance_RiskClassification_2025.pdf", currentState: "RadInsight AI classified FDA SaMD Class II. Internally classified as High Clinical Risk due to potential for missed pathology affecting patient safety.", gap: "None. Classification documented and reviewed at last clinical governance meeting.", proposedAction: "Maintain classification under review. Reassess if system expanded to additional modalities or patient populations." },
+      3: { status: "Not Started", owner: "Radiology Lead", dueDate: "2026-07-31", evidenceStatus: "No", evidenceRef: "", currentState: "No formal change management process linking AI updates to risk reclassification review.", gap: "Two model updates deployed without formal risk classification review.", proposedAction: "Implement AI change management gate: risk classification review required before deployment of any model update." },
+    },
+  },
+  // Area 6 — MAP 2: Scientific Basis, Assumptions & Known Limitations
+  6: {
+    summary: "Vendor-provided model card received but does not include training data demographics or disaggregated performance data. MediScan has not conducted any local validation. Assumptions undocumented. Lack of vendor transparency on training data demographics is a high-priority gap for a healthcare AI system at this scale.",
+    lastUpdated: new Date().toISOString(),
+    questions: {
+      0: { status: "In Progress", owner: "IT / Vendor", dueDate: "2026-06-30", evidenceStatus: "Partial", evidenceRef: "Luminary_ModelCard_v2_2025.pdf", currentState: "Vendor-provided model card received covering architecture and headline performance metrics. Does not include training data demographics or demographic performance breakdown.", gap: "No MediScan-specific supplementary model card. Training data demographics unknown.", proposedAction: "Request expanded model card from vendor. MediScan to complete supplementary documentation covering deployment-specific performance observations." },
+      1: { status: "Not Started", owner: "Radiology Lead", dueDate: "2026-07-31", evidenceStatus: "No", evidenceRef: "", currentState: "No internal documentation of assumptions embedded in RadInsight AI's design (e.g. patient positioning standards, image quality thresholds, demographic representativeness of training data).", gap: "Assumptions undocumented. Staff may not be aware of conditions under which performance degrades.", proposedAction: "Complete assumptions register for RadInsight AI. Review with vendor and radiology lead." },
+      2: { status: "Not Started", owner: "IT / Data Science", dueDate: "2026-09-30", evidenceStatus: "No", evidenceRef: "", currentState: "No out-of-distribution testing conducted by MediScan. Vendor testing methodology not disclosed.", gap: "Performance on MediScan-specific patient population (diverse ethnicity, wide BMI range, older demographic) not validated.", proposedAction: "Commission local validation study on MediScan patient cohort before next model update. Define sample size with biostatistics input." },
+      3: { status: "In Progress", owner: "IT", dueDate: "2026-06-30", evidenceStatus: "Partial", evidenceRef: "", currentState: "Vendor provided summary technical documentation. Full training data datasheet not yet received.", gap: "Training data demographics and known bias limitations not disclosed.", proposedAction: "Formally request training data datasheet and known bias disclosure from vendor. Make contractual requirement going forward." },
+    },
+  },
+  // Area 7 — MAP 3: Impact on Individuals, Communities & Affected Groups
+  7: {
+    summary: "No AI impact assessment, equality impact assessment, or formal consideration of vulnerable groups has been conducted. Patients are unaware that AI is used in their care pathway. This is a significant gap — at 2,400 scans/day, any systematic demographic bias in RadInsight AI affects thousands of patients weekly.",
+    lastUpdated: new Date().toISOString(),
+    questions: {
+      0: { status: "Not Started", owner: "CMIO", dueDate: "2026-08-31", evidenceStatus: "No", evidenceRef: "", currentState: "No formal AI impact assessment conducted. FDA SaMD submission covers intended use; no impact assessment from an AI ethics perspective.", gap: "No structured assessment of positive and negative impacts on patient groups.", proposedAction: "Complete AI Impact Assessment (AIIA) covering patient safety, health equity, and demographic impact. Use ISO 42001 Annex B as template." },
+      1: { status: "Not Started", owner: "CMIO", dueDate: "2026-08-31", evidenceStatus: "No", evidenceRef: "", currentState: "Paediatric patients, elderly patients, and patients with atypical presentations not specifically assessed. No vendor guidance provided.", gap: "Specific vulnerability considerations absent from all MediScan documentation.", proposedAction: "Add vulnerable group analysis to AIIA. Include clinical review by radiologist lead for each identified group." },
+      2: { status: "Not Started", owner: "CMIO / Patient Relations", dueDate: "2026-09-30", evidenceStatus: "No", evidenceRef: "", currentState: "General patient feedback mechanism exists via patient relations team. No mechanism for capturing feedback relating to AI-assisted diagnoses.", gap: "No AI-specific feedback channel. Patients unaware RadInsight AI is used in their care.", proposedAction: "Update patient consent and privacy notice to disclose AI use. Create AI-specific feedback pathway via patient relations." },
+      3: { status: "Not Started", owner: "CMIO", dueDate: "2026-09-30", evidenceStatus: "No", evidenceRef: "", currentState: "No EIA conducted. No equality and diversity review of AI systems in MediScan's clinical governance process.", gap: "No formal EIA. Protected characteristic impact analysis absent.", proposedAction: "Conduct EIA for RadInsight AI covering gender, ethnicity, age, and disability. Integrate into clinical governance review cycle." },
+    },
+  },
+  // Area 8 — MAP 4: Third-Party AI Systems & Supply Chain Risk
+  8: {
+    summary: "RadInsight AI vendor assessment relies on a standard IT security questionnaire with no AI-specific risk questions. Two model updates have been deployed without triggering a vendor reassessment. Vendor contract has no AI-specific obligations (no bias testing rights, no change notification, no audit access). This is a critical contractual gap.",
+    lastUpdated: new Date().toISOString(),
+    questions: {
+      0: { status: "In Progress", owner: "IT", dueDate: "2026-06-30", evidenceStatus: "Partial", evidenceRef: "", currentState: "RadInsight AI is the only AI system formally in scope. IT asset register includes RadInsight AI server infrastructure. Other diagnostic software not yet assessed for AI components.", gap: "AI component inventory incomplete. Other clinical software may contain AI features not yet identified.", proposedAction: "Conduct AI system discovery across all clinical software. Update asset register with AI classification flag." },
+      1: { status: "In Progress", owner: "IT / Procurement", dueDate: "2026-06-30", evidenceStatus: "Partial", evidenceRef: "", currentState: "RadInsight AI vendor (Luminary Medical AI) completed IT security questionnaire at onboarding. No AI-specific risk questions included.", gap: "Vendor assessment does not cover bias testing, demographic performance, or AI incident history.", proposedAction: "Develop AI-specific vendor questionnaire. Conduct retrospective assessment of Luminary Medical AI. Require annual renewal." },
+      2: { status: "Not Started", owner: "Legal", dueDate: "2026-09-30", evidenceStatus: "No", evidenceRef: "", currentState: "Vendor contract covers standard SaaS terms: uptime, data security, HIPAA Business Associate Agreement. No AI-specific clauses.", gap: "No contractual right to bias testing results, performance disclosure, model change notification, or audit access.", proposedAction: "At next contract renewal, insert AI addendum: performance disclosure, bias testing rights, change notification (30 days), and audit rights." },
+      3: { status: "Not Started", owner: "IT / Legal", dueDate: "2026-08-31", evidenceStatus: "No", evidenceRef: "", currentState: "Two model updates deployed. Neither triggered a vendor risk reassessment.", gap: "No contractual obligation on vendor to notify MediScan of model changes before deployment.", proposedAction: "Add model change notification clause to vendor contract. Define internal reassessment trigger and review process." },
+    },
+  },
+  // Area 9 — MAP 5: Risk Likelihood, Prioritisation & Impact Estimation
+  9: {
+    summary: "No AI risk register with likelihood and impact ratings exists. AI risks are not formally prioritised or resourced. Board has no visibility of RadInsight AI risk profile. Without a structured risk register, MediScan cannot demonstrate NIST AI RMF alignment to HHS.",
+    lastUpdated: new Date().toISOString(),
+    questions: {
+      0: { status: "Not Started", owner: "CMIO", dueDate: "2026-07-31", evidenceStatus: "No", evidenceRef: "", currentState: "No AI risk register with likelihood/impact ratings. Clinical incident register covers adverse events but not AI-specific risks.", gap: "No structured AI risk prioritisation. Resources not allocated against risk severity.", proposedAction: "Create RadInsight AI risk register. Apply 5×5 likelihood/impact matrix. Assign owners to each risk." },
+      1: { status: "Not Started", owner: "CMIO", dueDate: "2026-08-31", evidenceStatus: "No", evidenceRef: "", currentState: "No AI risk committee or equivalent body reviewing AI-specific risks.", gap: "No governance structure reviewing AI risk register. No resource allocation decision for AI risk treatment.", proposedAction: "Present prioritised AI risk register to Clinical Governance Committee for resource allocation and treatment decisions." },
+      2: { status: "Not Started", owner: "CMIO", dueDate: "2026-08-31", evidenceStatus: "No", evidenceRef: "", currentState: "No escalation process defined for AI risks. Board not currently briefed on RadInsight AI risk profile.", gap: "Board has no visibility of RadInsight AI risk. Senior executives not informed of high-severity risks.", proposedAction: "Define escalation thresholds for AI risks. Present top 3 risks to board at next clinical governance board update." },
+      3: { status: "Not Started", owner: "CMIO", dueDate: "2026-08-31", evidenceStatus: "No", evidenceRef: "", currentState: "No AI risk register exists. No review schedule established.", gap: "No review cadence. Risks not refreshed after system changes or incidents.", proposedAction: "Establish quarterly AI risk register review. Add trigger for review after any AI incident or model update." },
+    },
+  },
+  // Area 10 — MEASURE: Fairness Metrics & Monitoring
+  10: {
+    summary: "No fairness metrics have been defined or measured. Performance results are aggregate only — no demographic breakdown. No pre-deployment baseline exists. Fairness monitoring cannot be established until vendor provides disaggregated data or MediScan commissions its own evaluation. This is the most material technical gap.",
+    lastUpdated: new Date().toISOString(),
+    questions: {
+      0: { status: "Not Started", owner: "Data Science / Vendor", dueDate: "2026-09-30", evidenceStatus: "No", evidenceRef: "", currentState: "Overall sensitivity and specificity metrics provided by vendor. No fairness metrics defined or measured by MediScan.", gap: "No demographic parity, equalised odds, or calibration metrics established. No MediScan-specific fairness baseline.", proposedAction: "Define fairness metrics relevant to RadInsight AI: false negative rate by gender, age group, and ethnicity. Establish baseline from historical data." },
+      1: { status: "Not Started", owner: "Data Science / Vendor", dueDate: "2026-09-30", evidenceStatus: "No", evidenceRef: "", currentState: "Vendor reports aggregate sensitivity and specificity only. No demographic breakdown provided or requested.", gap: "Disaggregated performance unknown. Demographic gaps in detection performance undetected.", proposedAction: "Request disaggregated performance data from vendor. If unavailable, commission local retrospective analysis on 6-month scan cohort." },
+      2: { status: "Not Started", owner: "Data Science", dueDate: "2026-09-30", evidenceStatus: "No", evidenceRef: "", currentState: "RadInsight AI deployed without a pre-deployment fairness baseline. Performance accepted on vendor testing results only.", gap: "No MediScan-specific baseline. Cannot detect performance drift or fairness degradation.", proposedAction: "Establish performance baseline (including fairness metrics) using retrospective data before next model update." },
+      3: { status: "Not Started", owner: "CMIO", dueDate: "2026-09-30", evidenceStatus: "No", evidenceRef: "", currentState: "No monitoring review process in place. Vendor sends quarterly performance summary; not formally reviewed.", gap: "No named reviewer. No authority to halt or retrain assigned.", proposedAction: "Assign CMIO as accountable reviewer of AI performance reports. Define intervention thresholds and escalation path." },
+    },
+  },
+  // Area 11 — MEASURE 2: AI System Testing, Performance & Robustness
+  11: {
+    summary: "No MediScan-specific test plan exists. Testing relies entirely on vendor FDA validation. No performance benchmarks, robustness testing, or centralised test evidence repository. Two model updates were deployed without any MediScan-side testing. This creates significant clinical safety risk.",
+    lastUpdated: new Date().toISOString(),
+    questions: {
+      0: { status: "In Progress", owner: "IT / Radiology Lead", dueDate: "2026-07-31", evidenceStatus: "Partial", evidenceRef: "Luminary_FDA_Validation_510k.pdf", currentState: "Vendor provided FDA validation testing documentation. MediScan has not conducted independent testing.", gap: "No MediScan-specific test plan. Reliance on vendor testing only.", proposedAction: "Develop MediScan test plan covering functional performance, edge cases, and population-specific scenarios. Execute before next model update." },
+      1: { status: "Not Started", owner: "IT", dueDate: "2026-07-31", evidenceStatus: "No", evidenceRef: "", currentState: "Benchmarks not defined by MediScan. Vendor benchmarks accepted at face value.", gap: "No pre-defined acceptance thresholds. No rejection criteria if performance falls below minimum.", proposedAction: "Define minimum acceptable performance thresholds (sensitivity, specificity, false negative rate by demographic) in advance of any future testing." },
+      2: { status: "Not Started", owner: "IT / Data Science", dueDate: "2026-09-30", evidenceStatus: "No", evidenceRef: "", currentState: "No adversarial or out-of-distribution testing conducted. Vendor testing conditions not disclosed.", gap: "RadInsight AI's resilience to image artefacts, low-quality inputs, and atypical presentations untested locally.", proposedAction: "Commission annual robustness testing including edge cases specific to MediScan patient population and equipment variations." },
+      3: { status: "In Progress", owner: "IT", dueDate: "2026-06-30", evidenceStatus: "Partial", evidenceRef: "", currentState: "Vendor FDA documentation retained on file. MediScan internal test results not systematically stored.", gap: "No centralised test evidence repository. Results stored ad hoc across email and shared drives.", proposedAction: "Establish AI evidence repository (SharePoint or equivalent). Store all test plans, results, and vendor disclosures." },
+    },
+  },
+  // Area 12 — MEASURE 3: Disaggregated Evaluation & External Expert Review
+  12: {
+    summary: "No disaggregated evaluation exists — neither from the vendor nor from MediScan. No independent bias review has been commissioned. No red team testing. Demographic performance gaps are currently invisible. Given RadInsight AI processes 2,400 scans/day, any demographic performance disparity is causing harm at scale without detection.",
+    lastUpdated: new Date().toISOString(),
+    questions: {
+      0: { status: "Not Started", owner: "Data Science", dueDate: "2026-09-30", evidenceStatus: "No", evidenceRef: "", currentState: "Only aggregate metrics available. Neither vendor nor MediScan has produced disaggregated evaluation.", gap: "False negative rates by gender, age, and ethnicity unknown. Equity risk unquantified.", proposedAction: "Commission retrospective disaggregated analysis. Set minimum sample sizes per demographic group for statistical validity." },
+      1: { status: "Not Started", owner: "Data Science", dueDate: "2026-09-30", evidenceStatus: "No", evidenceRef: "", currentState: "No independent review. Vendor bias assessment relied upon without verification.", gap: "No independent oversight of bias evaluation. Conflict of interest not addressed.", proposedAction: "Engage clinical AI audit specialist to conduct independent bias review of RadInsight AI performance data. Report to Clinical Governance Committee." },
+      2: { status: "Not Started", owner: "Data Science", dueDate: "2026-10-31", evidenceStatus: "No", evidenceRef: "", currentState: "No adversarial testing. No structured test for systematic output differences across demographic groups.", gap: "Systematic demographic bias could be present and undetected.", proposedAction: "Include demographic adversarial testing in annual review. Use structured test cases designed to surface gender- and age-related performance disparities." },
+      3: { status: "Not Started", owner: "Data Science", dueDate: "2026-10-31", evidenceStatus: "No", evidenceRef: "", currentState: "No MediScan-authored model card. Only vendor documentation held.", gap: "No internal record of disaggregated evaluation, independent review findings, or bias remediation.", proposedAction: "Produce MediScan model card for RadInsight AI. Update after each evaluation cycle. Retain in AI evidence repository." },
+    },
+  },
+  // Area 13 — MANAGE: Risk Treatment & Incident Response
+  13: {
+    summary: "No AI incident playbook exists. AI incidents are being logged in the general clinical incident system without AI attribution or AI-specific root cause analysis. Two near-miss events involving RadInsight AI were logged as general clinical events. Without an AI-specific incident framework, systemic AI issues will continue to go undetected.",
+    lastUpdated: new Date().toISOString(),
+    questions: {
+      0: { status: "Not Started", owner: "CMIO", dueDate: "2026-07-31", evidenceStatus: "No", evidenceRef: "", currentState: "Enterprise risk treatment follows standard 4T model (tolerate/treat/transfer/terminate). Not adapted for AI-specific risks.", gap: "No AI-specific treatment guidance. Bias risks not treated differently from other risk types.", proposedAction: "Extend risk treatment framework to include AI-specific guidance: bias risks above threshold require treatment (not tolerance). Document in AI risk policy." },
+      1: { status: "Not Started", owner: "CMIO / IT", dueDate: "2026-07-31", evidenceStatus: "No", evidenceRef: "", currentState: "Clinical incident reporting covers adverse events. No AI-specific playbook covering bias events, model failure, or harmful output.", gap: "No defined AI incident types, severity levels, or response steps.", proposedAction: "Develop RadInsight AI incident playbook: define incident types (false negative event, demographic performance breach, model failure, data quality event). Assign response owners." },
+      2: { status: "Not Started", owner: "CMIO", dueDate: "2026-09-30", evidenceStatus: "No", evidenceRef: "", currentState: "No tabletop exercise conducted. Playbook does not yet exist.", gap: "Untested response capability. Staff would be unprepared in the event of a real AI incident.", proposedAction: "Conduct tabletop exercise after playbook is drafted. Involve radiology lead, CMIO, IT, legal, and patient safety. Annual cadence thereafter." },
+      3: { status: "In Progress", owner: "CMIO / IT", dueDate: "2026-06-30", evidenceStatus: "Partial", evidenceRef: "CIRS_System_Access.pdf", currentState: "Clinical adverse events logged via CIRS (Clinical Incident Reporting System). AI-specific root cause analysis not conducted. Two near-miss events involving RadInsight AI logged as general clinical events without AI attribution.", gap: "AI incidents not categorised separately. No AI root cause analysis. No trend tracking.", proposedAction: "Add AI system flag to CIRS. Develop AI incident classification taxonomy. Review historical near-misses for AI attribution." },
+    },
+  },
+  // Area 14 — MANAGE 3: Ongoing Monitoring, Drift Detection & Reassessment
+  14: {
+    summary: "Production monitoring is passive — quarterly vendor report only, no drift thresholds, no automated alerting. Override rates are invisible. RadInsight AI has been in production 18 months without a formal governance review. No decommissioning criteria exist. This leaves MediScan unable to detect and respond to performance degradation.",
+    lastUpdated: new Date().toISOString(),
+    questions: {
+      0: { status: "Not Started", owner: "IT / Vendor", dueDate: "2026-07-31", evidenceStatus: "No", evidenceRef: "", currentState: "Vendor provides quarterly performance report. No real-time monitoring. No drift detection thresholds defined.", gap: "Performance drift could go undetected between quarterly reports. No automated alerting.", proposedAction: "Define drift thresholds for sensitivity, false negative rate, and demographic parity. Request monitoring dashboard from vendor. Escalate if thresholds breached." },
+      1: { status: "Not Started", owner: "IT / Radiology Lead", dueDate: "2026-07-31", evidenceStatus: "No", evidenceRef: "", currentState: "Radiologist overrides of RadInsight AI triage not systematically tracked. No visibility on how often radiologists disagree with AI prioritisation.", gap: "Override rate is a key signal of AI performance and radiologist trust — currently invisible.", proposedAction: "Implement override tracking in radiology workflow system. Review monthly. Alert if override rate exceeds 15% or changes significantly." },
+      2: { status: "Not Started", owner: "CMIO", dueDate: "2026-08-31", evidenceStatus: "No", evidenceRef: "", currentState: "No scheduled reassessment. RadInsight AI has been in production 18 months without a formal governance review.", gap: "No review cadence. No trigger for reassessment after significant events.", proposedAction: "Schedule annual RadInsight AI governance review covering performance, fairness, clinical safety, and regulatory alignment. Trigger additional review on model update or any AI-attributed incident." },
+      3: { status: "Not Started", owner: "CMIO", dueDate: "2026-09-30", evidenceStatus: "No", evidenceRef: "", currentState: "No decommissioning criteria defined. No process for halting RadInsight AI if performance falls below clinical safety standards.", gap: "No authority or process to suspend or decommission AI in production. Clinical safety risk if performance degrades.", proposedAction: "Define decommissioning thresholds (e.g. false negative rate > X%, sustained demographic performance gap > Y%). Document halt procedure. Assign authority to CMIO." },
+    },
+  },
+};
+
+export function seedMediScanClient(): void {
+  const existing = (() => { try { return JSON.parse(localStorage.getItem("pl_clients") || "[]"); } catch { return []; } })();
+  if (existing.some((c: any) => c.id === DEMO_MEDISCAN_ID)) return; // already seeded
+
+  // 1. Save client
+  localStorage.setItem("pl_clients", JSON.stringify([...existing, DEMO_MEDISCAN_CLIENT]));
+
+  // 2. Save Phase 2 area states (NIST AI RMF — 15 areas, indices 0–14)
+  Object.entries(DEMO_MEDISCAN_AREA_STATES).forEach(([idx, state]) => {
+    localStorage.setItem(`pl_disc_${DEMO_MEDISCAN_ID}_${DEMO_MEDISCAN_POLICY}_${idx}`, JSON.stringify(state));
+  });
+}

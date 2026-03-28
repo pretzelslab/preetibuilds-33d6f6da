@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import * as XLSX from "xlsx";
 import { IMPLEMENTATION_GUIDES as STATIC_GUIDES } from "./guides";
 import { usePolicyGuides } from "../../hooks/usePolicyGuides";
-import { seedDemoClient, DEMO_CLIENT_ID } from "./demoData";
+import { seedDemoClient, DEMO_CLIENT_ID, seedMediScanClient } from "./demoData";
 
 // Live policy data from Supabase — falls back to static guides while loading or on error
 // Updated synchronously during each render so all sub-components see current data
@@ -41,7 +41,7 @@ function getQuestionRelevance(
 }
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
-type EngagementType = "" | "Readiness Assessment" | "Gap Analysis" | "Implementation Support" | "Audit Preparation";
+type EngagementType = "" | "AI Risk Assessment" | "Readiness Assessment" | "Gap Analysis" | "Implementation Support" | "Audit Preparation";
 type SignOffStatus = "Pending" | "In Review" | "Signed Off";
 type QStatus = "Not Started" | "In Progress" | "Complete" | "Not Applicable" | "On Hold";
 type DocExists = "" | "Yes" | "No" | "Partial";
@@ -213,7 +213,7 @@ const INDUSTRY_OPTIONS = [
 ];
 
 const ENGAGEMENT_TYPES: EngagementType[] = [
-  "", "Readiness Assessment", "Gap Analysis", "Implementation Support", "Audit Preparation",
+  "", "AI Risk Assessment", "Readiness Assessment", "Gap Analysis", "Implementation Support", "Audit Preparation",
 ];
 
 // ─── COUNTRY OPTIONS & SUGGESTIONS ───────────────────────────────────────────
@@ -885,14 +885,16 @@ function getPolicyProgress(clientId: string, policyId: string) {
 
 function getAreaProgress(clientId: string, policyId: string, areaIdx: number, questions: string[]) {
   const st = loadArea(clientId, policyId, areaIdx);
-  let total = 0, done = 0;
+  let total = 0, done = 0, touched = 0;
   questions.forEach((_q, qi) => {
-    const s = st.questions[qi]?.status;
+    const qs = st.questions[qi];
+    const s = qs?.status;
     if (s === "Not Applicable") return;
     total++;
     if (s === "Complete") done++;
+    else if (s === "In Progress" || s === "On Hold" || qs?.currentState || qs?.gap || qs?.proposedAction) touched++;
   });
-  return { pct: total ? Math.round((done / total) * 100) : 0, done, total };
+  return { pct: total ? Math.round((done / total) * 100) : 0, done, touched, total };
 }
 
 // ─── SHARED UI ────────────────────────────────────────────────────────────────
@@ -1222,9 +1224,9 @@ function ClientListView({ onSelectClient, onOpenWorkbook }: {
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {clients.length > 0 && (
             <>
-              <button onClick={() => { seedDemoClient(); setClients(loadClients()); }}
+              <button onClick={() => { seedDemoClient(); seedMediScanClient(); setClients(loadClients()); }}
                 style={{ background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
-                🎯 Load Demo
+                🎯 Load Demos
               </button>
               <button onClick={exportBackupJSON}
                 style={{ background: "#f1f5f9", color: "#0f172a", border: "1px solid #e2e8f0", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
@@ -1267,12 +1269,12 @@ function ClientListView({ onSelectClient, onOpenWorkbook }: {
           <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>No clients yet</div>
           <div style={{ fontSize: 14, marginBottom: 24 }}>Add your first client to start a discovery workbook.</div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-            <button onClick={() => { seedDemoClient(); setClients(loadClients()); }}
+            <button onClick={() => { seedDemoClient(); seedMediScanClient(); setClients(loadClients()); }}
               style={{ background: "#eef2ff", color: "#4f46e5", border: "1px solid #a5b4fc", borderRadius: 10, padding: "12px 28px", cursor: "pointer", fontSize: 14, fontWeight: 700 }}>
-              🎯 Load Demo Client — Apex Lending Group
+              🎯 Load Demo Clients
             </button>
             <div style={{ fontSize: 12, color: "#94a3b8", maxWidth: 360 }}>
-              Loads a fully pre-populated EU AI Act readiness assessment — all phases, questionnaire answers, risk register, and report — so you can explore the workbook immediately.
+              Loads two pre-populated demo clients: Apex Lending Group (EU AI Act · Fintech) and MediScan Diagnostics Group (NIST AI RMF · Healthcare), so you can explore all workbook phases immediately.
             </div>
           </div>
         </div>
@@ -2665,7 +2667,7 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient, onPhaseSe
 
       <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
         {guide.areas.map((area, areaIdx) => {
-          const { pct, done, total } = getAreaProgress(client.id, policyId, areaIdx, area.questions);
+          const { pct, done, touched, total } = getAreaProgress(client.id, policyId, areaIdx, area.questions);
           const isOpen = openArea === areaIdx;
           const aState = areaStates[areaIdx];
           const prevPhase = areaIdx > 0 ? guide.areas[areaIdx - 1].phaseGroup : null;
@@ -2674,10 +2676,11 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient, onPhaseSe
           const clauseHints = getClauseSummaries(area.regulatoryRef || "");
           const isRiskClass = (area.area || "").toLowerCase().includes("risk classification");
 
-          const PHASE_COLORS: Record<string, { bg: string; text: string; border: string; icon: string }> = {
-            "Govern & Scope":   { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0", icon: "🏛" },
-            "Map & Discover":   { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe", icon: "🗺" },
-            "Measure & Assess": { bg: "#fefce8", text: "#a16207", border: "#fde068", icon: "📏" },
+          const PHASE_COLORS: Record<string, { bg: string; text: string; border: string; icon: string; sub: string }> = {
+            "Govern & Scope":   { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0", icon: "🏛", sub: "Establish accountability, AI inventory, and prohibited use boundaries" },
+            "Map & Discover":   { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe", icon: "🗺", sub: "Assess deployment context, affected groups, and supply chain risks" },
+            "Measure & Assess": { bg: "#fefce8", text: "#a16207", border: "#fde068", icon: "📏", sub: "Define and measure fairness metrics, test performance, evaluate bias" },
+            "Manage & Respond": { bg: "#fdf4ff", text: "#7e22ce", border: "#e9d5ff", icon: "🛡", sub: "Treat AI risks, respond to incidents, monitor drift and override rates" },
           };
           const phaseColor = area.phaseGroup ? (PHASE_COLORS[area.phaseGroup] || { bg: "#f8fafc", text: "#475569", border: "#e2e8f0", icon: "📋" }) : null;
 
@@ -2689,8 +2692,7 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient, onPhaseSe
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 800, color: phaseColor.text, textTransform: "uppercase", letterSpacing: "0.06em" }}>{area.phaseGroup}</div>
                     <div style={{ fontSize: 11, color: phaseColor.text, opacity: 0.75, marginTop: 1 }}>
-                      {area.phaseGroup === "Govern & Scope" && "Establish accountability, AI inventory, and prohibited use boundaries"}
-                      {area.phaseGroup === "Map & Discover" && "Assess technical compliance, data practices, and safeguard controls"}
+                      {phaseColor.sub}
                     </div>
                   </div>
                 </div>
@@ -2706,10 +2708,11 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient, onPhaseSe
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
                   <span style={{ fontSize: 10, fontWeight: 700, color: area.priority === "High" ? "#dc2626" : area.priority === "Medium" ? "#a16207" : "#15803d", background: area.priority === "High" ? "#fef2f2" : area.priority === "Medium" ? "#fefce8" : "#f0fdf4", borderRadius: 5, padding: "2px 7px" }}>{area.priority}</span>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 90 }}>
-                    <div style={{ width: 55, height: 4, background: isOpen ? "#334155" : "#e2e8f0", borderRadius: 99, overflow: "hidden" }}>
-                      <div style={{ width: `${pct}%`, height: "100%", background: pct === 100 ? "#15803d" : stub.color, borderRadius: 99 }} />
+                    <div style={{ width: 55, height: 4, background: isOpen ? "#334155" : "#e2e8f0", borderRadius: 99, overflow: "hidden", display: "flex" }}>
+                      <div style={{ width: `${pct}%`, height: "100%", background: pct === 100 ? "#15803d" : stub.color, borderRadius: 99, flexShrink: 0 }} />
+                      {touched > 0 && <div style={{ width: `${Math.round((touched / total) * 100)}%`, height: "100%", background: "#f59e0b", flexShrink: 0 }} />}
                     </div>
-                    <span style={{ fontSize: 10, color: isOpen ? "#94a3b8" : "#64748b", fontWeight: 600 }}>{done}/{total}</span>
+                    <span style={{ fontSize: 10, color: isOpen ? "#94a3b8" : "#64748b", fontWeight: 600 }}>{done}/{total}{touched > 0 && <span style={{ color: "#f59e0b" }}> +{touched}</span>}</span>
                   </div>
                   <span style={{ fontSize: 13, color: isOpen ? "#94a3b8" : "#64748b" }}>{isOpen ? "▾" : "▸"}</span>
                 </div>

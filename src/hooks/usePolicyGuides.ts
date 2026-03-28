@@ -39,7 +39,7 @@ export type GuidesMap = Record<string, PolicyGuide>;
 
 // ── Cache ─────────────────────────────────────────────────────────────────────
 
-const CACHE_KEY = "pl_guides_cache";
+const CACHE_KEY = "pl_guides_cache_v2"; // bumped to force re-fetch after sort_order fix
 const CACHE_TTL_MS = 1000 * 60 * 60 * 6; // 6 hours
 
 function readCache(): { data: GuidesMap; ts: number } | null {
