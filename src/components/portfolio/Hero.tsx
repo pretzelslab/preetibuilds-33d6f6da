@@ -1,54 +1,57 @@
 import { motion } from "framer-motion";
 import { Linkedin } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
-const Hero = () => {
-  return (
-    <section className="relative flex items-center justify-center overflow-hidden px-6 pt-24 pb-10">
-      {/* Ambient background shapes */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-20 left-[10%] w-72 h-72 rounded-full bg-primary/10 blur-3xl" />
-        <div className="absolute bottom-20 right-[10%] w-96 h-96 rounded-full bg-accent/10 blur-3xl" />
-      </div>
+const CREDENTIALS = [
+  "18+ years across B2B SaaS — HR tech, CRM, BI, and AI-driven platforms",
+  "Currently leading enterprise AI & SaaS commercialization",
+  "Turning early product ideas into programs that product, engineering, and GTM teams can execute on",
+];
 
-      <div className="relative z-10 max-w-5xl mx-auto w-full">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <p className="font-mono text-sm text-muted-foreground mb-4 tracking-widest uppercase">
-            SaaS Platform & Product Operations Leader
-          </p>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold leading-[0.95] tracking-tight mb-6">
-            <span className="text-gradient">Preethi Raghuveeran</span>
-          </h1>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-5xl mb-10 leading-relaxed tracking-wide">
-            18+ years turning early product ideas into programs that scale across B2B SaaS.<br />
-            Currently leading enterprise AI &amp; SaaS commercialization.
-          </p>
-        </motion.div>
-
-        <motion.div
-          className="flex flex-wrap gap-4 items-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-        >
-          <a href="#projects">
-            <Button size="lg" className="rounded-full px-8 bg-primary text-primary-foreground hover:bg-primary/80 transition-colors duration-200">
-              View My Work
-            </Button>
+const Hero = () => (
+  <section className="flex items-start justify-center px-6 pt-28 pb-10">
+    <div className="max-w-2xl w-full">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <p className="font-mono text-xs text-muted-foreground mb-3 tracking-widest uppercase">
+          Product · Program · GTM
+        </p>
+        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-5">
+          <span className="text-gradient">Preethi Raghuveeran</span>
+        </h1>
+        <p className="text-base text-muted-foreground mb-5 leading-relaxed">
+          SaaS platform and product operations leader.
+        </p>
+        <ul className="space-y-2 mb-8">
+          {CREDENTIALS.map((c) => (
+            <li key={c} className="flex gap-2.5 text-sm text-muted-foreground/80 leading-relaxed">
+              <span className="text-primary shrink-0 mt-0.5">✦</span>
+              <span>{c}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="flex items-center gap-4 text-sm">
+          <a
+            href="https://www.linkedin.com/in/preetiraghuveer/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-primary hover:opacity-75 transition-opacity font-medium"
+          >
+            <Linkedin className="w-3.5 h-3.5" /> LinkedIn
           </a>
-          <div className="flex gap-3 ml-2">
-            <a href="https://www.linkedin.com/in/preetiraghuveer/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-              <Linkedin className="w-5 h-5" />
-            </a>
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-};
+          <span className="text-muted-foreground/30">·</span>
+          <a
+            href="mailto:chinmayipriti@gmail.com"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            chinmayipriti@gmail.com
+          </a>
+        </div>
+      </motion.div>
+    </div>
+  </section>
+);
 
 export default Hero;
