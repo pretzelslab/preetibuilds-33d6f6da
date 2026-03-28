@@ -18,7 +18,15 @@ export function useGateUnlocked(): boolean {
   return safeGet(STORAGE_KEY) === "1";
 }
 
-export function PageGate({ children, backTo = "/" }: { children: ReactNode; backTo?: string }) {
+export function PageGate({
+  children,
+  backTo = "/",
+  previewContent,
+}: {
+  children: ReactNode;
+  backTo?: string;
+  previewContent?: ReactNode;
+}) {
   const [unlocked, setUnlocked] = useState(() => safeGet(STORAGE_KEY) === "1");
   const [code, setCode] = useState("");
   const [error, setError] = useState(false);
@@ -53,81 +61,10 @@ export function PageGate({ children, backTo = "/" }: { children: ReactNode; back
     setShowInput(false);
   };
 
-  return (
-    <div style={{ position: "relative", minHeight: "100vh" }}>
-
-      {/* Preview banner — sticky top bar when locked */}
-      {!unlocked && (
-        <div style={{
-          position: "sticky", top: 0, zIndex: 9999,
-          background: "#0f172a", borderBottom: "1px solid #1e293b",
-          padding: "10px 24px", display: "flex", alignItems: "center",
-          justifyContent: "space-between", flexWrap: "wrap", gap: 10,
-          fontFamily: "'Inter','Segoe UI',sans-serif",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 14 }}>🔒</span>
-            <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>
-              Preview mode — content is read-only
-            </span>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {showInput ? (
-              <>
-                <style>{`
-                  @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
-                `}</style>
-                <input
-                  type="password"
-                  placeholder="Access code"
-                  value={code}
-                  autoFocus
-                  onChange={e => setCode(e.target.value)}
-                  onKeyDown={e => { if (e.key === "Enter") tryUnlock(); if (e.key === "Escape") setShowInput(false); }}
-                  style={{
-                    padding: "6px 12px", borderRadius: 8, fontSize: 13,
-                    border: `1.5px solid ${error ? "#dc2626" : "#334155"}`,
-                    background: error ? "#2d1212" : "#1e293b",
-                    color: "#f1f5f9", outline: "none", width: 160,
-                    fontFamily: "monospace", letterSpacing: "0.12em", textAlign: "center",
-                    animation: shaking ? "shake 0.4s ease" : "none",
-                  }}
-                />
-                <button onClick={tryUnlock} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "#6366f1", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-                  Unlock
-                </button>
-                <button onClick={() => { setShowInput(false); setCode(""); }} style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #334155", background: "transparent", color: "#64748b", fontSize: 12, cursor: "pointer" }}>
-                  ✕
-                </button>
-              </>
-            ) : (
-              <button onClick={() => setShowInput(true)} style={{ padding: "6px 16px", borderRadius: 8, border: "1px solid #334155", background: "#1e293b", color: "#94a3b8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                Enter code
-              </button>
-            )}
-            <Link to={backTo} style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid #334155", background: "transparent", color: "#64748b", fontSize: 12, textDecoration: "none", fontWeight: 500 }}>
-              ← Back
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {/* Content — lightly blurred and non-interactive when locked */}
-      <div
-        onContextMenu={!unlocked ? e => e.preventDefault() : undefined}
-        style={{
-          filter: unlocked ? "none" : "blur(2px) brightness(0.9)",
-          pointerEvents: unlocked ? "auto" : "none",
-          userSelect: unlocked ? "auto" : "none",
-          transition: "filter 0.3s ease",
-        }}
-      >
+  if (unlocked) {
+    return (
+      <div style={{ position: "relative", minHeight: "100vh" }}>
         {children}
-      </div>
-
-      {/* Lock button — visible when unlocked */}
-      {unlocked && (
         <button onClick={lock} title="Lock this page" style={{
           position: "fixed", bottom: 24, right: 24, zIndex: 1000,
           background: "#0f172a", color: "#fff", border: "none", borderRadius: 50,
@@ -137,6 +74,85 @@ export function PageGate({ children, backTo = "/" }: { children: ReactNode; back
         }}>
           🔓
         </button>
+      </div>
+    );
+  }
+
+  // ── Locked state ──────────────────────────────────────────────────────────
+  return (
+    <div style={{ position: "relative", minHeight: "100vh" }}>
+      <style>{`
+        @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+      `}</style>
+
+      {/* Sticky top banner */}
+      <div style={{
+        position: "sticky", top: 0, zIndex: 9999,
+        background: "#0f172a", borderBottom: "1px solid #1e293b",
+        padding: "10px 24px", display: "flex", alignItems: "center",
+        justifyContent: "space-between", flexWrap: "wrap", gap: 10,
+        fontFamily: "'Inter','Segoe UI',sans-serif",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 14 }}>🔒</span>
+          <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>
+            Preview — read only · Enter code for full access
+          </span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {showInput ? (
+            <>
+              <input
+                type="password"
+                placeholder="Access code"
+                value={code}
+                autoFocus
+                onChange={e => setCode(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter") tryUnlock(); if (e.key === "Escape") { setShowInput(false); setCode(""); } }}
+                style={{
+                  padding: "6px 12px", borderRadius: 8, fontSize: 13,
+                  border: `1.5px solid ${error ? "#dc2626" : "#334155"}`,
+                  background: error ? "#2d1212" : "#1e293b",
+                  color: "#f1f5f9", outline: "none", width: 160,
+                  fontFamily: "monospace", letterSpacing: "0.12em", textAlign: "center",
+                  animation: shaking ? "shake 0.4s ease" : "none",
+                }}
+              />
+              <button onClick={tryUnlock} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "#6366f1", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                Unlock
+              </button>
+              <button onClick={() => { setShowInput(false); setCode(""); }} style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #334155", background: "transparent", color: "#64748b", fontSize: 12, cursor: "pointer" }}>
+                ✕
+              </button>
+            </>
+          ) : (
+            <button onClick={() => setShowInput(true)} style={{ padding: "6px 16px", borderRadius: 8, border: "1px solid #334155", background: "#1e293b", color: "#94a3b8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+              Enter code
+            </button>
+          )}
+          <Link to={backTo} style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid #334155", background: "transparent", color: "#64748b", fontSize: 12, textDecoration: "none", fontWeight: 500 }}>
+            ← Back
+          </Link>
+        </div>
+      </div>
+
+      {/* Content: either static preview (clear) or blurred children */}
+      {previewContent ? (
+        <div onContextMenu={e => e.preventDefault()} style={{ userSelect: "none" }}>
+          {previewContent}
+        </div>
+      ) : (
+        <div
+          onContextMenu={e => e.preventDefault()}
+          style={{
+            filter: "blur(2px) brightness(0.9)",
+            pointerEvents: "none",
+            userSelect: "none",
+            transition: "filter 0.3s ease",
+          }}
+        >
+          {children}
+        </div>
       )}
     </div>
   );
