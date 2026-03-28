@@ -193,9 +193,9 @@ type AreaState = {
 // ─── POLICY STUBS ─────────────────────────────────────────────────────────────
 const POLICY_STUBS = [
   { id: "eu-ai-act",   name: "EU AI Act",    emoji: "🇪🇺", hasGuide: true,  color: "#dc2626", bg: "#fef2f2", border: "#fecaca" },
-  { id: "nist-ai-rmf", name: "NIST AI RMF",  emoji: "🇺🇸", hasGuide: false, color: "#1d4ed8", bg: "#eff6ff", border: "#bfdbfe" },
-  { id: "nist-csf",    name: "NIST CSF 2.0", emoji: "🛡️",  hasGuide: false, color: "#0369a1", bg: "#f0f9ff", border: "#bae6fd" },
-  { id: "iso-42001",   name: "ISO 42001",    emoji: "🌐",  hasGuide: false, color: "#0891b2", bg: "#ecfeff", border: "#a5f3fc" },
+  { id: "nist-ai-rmf", name: "NIST AI RMF",  emoji: "🇺🇸", hasGuide: true,  color: "#1d4ed8", bg: "#eff6ff", border: "#bfdbfe" },
+  { id: "nist-csf",    name: "NIST CSF 2.0", emoji: "🛡️",  hasGuide: true,  color: "#0369a1", bg: "#f0f9ff", border: "#bae6fd" },
+  { id: "iso-42001",   name: "ISO 42001",    emoji: "🌐",  hasGuide: true,  color: "#0891b2", bg: "#ecfeff", border: "#a5f3fc" },
   { id: "fair",        name: "FAIR",         emoji: "⚖️",  hasGuide: false, color: "#7c3aed", bg: "#f5f3ff", border: "#ddd6fe" },
   { id: "aaia",        name: "AAIA",         emoji: "🔍",  hasGuide: false, color: "#be185d", bg: "#fdf2f8", border: "#fbcfe8" },
 ];
@@ -2540,6 +2540,19 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient, onPhaseSe
     guide ? guide.areas.map((_a: any, i: number) => loadArea(client.id, policyId, i)) : []
   );
   const areaRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // When Supabase data loads after mount and adds more areas, extend areaStates
+  useEffect(() => {
+    if (!guide) return;
+    setAreaStates(prev => {
+      if (guide.areas.length <= prev.length) return prev;
+      const extended = [...prev];
+      for (let i = prev.length; i < guide.areas.length; i++) {
+        extended.push(loadArea(client.id, policyId, i));
+      }
+      return extended;
+    });
+  }, [guide?.areas?.length, client.id, policyId]);
 
   useEffect(() => {
     if (openArea !== null && areaRefs.current[openArea]) {
