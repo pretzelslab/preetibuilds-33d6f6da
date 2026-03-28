@@ -2881,8 +2881,15 @@ export default function AIGovernanceTracker() {
 
           {/* Policy Grid */}
           <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 32px" }}>
+            {/* Visitor preview: show first 2 policies, lock the rest */}
+            {!unlocked && filtered.length > 2 && (
+              <div style={{ marginBottom: 16, padding: "8px 14px", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, fontSize: 13, color: "#1e40af", display: "flex", alignItems: "center", gap: 8 }}>
+                <span>📋</span>
+                <span>Showing <strong>2 of {filtered.length}</strong> policies in preview. <button onClick={() => setShowUnlockModal(true)} style={{ background: "none", border: "none", color: "#2563eb", fontWeight: 700, cursor: "pointer", fontSize: 13, padding: 0 }}>Unlock to see all →</button></span>
+              </div>
+            )}
             <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fill, minmax(520px, 1fr))" }}>
-              {filtered.map(p => {
+              {(unlocked ? filtered : filtered.slice(0, 2)).map(p => {
                 const pillarCoverage = POLICY_PILLAR_MAP[p.id] || [];
                 return (
                   <div key={p.id} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 16, overflow: "hidden", display: "flex", flexDirection: "column" }}>
@@ -2957,6 +2964,31 @@ export default function AIGovernanceTracker() {
                 );
               })}
             </div>
+
+            {/* Blurred teaser for remaining locked policies */}
+            {!unlocked && filtered.length > 2 && (
+              <div style={{ position: "relative", marginTop: 20 }}>
+                <div style={{ display: "grid", gap: 20, gridTemplateColumns: "repeat(auto-fill, minmax(520px, 1fr))", filter: "blur(5px)", pointerEvents: "none", userSelect: "none", opacity: 0.5, maxHeight: 200, overflow: "hidden" }}>
+                  {filtered.slice(2, 4).map(p => (
+                    <div key={p.id} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 16, padding: "20px", height: 180 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                        <span style={{ fontSize: 26 }}>{p.emoji}</span>
+                        <div>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: "#0f172a" }}>{p.name}</div>
+                          <div style={{ fontSize: 12, color: "#64748b" }}>{p.geography}</div>
+                        </div>
+                      </div>
+                      <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.6, margin: 0 }}>{p.summary}</p>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(to bottom, transparent, rgba(248,250,252,0.9))" }}>
+                  <button onClick={() => setShowUnlockModal(true)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 12, padding: "12px 28px", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 20px rgba(0,0,0,0.2)" }}>
+                    🔓 Unlock {filtered.length - 2} more {filtered.length - 2 === 1 ? "policy" : "policies"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </>
       )}

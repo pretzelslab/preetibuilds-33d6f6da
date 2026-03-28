@@ -1,37 +1,30 @@
 import { useState, useEffect, ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-// ─── Access configuration ─────────────────────────────────────────────────────
-// Change ACCESS_CODE to any value you want. Case-insensitive.
 const ACCESS_CODE = "PRL2026";
 const STORAGE_KEY = "pl_session_access";
 
-// ─── Safe storage helpers (sessionStorage throws in sandboxed iframes) ────────
 function safeGet(key: string): string | null {
   try { return localStorage.getItem(key); } catch { return null; }
 }
 function safeSet(key: string, value: string): void {
-  try { localStorage.setItem(key, value); } catch { /* sandboxed */ }
+  try { localStorage.setItem(key, value); } catch {}
 }
 function safeRemove(key: string): void {
-  try { localStorage.removeItem(key); } catch { /* sandboxed */ }
+  try { localStorage.removeItem(key); } catch {}
 }
 
-// ─── Hook ────────────────────────────────────────────────────────────────────
 export function useGateUnlocked(): boolean {
   return safeGet(STORAGE_KEY) === "1";
 }
 
-// ─── Gate component ───────────────────────────────────────────────────────────
 export function PageGate({ children, backTo = "/" }: { children: ReactNode; backTo?: string }) {
-  const [unlocked, setUnlocked] = useState(() =>
-    safeGet(STORAGE_KEY) === "1"
-  );
+  const [unlocked, setUnlocked] = useState(() => safeGet(STORAGE_KEY) === "1");
   const [code, setCode] = useState("");
   const [error, setError] = useState(false);
   const [shaking, setShaking] = useState(false);
+  const [showInput, setShowInput] = useState(false);
 
-  // Auto-unlock from URL hash — owner can bookmark the URL with #PRL2026
   useEffect(() => {
     const hash = window.location.hash.replace("#", "").toUpperCase().trim();
     if (hash === ACCESS_CODE) {
@@ -57,134 +50,91 @@ export function PageGate({ children, backTo = "/" }: { children: ReactNode; back
     safeRemove(STORAGE_KEY);
     setUnlocked(false);
     setCode("");
+    setShowInput(false);
   };
 
   return (
     <div style={{ position: "relative", minHeight: "100vh" }}>
-      {/* Content — blurred when locked */}
-      <div style={{
-        filter: unlocked ? "none" : "blur(10px) brightness(0.7)",
-        pointerEvents: unlocked ? "auto" : "none",
-        userSelect: unlocked ? "auto" : "none",
-        transition: "filter 0.4s ease",
-      }}>
-        {children}
-      </div>
 
-      {/* Lock overlay — shown when locked */}
+      {/* Preview banner — sticky top bar when locked */}
       {!unlocked && (
         <div style={{
-          position: "fixed", inset: 0,
-          background: "rgba(15,23,42,0.75)",
-          backdropFilter: "blur(4px)",
-          zIndex: 9999,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          padding: 24,
+          position: "sticky", top: 0, zIndex: 9999,
+          background: "#0f172a", borderBottom: "1px solid #1e293b",
+          padding: "10px 24px", display: "flex", alignItems: "center",
+          justifyContent: "space-between", flexWrap: "wrap", gap: 10,
+          fontFamily: "'Inter','Segoe UI',sans-serif",
         }}>
-          <div style={{
-            background: "#fff",
-            borderRadius: 20,
-            padding: "44px 48px",
-            maxWidth: 420, width: "100%",
-            textAlign: "center",
-            boxShadow: "0 25px 60px rgba(0,0,0,0.3)",
-            animation: shaking ? "shake 0.4s ease" : "fadeIn 0.3s ease",
-          }}>
-            <style>{`
-              @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
-              @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
-            `}</style>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
-            <h2 style={{ margin: "0 0 8px", fontSize: 22, fontWeight: 800, color: "#0f172a" }}>
-              Restricted Access
-            </h2>
-            <p style={{ margin: "0 0 28px", fontSize: 14, color: "#64748b", lineHeight: 1.6 }}>
-              This content is available for authorised viewing only.<br />
-              Enter your access code to continue.
-            </p>
-            <input
-              type="password"
-              placeholder="Access code"
-              value={code}
-              autoFocus
-              onChange={e => setCode(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && tryUnlock()}
-              style={{
-                width: "100%",
-                padding: "13px 16px",
-                border: `2px solid ${error ? "#dc2626" : "#e2e8f0"}`,
-                borderRadius: 10,
-                fontSize: 16,
-                outline: "none",
-                marginBottom: 14,
-                boxSizing: "border-box",
-                fontFamily: "monospace",
-                letterSpacing: "0.15em",
-                textAlign: "center",
-                transition: "border-color 0.2s",
-                background: error ? "#fef2f2" : "#fff",
-              }}
-            />
-            <button
-              onClick={tryUnlock}
-              style={{
-                width: "100%",
-                background: "#0f172a",
-                color: "#fff",
-                border: "none",
-                borderRadius: 10,
-                padding: "13px",
-                fontSize: 15,
-                fontWeight: 700,
-                cursor: "pointer",
-                letterSpacing: "0.02em",
-              }}
-            >
-              Unlock →
-            </button>
-            {error && (
-              <p style={{ color: "#dc2626", fontSize: 13, marginTop: 12, fontWeight: 500 }}>
-                Incorrect code — please try again.
-              </p>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 14 }}>🔒</span>
+            <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>
+              Preview mode — content is read-only
+            </span>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {showInput ? (
+              <>
+                <style>{`
+                  @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+                `}</style>
+                <input
+                  type="password"
+                  placeholder="Access code"
+                  value={code}
+                  autoFocus
+                  onChange={e => setCode(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") tryUnlock(); if (e.key === "Escape") setShowInput(false); }}
+                  style={{
+                    padding: "6px 12px", borderRadius: 8, fontSize: 13,
+                    border: `1.5px solid ${error ? "#dc2626" : "#334155"}`,
+                    background: error ? "#2d1212" : "#1e293b",
+                    color: "#f1f5f9", outline: "none", width: 160,
+                    fontFamily: "monospace", letterSpacing: "0.12em", textAlign: "center",
+                    animation: shaking ? "shake 0.4s ease" : "none",
+                  }}
+                />
+                <button onClick={tryUnlock} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "#6366f1", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                  Unlock
+                </button>
+                <button onClick={() => { setShowInput(false); setCode(""); }} style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid #334155", background: "transparent", color: "#64748b", fontSize: 12, cursor: "pointer" }}>
+                  ✕
+                </button>
+              </>
+            ) : (
+              <button onClick={() => setShowInput(true)} style={{ padding: "6px 16px", borderRadius: 8, border: "1px solid #334155", background: "#1e293b", color: "#94a3b8", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                Enter code
+              </button>
             )}
-            <p style={{ marginTop: 24, fontSize: 11, color: "#94a3b8" }}>
-              pretzelslab · authorised access only
-            </p>
-            <Link
-              to={backTo}
-              style={{ display: "inline-block", marginTop: 14, fontSize: 12, color: "#64748b", textDecoration: "none" }}
-            >
-              ← Back to portfolio
+            <Link to={backTo} style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid #334155", background: "transparent", color: "#64748b", fontSize: 12, textDecoration: "none", fontWeight: 500 }}>
+              ← Back
             </Link>
           </div>
         </div>
       )}
 
+      {/* Content — lightly blurred and non-interactive when locked */}
+      <div
+        onContextMenu={!unlocked ? e => e.preventDefault() : undefined}
+        style={{
+          filter: unlocked ? "none" : "blur(2px) brightness(0.9)",
+          pointerEvents: unlocked ? "auto" : "none",
+          userSelect: unlocked ? "auto" : "none",
+          transition: "filter 0.3s ease",
+        }}
+      >
+        {children}
+      </div>
+
       {/* Lock button — visible when unlocked */}
       {unlocked && (
-        <button
-          onClick={lock}
-          title="Lock this page"
-          style={{
-            position: "fixed",
-            bottom: 24,
-            right: 24,
-            zIndex: 1000,
-            background: "#0f172a",
-            color: "#fff",
-            border: "none",
-            borderRadius: 50,
-            width: 44,
-            height: 44,
-            fontSize: 18,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
-            opacity: 0.7,
-          }}
-        >
+        <button onClick={lock} title="Lock this page" style={{
+          position: "fixed", bottom: 24, right: 24, zIndex: 1000,
+          background: "#0f172a", color: "#fff", border: "none", borderRadius: 50,
+          width: 44, height: 44, fontSize: 18, cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.25)", opacity: 0.7,
+        }}>
           🔓
         </button>
       )}

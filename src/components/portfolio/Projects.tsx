@@ -36,7 +36,7 @@ const AI_GOVERNANCE: Project[] = [
     link: "/ai-governance",
   },
   {
-    title: "AI Risk Client Workbook",
+    title: "AI Risk Assessment Matrix",
     description: "5-phase client engagement tool — Govern, Map, Measure, Report, Monitor — with risk register, compliance deadlines, audit fields, and backup/restore. Private.",
     tags: ["React", "TypeScript", "Supabase"],
     status: "preview",
