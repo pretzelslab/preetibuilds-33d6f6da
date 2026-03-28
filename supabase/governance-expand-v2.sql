@@ -326,7 +326,7 @@ INSERT INTO areas (policy_id, slug, area_name, phase_group, regulatory_ref, prio
  'CTO / Legal / Product',
  'GPAI model obligations unmanaged since August 2025 commencement; regulatory exposure for providers and deployers.',
  ARRAY['Cl. 4.1 — Organisational Context'],
- ARRAY[],
+ ARRAY[]::text[],
  ARRAY['GPAI model inventory','Training data documentation','Copyright compliance evidence','Systemic risk assessment'],
  'GPAI obligations unknown. No assessment conducted.',
  'GPAI models identified. Obligations being assessed.',
