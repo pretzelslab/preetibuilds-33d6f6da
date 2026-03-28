@@ -673,7 +673,7 @@ const MedLog = () => {
         {activeView === "log"       && <LogEventView onSave={addEvent} onUpload={uploadAttachment} />}
         {activeView === "symptoms"  && <SymptomsView symptoms={symptoms} onSave={addSymptom} onDelete={deleteSymptom} onEdit={setEditingSymptom} onUpload={uploadAttachment} />}
         {activeView === "history"   && <HistoryView events={events} symptoms={symptoms} onDelete={deleteEvent} onDeleteSymptom={deleteSymptom} onEdit={setEditingEvent} onEditSymptom={setEditingSymptom} />}
-        {activeView === "analysis"  && <AnalysisView events={events} symptoms={symptoms} />}
+        {activeView === "analysis"  && <AnalysisView events={events} symptoms={symptoms} memberName={memberName || "My Profile"} />}
         {activeView === "family"    && <FamilyView family={family} onAdd={addFamilyMember} onDelete={deleteFamilyMember} onEdit={setEditingMember} />}
         {activeView === "admin"     && <AdminView />}
       </main>
@@ -1066,7 +1066,7 @@ const HistoryView = ({ events, symptoms, onDelete, onDeleteSymptom, onEdit, onEd
   );
 };
 
-const AnalysisView = ({ events, symptoms }: { events: MedEvent[]; symptoms: SymptomEntry[] }) => {
+const AnalysisView = ({ events, symptoms, memberName }: { events: MedEvent[]; symptoms: SymptomEntry[]; memberName: string }) => {
   const currentYear = new Date().getFullYear();
   const availableYears = [...new Set([
     ...events.map(e => parseInt(e.date.slice(0, 4))),
@@ -1076,6 +1076,8 @@ const AnalysisView = ({ events, symptoms }: { events: MedEvent[]; symptoms: Symp
 
   const [year, setYear] = useState(currentYear);
   const [expandedInsight, setExpandedInsight] = useState<number | null>(null);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailCopied, setEmailCopied] = useState(false);
   const yStr = String(year);
   const yEvts = events.filter(e => e.date.startsWith(yStr));
   const ySyms = symptoms.filter(s => s.date.startsWith(yStr));
@@ -1102,16 +1104,158 @@ const AnalysisView = ({ events, symptoms }: { events: MedEvent[]; symptoms: Symp
   const insights = generateInsights(events, symptoms, yStr);
   const doctors = new Set(yEvts.filter(e => e.doctor).map(e => e.doctor)).size;
 
+  const buildEmailHtml = () => {
+    const cnt = (t: EventType) => yEvts.filter(e => e.type === t).length;
+    const topS = topN(symFreq).slice(0, 5);
+    const dateStr = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    const lb = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const allM = monthlyData.map(m => m.events + m.symptoms);
+    const maxM = Math.max(...allM, 1);
+    const bi = allM.indexOf(Math.max(...allM));
+
+    const statCells = [
+      ["Total Records", yEvts.length + ySyms.length, "#fff"],
+      ["Medical Events", yEvts.length, "#bbf7d0"],
+      ["Symptoms", ySyms.length, "#f9a8d4"],
+      ["Surgeries", cnt("surgery"), "#fca5a5"],
+      ["Medications", cnt("medication"), "#fde68a"],
+    ].map(([label, val, col]) =>
+      `<td style="padding:16px 4px;text-align:center;border-right:1px solid rgba(255,255,255,.15);">
+        <div style="font-size:20px;font-weight:700;color:${col};">${val}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.65);margin-top:3px;text-transform:uppercase;letter-spacing:.05em;">${label}</div>
+      </td>`
+    ).join("");
+
+    const topSRows = topS.map(({ name, count }) => {
+      const pct = Math.round((count / Math.max(ySyms.length, 1)) * 100);
+      return `<tr>
+        <td style="padding:5px 0;font-size:13px;color:#374151;width:140px;">${name}</td>
+        <td style="padding:5px 8px 5px 0;"><div style="background:#e5e7eb;border-radius:99px;height:7px;overflow:hidden;"><div style="background:#2d6a4f;height:7px;width:${pct}%;border-radius:99px;"></div></div></td>
+        <td style="font-size:12px;color:#6b7280;white-space:nowrap;">${count}×</td>
+      </tr>`;
+    }).join("");
+
+    const monthRows = lb.map((m, i) => {
+      const tot = monthlyData[i].events + monthlyData[i].symptoms; if (!tot) return "";
+      const barW = Math.round((tot / maxM) * 120);
+      const detail = [monthlyData[i].events > 0 ? `${monthlyData[i].events} event${monthlyData[i].events > 1 ? "s" : ""}` : "", monthlyData[i].symptoms > 0 ? `${monthlyData[i].symptoms} symptom${monthlyData[i].symptoms > 1 ? "s" : ""}` : ""].filter(Boolean).join(" · ");
+      return `<tr><td style="padding:4px 12px 4px 0;font-size:12px;color:#374151;font-weight:600;white-space:nowrap;width:32px;">${m}</td><td style="padding:4px 8px 4px 0;"><div style="background:#2d6a4f;height:8px;width:${barW}px;border-radius:99px;min-width:4px;"></div></td><td style="padding:4px 0;font-size:11px;color:#6b7280;">${detail}</td></tr>`;
+    }).filter(Boolean).join("");
+
+    const insLines: string[] = [];
+    if (Math.max(...allM) > 0) insLines.push(`📅 <strong>Busiest Month:</strong> ${lb[bi]} (${allM[bi]} entries)`);
+    if (topS.length) insLines.push(`🤒 <strong>Top Symptom:</strong> ${topS[0].name} — ${topS[0].count}× this year`);
+    if (sevBreakdown.Severe > 0) insLines.push(`⚠️ <strong>Severe Symptoms:</strong> ${sevBreakdown.Severe} episode(s) — worth discussing with your doctor`);
+    if (cnt("medication") > 0) insLines.push(`💊 <strong>Medications:</strong> ${cnt("medication")} entries tracked`);
+    if (cnt("surgery") > 0) insLines.push(`⚕️ <strong>Procedures:</strong> ${cnt("surgery")} on record`);
+    insLines.push(`📝 <strong>Summary:</strong> ${yEvts.length} medical events + ${ySyms.length} symptoms in ${yStr}`);
+
+    const sevBlock = (sevBreakdown.Mild + sevBreakdown.Moderate + sevBreakdown.Severe) > 0
+      ? (["Mild","Moderate","Severe"] as const).map((label) => {
+          const [bg, col] = label === "Mild" ? ["#c8e6d4","#1e4d38"] : label === "Moderate" ? ["#fef3c7","#92400e"] : ["#fee2e2","#991b1b"];
+          return `<td style="padding:0 10px 0 0;"><div style="background:${bg};border-radius:10px;padding:10px 18px;text-align:center;"><div style="font-size:20px;font-weight:700;color:${col};">${sevBreakdown[label]}</div><div style="font-size:10px;color:${col};margin-top:2px;">${label}</div></div></td>`;
+        }).join("") : "";
+
+    return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f7f4ef;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f7f4ef;padding:20px 0;"><tr><td align="center">
+<table width="580" cellpadding="0" cellspacing="0" style="max-width:580px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.10);background:#fff;">
+<tr><td colspan="2" style="background:#1a1a2e;padding:24px 28px;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr>
+    <td><div style="font-family:Georgia,serif;font-size:26px;color:#74c69d;font-weight:700;letter-spacing:-1px;">MedLog</div><div style="color:rgba(255,255,255,.5);font-size:12px;margin-top:2px;">Personal Health Journal</div></td>
+    <td style="text-align:right;vertical-align:middle;"><div style="color:#fff;font-size:15px;font-weight:600;">${memberName}</div><div style="color:rgba(255,255,255,.45);font-size:11px;margin-top:3px;">Yearly Report · ${yStr}</div><div style="color:rgba(255,255,255,.35);font-size:11px;margin-top:2px;">${dateStr}</div></td>
+  </tr></table>
+</td></tr>
+<tr><td colspan="2" style="background:#2d6a4f;padding:0;"><table width="100%" cellpadding="0" cellspacing="0"><tr>${statCells}</tr></table></td></tr>
+<tr><td colspan="2" style="padding:24px 28px;">
+  ${topS.length ? `<div style="margin-bottom:22px;"><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Top Symptoms This Year</div><table width="100%" cellpadding="0" cellspacing="0">${topSRows}</table></div>` : ""}
+  ${sevBlock ? `<div style="margin-bottom:22px;"><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Symptom Severity</div><table cellpadding="0" cellspacing="0"><tr>${sevBlock}</tr></table></div>` : ""}
+  ${monthRows ? `<div style="margin-bottom:22px;"><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Monthly Activity</div><table cellpadding="0" cellspacing="0">${monthRows}</table></div>` : ""}
+  <div><div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Health Insights</div>
+    ${insLines.map(line => `<div style="margin-bottom:7px;padding:9px 12px;background:#f8fafc;border-left:3px solid #2d6a4f;border-radius:0 7px 7px 0;font-size:13px;color:#374151;line-height:1.55;">${line}</div>`).join("")}
+  </div>
+</td></tr>
+<tr><td colspan="2" style="background:#f8fafc;border-top:1px solid #e5e7eb;padding:14px 28px;text-align:center;">
+  <div style="font-size:11px;color:#9ca3af;line-height:1.6;">Generated by MedLog · ${dateStr}<br><em>For personal reference only. Not a medical document. Consult your healthcare provider for medical decisions.</em></div>
+</td></tr>
+</table></td></tr></table></body></html>`;
+  };
+
+  const handleEmailCopy = async () => {
+    const html = buildEmailHtml();
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({ "text/html": new Blob([html], { type: "text/html" }), "text/plain": new Blob([`MedLog Health Report — ${memberName} · ${yStr}`], { type: "text/plain" }) }),
+      ]);
+    } catch {
+      // plain-text fallback
+      const plain = `MedLog Health Report — ${memberName} · ${yStr}\n\nTotal: ${yEvts.length + ySyms.length} records | Medical: ${yEvts.length} | Symptoms: ${ySyms.length}\n\nGenerated by MedLog`;
+      try { await navigator.clipboard.writeText(plain); } catch { /* silent */ }
+    }
+    setEmailCopied(true);
+    setTimeout(() => setEmailCopied(false), 6000);
+  };
+
+  const handleCopyAndGmail = async () => {
+    await handleEmailCopy();
+    const subj = encodeURIComponent(`MedLog Health Report — ${memberName} · ${yStr}`);
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&su=${subj}`, "_blank");
+  };
+
   return (
     <div>
       {/* Header row */}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3 mb-4 flex-wrap">
         <h2 className="font-serif text-xl font-bold">Health Analysis</h2>
         <select value={year} onChange={e => { setYear(parseInt(e.target.value)); setExpandedInsight(null); }}
           className="rounded-lg border px-3 py-1.5 text-sm" style={{ background: "#f7f4ef", borderColor: "#e2ddd6" }}>
           {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
+        <button onClick={() => { setShowEmailModal(true); setEmailCopied(false); }}
+          className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors"
+          style={{ background: "#0c6278", color: "#fff", borderColor: "#0c6278" }}>
+          📧 Email Report
+        </button>
       </div>
+
+      {/* Email Report Modal */}
+      {showEmailModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,.55)" }}
+          onClick={e => { if (e.target === e.currentTarget) setShowEmailModal(false); }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 relative">
+            <button onClick={() => setShowEmailModal(false)}
+              className="absolute top-4 right-4 text-xl leading-none" style={{ background: "none", border: "none", cursor: "pointer", color: "#6b6b80" }}>✕</button>
+            <div className="font-serif text-lg font-bold mb-1">📧 Email Health Report</div>
+            <div className="text-sm mb-4" style={{ color: "#6b6b80" }}>{yStr} Yearly Report · {memberName}</div>
+
+            {/* Preview */}
+            <div className="rounded-xl border overflow-auto mb-4 text-xs" style={{ maxHeight: 320, borderColor: "#e2ddd6", background: "#f7f4ef" }}
+              dangerouslySetInnerHTML={{ __html: buildEmailHtml() }} />
+
+            {/* Copied hint */}
+            {emailCopied && (
+              <div className="rounded-lg px-4 py-3 mb-3 text-sm leading-relaxed" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", color: "#166534" }}>
+                ✅ Formatted report copied! Open Gmail → paste (Ctrl+V / ⌘V) into the compose body → the formatted report appears → add recipient and send.
+              </div>
+            )}
+
+            <div className="flex gap-3 flex-wrap">
+              <button onClick={handleCopyAndGmail}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors"
+                style={{ background: "#1a1a2e", minWidth: 160 }}>
+                📋 Copy &amp; Open Gmail
+              </button>
+              <button onClick={handleEmailCopy}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-colors"
+                style={{ background: "#fff", borderColor: "#e2ddd6", color: "#374151", minWidth: 120 }}>
+                📄 Copy only
+              </button>
+            </div>
+            <p className="text-xs mt-3 leading-relaxed" style={{ color: "#6b6b80" }}>
+              <strong>How to send:</strong> Click <em>Copy &amp; Open Gmail</em> → Gmail opens → paste into the compose body → the formatted report appears → add recipient and send.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ── Compact AI Insights strip ── */}
       <div className="rounded-2xl border p-4 mb-5" style={{ background: "#fff", borderColor: "#e2ddd6" }}>
