@@ -1506,6 +1506,8 @@ function PolicyDigestDetail({ policy, onBack }) {
           <span>For informational purposes only — consult legal counsel for compliance decisions</span>
         </div>
       </div>
+
+      <AcronymGlossary />
     </div>
   );
 }
