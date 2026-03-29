@@ -310,16 +310,20 @@ const INDUSTRY_SUGGESTIONS: Record<string, Suggestion[]> = {
     { id: "eu-ai-act",   level: "Required",    reason: "Credit scoring explicitly high-risk (Annex III)" },
     { id: "iso-42001",   level: "Required",    reason: "Regulator preference for certified AI management" },
     { id: "nist-ai-rmf", level: "Recommended", reason: "US operations or Federal framework alignment" },
+    { id: "fair",        level: "Recommended", reason: "Quantify AI credit risk in financial exposure terms" },
     { id: "nist-csf",    level: "Consider",    reason: "Cybersecurity for AI platform protection" },
+    { id: "aaia",        level: "Consider",    reason: "Independent AI audit increasingly expected by regulators" },
   ],
   "Insurtech / Insurance": [
     { id: "eu-ai-act",   level: "Required",    reason: "Underwriting and risk classification AI is high-risk" },
     { id: "iso-42001",   level: "Recommended", reason: "Insurance regulators align to ISO standards" },
+    { id: "fair",        level: "Recommended", reason: "Actuarial mindset aligns naturally with FAIR quantification" },
     { id: "nist-ai-rmf", level: "Consider",    reason: "US market alignment" },
   ],
   "Asset Management / Wealth Management": [
     { id: "eu-ai-act",   level: "Recommended", reason: "Investment recommendation GPAI tools in scope" },
     { id: "nist-ai-rmf", level: "Recommended", reason: "AI risk management for advisory tools" },
+    { id: "fair",        level: "Recommended", reason: "Risk quantification for investment AI and SEC expectations" },
     { id: "iso-42001",   level: "Consider",    reason: "Governance signal to institutional investors" },
   ],
   "Payments & Digital Wallets": [
@@ -337,22 +341,28 @@ const INDUSTRY_SUGGESTIONS: Record<string, Suggestion[]> = {
     { id: "eu-ai-act",   level: "Required",    reason: "Clinical decision support AI is high-risk" },
     { id: "nist-ai-rmf", level: "Recommended", reason: "Risk governance for AI-assisted diagnosis" },
     { id: "iso-42001",   level: "Consider",    reason: "Alignment with hospital accreditation bodies" },
+    { id: "fair",        level: "Consider",    reason: "Quantifying AI risk in clinical and patient safety settings" },
+    { id: "aaia",        level: "Consider",    reason: "Independent AI audit for clinical AI systems" },
   ],
   "Technology & SaaS": [
     { id: "iso-42001",   level: "Recommended", reason: "AI management certification for enterprise procurement" },
     { id: "nist-csf",    level: "Recommended", reason: "Cybersecurity baseline for AI platform providers" },
     { id: "eu-ai-act",   level: "Consider",    reason: "Applies if deploying AI to EU customers" },
     { id: "nist-ai-rmf", level: "Consider",    reason: "US government procurement alignment" },
+    { id: "fair",        level: "Consider",    reason: "Risk quantification for mature AI risk programmes" },
+    { id: "aaia",        level: "Consider",    reason: "AI audit certification valued in enterprise procurement" },
   ],
   "Cybersecurity": [
     { id: "nist-csf",    level: "Required",    reason: "Core framework for cybersecurity posture" },
     { id: "nist-ai-rmf", level: "Recommended", reason: "AI-specific risk management layer" },
     { id: "iso-42001",   level: "Consider",    reason: "Governance for AI-driven security tooling" },
+    { id: "fair",        level: "Consider",    reason: "FAIR originated in cybersecurity — natural fit for AI risk quantification" },
   ],
   "HR Technology / People Analytics": [
     { id: "eu-ai-act",   level: "Required",    reason: "Recruitment and performance AI explicitly high-risk (Annex III)" },
     { id: "iso-42001",   level: "Recommended", reason: "Governance for sensitive people data" },
     { id: "fair",        level: "Consider",    reason: "Risk quantification for bias in hiring AI" },
+    { id: "aaia",        level: "Consider",    reason: "Bias auditing in hiring AI is a core AAIA domain" },
   ],
   "Legal Technology": [
     { id: "eu-ai-act",   level: "Recommended", reason: "AI in legal advice and justice is high-risk" },
@@ -1290,10 +1300,19 @@ function ClientListView({ onSelectClient, onOpenWorkbook }: {
               <div key={industry}>
                 {/* Industry group header */}
                 <button onClick={() => toggleIndustry(industry)}
-                  style={{ width: "100%", background: "none", border: "none", padding: "8px 0", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 10, borderBottom: "2px solid #e2e8f0", marginBottom: 12 }}>
+                  style={{ width: "100%", background: "none", border: "none", padding: "8px 0", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", borderBottom: "2px solid #e2e8f0", marginBottom: 12 }}>
                   <span style={{ fontSize: 13, color: "#94a3b8" }}>{isCollapsed ? "▸" : "▾"}</span>
                   <span style={{ fontSize: 13, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "0.06em" }}>{industry}</span>
                   <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500 }}>({industryClients.length} client{industryClients.length !== 1 ? "s" : ""})</span>
+                  {(INDUSTRY_SUGGESTIONS[industry] || []).filter(s => s.level === "Required" || s.level === "Recommended").map(s => {
+                    const stub = POLICY_STUBS.find(p => p.id === s.id);
+                    if (!stub) return null;
+                    return (
+                      <span key={s.id} style={{ fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 5, background: stub.bg, color: stub.color, border: `1px solid ${stub.border}` }}>
+                        {stub.emoji} {stub.name}
+                      </span>
+                    );
+                  })}
                 </button>
 
                 {!isCollapsed && (
