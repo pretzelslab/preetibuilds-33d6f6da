@@ -1228,7 +1228,7 @@ function ClientListView({ onSelectClient, onOpenWorkbook }: {
     <div style={{ maxWidth: 940, margin: "0 auto", padding: "32px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#0f172a" }}>Client Workbook</h2>
+          <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#0f172a" }}>AI Risk Assessment</h2>
           <p style={{ margin: "6px 0 0", fontSize: 14, color: "#64748b" }}>Discovery workbooks, progress, and notes saved locally. Export JSON to back up.</p>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -2651,7 +2651,7 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient, onPhaseSe
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
             <span style={{ fontSize: 26 }}>{stub.emoji}</span>
-            <h2 style={{ margin: 0, fontSize: 19, fontWeight: 800, color: "#0f172a" }}>{stub.name} — Discovery Workbook</h2>
+            <h2 style={{ margin: 0, fontSize: 19, fontWeight: 800, color: "#0f172a" }}>{stub.name} — AI Risk Assessment</h2>
           </div>
           <div style={{ fontSize: 13, color: "#64748b" }}>{client.name} · {client.industry}{client.geography ? ` · ${client.geography}` : ""}</div>
           {client.primaryAiUseCase && <div style={{ fontSize: 12, color: "#6366f1", marginTop: 3, fontWeight: 600 }}>AI Use Case: {client.primaryAiUseCase}</div>}
