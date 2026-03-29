@@ -196,8 +196,8 @@ const POLICY_STUBS = [
   { id: "nist-ai-rmf", name: "NIST AI RMF",  emoji: "🇺🇸", hasGuide: true,  color: "#1d4ed8", bg: "#eff6ff", border: "#bfdbfe" },
   { id: "nist-csf",    name: "NIST CSF 2.0", emoji: "🛡️",  hasGuide: true,  color: "#0369a1", bg: "#f0f9ff", border: "#bae6fd" },
   { id: "iso-42001",   name: "ISO 42001",    emoji: "🌐",  hasGuide: true,  color: "#0891b2", bg: "#ecfeff", border: "#a5f3fc" },
-  { id: "fair",        name: "FAIR",         emoji: "⚖️",  hasGuide: false, color: "#7c3aed", bg: "#f5f3ff", border: "#ddd6fe" },
-  { id: "aaia",        name: "AAIA",         emoji: "🔍",  hasGuide: false, color: "#be185d", bg: "#fdf2f8", border: "#fbcfe8" },
+  { id: "fair",        name: "FAIR",         emoji: "⚖️",  hasGuide: true,  color: "#7c3aed", bg: "#f5f3ff", border: "#ddd6fe" },
+  { id: "aaia",        name: "AAIA",         emoji: "🔍",  hasGuide: true,  color: "#be185d", bg: "#fdf2f8", border: "#fbcfe8" },
 ];
 
 // ─── INDUSTRIES ───────────────────────────────────────────────────────────────
