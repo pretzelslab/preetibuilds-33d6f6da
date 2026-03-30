@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { Linkedin } from "lucide-react";
 
 const CREDENTIALS = [
   "18+ years across B2B SaaS — HR tech, CRM, BI, and AI-driven platforms",
@@ -32,23 +31,6 @@ const Hero = () => (
             </li>
           ))}
         </ul>
-        <div className="flex items-center gap-4 text-sm">
-          <a
-            href="https://www.linkedin.com/in/preetiraghuveer/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-primary hover:opacity-75 transition-opacity font-medium"
-          >
-            <Linkedin className="w-3.5 h-3.5" /> LinkedIn
-          </a>
-          <span className="text-muted-foreground/30">·</span>
-          <a
-            href="mailto:chinmayipriti@gmail.com"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            chinmayipriti@gmail.com
-          </a>
-        </div>
       </motion.div>
     </div>
   </section>
