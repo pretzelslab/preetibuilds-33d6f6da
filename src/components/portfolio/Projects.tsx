@@ -27,6 +27,16 @@ const USE_CASES: Project[] = [
   },
 ];
 
+const AI_TOOLS: Project[] = [
+  {
+    title: "AI Readiness Assessment",
+    description: "25-question self-service diagnostic across Strategy, Data, Technology, People, and Governance — scored report with ROI signal and prioritised gaps.",
+    tags: ["React", "TypeScript", "Recharts"],
+    status: "building",
+    link: "/ai-readiness",
+  },
+];
+
 const AI_GOVERNANCE: Project[] = [
   {
     title: "AI Ethics & Governance Tracker",
@@ -143,7 +153,12 @@ const Projects = () => (
         {USE_CASES.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
 
-      <SectionHeader label="AI Governance & Tools" />
+      <SectionHeader label="AI Tools & Diagnostics" />
+      <div className="mb-8">
+        {AI_TOOLS.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+      </div>
+
+      <SectionHeader label="AI Governance" />
       <div className="mb-8">
         {AI_GOVERNANCE.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>

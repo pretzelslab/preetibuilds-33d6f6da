@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Music, Search, Play, BookOpen, ChevronDown, ChevronUp, Plus, ExternalLink } from "lucide-react";
+import { ArrowLeft, Music, Search, Play, BookOpen, ChevronDown, ChevronUp, Plus } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Song {
@@ -592,7 +592,7 @@ function SongRow({ song }: { song: Song }) {
               title="Search on YouTube"
               className="w-8 h-8 rounded-full bg-violet-600 hover:bg-violet-700 flex items-center justify-center transition-colors"
             >
-              <ExternalLink className="w-3.5 h-3.5 text-white" />
+              <Play className="w-3.5 h-3.5 text-white fill-white" />
             </a>
           )}
         </div>
