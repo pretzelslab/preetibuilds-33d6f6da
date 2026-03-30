@@ -47,8 +47,8 @@ const AI_GOVERNANCE: Project[] = [
 const PET_PROJECTS: Project[] = [
   {
     title: "MedLog",
-    description: "Family health event tracker with per-member login, symptom trends, AI analysis, and exportable health reports. Private.",
-    tags: ["React", "Supabase", "TypeScript"],
+    description: "Family health journal — per-member profiles, medical events, symptom tracking, yearly analysis, and cloud sync via Supabase. Private.",
+    tags: ["Vanilla JS", "Supabase", "Chart.js"],
     status: "preview",
     link: "/medlog",
   },
