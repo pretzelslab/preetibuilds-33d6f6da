@@ -7,8 +7,8 @@ const CREDENTIALS = [
 ];
 
 const Hero = () => (
-  <section className="flex items-start justify-center px-6 pt-28 pb-10">
-    <div className="max-w-2xl w-full">
+  <section className="flex items-start justify-center px-6 pt-20 pb-6">
+    <div className="max-w-3xl w-full">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -17,7 +17,7 @@ const Hero = () => (
         <p className="font-mono text-xs text-muted-foreground mb-3 tracking-widest uppercase">
           Product · Program · GTM
         </p>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-5">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-4">
           <span className="text-gradient">Preethi Raghuveeran</span>
         </h1>
         <p className="text-base text-muted-foreground mb-5 leading-relaxed">

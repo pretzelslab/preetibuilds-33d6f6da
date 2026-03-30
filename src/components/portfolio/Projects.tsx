@@ -127,8 +127,8 @@ const SectionHeader = ({ label }: { label: string }) => (
 );
 
 const Projects = () => (
-  <section id="projects" className="py-10 px-6">
-    <div className="max-w-2xl mx-auto">
+  <section id="projects" className="py-6 px-6">
+    <div className="max-w-3xl mx-auto">
       <motion.h2
         className="text-2xl font-bold mb-8"
         initial={{ opacity: 0, y: 12 }}
