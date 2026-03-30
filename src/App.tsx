@@ -13,6 +13,7 @@ import Research from "./pages/Research";
 import AIGovernance from "./pages/AIGovernance";
 import ProductIntelligence from "./pages/ProductIntelligence";
 import ClientDiscovery from "./pages/ClientDiscovery";
+import MelodicFramework from "./pages/MelodicFramework";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/gtm-techstack":       "GTM Tech Stack | Preeti Builds",
   "/product-intelligence":"Product Intelligence | Preeti Builds",
   "/research":            "Research | Preeti Builds",
+  "/melodic-framework":   "Melodic Framework (Raaga) | Preeti Builds",
 };
 
 const RouteTitle = () => {
@@ -50,6 +52,7 @@ const App = () => (
             <Route path="/ai-governance" element={<AIGovernance />} />
             <Route path="/product-intelligence" element={<ProductIntelligence />} />
             <Route path="/client-discovery" element={<ClientDiscovery />} />
+            <Route path="/melodic-framework" element={<MelodicFramework />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

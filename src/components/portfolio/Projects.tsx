@@ -53,10 +53,11 @@ const PET_PROJECTS: Project[] = [
     link: "/medlog",
   },
   {
-    title: "Music → Art",
-    description: "Upload a track or paste a link — reads the audio frequency signal and generates a generative painting. Pick your style: watercolour, oil, abstract.",
-    tags: ["React", "Web Audio API", "Canvas"],
+    title: "Melodic Framework (Raaga)",
+    description: "Hindustani & film raaga library — one canonical song per raaga, embedded player, singer/composer/movie metadata, and AI-generated lyrics.",
+    tags: ["React", "Supabase", "Claude API"],
     status: "building",
+    link: "/melodic-framework",
   },
 ];
 

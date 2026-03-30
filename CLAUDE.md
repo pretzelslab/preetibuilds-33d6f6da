@@ -4,13 +4,19 @@
 
 ### git push
 - **NEVER run `git push` unless the user explicitly says "push" or "deploy" in that specific message.**
-- Netlify auto-deploys on every push to main. The user always tests locally at localhost first.
+- Vercel auto-deploys on every push to main. The user always tests locally at localhost first.
 - A passing build (`npm run build`) does NOT mean it is ready to push.
 - This rule does not expire. It applies for the entire session and every future session.
 
 ### Commits
-- Use `[skip netlify]` in commit messages for non-visual or in-progress changes.
+- Use `[skip ci]` in commit messages for non-visual or in-progress changes — skips Vercel AND Netlify builds.
 - Commit freely, but push only when the user says so.
+- Bundle all changes into one push per session to conserve build minutes.
+
+### Hosting
+- Primary: Vercel → https://preetibuilds-33d6f6da.vercel.app
+- Netlify paused until April 16th (build minutes reset)
+- MedLog: https://medlogqw.netlify.app (separate site, separate limits)
 
 ### Local dev server
 - Run `npm run dev` in the project root to start the dev server.
