@@ -1,7 +1,16 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Music, Search, Play, BookOpen, ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { ArrowLeft, Music, Search, Play, BookOpen, ChevronDown, ChevronUp, Plus, Loader2, RefreshCw } from "lucide-react";
+
+const YT_API_KEY = "AIzaSyCq2BN9k3y8bU9yymWiroYBhdVnRPMIPnA";
+
+interface YtResult {
+  videoId: string;
+  title: string;
+  channel: string;
+  thumbnail: string;
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Song {
@@ -557,9 +566,51 @@ const GENRE_COLORS: Record<string, string> = {
 const TIME_ORDER = ["Pre-dawn", "Dawn", "Morning", "Late Morning", "Afternoon", "Late Afternoon", "Dusk", "Evening", "Night", "Late Night", "Any time"];
 
 // ── Song row ──────────────────────────────────────────────────────────────────
-function SongRow({ song }: { song: Song }) {
+function SongRow({
+  song,
+  selectedId,
+  onSelect,
+}: {
+  song: Song;
+  selectedId?: string;
+  onSelect: (videoId: string) => void;
+}) {
   const [showLyrics, setShowLyrics] = useState(false);
+  const [results, setResults] = useState<YtResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   const [showEmbed, setShowEmbed] = useState(false);
+
+  const activeId = selectedId || song.youtubeId;
+
+  async function findOnYouTube() {
+    setSearching(true);
+    setShowResults(true);
+    setShowEmbed(false);
+    try {
+      const res = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(song.youtubeQuery)}&type=video&maxResults=4&key=${YT_API_KEY}`
+      );
+      const data = await res.json();
+      const items: YtResult[] = (data.items || []).map((item: any) => ({
+        videoId: item.id.videoId,
+        title: item.snippet.title,
+        channel: item.snippet.channelTitle,
+        thumbnail: item.snippet.thumbnails.default.url,
+      }));
+      setResults(items);
+    } catch {
+      setResults([]);
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  function pickVideo(videoId: string) {
+    onSelect(videoId);
+    setShowResults(false);
+    setShowEmbed(true);
+  }
 
   return (
     <div className="space-y-2 pt-2 first:pt-0 border-t border-border/30 first:border-0">
@@ -575,36 +626,75 @@ function SongRow({ song }: { song: Song }) {
           </span>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          {/* Inline play toggle */}
-          {song.youtubeId ? (
-            <button
-              onClick={() => setShowEmbed(!showEmbed)}
-              title={showEmbed ? "Close player" : "Play inline"}
-              className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${showEmbed ? "bg-violet-200 text-violet-700" : "bg-violet-600 hover:bg-violet-700 text-white"}`}
-            >
-              <Play className="w-3.5 h-3.5 fill-current" />
-            </button>
+          {/* Play / Find button */}
+          {activeId ? (
+            <>
+              <button
+                onClick={() => { setShowEmbed(!showEmbed); setShowResults(false); }}
+                title={showEmbed ? "Close player" : "Play inline"}
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${showEmbed ? "bg-violet-200 dark:bg-violet-800 text-violet-700 dark:text-violet-300" : "bg-violet-600 hover:bg-violet-700 text-white"}`}
+              >
+                <Play className="w-3.5 h-3.5 fill-current" />
+              </button>
+              <button
+                onClick={findOnYouTube}
+                title="Find different version"
+                className="w-7 h-7 rounded-full border border-border hover:border-violet-400 flex items-center justify-center transition-colors text-muted-foreground hover:text-violet-600"
+              >
+                <RefreshCw className="w-3 h-3" />
+              </button>
+            </>
           ) : (
-            <a
-              href={`https://www.youtube.com/results?search_query=${encodeURIComponent(song.youtubeQuery)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Search on YouTube"
-              className="w-8 h-8 rounded-full bg-violet-600 hover:bg-violet-700 flex items-center justify-center transition-colors"
+            <button
+              onClick={findOnYouTube}
+              title="Find on YouTube"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-semibold transition-colors"
             >
-              <Play className="w-3.5 h-3.5 text-white fill-white" />
-            </a>
+              {searching ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3 fill-white" />}
+              {searching ? "Searching…" : "Find & Play"}
+            </button>
           )}
         </div>
       </div>
 
+      {/* YouTube search results picker */}
+      {showResults && (
+        <div className="rounded-lg border border-border/60 bg-muted/20 p-2 space-y-1.5">
+          <p className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide px-1">
+            {searching ? "Searching YouTube…" : `${results.length} results — pick a version`}
+          </p>
+          {searching && (
+            <div className="flex items-center gap-2 px-1 py-2">
+              <Loader2 className="w-4 h-4 animate-spin text-violet-600" />
+              <span className="text-xs text-muted-foreground">Fetching from YouTube…</span>
+            </div>
+          )}
+          {!searching && results.map(r => (
+            <button
+              key={r.videoId}
+              onClick={() => pickVideo(r.videoId)}
+              className="w-full flex items-center gap-2.5 p-2 rounded-lg hover:bg-violet-500/10 transition-colors text-left group"
+            >
+              <img src={r.thumbnail} alt={r.title} className="w-16 h-10 rounded object-cover shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-medium leading-tight line-clamp-2 group-hover:text-violet-600 transition-colors">{r.title}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{r.channel}</p>
+              </div>
+            </button>
+          ))}
+          {!searching && results.length === 0 && (
+            <p className="text-xs text-muted-foreground px-1 py-1">No results found.</p>
+          )}
+        </div>
+      )}
+
       {/* Inline YouTube embed */}
-      {song.youtubeId && showEmbed && (
+      {activeId && showEmbed && (
         <div className="rounded-lg overflow-hidden border border-border/50">
           <iframe
-            src={`https://www.youtube.com/embed/${song.youtubeId}?autoplay=1`}
+            src={`https://www.youtube.com/embed/${activeId}?autoplay=1`}
             className="w-full"
-            height="120"
+            height="140"
             allow="autoplay; encrypted-media"
             allowFullScreen
             title={song.title}
@@ -637,7 +727,14 @@ function SongRow({ song }: { song: Song }) {
 }
 
 // ── Raaga card ────────────────────────────────────────────────────────────────
-function RaagaCard({ raaga, index }: { raaga: Raaga; index: number }) {
+function RaagaCard({
+  raaga, index, selectedIds, onSelect,
+}: {
+  raaga: Raaga;
+  index: number;
+  selectedIds: Record<string, string>;
+  onSelect: (songId: string, videoId: string) => void;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -678,9 +775,14 @@ function RaagaCard({ raaga, index }: { raaga: Raaga; index: number }) {
       {/* Expanded */}
       {open && (
         <div className="border-t border-border/50 px-4 py-3 space-y-3">
-          {raaga.songs.map(s => <SongRow key={s.id} song={s} />)}
-
-          {/* Add alternate version */}
+          {raaga.songs.map(s => (
+            <SongRow
+              key={s.id}
+              song={s}
+              selectedId={selectedIds[s.id]}
+              onSelect={(videoId) => onSelect(s.id, videoId)}
+            />
+          ))}
           <button className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-border text-xs text-muted-foreground hover:border-violet-400 hover:text-violet-600 transition-colors">
             <Plus className="w-3.5 h-3.5" /> Add alternate version
           </button>
@@ -694,6 +796,11 @@ function RaagaCard({ raaga, index }: { raaga: Raaga; index: number }) {
 export default function MelodicFramework() {
   const [query, setQuery] = useState("");
   const [timeFilter, setTimeFilter] = useState("All");
+  const [selectedIds, setSelectedIds] = useState<Record<string, string>>({});
+
+  function handleSelect(songId: string, videoId: string) {
+    setSelectedIds(prev => ({ ...prev, [songId]: videoId }));
+  }
 
   const times = ["All", ...TIME_ORDER.filter(t => DEMO_RAAGAS.some(r => r.time === t))];
 
@@ -780,7 +887,15 @@ export default function MelodicFramework() {
         {/* Raaga grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {filtered.length ? (
-            filtered.map((r, i) => <RaagaCard key={r.id} raaga={r} index={i} />)
+            filtered.map((r, i) => (
+              <RaagaCard
+                key={r.id}
+                raaga={r}
+                index={i}
+                selectedIds={selectedIds}
+                onSelect={handleSelect}
+              />
+            ))
           ) : (
             <div className="col-span-2 text-center py-16 text-muted-foreground">
               <Music className="w-8 h-8 mx-auto mb-3 opacity-30" />
