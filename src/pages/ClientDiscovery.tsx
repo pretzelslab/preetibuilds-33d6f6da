@@ -50,7 +50,7 @@ const WorkbookPreview = () => (
     {/* Header — sticky below the PageGate banner (~40px) */}
     <div style={{ background: "#0f172a", color: "#fff", padding: "24px 32px", position: "sticky", top: 40, zIndex: 90 }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <Link to="/" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 14, color: "#94a3b8", textDecoration: "none", marginBottom: 12, fontWeight: 400 }}>
+        <Link to="/#projects" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 14, color: "#94a3b8", textDecoration: "none", marginBottom: 12, fontWeight: 400 }}>
           ← Back to Portfolio
         </Link>
         <div style={{ fontSize: 10, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.1em" }}>
@@ -205,7 +205,7 @@ const ClientDiscoveryPage = () => (
       <nav className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur-md border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <Link
-            to="/"
+            to="/#projects"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-4 h-4" /> Back to Portfolio

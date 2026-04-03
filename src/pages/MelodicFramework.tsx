@@ -5,6 +5,7 @@ import { ArrowLeft, Music, Search, Play, BookOpen, ChevronDown, ChevronUp, Plus,
 import VisitorCounter from "@/components/portfolio/VisitorCounter";
 import Comments from "@/components/portfolio/Comments";
 import { govDb } from "@/lib/supabase-governance";
+import { PageGate } from "@/components/ui/PageGate";
 
 const YT_API_KEY = "AIzaSyCq2BN9k3y8bU9yymWiroYBhdVnRPMIPnA";
 
@@ -764,6 +765,7 @@ function AddSongForm({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [activeSuggest, setActiveSuggest] = useState<"singer"|"movie"|"composer"|null>(null);
   const ytDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Field-level suggestion helper ────────────────────────────────────────
@@ -930,7 +932,7 @@ function AddSongForm({
       {/* Song title — autosuggest + auto YouTube trigger */}
       <div className="relative">
         <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">
-          Song title * {searching && <Loader2 className="w-3 h-3 animate-spin inline ml-1 text-violet-500" />}
+          Song title *
         </label>
         <input
           value={title}
@@ -955,45 +957,63 @@ function AddSongForm({
         )}
       </div>
 
-      {/* YouTube results — auto-triggered or manual */}
-      {ytResults.length > 0 && (
-        <div className="space-y-1.5">
-          <p className="text-[10px] text-muted-foreground/60 font-mono uppercase tracking-wide">Pick a version — fields will autofill</p>
-          {ytResults.map(r => (
-            <button key={r.videoId} onClick={() => pickResult(r)}
-              className="w-full flex items-center gap-2.5 p-2 rounded-lg hover:bg-violet-500/10 transition-colors text-left group border border-border/40">
-              <img src={r.thumbnail} alt={r.title} className="w-14 h-9 rounded object-cover shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs font-medium line-clamp-1 group-hover:text-violet-600 transition-colors">{r.title}</p>
-                <p className="text-[10px] text-muted-foreground truncate">{r.channel}</p>
-              </div>
-            </button>
-          ))}
+      {/* YouTube search — always visible, directly below title */}
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => runYTSearch([title, singer, movie].filter(Boolean).join(" ") || title)}
+            disabled={!title.trim() && !singer.trim()}
+            className="flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-700 disabled:opacity-40 transition-colors"
+          >
+            {searching ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
+            {searching ? "Searching YouTube…" : "Search YouTube for this song"}
+          </button>
+          {pickedVideo && (
+            <span className="text-[10px] text-violet-500 truncate max-w-[140px]">✓ {pickedVideo.title}</span>
+          )}
         </div>
-      )}
 
-      {/* Picked video confirmation */}
-      {pickedVideo && (
-        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-violet-500/10 border border-violet-400/30">
-          <Play className="w-3 h-3 text-violet-600 fill-violet-600 shrink-0" />
-          <p className="text-xs text-violet-600 dark:text-violet-400 truncate">{pickedVideo.title}</p>
-          <button onClick={() => setPickedVideo(null)} className="ml-auto text-[10px] text-muted-foreground hover:text-rose-500">✕</button>
-        </div>
-      )}
+        {/* YouTube results */}
+        {ytResults.length > 0 && (
+          <div className="space-y-1">
+            <p className="text-[10px] text-muted-foreground/60 font-mono uppercase tracking-wide">Pick a version</p>
+            {ytResults.map(r => (
+              <button key={r.videoId} onClick={() => pickResult(r)}
+                className="w-full flex items-center gap-2.5 p-2 rounded-lg hover:bg-violet-500/10 transition-colors text-left group border border-border/40">
+                <img src={r.thumbnail} alt={r.title} className="w-14 h-9 rounded object-cover shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs font-medium line-clamp-1 group-hover:text-violet-600 transition-colors">{r.title}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{r.channel}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
 
-      {/* Metadata fields — all with persistent labels + autosuggest */}
+        {/* Picked video — stays visible, can swap */}
+        {pickedVideo && ytResults.length === 0 && (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-violet-500/10 border border-violet-400/30">
+            <Play className="w-3 h-3 text-violet-600 fill-violet-600 shrink-0" />
+            <p className="text-xs text-violet-600 dark:text-violet-400 truncate flex-1">{pickedVideo.title}</p>
+            <button onClick={() => { setPickedVideo(null); runYTSearch(title); }} className="text-[10px] text-muted-foreground hover:text-rose-500 shrink-0">change</button>
+          </div>
+        )}
+      </div>
+
+      {/* Metadata fields — focus-based autosuggest (clears on click-away) */}
       <div className="grid grid-cols-2 gap-2">
         {/* Singer */}
         <div className="relative">
           <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Singer *</label>
           <input value={singer} onChange={e => setSinger(e.target.value)}
-            onBlur={() => setTimeout(() => {}, 150)}
+            onFocus={() => setActiveSuggest("singer")}
+            onBlur={() => setTimeout(() => setActiveSuggest(null), 150)}
             placeholder="e.g. Lata Mangeshkar"
             className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400" />
-          {singerSuggestions.length > 0 && (
+          {activeSuggest === "singer" && singerSuggestions.length > 0 && (
             <div className="absolute z-20 top-full left-0 right-0 mt-0.5 bg-background border border-violet-400/30 rounded-lg shadow-md overflow-hidden">
               {singerSuggestions.map(s => (
-                <button key={s} onMouseDown={() => setSinger(s)}
+                <button key={s} onMouseDown={() => { setSinger(s); setActiveSuggest(null); }}
                   className="w-full text-left px-3 py-1.5 text-xs hover:bg-violet-500/10 border-b border-border/20 last:border-0 transition-colors">
                   {s}
                 </button>
@@ -1005,12 +1025,15 @@ function AddSongForm({
         {/* Movie */}
         <div className="relative">
           <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Movie (optional)</label>
-          <input value={movie} onChange={e => setMovie(e.target.value)} placeholder="e.g. Mughal-E-Azam"
+          <input value={movie} onChange={e => setMovie(e.target.value)}
+            onFocus={() => setActiveSuggest("movie")}
+            onBlur={() => setTimeout(() => setActiveSuggest(null), 150)}
+            placeholder="e.g. Mughal-E-Azam"
             className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400" />
-          {movieSuggestions.filter(Boolean).length > 0 && (
+          {activeSuggest === "movie" && movieSuggestions.filter(Boolean).length > 0 && (
             <div className="absolute z-20 top-full left-0 right-0 mt-0.5 bg-background border border-violet-400/30 rounded-lg shadow-md overflow-hidden">
               {movieSuggestions.filter(Boolean).map(s => (
-                <button key={s} onMouseDown={() => setMovie(s)}
+                <button key={s} onMouseDown={() => { setMovie(s); setActiveSuggest(null); }}
                   className="w-full text-left px-3 py-1.5 text-xs hover:bg-violet-500/10 border-b border-border/20 last:border-0 transition-colors">
                   {s}
                 </button>
@@ -1022,12 +1045,15 @@ function AddSongForm({
         {/* Composer */}
         <div className="relative">
           <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Composer</label>
-          <input value={composer} onChange={e => setComposer(e.target.value)} placeholder="e.g. Naushad"
+          <input value={composer} onChange={e => setComposer(e.target.value)}
+            onFocus={() => setActiveSuggest("composer")}
+            onBlur={() => setTimeout(() => setActiveSuggest(null), 150)}
+            placeholder="e.g. Naushad"
             className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400" />
-          {composerSuggestions.length > 0 && (
+          {activeSuggest === "composer" && composerSuggestions.length > 0 && (
             <div className="absolute z-20 top-full left-0 right-0 mt-0.5 bg-background border border-violet-400/30 rounded-lg shadow-md overflow-hidden">
               {composerSuggestions.map(s => (
-                <button key={s} onMouseDown={() => setComposer(s)}
+                <button key={s} onMouseDown={() => { setComposer(s); setActiveSuggest(null); }}
                   className="w-full text-left px-3 py-1.5 text-xs hover:bg-violet-500/10 border-b border-border/20 last:border-0 transition-colors">
                   {s}
                 </button>
@@ -1046,16 +1072,6 @@ function AddSongForm({
           </select>
         </div>
       </div>
-
-      {/* Manual YouTube search (override / retry) */}
-      <button
-        onClick={() => runYTSearch([title, singer, movie].filter(Boolean).join(" "))}
-        disabled={!title && !singer}
-        className="flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-700 disabled:opacity-40 transition-colors"
-      >
-        <Search className="w-3 h-3" />
-        Search YouTube again
-      </button>
 
       {/* Actions */}
       <div className="flex gap-2 pt-1">
@@ -1288,7 +1304,6 @@ export default function MelodicFramework() {
   const [pinError, setPinError] = useState(false);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
     // Load approved songs from Supabase
     govDb.from("melodic_song_requests")
       .select("*")
@@ -1351,11 +1366,12 @@ export default function MelodicFramework() {
   });
 
   return (
+    <PageGate>
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border/50 bg-background/80 backdrop-blur sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link to="/#projects" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-4 h-4" /> Back to Portfolio
           </Link>
           <span className="text-xs text-muted-foreground font-mono">{DEMO_RAAGAS.length} raagas</span>
@@ -1470,14 +1486,14 @@ export default function MelodicFramework() {
           <div className="sticky top-20 space-y-6">
             <div className="border border-border/50 rounded-2xl bg-card p-4">
               <p className="text-xs font-mono text-muted-foreground/50 uppercase tracking-widest mb-4">Notes & Comments</p>
-              <Comments />
+              <Comments hideAdminPin />
             </div>
 
-            {/* Admin panel */}
+            {/* Admin panel — single PIN entry, below comments */}
             {adminMode ? (
               <div className="space-y-3">
                 <div className="flex items-center justify-between px-1">
-                  <p className="text-[10px] font-mono text-amber-600 uppercase tracking-wide">Admin mode active</p>
+                  <p className="text-[10px] font-mono text-amber-600 uppercase tracking-wide">Admin mode</p>
                   <button onClick={() => setAdminMode(false)} className="text-[10px] text-muted-foreground hover:text-foreground">✕ Exit</button>
                 </div>
                 <AdminPanel raagas={DEMO_RAAGAS} onApprove={handleAddSong} />
@@ -1487,10 +1503,12 @@ export default function MelodicFramework() {
                 <input
                   value={pinInput}
                   onChange={e => setPinInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); tryAdmin(e as any); } }}
                   type="password"
                   placeholder="Admin PIN"
                   className={`w-24 px-2 py-1 rounded border bg-transparent text-[10px] outline-none transition-colors text-muted-foreground/50 placeholder:text-muted-foreground/30 ${pinError ? "border-rose-400" : "border-border/40 focus:border-primary/40"}`}
                 />
+                <button type="submit" className="text-[10px] text-muted-foreground/40 hover:text-muted-foreground transition-colors">→</button>
               </form>
             )}
 
@@ -1502,5 +1520,6 @@ export default function MelodicFramework() {
 
       </div>
     </div>
+    </PageGate>
   );
 }

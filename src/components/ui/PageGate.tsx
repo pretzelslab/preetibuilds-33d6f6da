@@ -20,7 +20,7 @@ export function useGateUnlocked(): boolean {
 
 export function PageGate({
   children,
-  backTo = "/",
+  backTo = "/#projects",
   previewContent,
 }: {
   children: ReactNode;

@@ -22,7 +22,7 @@ function timeAgo(iso: string) {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-export default function Comments() {
+export default function Comments({ hideAdminPin = false }: { hideAdminPin?: boolean }) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [name, setName]         = useState("");
   const [message, setMessage]   = useState("");
@@ -158,16 +158,18 @@ export default function Comments() {
         </div>
       )}
 
-      {/* Admin unlock — tiny hidden link */}
-      {!adminMode && (
+      {/* Admin unlock — hidden; suppressed when parent provides its own admin PIN */}
+      {!hideAdminPin && !adminMode && (
         <form onSubmit={tryAdmin} className="flex gap-1.5 items-center pt-1">
           <input
             value={pinInput}
             onChange={e => setPinInput(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); tryAdmin(e as any); } }}
             type="password"
             placeholder="Admin PIN"
             className="w-24 px-2 py-1 rounded border border-border/40 bg-transparent text-[10px] outline-none focus:border-primary/40 text-muted-foreground/50 placeholder:text-muted-foreground/30"
           />
+          <button type="submit" className="text-[10px] text-muted-foreground/40 hover:text-muted-foreground transition-colors">→</button>
         </form>
       )}
       {adminMode && (

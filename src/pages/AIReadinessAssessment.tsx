@@ -1010,7 +1010,7 @@ export default function AIReadinessAssessment() {
       <div className="border-b border-border/50 bg-background/80 backdrop-blur sticky top-0 z-10">
         <div className="max-w-[1100px] mx-auto px-6 py-4 flex items-center justify-between">
           {stage === "intro" ? (
-            <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link to="/#projects" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="w-4 h-4" /> Back to Portfolio
             </Link>
           ) : (

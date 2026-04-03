@@ -34,6 +34,8 @@ const RouteTitle = () => {
   const { pathname } = useLocation();
   useEffect(() => {
     document.title = ROUTE_TITLES[pathname] ?? "Preeti Builds";
+    // Scroll to top on every route change (unless returning to / which has hash anchors)
+    if (pathname !== "/") window.scrollTo({ top: 0, behavior: "instant" });
   }, [pathname]);
   return null;
 };
