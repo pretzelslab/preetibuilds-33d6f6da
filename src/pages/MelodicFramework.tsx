@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Music, Search, Play, BookOpen, ChevronDown, ChevronUp, Plus, Loader2, RefreshCw } from "lucide-react";
+import VisitorCounter from "@/components/portfolio/VisitorCounter";
 
 const YT_API_KEY = "AIzaSyCq2BN9k3y8bU9yymWiroYBhdVnRPMIPnA";
 
@@ -713,7 +714,13 @@ function SongRow({
             Lyrics {showLyrics ? "▲" : "▼"}
           </button>
           {!song.lyrics && (
-            <button className="text-[10px] text-violet-600 font-semibold hover:underline">Generate with AI</button>
+            <button
+              className="text-[10px] text-violet-400 font-semibold cursor-not-allowed opacity-60"
+              title="AI lyrics generation — coming soon"
+              disabled
+            >
+              Generate with AI (coming soon)
+            </button>
           )}
         </div>
         {showLyrics && (
@@ -725,6 +732,10 @@ function SongRow({
     </div>
   );
 }
+
+// ── Flatten all songs from DEMO_RAAGAS for autosuggest ────────────────────────
+const ALL_KNOWN_SONGS: Array<{ song: Song; raagaId: string; raagaName: string }> =
+  DEMO_RAAGAS.flatMap(r => r.songs.map(s => ({ song: s, raagaId: r.id, raagaName: r.name })));
 
 // ── Add Song Form (inline per raaga, or in modal with raaga picker) ───────────
 function AddSongForm({
@@ -747,6 +758,35 @@ function AddSongForm({
   const [ytResults, setYtResults] = useState<YtResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [pickedVideo, setPickedVideo] = useState<YtResult | null>(null);
+  const [suggestions, setSuggestions] = useState<typeof ALL_KNOWN_SONGS>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  function handleTitleChange(val: string) {
+    setTitle(val);
+    if (val.length >= 2) {
+      const q = val.toLowerCase();
+      const matches = ALL_KNOWN_SONGS.filter(({ song }) =>
+        song.title.toLowerCase().includes(q) ||
+        song.singer.toLowerCase().includes(q) ||
+        (song.movie?.toLowerCase().includes(q))
+      ).slice(0, 5);
+      setSuggestions(matches);
+      setShowSuggestions(matches.length > 0);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }
+
+  function pickSuggestion(item: typeof ALL_KNOWN_SONGS[0]) {
+    setTitle(item.song.title);
+    setSinger(item.song.singer);
+    setMovie(item.song.movie || "");
+    setComposer(item.song.composer);
+    setGenre(item.song.genre);
+    if (!defaultRaagaId) setRaaagaId(item.raagaId);
+    setShowSuggestions(false);
+  }
 
   async function searchYT() {
     const q = [title, singer, movie].filter(Boolean).join(" ");
@@ -773,8 +813,22 @@ function AddSongForm({
   function pickResult(r: YtResult) {
     setPickedVideo(r);
     setYtResults([]);
-    // Auto-fill title if empty
     if (!title) setTitle(r.title);
+    // Try to match against known songs to autofill metadata
+    const q = r.title.toLowerCase();
+    const match = ALL_KNOWN_SONGS.find(({ song }) =>
+      q.includes(song.title.toLowerCase()) || song.title.toLowerCase().includes(q.split(" ")[0])
+    );
+    if (match) {
+      if (!singer) setSinger(match.song.singer);
+      if (!movie) setMovie(match.song.movie || "");
+      if (!composer) setComposer(match.song.composer);
+      setGenre(match.song.genre);
+      if (!defaultRaagaId && !raaagaId) setRaaagaId(match.raagaId);
+    } else if (!singer) {
+      // Fallback: use channel name as singer hint
+      setSinger(r.channel);
+    }
   }
 
   function handleAdd() {
@@ -811,10 +865,33 @@ function AddSongForm({
         </select>
       )}
 
-      {/* Song metadata fields */}
+      {/* Song title with autosuggest */}
+      <div className="relative">
+        <input
+          value={title}
+          onChange={e => handleTitleChange(e.target.value)}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+          placeholder="Song title * (start typing to search)"
+          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400"
+        />
+        {showSuggestions && (
+          <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-background border border-violet-400/40 rounded-lg shadow-lg overflow-hidden">
+            {suggestions.map(({ song, raagaId, raagaName }) => (
+              <button
+                key={song.id}
+                onMouseDown={() => pickSuggestion({ song, raagaId, raagaName })}
+                className="w-full text-left px-3 py-2 hover:bg-violet-500/10 transition-colors border-b border-border/30 last:border-0"
+              >
+                <p className="text-xs font-medium text-foreground">{song.title}</p>
+                <p className="text-[10px] text-muted-foreground">{song.singer}{song.movie ? ` · ${song.movie}` : ""} · <span className="text-violet-500">{raagaName}</span></p>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Other metadata fields */}
       <div className="grid grid-cols-2 gap-2">
-        <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Song title *"
-          className="col-span-2 px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400" />
         <input value={singer} onChange={e => setSinger(e.target.value)} placeholder="Singer *"
           className="px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400" />
         <input value={movie} onChange={e => setMovie(e.target.value)} placeholder="Movie (optional)"
@@ -835,13 +912,13 @@ function AddSongForm({
         className="flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-700 disabled:opacity-40 transition-colors"
       >
         {searching ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
-        {searching ? "Searching…" : "Search YouTube for this song"}
+        {searching ? "Searching YouTube…" : "Search YouTube for this song"}
       </button>
 
       {/* YouTube results */}
       {ytResults.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-[10px] text-muted-foreground/60 font-mono uppercase tracking-wide">Pick a version to embed</p>
+          <p className="text-[10px] text-muted-foreground/60 font-mono uppercase tracking-wide">Pick a version — fields will autofill</p>
           {ytResults.map(r => (
             <button key={r.videoId} onClick={() => pickResult(r)}
               className="w-full flex items-center gap-2.5 p-2 rounded-lg hover:bg-violet-500/10 transition-colors text-left group border border-border/40">
@@ -868,7 +945,7 @@ function AddSongForm({
       <div className="flex gap-2 pt-1">
         <button onClick={handleAdd} disabled={!canAdd}
           className="flex-1 py-2 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold disabled:opacity-40 transition-colors">
-          Add to {defaultRaagaId ? raagas.find(r => r.id === defaultRaagaId)?.name : "Raaga"}
+          Add to {defaultRaagaId ? raagas.find(r => r.id === defaultRaagaId)?.name : (raaagaId ? raagas.find(r => r.id === raaagaId)?.name : "Raaga")}
         </button>
         <button onClick={onCancel}
           className="px-4 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground transition-colors">
@@ -893,10 +970,24 @@ function RaagaCard({
 }) {
   const [open, setOpen] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   const allSongs = [...raaga.songs, ...extraSongs];
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setShowAddForm(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
 
   return (
     <motion.div
+      ref={cardRef}
       initial={{ opacity: 0, y: 8 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -1004,38 +1095,13 @@ export default function MelodicFramework() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Global Add Song modal overlay */}
-      {showGlobalAdd && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setShowGlobalAdd(false)}>
-          <div className="bg-background border border-border rounded-2xl p-6 w-full max-w-md shadow-xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <p className="font-semibold text-sm">Add a song to any raaga</p>
-              <button onClick={() => setShowGlobalAdd(false)} className="text-muted-foreground hover:text-foreground text-lg leading-none">✕</button>
-            </div>
-            <AddSongForm
-              raagas={DEMO_RAAGAS}
-              onAdd={(id, song) => { handleAddSong(id, song); setShowGlobalAdd(false); }}
-              onCancel={() => setShowGlobalAdd(false)}
-            />
-          </div>
-        </div>
-      )}
-
       {/* Header */}
       <div className="border-b border-border/50 bg-background/80 backdrop-blur sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-4 h-4" /> Back
           </Link>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground font-mono">{DEMO_RAAGAS.length} raagas</span>
-            <button
-              onClick={() => setShowGlobalAdd(true)}
-              className="flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-700 transition-colors border border-violet-400/40 rounded-full px-3 py-1.5"
-            >
-              <Plus className="w-3.5 h-3.5" /> Add Song
-            </button>
-          </div>
+          <span className="text-xs text-muted-foreground font-mono">{DEMO_RAAGAS.length} raagas</span>
         </div>
       </div>
 
@@ -1055,17 +1121,46 @@ export default function MelodicFramework() {
           </p>
         </motion.div>
 
-        {/* Search + time filter */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-5 space-y-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
-            <input
-              type="text"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder="Search raaga, mood, time, song, singer, movie…"
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm outline-none focus:border-violet-400 transition-colors"
-            />
+        {/* Add Song — primary CTA */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-4">
+          {showGlobalAdd ? (
+            <div className="border border-violet-400/40 rounded-xl bg-violet-500/5 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="font-semibold text-sm text-violet-700 dark:text-violet-300">Add a song to any raaga</p>
+                <button onClick={() => setShowGlobalAdd(false)} className="text-muted-foreground hover:text-foreground text-lg leading-none">✕</button>
+              </div>
+              <AddSongForm
+                raagas={DEMO_RAAGAS}
+                onAdd={(id, song) => { handleAddSong(id, song); setShowGlobalAdd(false); }}
+                onCancel={() => setShowGlobalAdd(false)}
+              />
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowGlobalAdd(true)}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-violet-400/50 text-violet-600 hover:bg-violet-500/5 hover:border-violet-500 transition-colors font-semibold text-sm"
+            >
+              <Plus className="w-4 h-4" /> Add a song to any raaga
+            </button>
+          )}
+        </motion.div>
+
+        {/* Search + time filter (compact) */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-5 space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="relative w-64">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
+              <input
+                type="text"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder="Filter raagas…"
+                className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-border bg-card text-xs outline-none focus:border-violet-400 transition-colors"
+              />
+            </div>
+            {(query || timeFilter !== "All") && (
+              <span className="text-xs text-muted-foreground">{filtered.length} raaga{filtered.length !== 1 ? "s" : ""}</span>
+            )}
           </div>
           {/* Time-of-day chips */}
           <div className="flex flex-wrap gap-1.5">
@@ -1073,7 +1168,7 @@ export default function MelodicFramework() {
               <button
                 key={t}
                 onClick={() => setTimeFilter(t)}
-                className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
+                className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                   timeFilter === t
                     ? "bg-violet-600 text-white border-violet-600"
                     : "border-border text-muted-foreground hover:border-violet-400 hover:text-violet-600"
@@ -1083,11 +1178,6 @@ export default function MelodicFramework() {
               </button>
             ))}
           </div>
-          {(query || timeFilter !== "All") && (
-            <p className="text-xs text-muted-foreground">
-              {filtered.length} raaga{filtered.length !== 1 ? "s" : ""}
-            </p>
-          )}
         </motion.div>
 
         {/* Raaga grid */}
@@ -1113,6 +1203,13 @@ export default function MelodicFramework() {
           )}
         </div>
 
+      </div>
+
+      {/* Footer */}
+      <div className="border-t border-border/40 py-6 px-6">
+        <div className="max-w-4xl mx-auto flex justify-end">
+          <VisitorCounter />
+        </div>
       </div>
     </div>
   );

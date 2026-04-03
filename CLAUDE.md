@@ -9,7 +9,8 @@
 - This rule does not expire. It applies for the entire session and every future session.
 
 ### Commits
-- Use `[skip ci]` in commit messages for non-visual or in-progress changes — skips Vercel AND Netlify builds.
+- Use `[skip ci]` in commit messages for intermediate/in-progress local commits only — skips Vercel AND Netlify builds.
+- **NEVER include `[skip ci]` on the final push commit** — that commit must trigger a Vercel rebuild or the deployment will not update.
 - Commit freely, but push only when the user says so.
 - Bundle all changes into one push per session to conserve build minutes.
 

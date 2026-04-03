@@ -32,7 +32,7 @@ const AI_TOOLS: Project[] = [
     title: "AI Readiness Assessment",
     description: "25-question self-service diagnostic across Strategy, Data, Technology, People, and Governance — scored report with ROI signal and prioritised gaps.",
     tags: ["React", "TypeScript", "Recharts"],
-    status: "building",
+    status: "preview",
     link: "/ai-readiness",
   },
 ];
