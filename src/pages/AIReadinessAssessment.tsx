@@ -1,20 +1,54 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   ArrowLeft, ArrowRight, CheckCircle2, ChevronRight,
-  TrendingUp, Database, Cpu, Users, ShieldCheck, BarChart3
+  TrendingUp, Database, Cpu, Users, ShieldCheck, BarChart3, Trash2
 } from "lucide-react";
 import {
   RadarChart, PolarGrid, PolarAngleAxis, Radar,
   ResponsiveContainer, Tooltip
 } from "recharts";
 
+// ── Preview mode ───────────────────────────────────────────────────────────────
+const IS_PREVIEW = typeof window !== "undefined" &&
+  window.location.hostname !== "localhost" &&
+  window.location.hostname !== "127.0.0.1";
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Option { label: string; score: number; hint?: string }
 interface Question { id: string; text: string; options: Option[] }
 interface Section { id: string; label: string; shortLabel: string; icon: React.ElementType; color: string; questions: Question[] }
-interface OrgProfile { name: string; industry: string; size: string; revenue: string; goal: string }
+interface OrgProfile { name: string; industry: string; size: string; revenue: string; goal: string; region: string }
+
+interface ARClient {
+  id: string;
+  name: string;
+  industry: string;
+  size: string;
+  region?: string;
+  createdAt: string;
+  completedAt?: string;
+  overallScore?: number;
+  tier?: string;
+}
+
+// ── Client-wise localStorage helpers ─────────────────────────────────────────
+const CLIENTS_KEY = "ar_clients";
+const answersKey  = (id: string) => `ar_answers_${id}`;
+
+function loadClients(): ARClient[] {
+  try { return JSON.parse(localStorage.getItem(CLIENTS_KEY) ?? "[]"); } catch { return []; }
+}
+function saveClients(clients: ARClient[]) {
+  localStorage.setItem(CLIENTS_KEY, JSON.stringify(clients));
+}
+function loadAnswers(id: string): Record<string, number> {
+  try { return JSON.parse(localStorage.getItem(answersKey(id)) ?? "{}"); } catch { return {}; }
+}
+function saveAnswers(id: string, answers: Record<string, number>) {
+  localStorage.setItem(answersKey(id), JSON.stringify(answers));
+}
 
 // ── Industry list (matches Governance Tracker) ─────────────────────────────
 const INDUSTRIES = [
@@ -378,6 +412,54 @@ const GAP_ADVICE: Record<string, { title: string; investment: string; timeline: 
   },
 };
 
+// ── Policy badges per gap ─────────────────────────────────────────────────────
+const GAP_POLICIES: Record<string, { policy: string; clause: string; risk: "High" | "Medium" }[]> = {
+  strategy: [
+    { policy: "NIST AI RMF", clause: "GOVERN 1.1", risk: "Medium" },
+    { policy: "ISO 42001",   clause: "Cl. 4.1",    risk: "Medium" },
+  ],
+  data: [
+    { policy: "NIST AI RMF", clause: "MAP 1.5",  risk: "High" },
+    { policy: "EU AI Act",   clause: "Art. 10",  risk: "High" },
+    { policy: "ISO 42001",   clause: "Cl. 8.4",  risk: "High" },
+  ],
+  technology: [
+    { policy: "NIST AI RMF", clause: "MANAGE 2.2", risk: "Medium" },
+    { policy: "EU AI Act",   clause: "Art. 17",    risk: "Medium" },
+    { policy: "ISO 42001",   clause: "Cl. 8.6",    risk: "Medium" },
+  ],
+  people: [
+    { policy: "NIST AI RMF", clause: "GOVERN 6.1", risk: "Medium" },
+    { policy: "ISO 42001",   clause: "Cl. 7.2",    risk: "Medium" },
+  ],
+  governance: [
+    { policy: "EU AI Act",   clause: "Art. 9",     risk: "High" },
+    { policy: "NIST AI RMF", clause: "GOVERN 1.2", risk: "High" },
+    { policy: "ISO 42001",   clause: "Cl. 6.1",    risk: "High" },
+  ],
+};
+
+const REGIONS = [
+  "European Union",
+  "United Kingdom",
+  "United States & Canada",
+  "Asia-Pacific",
+  "Middle East & Africa",
+  "Latin America",
+  "Global / Not sure",
+];
+
+// Policies relevant per region — filters which badges show on results
+const REGION_POLICIES: Record<string, string[]> = {
+  "European Union":         ["EU AI Act", "NIST AI RMF", "ISO 42001"],
+  "United Kingdom":         ["NIST AI RMF", "ISO 42001"],
+  "United States & Canada": ["NIST AI RMF", "ISO 42001"],
+  "Asia-Pacific":           ["ISO 42001", "NIST AI RMF"],
+  "Middle East & Africa":   ["ISO 42001"],
+  "Latin America":          ["ISO 42001", "NIST AI RMF"],
+  "Global / Not sure":      ["EU AI Act", "NIST AI RMF", "ISO 42001"],
+};
+
 // ── ROI signal by overall tier ─────────────────────────────────────────────
 const ROI_SIGNAL = [
   {
@@ -402,7 +484,36 @@ const ROI_SIGNAL = [
   },
 ];
 
+// ── Example radar data for intro page ─────────────────────────────────────────
+const EXAMPLE_RADAR = [
+  { subject: "Strategy",   score: 65, fullMark: 100 },
+  { subject: "Data",       score: 38, fullMark: 100 },
+  { subject: "Technology", score: 52, fullMark: 100 },
+  { subject: "People",     score: 44, fullMark: 100 },
+  { subject: "Governance", score: 28, fullMark: 100 },
+];
+
 // ── Color classes ─────────────────────────────────────────────────────────────
+// Hex values for SVG fills in recharts custom ticks
+const SECTION_HEX: Record<string, string> = {
+  violet:  "#7c3aed",
+  blue:    "#2563eb",
+  cyan:    "#0891b2",
+  amber:   "#d97706",
+  emerald: "#059669",
+};
+
+// Custom colored tick for radar charts — shows dimension name in section color
+const CustomRadarTick = ({ x, y, payload }: any) => {
+  const section = SECTIONS.find(s => s.shortLabel === payload?.value);
+  const hex = section ? (SECTION_HEX[section.color] ?? "#94a3b8") : "#94a3b8";
+  return (
+    <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight={700} fill={hex}>
+      {payload?.value}
+    </text>
+  );
+};
+
 const COLOR_MAP: Record<string, { bg: string; text: string; border: string; fill: string }> = {
   violet:  { bg: "bg-violet-500/10",  text: "text-violet-600 dark:text-violet-400",  border: "border-violet-500/30",  fill: "fill-violet-500"  },
   blue:    { bg: "bg-blue-500/10",    text: "text-blue-600 dark:text-blue-400",      border: "border-blue-500/30",    fill: "fill-blue-500"    },
@@ -438,10 +549,11 @@ function ScoreBar({ score, color }: { score: number; color: string }) {
 }
 
 // ── Results page ──────────────────────────────────────────────────────────────
-function ResultsPage({ profile, answers, onRetake }: {
+function ResultsPage({ profile, answers, onRetake, isPreview }: {
   profile: OrgProfile;
   answers: Record<string, number>;
   onRetake: () => void;
+  isPreview?: boolean;
 }) {
   const overall = overallScore(answers);
   const tier = getTier(overall);
@@ -454,6 +566,7 @@ function ResultsPage({ profile, answers, onRetake }: {
     score: s.score,
     fullMark: 100,
   }));
+  const allowedPolicies = profile.region ? (REGION_POLICIES[profile.region] ?? []) : ["EU AI Act", "NIST AI RMF", "ISO 42001"];
 
   return (
     <div className="space-y-8">
@@ -463,8 +576,21 @@ function ResultsPage({ profile, answers, onRetake }: {
           <BarChart3 className="w-5 h-5 text-primary" />
           <h2 className="text-xl font-bold">AI Readiness Report</h2>
         </div>
-        {profile.name && (
-          <p className="text-sm text-muted-foreground">{profile.name} · {profile.industry}</p>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {profile.name && <span className="text-xs px-2.5 py-1 rounded-full bg-muted font-medium">{profile.name}</span>}
+          {profile.industry && <span className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary font-medium">{profile.industry}</span>}
+          {profile.region && <span className="text-xs px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 font-medium">{profile.region}</span>}
+          {profile.size && <span className="text-xs px-2.5 py-1 rounded-full bg-muted text-muted-foreground font-medium">{profile.size} employees</span>}
+        </div>
+        {/* Preview banner */}
+        {isPreview && (
+          <div className="mt-3 border border-amber-400/40 bg-amber-50/50 dark:bg-amber-900/10 rounded-xl px-4 py-3 flex items-start gap-3">
+            <span className="text-amber-600 text-sm font-semibold shrink-0">Preview Report</span>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              This is an automated assessment. For a customised analysis with tailored recommendations,
+              {" "}<a href="/#contact" className="text-primary underline font-medium">contact us</a>.
+            </p>
+          </div>
         )}
       </motion.div>
 
@@ -488,33 +614,46 @@ function ResultsPage({ profile, answers, onRetake }: {
             <p className="text-sm text-muted-foreground mt-3 max-w-sm">{tier.desc}</p>
           </div>
 
-          {/* Radar chart */}
-          <div className="w-64 h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={radarData}>
-                <PolarGrid stroke="hsl(var(--border))" />
-                <PolarAngleAxis
-                  dataKey="subject"
-                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                />
-                <Tooltip
-                  formatter={(v: number) => [`${v}/100`, "Score"]}
-                  contentStyle={{
-                    background: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px",
-                    fontSize: "12px",
-                  }}
-                />
-                <Radar
-                  dataKey="score"
-                  stroke="hsl(var(--primary))"
-                  fill="hsl(var(--primary))"
-                  fillOpacity={0.15}
-                  strokeWidth={2}
-                />
-              </RadarChart>
-            </ResponsiveContainer>
+          {/* Radar chart + icon legend */}
+          <div className="flex items-center gap-4">
+            <div className="w-64 h-60">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart data={radarData} margin={{ top: 16, right: 40, bottom: 16, left: 40 }}>
+                  <PolarGrid stroke="hsl(var(--border))" />
+                  <PolarAngleAxis dataKey="subject" tick={<CustomRadarTick />} />
+                  <Tooltip
+                    formatter={(v: number) => [`${v}/100`, "Score"]}
+                    contentStyle={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                    }}
+                  />
+                  <Radar
+                    dataKey="score"
+                    stroke="hsl(var(--primary))"
+                    fill="hsl(var(--primary))"
+                    fillOpacity={0.15}
+                    strokeWidth={2}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+            {/* Icon legend — vertical */}
+            <div className="flex flex-col gap-2">
+              {sectionScores.map(s => {
+                const c = COLOR_MAP[s.color];
+                const Icon = s.icon;
+                return (
+                  <div key={s.id} className={`flex items-center gap-1.5 text-[11px] font-semibold ${c.text}`}>
+                    <Icon className="w-3.5 h-3.5 shrink-0" />
+                    <span>{s.shortLabel}</span>
+                    <span className="ml-auto pl-2 font-mono">{s.score}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </motion.div>
@@ -588,6 +727,20 @@ function ResultsPage({ profile, answers, onRetake }: {
                           <p className="text-xs text-muted-foreground">{advice.roi}</p>
                         </div>
                       </div>
+                      {/* Policy badges — filtered by region */}
+                      {GAP_POLICIES[g.id]?.filter(p => allowedPolicies.includes(p.policy)).length > 0 && (
+                        <div className="mt-2.5 pt-2.5 border-t border-border/30 flex flex-wrap gap-1.5">
+                          {GAP_POLICIES[g.id].filter(p => allowedPolicies.includes(p.policy)).map(p => (
+                            <span key={p.clause} className={`text-[9px] font-semibold px-2 py-0.5 rounded-full border ${
+                              p.risk === "High"
+                                ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
+                                : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                            }`}>
+                              {p.risk === "High" ? "⚠ " : ""}{p.policy} · {p.clause}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -670,10 +823,15 @@ function QuestionStep({
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function AIReadinessAssessment() {
   const [stage, setStage] = useState<"intro" | "questions" | "results">("intro");
-  const [profile, setProfile] = useState<OrgProfile>({ name: "", industry: "", size: "", revenue: "", goal: "" });
+  const [profile, setProfile] = useState<OrgProfile>({ name: "", industry: "", size: "", revenue: "", goal: "", region: "" });
   const [sectionIdx, setSectionIdx] = useState(0);
   const [questionIdx, setQuestionIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
+
+  // Client-wise state
+  const [clients, setClients] = useState<ARClient[]>(() => loadClients());
+  const [activeClientId, setActiveClientId] = useState<string | null>(null);
+  const [pastOpen, setPastOpen] = useState(false);
 
   const currentSection = SECTIONS[sectionIdx];
   const currentQuestion = currentSection?.questions[questionIdx];
@@ -683,8 +841,27 @@ export default function AIReadinessAssessment() {
   const answeredCount = SECTIONS.slice(0, sectionIdx).reduce((acc, s) => acc + s.questions.length, 0) + questionIdx;
   const progress = Math.round((answeredCount / totalQuestions) * 100);
 
+  // Save results when stage transitions to "results"
+  useEffect(() => {
+    if (stage === "results" && activeClientId) {
+      saveAnswers(activeClientId, answers);
+      const overall = overallScore(answers);
+      const tier = getTier(overall);
+      const updated = clients.map(c =>
+        c.id === activeClientId
+          ? { ...c, completedAt: new Date().toISOString(), overallScore: overall, tier: tier.label }
+          : c
+      );
+      setClients(updated);
+      saveClients(updated);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage]);
+
   function handleAnswer(score: number) {
-    setAnswers(prev => ({ ...prev, [currentQuestion.id]: score }));
+    const next = { ...answers, [currentQuestion.id]: score };
+    setAnswers(next);
+    if (activeClientId) saveAnswers(activeClientId, next);
   }
 
   function handleNext() {
@@ -714,19 +891,106 @@ export default function AIReadinessAssessment() {
     setSectionIdx(0);
     setQuestionIdx(0);
     setAnswers({});
-    setProfile({ name: "", industry: "", size: "", revenue: "", goal: "" });
+    setProfile({ name: "", industry: "", size: "", revenue: "", goal: "", region: "" });
+    setActiveClientId(null);
   }
 
-  const profileComplete = profile.industry && profile.size;
+  function handleStartAssessment() {
+    const id = Date.now().toString();
+    const newClient: ARClient = {
+      id,
+      name: profile.name || "Unnamed",
+      industry: profile.industry,
+      size: profile.size,
+      region: profile.region,
+      createdAt: new Date().toISOString(),
+    };
+    const updated = [newClient, ...clients];
+    setClients(updated);
+    saveClients(updated);
+    setActiveClientId(id);
+    // Load any existing answers for this id (will be empty for new, but safe)
+    const existing = loadAnswers(id);
+    if (Object.keys(existing).length > 0) {
+      setAnswers(existing);
+    }
+    setStage("questions");
+  }
+
+  function handleViewResults(client: ARClient) {
+    const savedAnswers = loadAnswers(client.id);
+    setAnswers(savedAnswers);
+    setProfile({
+      name: client.name === "Unnamed" ? "" : client.name,
+      industry: client.industry,
+      size: client.size,
+      region: client.region ?? "",
+      revenue: "",
+      goal: "",
+    });
+    setActiveClientId(client.id);
+    setStage("results");
+  }
+
+  function handleRetakeClient(client: ARClient) {
+    setProfile({
+      name: client.name === "Unnamed" ? "" : client.name,
+      industry: client.industry,
+      size: client.size,
+      region: client.region ?? "",
+      revenue: "",
+      goal: "",
+    });
+    const saved = loadAnswers(client.id);
+    const hasSaved = Object.keys(saved).length > 0;
+    setAnswers(hasSaved ? saved : {});
+    setActiveClientId(client.id);
+    if (hasSaved) {
+      // Resume at first unanswered question
+      let resumeSi = 0, resumeQi = 0;
+      outer: for (let si = 0; si < SECTIONS.length; si++) {
+        for (let qi = 0; qi < SECTIONS[si].questions.length; qi++) {
+          if (saved[SECTIONS[si].questions[qi].id] === undefined) {
+            resumeSi = si; resumeQi = qi;
+            break outer;
+          }
+        }
+        // All answered in this section — try next
+        resumeSi = si; resumeQi = SECTIONS[si].questions.length - 1;
+      }
+      setSectionIdx(resumeSi);
+      setQuestionIdx(resumeQi);
+      setStage("questions");
+    } else {
+      setSectionIdx(0);
+      setQuestionIdx(0);
+      setStage("intro");
+    }
+  }
+
+  function handleDeleteClient(id: string) {
+    const updated = clients.filter(c => c.id !== id);
+    setClients(updated);
+    saveClients(updated);
+    localStorage.removeItem(answersKey(id));
+  }
+
+  const profileComplete = profile.industry && profile.size && profile.region;
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border/50 bg-background/80 backdrop-blur sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Back
-          </Link>
+        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+          {stage === "intro" ? (
+            <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="w-4 h-4" /> Back
+            </Link>
+          ) : (
+            <button onClick={() => setStage("intro")} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="w-4 h-4" /> AI Readiness
+            </button>
+          )}
           {stage === "questions" && (
             <div className="flex items-center gap-3">
               <div className="w-32 h-1.5 rounded-full bg-muted/50 overflow-hidden">
@@ -741,7 +1005,7 @@ export default function AIReadinessAssessment() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-6 py-10">
+      <div className="max-w-4xl mx-auto px-6 py-10">
         <AnimatePresence mode="wait">
 
           {/* ── Intro / Profile ── */}
@@ -756,24 +1020,135 @@ export default function AIReadinessAssessment() {
               <div>
                 <p className="font-mono text-xs text-muted-foreground/60 uppercase tracking-widest mb-3">Diagnostic Tool</p>
                 <h1 className="text-2xl font-bold mb-2">AI Readiness Assessment</h1>
-                <p className="text-sm text-muted-foreground leading-relaxed max-w-md">
-                  25 questions across 5 dimensions — Strategy, Data, Technology, People, and Governance. Get a scored readiness report with ROI signal and prioritised gaps.
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  25 questions · 5 dimensions · Scored readiness report with ROI signal and prioritised gaps.
                 </p>
               </div>
 
-              {/* Dimension pills */}
-              <div className="flex flex-wrap gap-2">
-                {SECTIONS.map(s => {
-                  const c = COLOR_MAP[s.color];
-                  const Icon = s.icon;
-                  return (
-                    <div key={s.id} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${c.border} ${c.bg}`}>
-                      <Icon className={`w-3 h-3 ${c.text}`} />
-                      <span className={`text-[11px] font-semibold ${c.text}`}>{s.shortLabel}</span>
+              {/* Sample radar + output card */}
+              <div className="border border-border/50 rounded-2xl p-5 bg-card">
+                <p className="text-[10px] font-mono text-muted-foreground/50 uppercase tracking-widest mb-4">
+                  Sample output — Building tier
+                </p>
+                <div className="flex flex-col sm:flex-row gap-6 items-start">
+                  {/* Chart + icon legend */}
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="w-48 h-48">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RadarChart data={EXAMPLE_RADAR} margin={{ top: 12, right: 32, bottom: 12, left: 32 }}>
+                          <PolarGrid stroke="hsl(var(--border))" />
+                          <PolarAngleAxis dataKey="subject" tick={<CustomRadarTick />} />
+                          <Radar dataKey="score" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} strokeWidth={2} />
+                        </RadarChart>
+                      </ResponsiveContainer>
                     </div>
-                  );
-                })}
+                    <div className="flex flex-col gap-1.5">
+                      {SECTIONS.map(s => {
+                        const c = COLOR_MAP[s.color];
+                        const Icon = s.icon;
+                        return (
+                          <div key={s.id} className={`flex items-center gap-1.5 text-[10px] font-semibold ${c.text}`}>
+                            <Icon className="w-3 h-3 shrink-0" />
+                            <span>{s.shortLabel}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  {/* Output highlights */}
+                  <div className="flex-1 grid grid-cols-2 gap-3">
+                    {[
+                      { label: "Overall score", value: "45 / 100", highlight: true },
+                      { label: "Readiness tier", value: "Building", highlight: true },
+                      { label: "Top gaps", value: "3 identified" },
+                      { label: "ROI signal", value: "Per tier" },
+                      { label: "Investment guide", value: "Per gap" },
+                      { label: "Policy obligations", value: "NIST · EU AI · ISO" },
+                    ].map(item => (
+                      <div key={item.label} className={`rounded-xl px-3 py-2.5 border ${item.highlight ? "border-primary/20 bg-primary/5" : "border-border/40 bg-muted/30"}`}>
+                        <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wide mb-0.5">{item.label}</p>
+                        <p className={`text-sm font-semibold ${item.highlight ? "text-primary" : ""}`}>{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
+
+              {/* Past assessments */}
+              {clients.length > 0 && (
+                <div className="border border-border/50 rounded-2xl bg-card overflow-hidden">
+                  <button
+                    onClick={() => setPastOpen(o => !o)}
+                    className="w-full flex items-center justify-between px-5 py-3.5 text-sm font-semibold hover:bg-muted/30 transition-colors"
+                  >
+                    <span>Past Assessments <span className="ml-1.5 text-xs font-mono text-muted-foreground/60">({clients.length})</span></span>
+                    <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${pastOpen ? "rotate-90" : ""}`} />
+                  </button>
+                  {pastOpen && (
+                    <div className="border-t border-border/40 divide-y divide-border/30">
+                      {clients.map(client => {
+                        const savedAns = loadAnswers(client.id);
+                        const answeredCount = Object.keys(savedAns).length;
+                        const pct = Math.round(answeredCount / totalQuestions * 100);
+                        return (
+                        <div key={client.id} className="px-5 py-3 flex items-center gap-3 flex-wrap">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold truncate">{client.name}</p>
+                            <p className="text-xs text-muted-foreground">{client.industry} · {client.size}</p>
+                            {!client.completedAt && answeredCount > 0 && (
+                              <div className="flex items-center gap-2 mt-1">
+                                <div className="w-24 h-1 rounded-full bg-muted/60 overflow-hidden">
+                                  <div className="h-full rounded-full bg-primary/60" style={{ width: `${pct}%` }} />
+                                </div>
+                                <span className="text-[10px] font-mono text-muted-foreground/60">{pct}% · {answeredCount}/{totalQuestions}q</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {client.overallScore !== undefined && (
+                              <span className="text-xs font-mono font-bold text-muted-foreground">{client.overallScore}/100</span>
+                            )}
+                            {client.tier && (
+                              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${TIER_COLOR[client.tier] ?? ""}`}>
+                                {client.tier}
+                              </span>
+                            )}
+                            {client.completedAt && (
+                              <span className="text-[10px] text-muted-foreground/50">
+                                {new Date(client.completedAt).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {client.completedAt && (
+                              <button
+                                onClick={() => handleViewResults(client)}
+                                className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+                              >
+                                View Results
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleRetakeClient(client)}
+                              className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+                            >
+                              {client.completedAt ? "Retake" : "Resume"}
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClient(client.id)}
+                              className="p-1.5 rounded-lg text-muted-foreground/50 hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Profile form */}
               <div className="border border-border/60 rounded-2xl p-6 bg-card space-y-4">
@@ -813,6 +1188,17 @@ export default function AIReadinessAssessment() {
                     </select>
                   </div>
                   <div>
+                    <label className="text-[11px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Region / Geography *</label>
+                    <select
+                      value={profile.region}
+                      onChange={e => setProfile(p => ({ ...p, region: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-primary transition-colors"
+                    >
+                      <option value="">Select region…</option>
+                      {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                  </div>
+                  <div>
                     <label className="text-[11px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Annual revenue (optional)</label>
                     <select
                       value={profile.revenue}
@@ -823,23 +1209,22 @@ export default function AIReadinessAssessment() {
                       {REVENUE_RANGES.map(r => <option key={r} value={r}>{r}</option>)}
                     </select>
                   </div>
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Primary AI objective (optional)</label>
-                  <select
-                    value={profile.goal}
-                    onChange={e => setProfile(p => ({ ...p, goal: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-primary transition-colors"
-                  >
-                    <option value="">Select goal…</option>
-                    {AI_GOALS.map(g => <option key={g} value={g}>{g}</option>)}
-                  </select>
+                  <div>
+                    <label className="text-[11px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Primary AI objective (optional)</label>
+                    <select
+                      value={profile.goal}
+                      onChange={e => setProfile(p => ({ ...p, goal: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-primary transition-colors"
+                    >
+                      <option value="">Select goal…</option>
+                      {AI_GOALS.map(g => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </div>
                 </div>
               </div>
 
               <button
-                onClick={() => setStage("questions")}
+                onClick={handleStartAssessment}
                 disabled={!profileComplete}
                 className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
               >
@@ -858,6 +1243,19 @@ export default function AIReadinessAssessment() {
               transition={{ duration: 0.2 }}
               className="space-y-8"
             >
+              {/* Org info strip — always visible, name editable */}
+              <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-muted/40 border border-border/40 flex-wrap">
+                <input
+                  type="text"
+                  value={profile.name}
+                  onChange={e => setProfile(p => ({ ...p, name: e.target.value }))}
+                  placeholder="Organisation name…"
+                  className="flex-1 min-w-[140px] bg-transparent text-sm font-semibold outline-none placeholder:text-muted-foreground/40"
+                />
+                {profile.industry && <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">{profile.industry}</span>}
+                {profile.region && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 font-medium shrink-0">{profile.region}</span>}
+              </div>
+
               {/* Section stepper */}
               <div className="flex items-center gap-1 overflow-x-auto pb-1">
                 {SECTIONS.map((s, i) => {
@@ -923,7 +1321,7 @@ export default function AIReadinessAssessment() {
           {/* ── Results ── */}
           {stage === "results" && (
             <motion.div key="results" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-              <ResultsPage profile={profile} answers={answers} onRetake={handleRetake} />
+              <ResultsPage profile={profile} answers={answers} onRetake={handleRetake} isPreview={IS_PREVIEW} />
             </motion.div>
           )}
 

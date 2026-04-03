@@ -247,6 +247,41 @@ export function seedDemoClient(): void {
   localStorage.setItem(`pl_p4_prep_${DEMO_CLIENT_ID}`, "Preeti [Your Name] — AI Governance Consultant");
   localStorage.setItem(`pl_p4_rev_${DEMO_CLIENT_ID}`, "Sarah Müller — Chief Risk Officer, Apex Lending Group");
   localStorage.setItem(`pl_p4_date_${DEMO_CLIENT_ID}`, "2026-03-21");
+
+  // 7. Phase 5 Monitor seed
+  const p5: object = {
+    reviewFrequency: "Quarterly",
+    nextReviewDate: "2026-06-30",
+    reviewType: "Full re-assessment",
+    kpis: [
+      { id: "kpi-1", name: "Model Accuracy (ApexScore v2.1)",  unit: "%", currentValue: "83",  threshold: "≥ 85", direction: "higher_better", trend: "↓", notes: "Slight degradation observed in Q1 2026 post macro-rate change. Under investigation by data science." },
+      { id: "kpi-2", name: "False Positive Rate",              unit: "%", currentValue: "14",  threshold: "≤ 15", direction: "lower_better",  trend: "→", notes: "Within threshold but approaching limit — monitor monthly." },
+      { id: "kpi-3", name: "Demographic Parity Gap (Gender)",  unit: "%", currentValue: "7.2", threshold: "≤ 5",  direction: "lower_better",  trend: "↑", notes: "BREACHED. Gender parity gap above threshold following January 2026 retrain. Bias examination commissioned (R-001 action)." },
+      { id: "kpi-4", name: "Human Override Rate",              unit: "%", currentValue: "3.1", threshold: "≤ 10", direction: "lower_better",  trend: "→", notes: "Override capability launched Q1 2026. Early adoption low — underwriter training underway." },
+      { id: "kpi-5", name: "AI Incident Count (QTD)",          unit: "#", currentValue: "1",   threshold: "0",    direction: "lower_better",  trend: "↑", notes: "One incident logged: customer complaint escalated to Central Bank of Ireland re: unexplained credit decline. Under investigation." },
+      { id: "kpi-6", name: "Explainability Coverage",          unit: "%", currentValue: "68",  threshold: "≥ 90", direction: "higher_better", trend: "↑", notes: "Explanation module roll-out in progress. Target 90% coverage by Q2 2026 per Art. 13 obligations." },
+    ],
+    triggers: [
+      { id: "t-1", name: "Model retrained or updated",              active: true,  lastOccurred: "2026-01-15", notes: "ApexScore v2.1 retrained on refreshed 2022–2024 loan book. Triggered full re-evaluation. Demographic parity gap identified post-retrain." },
+      { id: "t-2", name: "New training data source added",          active: false, lastOccurred: "", notes: "" },
+      { id: "t-3", name: "Regulatory change affecting this system", active: true,  lastOccurred: "2026-02-01", notes: "EU AI Act enforcement date confirmed Aug 2026. Compliance programme re-scoped. CRO briefed." },
+      { id: "t-4", name: "Bias metric threshold breached",          active: true,  lastOccurred: "2026-02-10", notes: "Demographic parity gap (gender) breached following January retrain. R-001 bias examination commissioned as urgent response." },
+      { id: "t-5", name: "Decision volume change >20%",             active: false, lastOccurred: "", notes: "" },
+      { id: "t-6", name: "Adverse customer or regulatory incident", active: true,  lastOccurred: "2026-03-05", notes: "Customer complaint escalated to Central Bank of Ireland. Formal inquiry pending. Legal engaged." },
+      { id: "t-7", name: "Deployment context change",               active: false, lastOccurred: "", notes: "" },
+    ],
+    changes: [
+      { id: "c-1", date: "2026-01-15", changeType: "Model Update",        description: "ApexScore v2.1 retrained on 2022–2024 loan book data. Macro-adjusted feature weights introduced.", impact: "Accuracy improvement (aggregate) but gender parity gap widened. Triggered KPI breach for Demographic Parity.", approvedBy: "Head of Data Science + CRO" },
+      { id: "c-2", date: "2026-02-20", changeType: "Governance Control",  description: "Human override capability launched in loan origination UI for 300–720 score band.", impact: "Art. 14 compliance partially met. Override rate currently 3.1% — underwriter training ongoing.", approvedBy: "CTO + CRO" },
+      { id: "c-3", date: "2026-03-01", changeType: "Regulatory Response", description: "Bias examination commissioned with external AI ethics firm following Demographic Parity KPI breach.", impact: "Results expected Q2 2026. Model reweighting or partial rollback may be required.", approvedBy: "CRO (emergency authorisation)" },
+      { id: "c-4", date: "2026-03-21", changeType: "Documentation",       description: "AI Risk Assessment engagement completed. Risk register and Phase 4 report issued to Board.", impact: "Four material risks formalised. 90-day sprint plan agreed.", approvedBy: "Sarah Müller — CRO" },
+    ],
+    decision: "continue_monitor",
+    decisionRationale: "System continues in production with enhanced monitoring given ongoing bias remediation. Quarterly full re-assessment scheduled for June 2026. Immediate escalation required if: (1) demographic parity gap exceeds 10%, (2) CBI inquiry results in formal finding, or (3) accuracy drops below 80%.",
+    decisionOwner: "Sarah Müller — Chief Risk Officer",
+    decisionDate: "2026-03-21",
+  };
+  localStorage.setItem(`pl_p5_${DEMO_CLIENT_ID}`, JSON.stringify(p5));
 }
 
 // ─── MEDISCAN DIAGNOSTICS GROUP — DEMO CLIENT #2 ─────────────────────────────
@@ -310,7 +345,7 @@ export const DEMO_MEDISCAN_CLIENT = {
 
 export function seedMediScanClient(): void {
   const existing = (() => { try { return JSON.parse(localStorage.getItem("pl_clients") || "[]"); } catch { return []; } })();
-  // Always upsert — replace profile if exists
-  const without = existing.filter((c: any) => c.id !== DEMO_MEDISCAN_ID);
-  localStorage.setItem("pl_clients", JSON.stringify([...without, DEMO_MEDISCAN_CLIENT]));
+  // Only seed if not already present — respects user deletion
+  if (existing.some((c: any) => c.id === DEMO_MEDISCAN_ID)) return;
+  localStorage.setItem("pl_clients", JSON.stringify([...existing, DEMO_MEDISCAN_CLIENT]));
 }
