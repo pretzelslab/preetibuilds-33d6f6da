@@ -451,7 +451,7 @@ export default function Pipeline() {
       `}</style>
 
       {/* ── Top Bar ── */}
-      <div style={{ background: "#fff", borderBottom: "1px solid #e4e8ef", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 52, position: "sticky", top: 0, zIndex: 50 }}>
+      <div style={{ background: "#fff", borderBottom: "1px solid #e4e8ef", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 52, position: "sticky", top: 52, zIndex: 40 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 28, height: 28, background: "linear-gradient(135deg,#0052cc,#0066ff)", borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ color: "#fff", fontSize: 14 }}>⚡</span>

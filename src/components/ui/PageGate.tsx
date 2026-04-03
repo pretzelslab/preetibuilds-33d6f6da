@@ -95,8 +95,8 @@ export function PageGate({
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 14 }}>🔒</span>
-          <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>
-            Preview — read only · Enter code for full access
+          <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 400 }}>
+            Preview · Enter code for full access
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -131,7 +131,7 @@ export function PageGate({
             </button>
           )}
           <Link to={backTo} style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid #334155", background: "transparent", color: "#64748b", fontSize: 12, textDecoration: "none", fontWeight: 500 }}>
-            ← Back
+            ← Back to Portfolio
           </Link>
         </div>
       </div>

@@ -2683,8 +2683,8 @@ export default function AIGovernanceTracker() {
       {/* Visitor mode banner — shown when visitor access but not owner */}
       {visitorAccess && !unlocked && !PREVIEW_MODE && (
         <div style={{ pointerEvents: "auto", userSelect: "text", background: "#eff6ff", borderBottom: "1px solid #bfdbfe", padding: "10px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
-          <div style={{ fontSize: 13, color: "#1e40af" }}>
-            <span style={{ fontWeight: 700 }}>Visitor view</span> — Policy Grid is open. Additional tabs require full access.
+          <div style={{ fontSize: 11, color: "#1e40af", fontWeight: 400 }}>
+            Preview · Policy Grid open · Enter code for full access
           </div>
           <a href="https://www.linkedin.com/in/preetilal/" target="_blank" rel="noopener noreferrer"
             style={{ fontSize: 12, fontWeight: 700, color: "#2563eb", textDecoration: "none", background: "#dbeafe", padding: "5px 14px", borderRadius: 20, border: "1px solid #bfdbfe" }}>

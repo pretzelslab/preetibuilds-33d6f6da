@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Music, Search, Play, BookOpen, ChevronDown, ChevronUp, Plus, Loader2, RefreshCw } from "lucide-react";
+import { ArrowLeft, Music, Search, Play, BookOpen, ChevronDown, ChevronUp, Plus, Loader2, RefreshCw, Shield } from "lucide-react";
 import VisitorCounter from "@/components/portfolio/VisitorCounter";
 import Comments from "@/components/portfolio/Comments";
+import { govDb } from "@/lib/supabase-governance";
 
 const YT_API_KEY = "AIzaSyCq2BN9k3y8bU9yymWiroYBhdVnRPMIPnA";
 
@@ -761,40 +762,30 @@ function AddSongForm({
   const [pickedVideo, setPickedVideo] = useState<YtResult | null>(null);
   const [suggestions, setSuggestions] = useState<typeof ALL_KNOWN_SONGS>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const ytDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function handleTitleChange(val: string) {
-    setTitle(val);
-    if (val.length >= 2) {
+  // ── Field-level suggestion helper ────────────────────────────────────────
+  function makeSuggest(field: "singer" | "movie" | "composer") {
+    return (val: string) => {
+      if (val.length < 2) return [];
       const q = val.toLowerCase();
-      const matches = ALL_KNOWN_SONGS.filter(({ song }) =>
-        song.title.toLowerCase().includes(q) ||
-        song.singer.toLowerCase().includes(q) ||
-        (song.movie?.toLowerCase().includes(q))
-      ).slice(0, 5);
-      setSuggestions(matches);
-      setShowSuggestions(matches.length > 0);
-    } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
-    }
+      return [...new Set(
+        ALL_KNOWN_SONGS
+          .map(({ song }) => (field === "singer" ? song.singer : field === "movie" ? (song.movie || "") : song.composer))
+          .filter(v => v && v.toLowerCase().includes(q))
+      )].slice(0, 5);
+    };
   }
+  const singerSuggestions = singer.length >= 2 ? makeSuggest("singer")(singer) : [];
+  const movieSuggestions  = movie.length  >= 2 ? makeSuggest("movie")(movie)   : [];
+  const composerSuggestions = composer.length >= 2 ? makeSuggest("composer")(composer) : [];
 
-  function pickSuggestion(item: typeof ALL_KNOWN_SONGS[0]) {
-    setTitle(item.song.title);
-    setSinger(item.song.singer);
-    setMovie(item.song.movie || "");
-    setComposer(item.song.composer);
-    setGenre(item.song.genre);
-    if (!defaultRaagaId) setRaaagaId(item.raagaId);
-    setShowSuggestions(false);
-  }
-
-  async function searchYT() {
-    const q = [title, singer, movie].filter(Boolean).join(" ");
-    if (!q) return;
+  async function runYTSearch(q: string) {
+    if (!q.trim()) return;
     setSearching(true);
     setYtResults([]);
-    setPickedVideo(null);
     try {
       const res = await fetch(
         `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&type=video&maxResults=4&key=${YT_API_KEY}`
@@ -811,11 +802,49 @@ function AddSongForm({
     }
   }
 
+  function handleTitleChange(val: string) {
+    setTitle(val);
+    // Library autosuggest
+    if (val.length >= 2) {
+      const q = val.toLowerCase();
+      const matches = ALL_KNOWN_SONGS.filter(({ song }) =>
+        song.title.toLowerCase().includes(q) ||
+        song.singer.toLowerCase().includes(q) ||
+        (song.movie?.toLowerCase().includes(q))
+      ).slice(0, 5);
+      setSuggestions(matches);
+      setShowSuggestions(matches.length > 0);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+    // Debounced YouTube auto-search
+    if (ytDebounce.current) clearTimeout(ytDebounce.current);
+    if (val.length >= 3) {
+      ytDebounce.current = setTimeout(() => runYTSearch(val), 600);
+    } else {
+      setYtResults([]);
+    }
+  }
+
+  function pickSuggestion(item: typeof ALL_KNOWN_SONGS[0]) {
+    setTitle(item.song.title);
+    setSinger(item.song.singer);
+    setMovie(item.song.movie || "");
+    setComposer(item.song.composer);
+    setGenre(item.song.genre);
+    if (!defaultRaagaId) setRaaagaId(item.raagaId);
+    setShowSuggestions(false);
+    setYtResults([]);
+    if (ytDebounce.current) clearTimeout(ytDebounce.current);
+    // Auto-search YouTube for the picked song
+    runYTSearch([item.song.title, item.song.singer, item.song.movie].filter(Boolean).join(" "));
+  }
+
   function pickResult(r: YtResult) {
     setPickedVideo(r);
     setYtResults([]);
-    setTitle(r.title); // always fill/replace title from YouTube result
-    // Try to match against known songs to autofill metadata
+    setTitle(r.title);
     const q = r.title.toLowerCase();
     const match = ALL_KNOWN_SONGS.find(({ song }) =>
       q.includes(song.title.toLowerCase()) || song.title.toLowerCase().includes(q.split(" ")[0])
@@ -827,13 +856,13 @@ function AddSongForm({
       setGenre(match.song.genre);
       if (!defaultRaagaId && !raaagaId) setRaaagaId(match.raagaId);
     } else if (!singer) {
-      // Fallback: use channel name as singer hint
       setSinger(r.channel);
     }
   }
 
-  function handleAdd() {
+  async function handleAdd() {
     if (!raaagaId || !title || !singer) return;
+    setSubmitting(true);
     const song: Song = {
       id: `${raaagaId}-extra-${Date.now()}`,
       title,
@@ -844,11 +873,35 @@ function AddSongForm({
       youtubeId: pickedVideo?.videoId,
       youtubeQuery: [title, singer, movie].filter(Boolean).join(" "),
     };
+    // Save to Supabase as pending (admin review)
+    await govDb.from("melodic_song_requests").insert({
+      raaga_id: raaagaId,
+      title,
+      singer,
+      movie: movie || null,
+      composer,
+      genre,
+      youtube_id: pickedVideo?.videoId || null,
+      youtube_query: song.youtubeQuery,
+      status: "pending",
+    });
+    // Also show locally immediately for the submitter
     onAdd(raaagaId, song);
-    onCancel();
+    setSubmitting(false);
+    setSubmitted(true);
+    setTimeout(() => { onCancel(); }, 2500);
   }
 
   const canAdd = raaagaId && title.trim() && singer.trim();
+
+  if (submitted) {
+    return (
+      <div className="border border-violet-400/40 rounded-xl bg-violet-500/5 p-4 text-center py-8">
+        <p className="text-sm font-semibold text-violet-600">Song submitted!</p>
+        <p className="text-xs text-muted-foreground mt-1">It's visible on your screen now. Admin will review for everyone.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="border border-violet-400/40 rounded-xl bg-violet-500/5 p-4 space-y-3">
@@ -874,14 +927,16 @@ function AddSongForm({
         </div>
       )}
 
-      {/* Song title with autosuggest */}
+      {/* Song title — autosuggest + auto YouTube trigger */}
       <div className="relative">
-        <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Song title *</label>
+        <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">
+          Song title * {searching && <Loader2 className="w-3 h-3 animate-spin inline ml-1 text-violet-500" />}
+        </label>
         <input
           value={title}
           onChange={e => handleTitleChange(e.target.value)}
           onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-          placeholder="Start typing to auto-suggest from library…"
+          placeholder="Start typing — YouTube loads automatically…"
           className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400"
         />
         {showSuggestions && (
@@ -900,44 +955,7 @@ function AddSongForm({
         )}
       </div>
 
-      {/* Other metadata fields */}
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Singer *</label>
-          <input value={singer} onChange={e => setSinger(e.target.value)} placeholder="e.g. Lata Mangeshkar"
-            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400" />
-        </div>
-        <div>
-          <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Movie (optional)</label>
-          <input value={movie} onChange={e => setMovie(e.target.value)} placeholder="e.g. Mughal-E-Azam"
-            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400" />
-        </div>
-        <div>
-          <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Composer</label>
-          <input value={composer} onChange={e => setComposer(e.target.value)} placeholder="e.g. Naushad"
-            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400" />
-        </div>
-        <div>
-          <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Genre</label>
-          <select value={genre} onChange={e => setGenre(e.target.value as any)}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400">
-            <option value="Film">Film</option>
-            <option value="Hindustani Classical">Hindustani Classical</option>
-          </select>
-        </div>
-      </div>
-
-      {/* YouTube search */}
-      <button
-        onClick={searchYT}
-        disabled={!title && !singer}
-        className="flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-700 disabled:opacity-40 transition-colors"
-      >
-        {searching ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
-        {searching ? "Searching YouTube…" : "Search YouTube for this song"}
-      </button>
-
-      {/* YouTube results */}
+      {/* YouTube results — auto-triggered or manual */}
       {ytResults.length > 0 && (
         <div className="space-y-1.5">
           <p className="text-[10px] text-muted-foreground/60 font-mono uppercase tracking-wide">Pick a version — fields will autofill</p>
@@ -963,10 +981,87 @@ function AddSongForm({
         </div>
       )}
 
+      {/* Metadata fields — all with persistent labels + autosuggest */}
+      <div className="grid grid-cols-2 gap-2">
+        {/* Singer */}
+        <div className="relative">
+          <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Singer *</label>
+          <input value={singer} onChange={e => setSinger(e.target.value)}
+            onBlur={() => setTimeout(() => {}, 150)}
+            placeholder="e.g. Lata Mangeshkar"
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400" />
+          {singerSuggestions.length > 0 && (
+            <div className="absolute z-20 top-full left-0 right-0 mt-0.5 bg-background border border-violet-400/30 rounded-lg shadow-md overflow-hidden">
+              {singerSuggestions.map(s => (
+                <button key={s} onMouseDown={() => setSinger(s)}
+                  className="w-full text-left px-3 py-1.5 text-xs hover:bg-violet-500/10 border-b border-border/20 last:border-0 transition-colors">
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Movie */}
+        <div className="relative">
+          <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Movie (optional)</label>
+          <input value={movie} onChange={e => setMovie(e.target.value)} placeholder="e.g. Mughal-E-Azam"
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400" />
+          {movieSuggestions.filter(Boolean).length > 0 && (
+            <div className="absolute z-20 top-full left-0 right-0 mt-0.5 bg-background border border-violet-400/30 rounded-lg shadow-md overflow-hidden">
+              {movieSuggestions.filter(Boolean).map(s => (
+                <button key={s} onMouseDown={() => setMovie(s)}
+                  className="w-full text-left px-3 py-1.5 text-xs hover:bg-violet-500/10 border-b border-border/20 last:border-0 transition-colors">
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Composer */}
+        <div className="relative">
+          <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Composer</label>
+          <input value={composer} onChange={e => setComposer(e.target.value)} placeholder="e.g. Naushad"
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400" />
+          {composerSuggestions.length > 0 && (
+            <div className="absolute z-20 top-full left-0 right-0 mt-0.5 bg-background border border-violet-400/30 rounded-lg shadow-md overflow-hidden">
+              {composerSuggestions.map(s => (
+                <button key={s} onMouseDown={() => setComposer(s)}
+                  className="w-full text-left px-3 py-1.5 text-xs hover:bg-violet-500/10 border-b border-border/20 last:border-0 transition-colors">
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Genre */}
+        <div>
+          <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Genre</label>
+          <select value={genre} onChange={e => setGenre(e.target.value as any)}
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400">
+            <option value="Film">Film</option>
+            <option value="Hindustani Classical">Hindustani Classical</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Manual YouTube search (override / retry) */}
+      <button
+        onClick={() => runYTSearch([title, singer, movie].filter(Boolean).join(" "))}
+        disabled={!title && !singer}
+        className="flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-700 disabled:opacity-40 transition-colors"
+      >
+        <Search className="w-3 h-3" />
+        Search YouTube again
+      </button>
+
       {/* Actions */}
       <div className="flex gap-2 pt-1">
-        <button onClick={handleAdd} disabled={!canAdd}
-          className="flex-1 py-2 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold disabled:opacity-40 transition-colors">
+        <button onClick={handleAdd} disabled={!canAdd || submitting}
+          className="flex-1 py-2 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold disabled:opacity-40 transition-colors flex items-center justify-center gap-1.5">
+          {submitting && <Loader2 className="w-3 h-3 animate-spin" />}
           Add to {defaultRaagaId ? raagas.find(r => r.id === defaultRaagaId)?.name : (raaagaId ? raagas.find(r => r.id === raaagaId)?.name : "Raaga")}
         </button>
         <button onClick={onCancel}
@@ -974,6 +1069,111 @@ function AddSongForm({
           Cancel
         </button>
       </div>
+    </div>
+  );
+}
+
+// ── Admin PIN ─────────────────────────────────────────────────────────────────
+const ADMIN_PIN = "preeti2026";
+
+interface SongRequest {
+  id: string;
+  raaga_id: string;
+  title: string;
+  singer: string;
+  movie: string | null;
+  composer: string | null;
+  genre: string;
+  youtube_id: string | null;
+  status: string;
+  created_at: string;
+}
+
+function AdminPanel({ raagas, onApprove }: { raagas: Raaga[]; onApprove: (raaagaId: string, song: Song) => void }) {
+  const [requests, setRequests] = useState<SongRequest[]>([]);
+  const [editRaaga, setEditRaaga] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+
+  async function load() {
+    setLoading(true);
+    const { data } = await govDb.from("melodic_song_requests")
+      .select("*")
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+    setRequests((data as SongRequest[]) || []);
+    setLoading(false);
+  }
+
+  useEffect(() => { load(); }, []);
+
+  async function approve(req: SongRequest) {
+    const raaagaId = editRaaga[req.id] || req.raaga_id;
+    await govDb.from("melodic_song_requests").update({ status: "approved", raaga_id: raaagaId }).eq("id", req.id);
+    const song: Song = {
+      id: `${raaagaId}-db-${req.id.slice(0, 8)}`,
+      title: req.title,
+      singer: req.singer,
+      movie: req.movie || undefined,
+      composer: req.composer || "",
+      genre: req.genre as Song["genre"],
+      youtubeId: req.youtube_id || undefined,
+      youtubeQuery: [req.title, req.singer, req.movie].filter(Boolean).join(" "),
+    };
+    onApprove(raaagaId, song);
+    await load();
+  }
+
+  async function reject(id: string) {
+    await govDb.from("melodic_song_requests").update({ status: "rejected" }).eq("id", id);
+    await load();
+  }
+
+  return (
+    <div className="border border-amber-400/40 rounded-xl bg-amber-500/5 p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-amber-700 flex items-center gap-1.5">
+          <Shield className="w-3.5 h-3.5" /> Admin · Song Requests
+        </p>
+        <button onClick={load} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors">
+          ↻ Refresh
+        </button>
+      </div>
+      {loading && <p className="text-xs text-muted-foreground">Loading…</p>}
+      {!loading && requests.length === 0 && (
+        <p className="text-xs text-muted-foreground">No pending requests.</p>
+      )}
+      {!loading && requests.map(req => (
+        <div key={req.id} className="rounded-lg border border-border/60 bg-background p-3 space-y-2">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold truncate">{req.title}</p>
+              <p className="text-[10px] text-muted-foreground">{req.singer}{req.movie ? ` · ${req.movie}` : ""}</p>
+            </div>
+            <span className="text-[10px] text-muted-foreground/50 shrink-0">{new Date(req.created_at).toLocaleDateString()}</span>
+          </div>
+          {/* Raaga edit */}
+          <div>
+            <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Raaga</label>
+            <select
+              value={editRaaga[req.id] ?? req.raaga_id}
+              onChange={e => setEditRaaga(prev => ({ ...prev, [req.id]: e.target.value }))}
+              className="w-full px-2 py-1.5 rounded border border-border bg-background text-xs outline-none focus:border-violet-400"
+            >
+              {raagas.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+            </select>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => approve(req)}
+              className="flex-1 py-1.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold transition-colors">
+              ✓ Approve
+            </button>
+            <button onClick={() => reject(req.id)}
+              className="px-3 py-1.5 rounded border border-rose-300 text-rose-600 text-[11px] font-semibold hover:bg-rose-50 transition-colors">
+              ✗ Reject
+            </button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -1083,6 +1283,35 @@ export default function MelodicFramework() {
   const [selectedIds, setSelectedIds] = useState<Record<string, string>>({});
   const [extraSongs, setExtraSongs] = useState<Record<string, Song[]>>({});
   const [showGlobalAdd, setShowGlobalAdd] = useState(false);
+  const [adminMode, setAdminMode] = useState(false);
+  const [pinInput, setPinInput] = useState("");
+  const [pinError, setPinError] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    // Load approved songs from Supabase
+    govDb.from("melodic_song_requests")
+      .select("*")
+      .eq("status", "approved")
+      .then(({ data }) => {
+        if (!data) return;
+        const grouped: Record<string, Song[]> = {};
+        for (const req of data as any[]) {
+          const song: Song = {
+            id: `db-${req.id.slice(0, 8)}`,
+            title: req.title,
+            singer: req.singer,
+            movie: req.movie || undefined,
+            composer: req.composer || "",
+            genre: req.genre as Song["genre"],
+            youtubeId: req.youtube_id || undefined,
+            youtubeQuery: [req.title, req.singer, req.movie].filter(Boolean).join(" "),
+          };
+          grouped[req.raaga_id] = [...(grouped[req.raaga_id] || []), song];
+        }
+        setExtraSongs(grouped);
+      });
+  }, []);
 
   function handleSelect(songId: string, videoId: string) {
     setSelectedIds(prev => ({ ...prev, [songId]: videoId }));
@@ -1093,6 +1322,12 @@ export default function MelodicFramework() {
       ...prev,
       [raaagaId]: [...(prev[raaagaId] || []), song],
     }));
+  }
+
+  function tryAdmin(e: React.FormEvent) {
+    e.preventDefault();
+    if (pinInput === ADMIN_PIN) { setAdminMode(true); setPinInput(""); setPinError(false); }
+    else { setPinInput(""); setPinError(true); setTimeout(() => setPinError(false), 2000); }
   }
 
   const times = ["All", ...TIME_ORDER.filter(t => DEMO_RAAGAS.some(r => r.time === t))];
@@ -1121,7 +1356,7 @@ export default function MelodicFramework() {
       <div className="border-b border-border/50 bg-background/80 backdrop-blur sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Back
+            <ArrowLeft className="w-4 h-4" /> Back to Portfolio
           </Link>
           <span className="text-xs text-muted-foreground font-mono">{DEMO_RAAGAS.length} raagas</span>
         </div>
@@ -1230,13 +1465,35 @@ export default function MelodicFramework() {
 
         </div>
 
-        {/* ── Right sidebar: Comments + visitor counter ── */}
+        {/* ── Right sidebar: Comments + Admin + visitor counter ── */}
         <div className="w-72 shrink-0 hidden lg:block">
           <div className="sticky top-20 space-y-6">
             <div className="border border-border/50 rounded-2xl bg-card p-4">
               <p className="text-xs font-mono text-muted-foreground/50 uppercase tracking-widest mb-4">Notes & Comments</p>
               <Comments />
             </div>
+
+            {/* Admin panel */}
+            {adminMode ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between px-1">
+                  <p className="text-[10px] font-mono text-amber-600 uppercase tracking-wide">Admin mode active</p>
+                  <button onClick={() => setAdminMode(false)} className="text-[10px] text-muted-foreground hover:text-foreground">✕ Exit</button>
+                </div>
+                <AdminPanel raagas={DEMO_RAAGAS} onApprove={handleAddSong} />
+              </div>
+            ) : (
+              <form onSubmit={tryAdmin} className="flex gap-1.5 items-center">
+                <input
+                  value={pinInput}
+                  onChange={e => setPinInput(e.target.value)}
+                  type="password"
+                  placeholder="Admin PIN"
+                  className={`w-24 px-2 py-1 rounded border bg-transparent text-[10px] outline-none transition-colors text-muted-foreground/50 placeholder:text-muted-foreground/30 ${pinError ? "border-rose-400" : "border-border/40 focus:border-primary/40"}`}
+                />
+              </form>
+            )}
+
             <div className="flex justify-end">
               <VisitorCounter />
             </div>

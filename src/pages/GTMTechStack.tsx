@@ -42,15 +42,15 @@ const GTMTechStack = () => {
 
       {/* Nav */}
       <nav className="sticky top-0 z-50 backdrop-blur-md border-b" style={{ borderColor: borderClr, background: "hsla(210,20%,98%,0.9)" }}>
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/#projects" className="inline-flex items-center gap-2 text-sm hover:text-[hsl(210,30%,12%)] transition-colors" style={{ color: accentLight }}>
+        <div className="max-w-[1100px] mx-auto px-6 py-4 flex items-center justify-between">
+          <Link to="/#projects" className="inline-flex items-center gap-2 text-sm transition-colors" style={{ color: "#64748b" }} onMouseEnter={e => (e.currentTarget.style.color = "#0f172a")} onMouseLeave={e => (e.currentTarget.style.color = "#64748b")}>
             <ArrowLeft className="w-4 h-4" /> Back to Portfolio
           </Link>
           <span className="text-[11px] font-mono" style={{ color: muted }}>16 slides</span>
         </div>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
+      <div className="max-w-[1100px] mx-auto px-6 py-10 space-y-10">
 
         {/* ══════ SLIDE 1 — Hero ══════ */}
         <SlideCard slideNumber={1} className="!p-12 sm:!p-16">
