@@ -50,6 +50,33 @@ function saveAnswers(id: string, answers: Record<string, number>) {
   localStorage.setItem(answersKey(id), JSON.stringify(answers));
 }
 
+// ── Demo client seed ──────────────────────────────────────────────────────────
+const DEMO_AR_ID = "ar-demo-apex-001";
+const DEMO_AR_ANSWERS: Record<string, number> = {
+  s1q1: 50, s1q2: 50, s1q3: 60, s1q4: 0,  s1q5: 50,  // Strategy avg 42
+  s2q1: 50, s2q2: 25, s2q3: 0,  s2q4: 50, s2q5: 25,  // Data avg 30
+  s3q1: 50, s3q2: 25, s3q3: 50, s3q4: 0,  s3q5: 50,  // Technology avg 35
+  s4q1: 50, s4q2: 25, s4q3: 25, s4q4: 0,  s4q5: 50,  // People avg 30
+  s5q1: 50, s5q2: 25, s5q3: 25, s5q4: 0,  s5q5: 25,  // Governance avg 25
+};
+function seedARDemoClient() {
+  const existing: ARClient[] = loadClients();
+  if (existing.some(c => c.id === DEMO_AR_ID)) return;
+  const demo: ARClient = {
+    id: DEMO_AR_ID,
+    name: "Apex Lending Group",
+    industry: "Financial Services / Fintech",
+    size: "500–1,000",
+    region: "Europe",
+    createdAt: "2026-03-01T10:00:00.000Z",
+    completedAt: "2026-03-01T10:45:00.000Z",
+    overallScore: 32,
+    tier: "Building",
+  };
+  saveClients([demo, ...existing]);
+  saveAnswers(DEMO_AR_ID, DEMO_AR_ANSWERS);
+}
+
 // ── Industry list (matches Governance Tracker) ─────────────────────────────
 const INDUSTRIES = [
   "Financial Services / Fintech", "Banking & Lending", "Insurtech / Insurance",
@@ -829,7 +856,7 @@ export default function AIReadinessAssessment() {
   const [answers, setAnswers] = useState<Record<string, number>>({});
 
   // Client-wise state
-  const [clients, setClients] = useState<ARClient[]>(() => loadClients());
+  const [clients, setClients] = useState<ARClient[]>(() => { seedARDemoClient(); return loadClients(); });
   const [activeClientId, setActiveClientId] = useState<string | null>(null);
   const [pastOpen, setPastOpen] = useState(false);
 
@@ -988,7 +1015,7 @@ export default function AIReadinessAssessment() {
             </Link>
           ) : (
             <button onClick={() => setStage("intro")} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowLeft className="w-4 h-4" /> AI Readiness
+              <ArrowLeft className="w-4 h-4" /> Back
             </button>
           )}
           {stage === "questions" && (

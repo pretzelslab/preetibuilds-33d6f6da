@@ -50,6 +50,9 @@ const WorkbookPreview = () => (
     {/* Header */}
     <div style={{ background: "#0f172a", color: "#fff", padding: "24px 32px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <Link to="/" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "#64748b", textDecoration: "none", marginBottom: 12 }}>
+          ← Back to Portfolio
+        </Link>
         <div style={{ fontSize: 10, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.1em" }}>
           AI Governance · Client Engagement Tool
         </div>

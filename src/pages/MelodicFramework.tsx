@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Music, Search, Play, BookOpen, ChevronDown, ChevronUp, Plus, Loader2, RefreshCw } from "lucide-react";
 import VisitorCounter from "@/components/portfolio/VisitorCounter";
+import Comments from "@/components/portfolio/Comments";
 
 const YT_API_KEY = "AIzaSyCq2BN9k3y8bU9yymWiroYBhdVnRPMIPnA";
 
@@ -813,7 +814,7 @@ function AddSongForm({
   function pickResult(r: YtResult) {
     setPickedVideo(r);
     setYtResults([]);
-    if (!title) setTitle(r.title);
+    setTitle(r.title); // always fill/replace title from YouTube result
     // Try to match against known songs to autofill metadata
     const q = r.title.toLowerCase();
     const match = ALL_KNOWN_SONGS.find(({ song }) =>
@@ -851,27 +852,36 @@ function AddSongForm({
 
   return (
     <div className="border border-violet-400/40 rounded-xl bg-violet-500/5 p-4 space-y-3">
-      <p className="text-xs font-semibold text-violet-600 dark:text-violet-400">Add new / alternate version</p>
+      <div className="flex items-start justify-between">
+        <p className="text-xs font-semibold text-violet-600 dark:text-violet-400">Add new / alternate version</p>
+        <span className="text-[10px] text-muted-foreground/60 italic max-w-[180px] text-right leading-tight">
+          Autofilled fields are suggestions — please verify before adding
+        </span>
+      </div>
 
       {/* Raaga picker — only shown in global modal mode */}
       {!defaultRaagaId && (
-        <select
-          value={raaagaId}
-          onChange={e => setRaaagaId(e.target.value)}
-          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400"
-        >
-          <option value="">Select raaga…</option>
-          {raagas.map(r => <option key={r.id} value={r.id}>{r.name} ({r.hindiName})</option>)}
-        </select>
+        <div>
+          <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Raaga *</label>
+          <select
+            value={raaagaId}
+            onChange={e => setRaaagaId(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400"
+          >
+            <option value="">Select raaga…</option>
+            {raagas.map(r => <option key={r.id} value={r.id}>{r.name} ({r.hindiName})</option>)}
+          </select>
+        </div>
       )}
 
       {/* Song title with autosuggest */}
       <div className="relative">
+        <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Song title *</label>
         <input
           value={title}
           onChange={e => handleTitleChange(e.target.value)}
           onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-          placeholder="Song title * (start typing to search)"
+          placeholder="Start typing to auto-suggest from library…"
           className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400"
         />
         {showSuggestions && (
@@ -892,17 +902,29 @@ function AddSongForm({
 
       {/* Other metadata fields */}
       <div className="grid grid-cols-2 gap-2">
-        <input value={singer} onChange={e => setSinger(e.target.value)} placeholder="Singer *"
-          className="px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400" />
-        <input value={movie} onChange={e => setMovie(e.target.value)} placeholder="Movie (optional)"
-          className="px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400" />
-        <input value={composer} onChange={e => setComposer(e.target.value)} placeholder="Composer"
-          className="px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400" />
-        <select value={genre} onChange={e => setGenre(e.target.value as any)}
-          className="px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400">
-          <option value="Film">Film</option>
-          <option value="Hindustani Classical">Hindustani Classical</option>
-        </select>
+        <div>
+          <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Singer *</label>
+          <input value={singer} onChange={e => setSinger(e.target.value)} placeholder="e.g. Lata Mangeshkar"
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400" />
+        </div>
+        <div>
+          <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Movie (optional)</label>
+          <input value={movie} onChange={e => setMovie(e.target.value)} placeholder="e.g. Mughal-E-Azam"
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400" />
+        </div>
+        <div>
+          <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Composer</label>
+          <input value={composer} onChange={e => setComposer(e.target.value)} placeholder="e.g. Naushad"
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400" />
+        </div>
+        <div>
+          <label className="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-wide block mb-1">Genre</label>
+          <select value={genre} onChange={e => setGenre(e.target.value as any)}
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-violet-400">
+            <option value="Film">Film</option>
+            <option value="Hindustani Classical">Hindustani Classical</option>
+          </select>
+        </div>
       </div>
 
       {/* YouTube search */}
@@ -1205,10 +1227,16 @@ export default function MelodicFramework() {
 
       </div>
 
-      {/* Footer */}
-      <div className="border-t border-border/40 py-6 px-6">
-        <div className="max-w-4xl mx-auto flex justify-end">
-          <VisitorCounter />
+      {/* Comments + footer */}
+      <div className="border-t border-border/40 py-8 px-6">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div>
+            <p className="text-xs font-mono text-muted-foreground/50 uppercase tracking-widest mb-4">Notes & Comments</p>
+            <Comments />
+          </div>
+          <div className="flex md:justify-end md:items-end">
+            <VisitorCounter />
+          </div>
         </div>
       </div>
     </div>
