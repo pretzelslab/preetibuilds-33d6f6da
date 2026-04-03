@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
 
 const CREDENTIALS = [
+  "Responsible AI tools — governance frameworks, readiness diagnostics, and risk assessment for AI practitioners",
   "18+ years across B2B SaaS — HR tech, CRM, BI, and AI-driven platforms",
-  "Product management, product launch, and technical program delivery across enterprise systems and cloud",
-  "Product general availability, business transformation, and strategic initiatives — commercial GTM, partner ecosystems, and M&A scenarios",
+  "Product management, GTM, and technical program delivery across enterprise systems and cloud",
 ];
 
 const Hero = () => (
@@ -15,13 +15,13 @@ const Hero = () => (
         transition={{ duration: 0.6 }}
       >
         <p className="font-mono text-xs text-muted-foreground mb-3 tracking-widest uppercase">
-          Product · Program · GTM
+          Responsible AI · Product · GTM
         </p>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-4">
           <span className="text-gradient">Preethi Raghuveeran</span>
         </h1>
         <p className="text-base text-muted-foreground mb-5 leading-relaxed">
-          SaaS platform and product operations leader.
+          Building Responsible AI tools and governance frameworks for practitioners.
         </p>
         <ul className="space-y-2 mb-8">
           {CREDENTIALS.map((c) => (

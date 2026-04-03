@@ -24,3 +24,12 @@
 
 ### Memory
 - Update `MEMORY.md` at `C:\Users\Ravi Kumar\.claude\projects\C--Preeti-Personal-projects\memory\MEMORY.md` after every session with meaningful changes — without being asked.
+- **Save requirements and context BEFORE every context reset** — do not wait to be asked. If a reset is approaching, save first.
+
+### Testing — always prompt before moving on
+- After every code change, remind user: "Please test on localhost before we push."
+- Run `npm run build` and confirm it's clean before presenting any change as done.
+- Call out which existing features may be affected (regression surface) for each change.
+
+### Regression checklist — preetibuilds
+After changes, remind user to test: navigation, all project tiles, AI Governance tracker, Client Workbook phases, AI Readiness Assessment, Melodic Framework tile, theme, mobile layout.
