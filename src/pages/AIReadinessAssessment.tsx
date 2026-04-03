@@ -1011,7 +1011,7 @@ export default function AIReadinessAssessment() {
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           {stage === "intro" ? (
             <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Back
+              <ArrowLeft className="w-4 h-4" /> Back to Portfolio
             </Link>
           ) : (
             <button onClick={() => setStage("intro")} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">

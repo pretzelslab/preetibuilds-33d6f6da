@@ -1127,117 +1127,122 @@ export default function MelodicFramework() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-6 py-8 flex gap-8 items-start">
 
-        {/* Title */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-2xl">🎵</span>
-            <div>
-              <h1 className="text-2xl font-bold">Melodic Framework</h1>
-              <p className="text-xs text-muted-foreground font-serif">(Raaga)</p>
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground leading-relaxed max-w-xl">
-            Hindustani classical and film raagas — one canonical song per raaga, inline playback, and AI-generated lyrics.
-          </p>
-        </motion.div>
+        {/* ── Main content ── */}
+        <div className="flex-1 min-w-0">
 
-        {/* Add Song — primary CTA */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-4">
-          {showGlobalAdd ? (
-            <div className="border border-violet-400/40 rounded-xl bg-violet-500/5 p-4">
-              <div className="flex items-center justify-between mb-3">
-                <p className="font-semibold text-sm text-violet-700 dark:text-violet-300">Add a song to any raaga</p>
-                <button onClick={() => setShowGlobalAdd(false)} className="text-muted-foreground hover:text-foreground text-lg leading-none">✕</button>
+          {/* Title */}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-2xl">🎵</span>
+              <div>
+                <h1 className="text-2xl font-bold">Melodic Framework</h1>
+                <p className="text-xs text-muted-foreground font-serif">(Raaga)</p>
               </div>
-              <AddSongForm
-                raagas={DEMO_RAAGAS}
-                onAdd={(id, song) => { handleAddSong(id, song); setShowGlobalAdd(false); }}
-                onCancel={() => setShowGlobalAdd(false)}
-              />
             </div>
-          ) : (
-            <button
-              onClick={() => setShowGlobalAdd(true)}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-violet-400/50 text-violet-600 hover:bg-violet-500/5 hover:border-violet-500 transition-colors font-semibold text-sm"
-            >
-              <Plus className="w-4 h-4" /> Add a song to any raaga
-            </button>
-          )}
-        </motion.div>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xl">
+              Hindustani classical and film raagas — one canonical song per raaga, inline playback, and AI-generated lyrics.
+            </p>
+          </motion.div>
 
-        {/* Search + time filter (compact) */}
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-5 space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="relative w-64">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
-              <input
-                type="text"
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                placeholder="Filter raagas…"
-                className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-border bg-card text-xs outline-none focus:border-violet-400 transition-colors"
-              />
+          {/* Add Song — primary CTA */}
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-4">
+            {showGlobalAdd ? (
+              <div className="border border-violet-400/40 rounded-xl bg-violet-500/5 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="font-semibold text-sm text-violet-700 dark:text-violet-300">Add a song to any raaga</p>
+                  <button onClick={() => setShowGlobalAdd(false)} className="text-muted-foreground hover:text-foreground text-lg leading-none">✕</button>
+                </div>
+                <AddSongForm
+                  raagas={DEMO_RAAGAS}
+                  onAdd={(id, song) => { handleAddSong(id, song); setShowGlobalAdd(false); }}
+                  onCancel={() => setShowGlobalAdd(false)}
+                />
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowGlobalAdd(true)}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-violet-400/50 text-violet-600 hover:bg-violet-500/5 hover:border-violet-500 transition-colors font-semibold text-sm"
+              >
+                <Plus className="w-4 h-4" /> Add a song to any raaga
+              </button>
+            )}
+          </motion.div>
+
+          {/* Search + time filter (compact) */}
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-5 space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="relative w-64">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
+                <input
+                  type="text"
+                  value={query}
+                  onChange={e => setQuery(e.target.value)}
+                  placeholder="Filter raagas…"
+                  className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-border bg-card text-xs outline-none focus:border-violet-400 transition-colors"
+                />
+              </div>
+              {(query || timeFilter !== "All") && (
+                <span className="text-xs text-muted-foreground">{filtered.length} raaga{filtered.length !== 1 ? "s" : ""}</span>
+              )}
             </div>
-            {(query || timeFilter !== "All") && (
-              <span className="text-xs text-muted-foreground">{filtered.length} raaga{filtered.length !== 1 ? "s" : ""}</span>
+            {/* Time-of-day chips */}
+            <div className="flex flex-wrap gap-1.5">
+              {times.map(t => (
+                <button
+                  key={t}
+                  onClick={() => setTimeFilter(t)}
+                  className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
+                    timeFilter === t
+                      ? "bg-violet-600 text-white border-violet-600"
+                      : "border-border text-muted-foreground hover:border-violet-400 hover:text-violet-600"
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Raaga grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {filtered.length ? (
+              filtered.map((r, i) => (
+                <RaagaCard
+                  key={r.id}
+                  raaga={r}
+                  index={i}
+                  selectedIds={selectedIds}
+                  onSelect={handleSelect}
+                  extraSongs={extraSongs[r.id] || []}
+                  onAddSong={handleAddSong}
+                  allRaagas={DEMO_RAAGAS}
+                />
+              ))
+            ) : (
+              <div className="col-span-2 text-center py-16 text-muted-foreground">
+                <Music className="w-8 h-8 mx-auto mb-3 opacity-30" />
+                <p className="text-sm">No raagas match your search.</p>
+              </div>
             )}
           </div>
-          {/* Time-of-day chips */}
-          <div className="flex flex-wrap gap-1.5">
-            {times.map(t => (
-              <button
-                key={t}
-                onClick={() => setTimeFilter(t)}
-                className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
-                  timeFilter === t
-                    ? "bg-violet-600 text-white border-violet-600"
-                    : "border-border text-muted-foreground hover:border-violet-400 hover:text-violet-600"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-        </motion.div>
 
-        {/* Raaga grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {filtered.length ? (
-            filtered.map((r, i) => (
-              <RaagaCard
-                key={r.id}
-                raaga={r}
-                index={i}
-                selectedIds={selectedIds}
-                onSelect={handleSelect}
-                extraSongs={extraSongs[r.id] || []}
-                onAddSong={handleAddSong}
-                allRaagas={DEMO_RAAGAS}
-              />
-            ))
-          ) : (
-            <div className="col-span-2 text-center py-16 text-muted-foreground">
-              <Music className="w-8 h-8 mx-auto mb-3 opacity-30" />
-              <p className="text-sm">No raagas match your search.</p>
+        </div>
+
+        {/* ── Right sidebar: Comments + visitor counter ── */}
+        <div className="w-72 shrink-0 hidden lg:block">
+          <div className="sticky top-20 space-y-6">
+            <div className="border border-border/50 rounded-2xl bg-card p-4">
+              <p className="text-xs font-mono text-muted-foreground/50 uppercase tracking-widest mb-4">Notes & Comments</p>
+              <Comments />
             </div>
-          )}
-        </div>
-
-      </div>
-
-      {/* Comments + footer */}
-      <div className="border-t border-border/40 py-8 px-6">
-        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
-          <div>
-            <p className="text-xs font-mono text-muted-foreground/50 uppercase tracking-widest mb-4">Notes & Comments</p>
-            <Comments />
-          </div>
-          <div className="flex md:justify-end md:items-end">
-            <VisitorCounter />
+            <div className="flex justify-end">
+              <VisitorCounter />
+            </div>
           </div>
         </div>
+
       </div>
     </div>
   );
