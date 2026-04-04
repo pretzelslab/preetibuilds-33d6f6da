@@ -26,3 +26,7 @@ create policy "owner reply"
   on portfolio_comments for update
   using (true)
   with check (true);
+
+-- Grant table-level access to anon role (required even with permissive RLS)
+grant usage on schema public to anon;
+grant select, insert, update on portfolio_comments to anon;

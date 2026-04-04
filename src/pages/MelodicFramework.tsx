@@ -1098,7 +1098,7 @@ function AddSongForm({
 }
 
 // ── Admin PIN ─────────────────────────────────────────────────────────────────
-const ADMIN_PIN = "preeti2026";
+const ADMIN_PIN = "PRL2026";
 
 interface SongRequest {
   id: string;
