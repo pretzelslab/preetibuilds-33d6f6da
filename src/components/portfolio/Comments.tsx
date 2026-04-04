@@ -54,7 +54,7 @@ export default function Comments({ hideAdminPin = false }: { hideAdminPin?: bool
     setError("");
     const { error: err } = await govDb
       .from("portfolio_comments")
-      .insert({ name: name.trim(), message: message.trim() });
+      .insert({ name: name.trim(), message: message.trim(), approved: true });
     setSubmitting(false);
     if (err) { setError("Couldn't post — try again."); return; }
     setSubmitted(true);

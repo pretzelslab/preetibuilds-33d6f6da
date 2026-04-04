@@ -6,6 +6,7 @@ import VisitorCounter from "@/components/portfolio/VisitorCounter";
 import Comments from "@/components/portfolio/Comments";
 import { govDb } from "@/lib/supabase-governance";
 import { PageGate } from "@/components/ui/PageGate";
+import { DiagonalWatermark } from "@/components/ui/DiagonalWatermark";
 
 const YT_API_KEY = "AIzaSyCq2BN9k3y8bU9yymWiroYBhdVnRPMIPnA";
 
@@ -767,6 +768,7 @@ function AddSongForm({
   const [submitting, setSubmitting] = useState(false);
   const [activeSuggest, setActiveSuggest] = useState<"singer"|"movie"|"composer"|null>(null);
   const ytDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasPickedRef = useRef(false); // suppress auto-search once a video is picked
 
   // ── Field-level suggestion helper ────────────────────────────────────────
   function makeSuggest(field: "singer" | "movie" | "composer") {
@@ -820,12 +822,14 @@ function AddSongForm({
       setSuggestions([]);
       setShowSuggestions(false);
     }
-    // Debounced YouTube auto-search
-    if (ytDebounce.current) clearTimeout(ytDebounce.current);
-    if (val.length >= 3) {
-      ytDebounce.current = setTimeout(() => runYTSearch(val), 600);
-    } else {
-      setYtResults([]);
+    // Debounced YouTube auto-search — suppressed once user has picked a video
+    if (!hasPickedRef.current) {
+      if (ytDebounce.current) clearTimeout(ytDebounce.current);
+      if (val.length >= 3) {
+        ytDebounce.current = setTimeout(() => runYTSearch(val), 600);
+      } else {
+        setYtResults([]);
+      }
     }
   }
 
@@ -845,6 +849,7 @@ function AddSongForm({
 
   function pickResult(r: YtResult) {
     setPickedVideo(r);
+    hasPickedRef.current = true;
     setYtResults([]);
     setTitle(r.title);
     const q = r.title.toLowerCase();
@@ -852,13 +857,16 @@ function AddSongForm({
       q.includes(song.title.toLowerCase()) || song.title.toLowerCase().includes(q.split(" ")[0])
     );
     if (match) {
-      if (!singer) setSinger(match.song.singer);
-      if (!movie) setMovie(match.song.movie || "");
-      if (!composer) setComposer(match.song.composer);
+      setSinger(match.song.singer);
+      setMovie(match.song.movie || "");
+      setComposer(match.song.composer);
       setGenre(match.song.genre);
       if (!defaultRaagaId && !raaagaId) setRaaagaId(match.raagaId);
-    } else if (!singer) {
+    } else {
+      // Unknown song — use channel as singer hint; leave movie/composer for user to fill
       setSinger(r.channel);
+      setMovie("");
+      setComposer("");
     }
   }
 
@@ -995,7 +1003,7 @@ function AddSongForm({
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-violet-500/10 border border-violet-400/30">
             <Play className="w-3 h-3 text-violet-600 fill-violet-600 shrink-0" />
             <p className="text-xs text-violet-600 dark:text-violet-400 truncate flex-1">{pickedVideo.title}</p>
-            <button onClick={() => { setPickedVideo(null); runYTSearch(title); }} className="text-[10px] text-muted-foreground hover:text-rose-500 shrink-0">change</button>
+            <button onClick={() => { setPickedVideo(null); hasPickedRef.current = false; runYTSearch(title); }} className="text-[10px] text-muted-foreground hover:text-rose-500 shrink-0">change</button>
           </div>
         )}
       </div>
@@ -1292,6 +1300,108 @@ function RaagaCard({
   );
 }
 
+// ── Static preview (shown when page is locked) ────────────────────────────────
+const PREVIEW_CARDS = [
+  { name: "Bhairav",  hindi: "भैरव",       time: "Dawn",       mood: "Devotional, Austere",    song: "Piya Bin Nahin Aavat Chain",        singer: "Mohammed Rafi",    movie: "Kohinoor",                   composer: "Naushad",     genre: "Film" },
+  { name: "Yaman",    hindi: "यमन",        time: "Evening",    mood: "Romantic, Peaceful",     song: "Kahe Tarse Naina",                  singer: "Lata Mangeshkar",  movie: "Baiju Bawra",                composer: "Naushad",     genre: "Film" },
+  { name: "Malkauns", hindi: "मालकौंस",    time: "Late Night", mood: "Profound, Meditative",   song: "Man Tarpat Hari Darshan Ko Aaj",    singer: "Mohammed Rafi",    movie: "Baiju Bawra",                composer: "Naushad",     genre: "Film" },
+  { name: "Bageshri", hindi: "बागेश्री",   time: "Late Afternoon", mood: "Romantic, Longing",  song: "Kaun Aaya Mere Man Ke Dware",       singer: "Lata Mangeshkar",  movie: "Dil Hi Toh Hai",             composer: "Roshan",      genre: "Film" },
+];
+
+const TIME_CHIPS = ["All", "Dawn", "Morning", "Afternoon", "Evening", "Night", "Late Night"];
+
+const RaagaPreviewCard = ({ r, blur }: { r: typeof PREVIEW_CARDS[0]; blur?: boolean }) => (
+  <div style={{ filter: blur ? "blur(4px)" : "none", userSelect: blur ? "none" : "auto", pointerEvents: blur ? "none" : "auto" }}>
+    <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden" }}>
+      <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 8, background: "#ede9fe", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🎵</div>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontWeight: 700, fontSize: 14, color: "#0f172a" }}>{r.name}</span>
+            <span style={{ fontSize: 12, color: "#64748b", fontStyle: "italic" }}>{r.hindi}</span>
+          </div>
+          <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 2 }}>{r.time} · {r.mood}</div>
+        </div>
+      </div>
+      <div style={{ borderTop: "1px solid #f1f5f9", padding: "10px 16px", background: "#fafaf9" }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "#0f172a", marginBottom: 3 }}>{r.song}</div>
+        <div style={{ fontSize: 11, color: "#64748b" }}>{r.singer}{r.movie ? ` · ${r.movie}` : ""} · {r.composer}</div>
+        <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 10, background: r.genre === "Film" ? "#fef3c7" : "#ede9fe", color: r.genre === "Film" ? "#92400e" : "#6d28d9", padding: "2px 8px", borderRadius: 20, fontWeight: 700 }}>{r.genre}</span>
+          <span style={{ fontSize: 10, color: "#7c3aed", fontWeight: 600 }}>▶ Find & Play</span>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const MelodicPreview = () => (
+  <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif", background: "#faf9ff", minHeight: "100vh" }}>
+    <DiagonalWatermark />
+
+    {/* Sticky header — sits below PageGate banner (~40px) */}
+    <div style={{ background: "#0f172a", color: "#fff", padding: "20px 32px", position: "sticky", top: 40, zIndex: 90 }}>
+      <div style={{ maxWidth: 900, margin: "0 auto" }}>
+        <div style={{ fontSize: 10, color: "#a78bfa", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+          Hindustani Classical · Film Raagas
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ fontSize: 24 }}>🎵</span>
+          <div>
+            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>Melodic Framework</h1>
+            <p style={{ margin: "2px 0 0", color: "#a78bfa", fontSize: 12, fontStyle: "italic" }}>(Raaga)</p>
+          </div>
+        </div>
+        <p style={{ margin: "8px 0 0", color: "#94a3b8", fontSize: 13 }}>
+          Hindustani classical and film raagas — one canonical song per raaga, inline playback, and lyrics.
+        </p>
+      </div>
+    </div>
+
+    <div style={{ maxWidth: 900, margin: "24px auto", padding: "0 32px" }}>
+
+      {/* Stats */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 24 }}>
+        {[{ label: "Raagas", value: "28" }, { label: "Genres", value: "2" }, { label: "Times of Day", value: "10" }].map(s => (
+          <div key={s.label} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "16px 20px" }}>
+            <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>{s.label}</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: "#0f172a" }}>{s.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Time filter chips — static */}
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
+        {TIME_CHIPS.map((t, i) => (
+          <span key={t} style={{
+            fontSize: 10, padding: "3px 10px", borderRadius: 20,
+            background: i === 0 ? "#7c3aed" : "transparent",
+            color: i === 0 ? "#fff" : "#64748b",
+            border: `1px solid ${i === 0 ? "#7c3aed" : "#e2e8f0"}`,
+          }}>{t}</span>
+        ))}
+      </div>
+
+      {/* Raaga grid — 2 clear, 2 blurred */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, position: "relative" }}>
+        <RaagaPreviewCard r={PREVIEW_CARDS[0]} />
+        <RaagaPreviewCard r={PREVIEW_CARDS[1]} />
+        <RaagaPreviewCard r={PREVIEW_CARDS[2]} blur />
+        <RaagaPreviewCard r={PREVIEW_CARDS[3]} blur />
+        {/* Fade-out gradient over blurred row */}
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 80, background: "linear-gradient(to bottom, transparent, rgba(250,249,255,0.98))", borderRadius: "0 0 12px 12px" }} />
+      </div>
+
+      <p style={{ textAlign: "center", fontSize: 12, color: "#94a3b8", marginTop: 16 }}>
+        + 24 more raagas · Search · Inline YouTube playback · Lyrics
+      </p>
+      <p style={{ textAlign: "center", fontSize: 11, color: "#94a3b8", marginTop: 24 }}>
+        © 2026 Preethi Raghuveeran · Melodic Framework · Private
+      </p>
+    </div>
+  </div>
+);
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function MelodicFramework() {
   const [query, setQuery] = useState("");
@@ -1366,7 +1476,7 @@ export default function MelodicFramework() {
   });
 
   return (
-    <PageGate>
+    <PageGate previewContent={<MelodicPreview />} backTo="/#projects">
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border/50 bg-background/80 backdrop-blur sticky top-0 z-10">
