@@ -9,6 +9,8 @@ import {
   RadarChart, PolarGrid, PolarAngleAxis, Radar,
   ResponsiveContainer, Tooltip
 } from "recharts";
+import { PageGate } from "@/components/ui/PageGate";
+import { DiagonalWatermark } from "@/components/ui/DiagonalWatermark";
 
 // ── Preview mode ───────────────────────────────────────────────────────────────
 const IS_PREVIEW = typeof window !== "undefined" &&
@@ -847,6 +849,152 @@ function QuestionStep({
   );
 }
 
+// ── Static preview ────────────────────────────────────────────────────────────
+const PREVIEW_DIMS = [
+  { label: "AI Strategy",       score: 28, color: "#6366f1" },
+  { label: "Data Readiness",    score: 35, color: "#0ea5e9" },
+  { label: "Technology",        score: 40, color: "#f59e0b" },
+  { label: "People & Culture",  score: 25, color: "#10b981" },
+  { label: "Governance",        score: 30, color: "#8b5cf6" },
+];
+
+const PREVIEW_GAPS = [
+  { dim: "AI Strategy",      title: "Define your AI strategy and quantify business case",           invest: "$20K–$60K",   timeline: "2–3 months" },
+  { dim: "People & Culture", title: "Build AI literacy and hire or develop data talent",            invest: "$30K–$120K",  timeline: "3–6 months" },
+  { dim: "Governance",       title: "Establish AI governance policy and ethics framework",          invest: "$15K–$40K",   timeline: "1–2 months" },
+];
+
+const AIReadinessPreview = () => (
+  <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif", background: "#f8fafc", minHeight: "100vh" }}>
+    <DiagonalWatermark />
+
+    {/* Sticky header — below PageGate banner (~40px) */}
+    <div style={{ background: "#0f172a", color: "#fff", padding: "20px 32px", position: "sticky", top: 40, zIndex: 90 }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <Link to="/#projects" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "#94a3b8", textDecoration: "none", marginBottom: 10, fontWeight: 400 }}>
+          ← Back to Portfolio
+        </Link>
+        <div style={{ fontSize: 10, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+          Diagnostic Tool · AI Readiness
+        </div>
+        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>AI Readiness Assessment</h1>
+        <p style={{ margin: "6px 0 0", color: "#94a3b8", fontSize: 13 }}>
+          25 questions · 5 dimensions · Scored readiness report with ROI signal and prioritised gaps
+        </p>
+      </div>
+    </div>
+
+    {/* Client row */}
+    <div style={{ borderBottom: "1px solid #e2e8f0", background: "#fff", padding: "10px 32px" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 12 }}>
+        <span style={{ fontSize: 12, color: "#64748b", fontWeight: 600 }}>Sample:</span>
+        <span style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 8, padding: "4px 12px", fontSize: 13, fontWeight: 600, color: "#0f172a" }}>
+          Apex Lending Group
+        </span>
+        <span style={{ fontSize: 11, color: "#94a3b8" }}>Demo · Fintech · 500–1000 employees</span>
+        <span style={{ marginLeft: "auto", fontSize: 11, color: "#94a3b8", background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 20, padding: "3px 10px" }}>
+          🔒 Private assessments
+        </span>
+      </div>
+    </div>
+
+    <div style={{ maxWidth: 1100, margin: "24px auto", padding: "0 32px" }}>
+
+      {/* Stat cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 24 }}>
+        {[
+          { label: "Questions",         value: "25" },
+          { label: "Dimensions",        value: "5" },
+          { label: "Readiness Tiers",   value: "4" },
+          { label: "Frameworks Mapped", value: "NIST · EU AI · ISO" },
+        ].map(s => (
+          <div key={s.label} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "16px 20px" }}>
+            <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>{s.label}</div>
+            <div style={{ fontSize: s.value.length > 4 ? 14 : 22, fontWeight: 800, color: "#0f172a" }}>{s.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Sample output */}
+      <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden", marginBottom: 20 }}>
+        <div style={{ padding: "14px 20px", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>📊 Sample Output — Building tier</span>
+          <span style={{ fontSize: 11, color: "#94a3b8" }}>Overall score: 32 / 100</span>
+        </div>
+
+        {/* Score + tier */}
+        <div style={{ padding: "16px 20px", display: "flex", gap: 12, borderBottom: "1px solid #f1f5f9", flexWrap: "wrap" }}>
+          <div style={{ background: "#fef3c7", border: "1px solid #fde68a", borderRadius: 12, padding: "14px 24px", textAlign: "center" }}>
+            <div style={{ fontSize: 11, color: "#92400e", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Readiness Score</div>
+            <div style={{ fontSize: 36, fontWeight: 900, color: "#92400e", lineHeight: 1 }}>32</div>
+            <div style={{ fontSize: 11, color: "#92400e", marginTop: 2 }}>out of 100</div>
+          </div>
+          <div style={{ background: "#fef3c7", border: "1px solid #fde68a", borderRadius: 12, padding: "14px 24px", textAlign: "center" }}>
+            <div style={{ fontSize: 11, color: "#92400e", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Readiness Tier</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#92400e" }}>Building</div>
+            <div style={{ fontSize: 11, color: "#92400e", marginTop: 2 }}>Progress underway</div>
+          </div>
+          <div style={{ flex: 1, minWidth: 220 }}>
+            <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, marginBottom: 8 }}>DIMENSION SCORES</div>
+            {PREVIEW_DIMS.map(d => (
+              <div key={d.label} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                <span style={{ fontSize: 11, color: "#334155", width: 130, flexShrink: 0 }}>{d.label}</span>
+                <div style={{ flex: 1, height: 6, background: "#f1f5f9", borderRadius: 3, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${d.score}%`, background: d.color, borderRadius: 3 }} />
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 700, color: d.color, width: 30, textAlign: "right" }}>{d.score}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Top gaps — first visible, rest blurred */}
+        <div style={{ padding: "14px 20px", borderBottom: "1px solid #f1f5f9" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 10 }}>🎯 Priority Gaps &amp; Recommendations</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "#f8fafc", borderRadius: 8, border: "1px solid #e2e8f0", marginBottom: 8 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "#0f172a" }}>{PREVIEW_GAPS[0].title}</div>
+              <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{PREVIEW_GAPS[0].dim} · {PREVIEW_GAPS[0].invest} · {PREVIEW_GAPS[0].timeline}</div>
+            </div>
+          </div>
+          {/* Blurred remaining gaps */}
+          <div style={{ filter: "blur(4px)", userSelect: "none", pointerEvents: "none" }}>
+            {PREVIEW_GAPS.slice(1).map((g, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "#f8fafc", borderRadius: 8, border: "1px solid #e2e8f0", marginBottom: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "#0f172a" }}>{g.title}</div>
+                  <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{g.dim} · {g.invest} · {g.timeline}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Sample questions — blurred */}
+        <div style={{ position: "relative" }}>
+          <div style={{ filter: "blur(3px)", userSelect: "none", pointerEvents: "none" }}>
+            {[
+              "Does your organisation have a documented AI strategy aligned to business objectives?",
+              "Is there a named executive accountable for AI outcomes and risk?",
+              "Does your organisation maintain a centralised, governed data catalogue?",
+            ].map((q, i) => (
+              <div key={i} style={{ padding: "12px 20px", borderBottom: "1px solid #f8fafc", display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ flex: 1, fontSize: 13, color: "#334155" }}>{q}</div>
+                <span style={{ fontSize: 10, background: "#f1f5f9", color: "#64748b", padding: "2px 9px", borderRadius: 20, fontWeight: 700 }}>Not answered</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 60, background: "linear-gradient(to bottom, transparent, rgba(248,250,252,0.97))", borderRadius: "0 0 12px 12px" }} />
+        </div>
+      </div>
+
+      <p style={{ textAlign: "center", fontSize: 11, color: "#94a3b8", marginTop: 24 }}>
+        © 2026 Preethi Raghuveeran · AI Readiness Assessment · Private &amp; Confidential
+      </p>
+    </div>
+  </div>
+);
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function AIReadinessAssessment() {
   const [stage, setStage] = useState<"intro" | "questions" | "results">("intro");
@@ -858,7 +1006,7 @@ export default function AIReadinessAssessment() {
   // Client-wise state
   const [clients, setClients] = useState<ARClient[]>(() => { seedARDemoClient(); return loadClients(); });
   const [activeClientId, setActiveClientId] = useState<string | null>(null);
-  const [pastOpen, setPastOpen] = useState(true);
+  const [pastOpen, setPastOpen] = useState(false);
 
   const currentSection = SECTIONS[sectionIdx];
   const currentQuestion = currentSection?.questions[questionIdx];
@@ -1005,6 +1153,7 @@ export default function AIReadinessAssessment() {
   const profileComplete = profile.industry && profile.size && profile.region;
 
   return (
+    <PageGate previewContent={<AIReadinessPreview />} backTo="/#projects">
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border/50 bg-background/80 backdrop-blur sticky top-0 z-10">
@@ -1355,5 +1504,6 @@ export default function AIReadinessAssessment() {
         </AnimatePresence>
       </div>
     </div>
+    </PageGate>
   );
 }
