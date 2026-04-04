@@ -858,7 +858,7 @@ export default function AIReadinessAssessment() {
   // Client-wise state
   const [clients, setClients] = useState<ARClient[]>(() => { seedARDemoClient(); return loadClients(); });
   const [activeClientId, setActiveClientId] = useState<string | null>(null);
-  const [pastOpen, setPastOpen] = useState(false);
+  const [pastOpen, setPastOpen] = useState(true);
 
   const currentSection = SECTIONS[sectionIdx];
   const currentQuestion = currentSection?.questions[questionIdx];
