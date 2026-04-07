@@ -11,8 +11,10 @@
 ### Commits
 - Use `[skip ci]` in commit messages for intermediate/in-progress local commits only — skips Vercel AND Netlify builds.
 - **NEVER include `[skip ci]` on the final push commit** — that commit must trigger a Vercel rebuild or the deployment will not update.
+- **Before every push: run `git log --oneline -3` and confirm the tip commit has NO `[skip ci]`.**
+- If any stray/cleanup files need committing just before push, commit them WITHOUT `[skip ci]`.
 - Commit freely, but push only when the user says so.
-- Bundle all changes into one push per session to conserve build minutes.
+- **Bundle ALL session changes into ONE push per session** — do not push incrementally to conserve build minutes.
 
 ### Hosting
 - Primary: Vercel → https://preetibuilds-33d6f6da.vercel.app
