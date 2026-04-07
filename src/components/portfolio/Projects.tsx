@@ -10,6 +10,37 @@ type Project = {
   externalLink?: string;
 };
 
+const RESPONSIBLE_AI: Project[] = [
+  {
+    title: "AI Readiness Assessment",
+    description: "25-question self-service diagnostic across Strategy, Data, Technology, People, and Governance — scored report with ROI signal and prioritised gaps.",
+    tags: ["React", "TypeScript", "Recharts"],
+    status: "preview",
+    link: "/ai-readiness",
+  },
+  {
+    title: "AI Ethics & Governance Tracker",
+    description: "On-demand policy tracker — EU AI Act, NIST AI RMF, ISO 42001, FAIR, AAIA — with clause-level detail, four-pillar framework, and client risk workbook. Private.",
+    tags: ["React", "TypeScript", "Supabase"],
+    status: "preview",
+    link: "/ai-governance",
+  },
+  {
+    title: "AI Risk Assessment",
+    description: "5-phase client engagement tool — Govern, Map, Measure, Report, Monitor — with risk register, compliance deadlines, audit fields, and backup/restore. Private.",
+    tags: ["React", "TypeScript", "Supabase"],
+    status: "preview",
+    link: "/client-discovery",
+  },
+  {
+    title: "Quantization Fairness Auditor",
+    description: "Detects hidden bias introduced when AI models are compressed for deployment. Measures whether INT8 quantization disproportionately flips decisions for underrepresented groups using disparate impact ratio, Cohen's d, and chi-square testing.",
+    tags: ["Python", "NumPy", "SciPy", "Google Colab"],
+    status: "preview",
+    link: "/quantization-auditor",
+  },
+];
+
 const USE_CASES: Project[] = [
   {
     title: "Product Intelligence Pipeline",
@@ -24,33 +55,6 @@ const USE_CASES: Project[] = [
     tags: ["Python", "Pandas", "Streamlit", "HubSpot"],
     status: "live",
     link: "/gtm-techstack",
-  },
-];
-
-const AI_TOOLS: Project[] = [
-  {
-    title: "AI Readiness Assessment",
-    description: "25-question self-service diagnostic across Strategy, Data, Technology, People, and Governance — scored report with ROI signal and prioritised gaps.",
-    tags: ["React", "TypeScript", "Recharts"],
-    status: "preview",
-    link: "/ai-readiness",
-  },
-];
-
-const AI_GOVERNANCE: Project[] = [
-  {
-    title: "AI Ethics & Governance Tracker",
-    description: "On-demand policy tracker — EU AI Act, NIST AI RMF, ISO 42001, FAIR, AAIA — with clause-level detail, four-pillar framework, and client risk workbook. Private.",
-    tags: ["React", "TypeScript", "Supabase"],
-    status: "preview",
-    link: "/ai-governance",
-  },
-  {
-    title: "AI Risk Assessment",
-    description: "5-phase client engagement tool — Govern, Map, Measure, Report, Monitor — with risk register, compliance deadlines, audit fields, and backup/restore. Private.",
-    tags: ["React", "TypeScript", "Supabase"],
-    status: "preview",
-    link: "/client-discovery",
   },
 ];
 
@@ -131,36 +135,24 @@ const ProjectRow = ({ project, index }: { project: Project; index: number }) => 
 };
 
 const SectionHeader = ({ label }: { label: string }) => (
-  <p className="font-mono text-[10px] tracking-widest uppercase text-muted-foreground/50 mb-1 pt-2">
-    {label}
-  </p>
+  <div className="mb-1 pt-2">
+    <span className="inline-block font-mono text-[10px] tracking-widest uppercase px-2.5 py-1 rounded bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/40 font-semibold">
+      {label}
+    </span>
+  </div>
 );
 
 const Projects = () => (
   <section id="projects" className="py-6 px-6">
     <div className="max-w-3xl mx-auto">
-      <motion.h2
-        className="text-2xl font-bold mb-8"
-        initial={{ opacity: 0, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-      >
-        <span className="text-gradient">Use Cases</span>
-      </motion.h2>
+      <SectionHeader label="Responsible AI" />
+      <div className="mb-8">
+        {RESPONSIBLE_AI.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+      </div>
 
       <SectionHeader label="GTM & Product Ops" />
       <div className="mb-8">
         {USE_CASES.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
-      </div>
-
-      <SectionHeader label="AI Tools & Diagnostics" />
-      <div className="mb-8">
-        {AI_TOOLS.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
-      </div>
-
-      <SectionHeader label="AI Governance" />
-      <div className="mb-8">
-        {AI_GOVERNANCE.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
 
       <SectionHeader label="Pet Projects" />

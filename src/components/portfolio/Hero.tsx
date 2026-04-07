@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 
 const CREDENTIALS = [
-  "Responsible AI tools — governance frameworks, readiness diagnostics, and risk assessment for AI practitioners",
+  "Responsible AI toolkit — governance policy tracking (EU AI Act, NIST AI RMF, ISO 42001), readiness diagnostics, client risk assessment, and statistical fairness auditing including quantization bias detection",
   "18+ years across B2B SaaS — HR tech, CRM, BI, and AI-driven platforms",
   "Product management, GTM, and technical program delivery across enterprise systems and cloud",
 ];
