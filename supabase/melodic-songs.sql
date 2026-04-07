@@ -64,4 +64,81 @@ Landing page and subsequenct page font and overall look and feel:
 Landing page font should be please to the eyes and so goes for the other pages. what other fonts do you suggest?
 Need new age look and feel overall! 
 
+Tools and frameworks for ML model development:
+Apache MXNet.
+Extreme Gradient Boosting.
+Hugging Face Transformers.
+Keras.
+PyTorch.
+Scikit-learn.
+TensorFlow.
 
+
+Data management and analysis tools include the following:
+Deepchecks.
+Fiddler AI.
+Matplotlib.
+NumPy.
+Pandas.
+Seaborn.
+
+
+The following are some complete ML model lifecycle and comprehensive cloud provider tools:
+Amazon SageMaker.
+BentoML.
+LakeFS DVC.
+Google Cloud AI Platform.
+Microsoft Azure ML Studio.
+MLflow.
+TensorFlow Extended.
+
+
+Summarize and compare the results between the tools
+What are the limitations of each approach? 
+Which one do you think is the more accurate?
+What would be some alternatives to get more accurate emission data?
+
+
+Number of cores: 20
+Model: CPU Intel Xeon Gold 6148
+Number of hours : 15
+Cloud Provider: Azure
+Region: Central India
+Memory: 128 GB
+
+
+ML CO2 calculator
+
+Inputs->
+Hardware Type
+Hours used
+Provider
+Region of compute
+
+Output->
+2.07 KG CO2 eq 
+Says - Carbon offset by the provider 
+
+
+2.07 kg of CO2eq. is equivalent to:
+8.37
+Km driven by an average ICE car [1]
+1.03
+Kgs of coal burned [2]
+0.03
+Tree seedlings sequesting carbon for 10 years [3]
+Source: Greenhouse Gases Equivalencies Calculator - Calculations and References : [1] [2] [3]
+
+
+Green algorithms calculator 
+Inputs->
+Runtime
+Type of cores
+No. of cores
+Model
+Memory available in GB
+Platform used for the computations 
+Select location
+Do you know the real usage factor of your CPU?
+Do you know the Power Usage Efficiency (PUE) of your local data centre?
+Do you want to use a multiplicative factor?
