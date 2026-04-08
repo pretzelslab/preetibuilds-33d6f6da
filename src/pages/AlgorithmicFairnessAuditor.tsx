@@ -284,19 +284,30 @@ function AuditPreview() {
         </div>
       </div>
       <div className="max-w-5xl mx-auto px-6 py-12">
-        <div className="mb-8">
+
+        {/* Title */}
+        <div className="mb-6">
           <div className="flex items-center gap-3 mb-3">
-            <h1 className="text-2xl font-bold">Quantization Fairness Auditor</h1>
+            <h1 className="text-2xl font-bold">Algorithmic Fairness Auditor</h1>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border bg-amber-500/10 text-amber-600 border-amber-500/20">Preview</span>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
-            Detects hidden bias introduced when AI models are compressed for deployment. Upload your own data or try a built-in scenario.
+            Two modules: a quantization bias auditor (simulated + real scenarios) and an independent replication of the ProPublica COMPAS criminal justice investigation.
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-3 mb-8">
+
+        {/* Tab switcher — static, not interactive */}
+        <div className="flex gap-1 p-1 rounded-xl bg-muted/30 border border-border/40 w-fit mb-8">
+          {["Tab 1 · Quantization Auditor", "Tab 2 · COMPAS Recidivism"].map((t, i) => (
+            <span key={t} className={`text-xs px-4 py-2 rounded-lg font-medium ${i === 0 ? "bg-background text-foreground shadow-sm border border-border/60" : "text-muted-foreground"}`}>{t}</span>
+          ))}
+        </div>
+
+        {/* Tab 1 preview metrics */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
           {[
-            { label: "Disparate Impact Ratio", value: "15×", sub: "minority harmed more" },
-            { label: "Cohen's d", value: "−0.76", sub: "medium error gap" },
+            { label: "Disparate Impact Ratio", value: "1.52×", sub: "minority harmed more" },
+            { label: "Cohen's d", value: "+0.76", sub: "medium error gap" },
             { label: "Decision flips", value: "6", sub: "minority group only" },
           ].map(c => (
             <div key={c.label} className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
@@ -306,6 +317,23 @@ function AuditPreview() {
             </div>
           ))}
         </div>
+
+        {/* Tab 2 preview metrics */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          {[
+            { label: "Black defendants — FPR", value: "42.3%", sub: "wrongly flagged dangerous", highlight: true },
+            { label: "White defendants — FPR", value: "22.0%", sub: "wrongly flagged dangerous" },
+            { label: "Disparate Impact Ratio", value: "1.92×", sub: "above 1.25× legal threshold", highlight: true },
+          ].map(c => (
+            <div key={c.label} className={`rounded-lg border px-4 py-3 ${(c as { highlight?: boolean }).highlight ? "border-rose-500/30 bg-rose-500/5" : "border-border/60 bg-muted/20"}`}>
+              <p className="text-[10px] text-muted-foreground mb-1">{c.label}</p>
+              <p className={`text-xl font-bold ${(c as { highlight?: boolean }).highlight ? "text-rose-500" : ""}`}>{c.value}</p>
+              <p className="text-[10px] text-muted-foreground">{c.sub}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Blurred tool preview */}
         <div className="relative rounded-xl border border-border/60 overflow-hidden mb-6">
           <div className="bg-muted/10 px-5 py-4 space-y-2 select-none">
             <div className="flex gap-2 mb-4">
@@ -335,11 +363,37 @@ function AuditPreview() {
   );
 }
 
+// ── COMPAS data (generated from ProPublica dataset in Google Colab) ──
+// Filtered sample: 6,172 defendants · Broward County, Florida · 2013–2014
+// Threshold: Medium OR High = flagged as risk (mirrors real sentencing impact)
+
+const COMPAS_DATA = {
+  sampleSize: 6172,
+  source: "ProPublica COMPAS Analysis, 2016",
+  region: "Broward County, Florida, 2013–2014",
+  byRace: [
+    { race: "African-American", n: 3175, recidRate: 52.3, fpr: 42.3, fnr: 28.5, dir: 1.92 },
+    { race: "Caucasian",        n: 2103, recidRate: 39.1, fpr: 22.0, fnr: 49.6, dir: 1.0  },
+    { race: "Hispanic",         n:  509, recidRate: 37.1, fpr: 19.4, fnr: 58.2, dir: 0.88 },
+    { race: "Other",            n:  343, recidRate: 36.2, fpr: 12.8, fnr: 66.1, dir: 0.58 },
+  ],
+  bySex: [
+    { sex: "Male",   n: 4997, recidRate: 47.9, fpr: 30.3, fnr: 37.9 },
+    { sex: "Female", n: 1175, recidRate: 35.1, fpr: 30.2, fnr: 40.4 },
+  ],
+  propublicaPublished: {
+    blackFpr: 44.9, whiteFpr: 23.5, dir: 1.91,
+    blackFnr: 28.0, whiteFnr: 47.7,
+  },
+} as const;
+
 // ── Main page ─────────────────────────────────────────────────────
 
 type Tab = "scenarios" | "upload" | "live";
+type PageTab = "quant" | "compas";
 
-export default function QuantizationAuditor() {
+export default function AlgorithmicFairnessAuditor() {
+  const [pageTab, setPageTab] = useState<PageTab>("quant");
   const [tab, setTab] = useState<Tab>("scenarios");
 
   // Scenario tab
@@ -424,11 +478,241 @@ export default function QuantizationAuditor() {
         <div className="sticky top-10 z-40 bg-background/95 backdrop-blur border-b border-border/40">
           <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
             <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors">← Back to Portfolio</Link>
-            <span className="text-[10px] font-mono text-muted-foreground/50">Quantization Fairness Auditor</span>
+            <span className="text-[10px] font-mono text-muted-foreground/50">Algorithmic Fairness Auditor</span>
           </div>
         </div>
 
-        <div className="max-w-5xl mx-auto px-6 py-10">
+        {/* Page-level tab switcher */}
+        <div className="max-w-5xl mx-auto px-6 pt-6 pb-0">
+          <div className="flex gap-1 p-1 rounded-xl bg-muted/30 border border-border/40 w-fit">
+            {([
+              { id: "quant" as PageTab, label: "Tab 1 · Quantization Auditor" },
+              { id: "compas" as PageTab, label: "Tab 2 · COMPAS Recidivism" },
+            ] as { id: PageTab; label: string }[]).map(pt => (
+              <button
+                key={pt.id}
+                onClick={() => setPageTab(pt.id)}
+                className={`text-xs px-4 py-2 rounded-lg font-medium transition-all ${
+                  pageTab === pt.id
+                    ? "bg-background text-foreground shadow-sm border border-border/60"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {pt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* COMPAS tab */}
+        {pageTab === "compas" && (
+          <div className="max-w-5xl mx-auto px-6 py-10">
+
+            {/* Header */}
+            <div className="mb-8">
+              <div className="flex items-center gap-3 mb-3">
+                <h1 className="text-2xl font-bold">COMPAS Recidivism Audit</h1>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border bg-amber-500/10 text-amber-600 border-amber-500/20">Preview</span>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+                COMPAS scored over 1 million US defendants on recidivism risk, directly influencing bail and sentencing.
+                In 2016, ProPublica found Black defendants were falsely labelled dangerous at nearly twice the rate of white defendants.
+                We independently replicated their analysis using the same dataset.
+              </p>
+            </div>
+
+            {/* Two-column layout */}
+            <div className="flex flex-col lg:flex-row gap-8">
+
+              {/* Left: main content */}
+              <div className="flex-1 min-w-0 space-y-6">
+
+                {/* How it works */}
+                <div className="rounded-xl border border-border/60 bg-muted/10 p-4">
+                  <div className="grid grid-cols-3 gap-4 text-xs text-muted-foreground">
+                    {[
+                      { step: "01 · The Algorithm", text: "COMPAS assigned defendants a score of 1–10 (Low/Medium/High) predicting reoffending within 2 years." },
+                      { step: "02 · The Investigation", text: "ProPublica (2016) obtained 7,000 Broward County records and found systematic racial disparity in error rates." },
+                      { step: "03 · This Audit", text: "We replicate their methodology — same dataset, same filters, same metrics — to verify and extend the findings." },
+                    ].map(s => (
+                      <div key={s.step}>
+                        <p className="font-mono text-[10px] text-primary/60 mb-1">{s.step}</p>
+                        <p className="leading-relaxed">{s.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Headline finding */}
+                <div className="space-y-3">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50">Headline finding — False Positive Rate by race</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 px-4 py-3">
+                      <p className="text-[10px] text-muted-foreground mb-1">Black defendants — FPR</p>
+                      <p className="text-3xl font-bold text-rose-500">{COMPAS_DATA.byRace[0].fpr}%</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">of innocents wrongly flagged dangerous</p>
+                    </div>
+                    <div className="rounded-xl border border-border/60 bg-muted/10 px-4 py-3">
+                      <p className="text-[10px] text-muted-foreground mb-1">White defendants — FPR</p>
+                      <p className="text-3xl font-bold">{COMPAS_DATA.byRace[1].fpr}%</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">of innocents wrongly flagged dangerous</p>
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 px-4 py-3 flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground mb-0.5">Disparate Impact Ratio</p>
+                      <p className="text-2xl font-bold text-rose-500">{COMPAS_DATA.byRace[0].dir}×</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-rose-600 font-semibold leading-relaxed">
+                        A Black defendant who did not reoffend was {COMPAS_DATA.byRace[0].dir}× more likely to be labelled dangerous.
+                      </p>
+                      <p className="text-[10px] text-rose-600/60 mt-1">Legal threshold: 1.25× · This result: {COMPAS_DATA.byRace[0].dir}×</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Race breakdown table */}
+                <div>
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50 mb-3">All groups (n ≥ 50) · DIR baseline = Caucasian</p>
+                  <div className="rounded-xl border border-border/60 overflow-hidden">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b border-border/40 bg-muted/20">
+                          <th className="text-left px-4 py-2 font-semibold">Group</th>
+                          <th className="text-right px-3 py-2 font-semibold">n</th>
+                          <th className="text-right px-3 py-2 font-semibold">Base rate</th>
+                          <th className="text-right px-3 py-2 font-semibold">FPR</th>
+                          <th className="text-right px-3 py-2 font-semibold">FNR</th>
+                          <th className="text-right px-3 py-2 font-semibold">DIR</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {COMPAS_DATA.byRace.map((row) => (
+                          <tr key={row.race} className="border-b border-border/30 last:border-0">
+                            <td className="px-4 py-2 font-medium">{row.race}</td>
+                            <td className="px-3 py-2 text-right text-muted-foreground">{row.n.toLocaleString()}</td>
+                            <td className="px-3 py-2 text-right text-muted-foreground">{row.recidRate}%</td>
+                            <td className={`px-3 py-2 text-right font-semibold ${row.dir > 1.25 ? "text-rose-500" : "text-foreground"}`}>{row.fpr}%</td>
+                            <td className="px-3 py-2 text-right text-muted-foreground">{row.fnr}%</td>
+                            <td className={`px-3 py-2 text-right font-semibold ${row.dir > 1.25 ? "text-rose-500" : row.dir < 0.8 ? "text-amber-600" : "text-emerald-600"}`}>
+                              {row.dir.toFixed(2)}×
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground/50 mt-1.5">DIR &gt; 1.25× = over-flagged · DIR &lt; 0.80× = under-flagged (high FNR)</p>
+                </div>
+
+                {/* Key insight */}
+                <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+                  <p className="text-xs font-semibold mb-1.5">The errors go in opposite directions</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Black defendants were over-flagged — wrongly labelled dangerous at 42.3% vs 22.0% for white defendants.
+                    But Hispanic and Other defendants were under-flagged — lower false positive rates, but false negative rates of 58–66%,
+                    meaning most who actually reoffended were told they were low risk.
+                    The algorithm does not fail uniformly: it fails different groups in different directions.
+                  </p>
+                </div>
+
+                {/* Validation */}
+                <div className="rounded-xl border border-border/60 bg-muted/10 p-4">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50 mb-3">Validation — this audit vs ProPublica published (2016)</p>
+                  <div className="space-y-2">
+                    {([
+                      { metric: "Black FPR", ours: `${COMPAS_DATA.byRace[0].fpr}%`, pub: `${COMPAS_DATA.propublicaPublished.blackFpr}%` },
+                      { metric: "White FPR", ours: `${COMPAS_DATA.byRace[1].fpr}%`, pub: `${COMPAS_DATA.propublicaPublished.whiteFpr}%` },
+                      { metric: "DIR",       ours: `${COMPAS_DATA.byRace[0].dir}×`, pub: `${COMPAS_DATA.propublicaPublished.dir}×`      },
+                      { metric: "Black FNR", ours: `${COMPAS_DATA.byRace[0].fnr}%`, pub: `${COMPAS_DATA.propublicaPublished.blackFnr}%` },
+                      { metric: "White FNR", ours: `${COMPAS_DATA.byRace[1].fnr}%`, pub: `${COMPAS_DATA.propublicaPublished.whiteFnr}%` },
+                    ] as const).map(r => (
+                      <div key={r.metric} className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground w-24">{r.metric}</span>
+                        <span className="font-semibold">{r.ours}</span>
+                        <span className="text-muted-foreground/60">ProPublica: {r.pub}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-emerald-600 mt-3">✓ Within 2–3% on all metrics — independent replication confirmed</p>
+                </div>
+
+                {/* Footer */}
+                <div className="rounded-xl border border-border/60 bg-muted/10 p-4">
+                  <p className="text-xs font-semibold mb-1">Built in Python · Google Colab</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Analysis built step by step in Colab — data load, filtering, metric functions, full audit table, validation.
+                    Data: {COMPAS_DATA.source} · {COMPAS_DATA.region} · {COMPAS_DATA.sampleSize.toLocaleString()} defendants.
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {["Python", "Pandas", "Google Colab", "ProPublica Dataset"].map(t => (
+                      <span key={t} className="text-[10px] font-mono text-muted-foreground/60 bg-muted/40 px-2 py-0.5 rounded">{t}</span>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Right: explanation panel */}
+              <div className="lg:w-72 shrink-0">
+                <div className="lg:sticky lg:top-24 space-y-4">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50">What the metrics mean</p>
+
+                  <div className="rounded-lg border border-border/60 bg-muted/10 p-4 space-y-2">
+                    <p className="text-xs font-semibold">False Positive Rate (FPR)</p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      Of defendants who did <em>not</em> reoffend, what % were scored Medium or High risk?
+                      A high FPR means innocent people are labelled dangerous — facing denied bail and longer sentences.
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg border border-border/60 bg-muted/10 p-4 space-y-2">
+                    <p className="text-xs font-semibold">False Negative Rate (FNR)</p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      Of defendants who <em>did</em> reoffend, what % were scored Low risk?
+                      A high FNR means people who went on to reoffend were given the all-clear by the algorithm.
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg border border-border/60 bg-muted/10 p-4 space-y-2">
+                    <p className="text-xs font-semibold">Disparate Impact Ratio (DIR)</p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      How many times more likely is one group to be falsely flagged vs the Caucasian baseline?
+                    </p>
+                    <div className="space-y-1 mt-1">
+                      {[
+                        { range: "< 0.80×", label: "Under-flagged vs baseline", color: "text-amber-600" },
+                        { range: "0.80–1.25×", label: "Within fair threshold", color: "text-emerald-600" },
+                        { range: "> 1.25×", label: "Discrimination flag (US 4/5ths)", color: "text-rose-500" },
+                      ].map(r => (
+                        <div key={r.range} className="flex items-start gap-2">
+                          <span className="font-mono text-[10px] w-20 shrink-0 text-muted-foreground">{r.range}</span>
+                          <span className={`text-[10px] ${r.color}`}>{r.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-border/60 bg-muted/10 p-4 space-y-2">
+                    <p className="text-xs font-semibold">The Northpointe rebuttal</p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      COMPAS{"'"} makers argued the scores are calibrated — a score of 7 predicts the same reoffending
+                      probability regardless of race. They{"'"}re technically right.
+                      But calibration and equal FPR are mathematically incompatible when base rates differ.
+                      Both sides were correct. That{"'"}s the point.
+                    </p>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* Quant Auditor tab */}
+        {pageTab === "quant" && <div className="max-w-5xl mx-auto px-6 py-10">
 
           {/* Header */}
           <div className="mb-8">
@@ -682,7 +966,7 @@ export default function QuantizationAuditor() {
             )}
 
           </div>
-        </div>
+        </div>}
       </div>
     </PageGate>
   );

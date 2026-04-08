@@ -33,11 +33,11 @@ const RESPONSIBLE_AI: Project[] = [
     link: "/client-discovery",
   },
   {
-    title: "Quantization Fairness Auditor",
-    description: "Detects hidden bias introduced when AI models are compressed for deployment. Measures whether INT8 quantization disproportionately flips decisions for underrepresented groups using disparate impact ratio, Cohen's d, and chi-square testing.",
+    title: "Algorithmic Fairness Auditor",
+    description: "Audits AI systems for hidden bias — from quantization-induced disparate impact to real-world criminal justice (COMPAS recidivism). Applies disparate impact ratio, Cohen's d, false positive/negative rate parity, and chi-square testing.",
     tags: ["Python", "NumPy", "SciPy", "Google Colab"],
     status: "preview",
-    link: "/quantization-auditor",
+    link: "/algorithmic-fairness",
   },
 ];
 

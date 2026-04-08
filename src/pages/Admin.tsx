@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { govDb } from "@/lib/supabase-governance";
 
-const ADMIN_PIN = "PRL2026";
-
 interface Visit {
   id: string;
   page: string;
@@ -47,25 +45,15 @@ const PAGE_LABELS: Record<string, string> = {
   "/melodic-framework": "Melodic Framework",
   "/quantization-auditor": "Quantization Auditor",
   "/medlog": "MedLog",
+  "/research": "Research",
 };
 
 export default function Admin() {
-  const [pin, setPin] = useState("");
-  const [unlocked, setUnlocked] = useState(false);
-  const [error, setError] = useState("");
   const [visits, setVisits] = useState<Visit[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
 
-  function tryUnlock(e: React.FormEvent) {
-    e.preventDefault();
-    if (pin === ADMIN_PIN) { setUnlocked(true); setError(""); }
-    else { setError("Wrong PIN"); setPin(""); }
-  }
-
   useEffect(() => {
-    if (!unlocked) return;
-    setLoading(true);
     govDb
       .from("visit_logs")
       .select("*")
@@ -75,7 +63,7 @@ export default function Admin() {
         if (data) setVisits(data as Visit[]);
         setLoading(false);
       });
-  }, [unlocked]);
+  }, []);
 
   const pages = ["all", ...Array.from(new Set(visits.map(v => v.page))).sort()];
   const filtered = filter === "all" ? visits : visits.filter(v => v.page === filter);
@@ -85,36 +73,6 @@ export default function Admin() {
     acc[s] = (acc[s] || 0) + 1;
     return acc;
   }, {});
-
-  if (!unlocked) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-full max-w-xs space-y-4 px-6">
-          <Link to="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors block mb-6">
-            ← Back to Portfolio
-          </Link>
-          <h1 className="text-lg font-bold">Admin</h1>
-          <form onSubmit={tryUnlock} className="space-y-3">
-            <input
-              type="password"
-              value={pin}
-              onChange={e => setPin(e.target.value)}
-              placeholder="Enter PIN"
-              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:border-primary"
-              autoFocus
-            />
-            {error && <p className="text-xs text-rose-500">{error}</p>}
-            <button
-              type="submit"
-              className="w-full py-2 rounded-lg bg-foreground text-background text-xs font-semibold hover:opacity-80 transition-opacity"
-            >
-              Unlock
-            </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">

@@ -15,7 +15,7 @@ import ProductIntelligence from "./pages/ProductIntelligence";
 import ClientDiscovery from "./pages/ClientDiscovery";
 import MelodicFramework from "./pages/MelodicFramework";
 import AIReadinessAssessment from "./pages/AIReadinessAssessment";
-import QuantizationAuditor from "./pages/QuantizationAuditor";
+import AlgorithmicFairnessAuditor from "./pages/AlgorithmicFairnessAuditor";
 import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
@@ -30,7 +30,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/research":            "Research | Preeti Builds",
   "/melodic-framework":        "Melodic Framework (Raaga) | Preeti Builds",
   "/ai-readiness":             "AI Readiness Assessment | Preeti Builds",
-  "/quantization-auditor":     "Quantization Fairness Auditor | Preeti Builds",
+  "/algorithmic-fairness":      "Algorithmic Fairness Auditor | Preeti Builds",
   "/admin":                    "Admin | Preeti Builds",
 };
 
@@ -62,7 +62,7 @@ const App = () => (
             <Route path="/client-discovery" element={<ClientDiscovery />} />
             <Route path="/melodic-framework" element={<MelodicFramework />} />
             <Route path="/ai-readiness" element={<AIReadinessAssessment />} />
-            <Route path="/quantization-auditor" element={<QuantizationAuditor />} />
+            <Route path="/algorithmic-fairness" element={<AlgorithmicFairnessAuditor />} />
             <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

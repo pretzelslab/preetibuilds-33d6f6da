@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowLeft, BarChart3, Calendar, Heart, Shield, Stethoscope, Users, ExternalLink } from "lucide-react";
 
-const LIVE_URL = "https://medlogqw.netlify.app";
+const LIVE_URL = "https://pretzelslab.github.io/medlog";
 
 const FEATURES = [
   { icon: Users,       title: "Per-member profiles",     desc: "Log health records for every family member under one account. Switch profiles in one tap." },
