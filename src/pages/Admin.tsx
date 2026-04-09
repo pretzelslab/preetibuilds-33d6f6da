@@ -8,6 +8,8 @@ interface Visit {
   referrer: string | null;
   user_agent: string | null;
   visited_at: string;
+  city: string | null;
+  country: string | null;
 }
 
 function parseSource(referrer: string | null): string {
@@ -23,6 +25,14 @@ function parseDevice(ua: string | null): string {
   if (!ua) return "Unknown";
   if (/mobile|android|iphone|ipad/i.test(ua)) return "Mobile";
   return "Desktop";
+}
+
+function formatDateTime(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleString("en-GB", {
+    day: "2-digit", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit", hour12: false,
+  });
 }
 
 function timeAgo(iso: string): string {
@@ -52,6 +62,10 @@ export default function Admin() {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+
+  useEffect(() => {
+    try { localStorage.setItem("pl_session_access", "1"); } catch {}
+  }, []);
 
   useEffect(() => {
     govDb
@@ -145,6 +159,7 @@ export default function Admin() {
                   <tr className="border-b border-border/60 bg-muted/20">
                     <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">When</th>
                     <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Page</th>
+                    <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Location</th>
                     <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Source</th>
                     <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Device</th>
                   </tr>
@@ -152,8 +167,16 @@ export default function Admin() {
                 <tbody>
                   {filtered.map((v, i) => (
                     <tr key={v.id} className={`border-b border-border/40 last:border-0 ${i % 2 === 0 ? "" : "bg-muted/10"}`}>
-                      <td className="px-4 py-2.5 text-muted-foreground">{timeAgo(v.visited_at)}</td>
+                      <td className="px-4 py-2.5 text-muted-foreground">
+                        <span className="block">{timeAgo(v.visited_at)}</span>
+                        <span className="block text-[10px] opacity-60">{formatDateTime(v.visited_at)}</span>
+                      </td>
                       <td className="px-4 py-2.5 font-medium">{PAGE_LABELS[v.page] ?? v.page}</td>
+                      <td className="px-4 py-2.5 text-muted-foreground">
+                        {v.city || v.country
+                          ? <span>{[v.city, v.country].filter(Boolean).join(", ")}</span>
+                          : <span className="opacity-40">—</span>}
+                      </td>
                       <td className="px-4 py-2.5 text-muted-foreground">{parseSource(v.referrer)}</td>
                       <td className="px-4 py-2.5 text-muted-foreground">{parseDevice(v.user_agent)}</td>
                     </tr>

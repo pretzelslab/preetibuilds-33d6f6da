@@ -290,39 +290,94 @@ function WhoPaysPanel({ configs }: { configs: Configuration[] }) {
 function CarbonPreview() {
   const configs = CARBON_DATA.content.configurations;
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8">
-      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-xs font-medium mb-4">
-        <Leaf className="w-3 h-3" /> Sustainable AI · First carbon-fairness tradeoff tool
+    <div className="min-h-screen bg-background">
+      {/* Nav */}
+      <div className="sticky top-10 z-40 bg-background/95 backdrop-blur border-b border-border/40">
+        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
+          <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors">← Back to Portfolio</Link>
+          <span className="text-xs font-mono text-emerald-600">Preview</span>
+        </div>
       </div>
-      <h1 className="text-2xl font-bold mb-2">Carbon-Fairness Efficiency Frontier</h1>
-      <p className="text-sm text-muted-foreground mb-6 max-w-xl leading-relaxed">
-        When you compress an AI model to save energy, minority groups are harmed more.
-        No tool has ever put both on the same chart — until now.
-      </p>
 
-      <div className="grid grid-cols-4 gap-3 mb-6">
-        {configs.map(c => (
-          <div key={c.precision} className={`rounded-xl border p-4 ${!c.euCompliant ? "border-rose-500/30 bg-rose-500/5" : "border-emerald-500/30 bg-emerald-500/5"}`}>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-3 h-3 rounded-full" style={{ background: c.color }} />
-              <span className="text-xs font-bold">{c.precision}</span>
-            </div>
-            <p className="text-lg font-bold">{c.carbonUg} µg</p>
-            <p className="text-[10px] text-muted-foreground">CO₂e / inference</p>
-            <p className={`text-sm font-bold mt-2 ${c.dir > EU_AI_ACT_THRESHOLD ? "text-rose-500" : "text-emerald-600"}`}>
-              DIR {c.dir.toFixed(2)}×
-            </p>
-            <p className={`text-[10px] ${c.euCompliant ? "text-emerald-600" : "text-rose-500"}`}>
-              {c.euCompliant ? "✓ EU compliant" : "✗ Breach"}
-            </p>
+      <div className="max-w-5xl mx-auto px-6 py-12">
+
+        {/* Title */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-3">
+            <h1 className="text-2xl font-bold">Carbon-Fairness Efficiency Frontier</h1>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border bg-emerald-500/10 text-emerald-600 border-emerald-500/20">Preview</span>
           </div>
-        ))}
-      </div>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+            When you compress an AI model to save energy, minority groups are harmed more.
+            This tool makes the tradeoff visible — carbon cost vs. fairness impact, on the same chart.
+          </p>
+        </div>
 
-      <div className="rounded-xl border border-border/60 bg-muted/10 p-4 text-xs text-muted-foreground">
-        <strong className="text-foreground">Key finding:</strong> FP16 is the only configuration that saves significant carbon
-        (44.9%) while staying below the EU AI Act 1.25× fairness threshold — across all 4 scenarios.
-        INT8 saves 75% carbon but is legally non-compliant everywhere.
+        {/* Scenario tabs — static */}
+        <div className="flex gap-2 mb-8 flex-wrap">
+          {[
+            { label: "🏦 Loan Approval", active: false },
+            { label: "⚖️ Bail Risk Assessment", active: false },
+            { label: "📋 Hiring Screen", active: false },
+            { label: "📱 Content Recommendation", active: true },
+          ].map(s => (
+            <span key={s.label} className={`text-xs px-4 py-2 rounded-xl border font-medium ${s.active ? "bg-foreground text-background border-foreground" : "border-border/60 text-muted-foreground"}`}>
+              {s.label}
+            </span>
+          ))}
+        </div>
+
+        {/* Precision cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          {configs.map(c => (
+            <div key={c.precision} className={`rounded-xl border p-4 ${!c.euCompliant ? "border-rose-500/30 bg-rose-500/5" : "border-emerald-500/30 bg-emerald-500/5"}`}>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-3 h-3 rounded-full" style={{ background: c.color }} />
+                <span className="text-xs font-bold">{c.precision}</span>
+              </div>
+              <p className="text-lg font-bold">{c.carbonUg} µg</p>
+              <p className="text-[10px] text-muted-foreground">CO₂e / inference</p>
+              <p className={`text-sm font-bold mt-2 ${c.dir > EU_AI_ACT_THRESHOLD ? "text-rose-500" : "text-emerald-600"}`}>
+                DIR {c.dir.toFixed(2)}×
+              </p>
+              <p className={`text-[10px] ${c.euCompliant ? "text-emerald-600" : "text-rose-500"}`}>
+                {c.euCompliant ? "✓ EU compliant" : "✗ Breach"}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Blurred chart mock */}
+        <div className="relative rounded-xl border border-border/60 overflow-hidden mb-6">
+          <div className="bg-muted/10 px-5 py-4">
+            <p className="text-xs font-semibold mb-1">Carbon vs. Fairness — Efficiency Frontier</p>
+            <p className="text-[10px] text-muted-foreground mb-4">Each dot = one precision level. Red border = EU AI Act breach.</p>
+            <div className="blur-sm space-y-3">
+              <div className="h-52 rounded bg-muted/30 flex items-center justify-center">
+                <div className="w-full h-full relative p-4">
+                  <div className="absolute top-8 left-16 w-10 h-10 rounded-full bg-emerald-500/40" />
+                  <div className="absolute top-16 left-28 w-10 h-10 rounded-full bg-blue-500/40" />
+                  <div className="absolute bottom-12 right-20 w-10 h-10 rounded-full bg-amber-500/40" />
+                  <div className="absolute bottom-8 right-8 w-10 h-10 rounded-full bg-rose-500/40" />
+                  <div className="absolute inset-0 border-b border-l border-border/40 m-4" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="h-12 rounded bg-muted/30" />
+                <div className="h-12 rounded bg-muted/30" />
+              </div>
+            </div>
+          </div>
+          <DiagonalWatermark />
+        </div>
+
+        {/* Key finding */}
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-xs text-muted-foreground">
+          <strong className="text-foreground">Key finding:</strong> FP16 is the only configuration that saves significant carbon
+          (44.9%) while staying below the EU AI Act 1.25× fairness threshold — across all 4 scenarios.
+          INT8 saves 75% carbon but is legally non-compliant everywhere.
+        </div>
+
       </div>
     </div>
   );

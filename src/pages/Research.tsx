@@ -164,6 +164,59 @@ const Research = () => {
           </p>
         </footer>
       </div>
+
+      {/* COMPAS Safety Eval Runbook */}
+      <div className="max-w-4xl mx-auto px-6 pb-16 space-y-8">
+        <div className="rounded-xl border border-border bg-card p-8 shadow-card">
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-600 text-[11px] font-medium mb-3">
+                AI Safety · Criminal Justice
+              </div>
+              <h2 className="text-xl font-semibold tracking-tight text-foreground">
+                COMPAS Safety Evaluation Runbook
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                A structured deployment evaluation framework for the COMPAS recidivism risk scoring tool.
+                Defines fairness metrics, pass/fail thresholds, escalation paths, and monitoring cadence
+                against EU AI Act, NIST AI RMF, and US 4/5ths rule standards.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            {[
+              { value: "1.92×", label: "Disparate Impact Ratio", flagged: true },
+              { value: "29.5 pp", label: "FPR gap (AA vs Other)", flagged: true },
+              { value: "37.6 pp", label: "FNR gap (Other vs AA)", flagged: true },
+              { value: "4 Critical", label: "Threshold breaches", flagged: true },
+            ].map(t => (
+              <div key={t.label} className="rounded-lg border border-rose-500/20 bg-rose-500/5 px-4 py-3">
+                <p className="text-lg font-bold text-rose-600">{t.value}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{t.label}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-lg border border-border/60 bg-muted/10 p-4 text-xs text-muted-foreground mb-5">
+            <strong className="text-foreground">Verdict: Deployment blocked.</strong> COMPAS fails EU AI Act (DIR 1.92× vs 1.25× threshold),
+            US 4/5ths rule (0.52 vs 0.80 required), and internal FPR/FNR gap thresholds — simultaneously overflaging
+            African-Americans and underflaging Hispanic and Other defendants.
+          </div>
+
+          <div className="flex items-center gap-3">
+            <a
+              href="https://github.com/pretzelslab/ai-safety-research/blob/main/COMPAS_Safety_Eval_Runbook.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border/60 bg-background text-xs font-medium text-foreground hover:border-foreground/40 transition-colors"
+            >
+              View full runbook on GitHub →
+            </a>
+            <span className="text-[10px] text-muted-foreground">EU AI Act · NIST RMF · n=6,172 records</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
