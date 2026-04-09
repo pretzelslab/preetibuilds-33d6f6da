@@ -1,8 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = "https://mfhjopfnmtujjyojokeg.supabase.co";
-const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1maGpvcGZubXR1amp5b2pva2VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxODEyNTUsImV4cCI6MjA4OTc1NzI1NX0.1AUbN1o_UmdG_8DM0_OFnGnl32G5vsVYSYjH6dbviXY";
+const SUPABASE_URL = import.meta.env.VITE_GOV_SUPABASE_URL as string;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_GOV_SUPABASE_ANON_KEY as string;
 
 export const govDb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 

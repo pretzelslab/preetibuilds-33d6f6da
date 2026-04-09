@@ -43,7 +43,7 @@ const PAGE_LABELS: Record<string, string> = {
   "/product-intelligence": "Product Intelligence",
   "/gtm-techstack": "GTM Tech Stack",
   "/melodic-framework": "Melodic Framework",
-  "/quantization-auditor": "Quantization Auditor",
+  "/algorithmic-fairness": "Algorithmic Fairness Auditor",
   "/medlog": "MedLog",
   "/research": "Research",
 };

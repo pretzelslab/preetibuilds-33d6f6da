@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useVisitLogger } from "@/hooks/useVisitLogger";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Music, Search, Play, BookOpen, ChevronDown, ChevronUp, Plus, Loader2, RefreshCw, Shield } from "lucide-react";
@@ -8,7 +9,7 @@ import { govDb } from "@/lib/supabase-governance";
 import { PageGate } from "@/components/ui/PageGate";
 import { DiagonalWatermark } from "@/components/ui/DiagonalWatermark";
 
-const YT_API_KEY = "AIzaSyCq2BN9k3y8bU9yymWiroYBhdVnRPMIPnA";
+const YT_API_KEY = import.meta.env.VITE_YT_API_KEY as string;
 
 interface YtResult {
   videoId: string;
@@ -1407,6 +1408,7 @@ const MelodicPreview = () => (
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function MelodicFramework() {
+  useVisitLogger("/melodic-framework");
   const [query, setQuery] = useState("");
   const [timeFilter, setTimeFilter] = useState("All");
   const [selectedIds, setSelectedIds] = useState<Record<string, string>>({});

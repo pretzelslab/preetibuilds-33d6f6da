@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useVisitLogger } from "@/hooks/useVisitLogger";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
@@ -393,6 +394,7 @@ type Tab = "scenarios" | "upload" | "live";
 type PageTab = "quant" | "compas";
 
 export default function AlgorithmicFairnessAuditor() {
+  useVisitLogger("/algorithmic-fairness");
   const [pageTab, setPageTab] = useState<PageTab>("quant");
   const [tab, setTab] = useState<Tab>("scenarios");
 

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useVisitLogger } from "@/hooks/useVisitLogger";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Zap, Database, Mail, Globe, Target, TrendingUp, BarChart3, AlertTriangle, DollarSign, Users, CheckCircle, XCircle, Settings, FileText, RefreshCw, Shield, Code, Layers, GitBranch, Activity, Server, Lock, Clock, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -30,6 +31,7 @@ const txMuted = { color: "#5c6b7a" }; // muted text
 const border1 = { borderColor: "#d0d7e0" };
 
 const GTMTechStack = () => {
+  useVisitLogger("/gtm-techstack");
   useEffect(() => {
     const handler = (e: MouseEvent) => e.preventDefault();
     document.addEventListener("contextmenu", handler);

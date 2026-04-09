@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowLeft, BarChart3, Calendar, Heart, Shield, Stethoscope, Users, ExternalLink } from "lucide-react";
+import { useVisitLogger } from "@/hooks/useVisitLogger";
 
 const LIVE_URL = "https://pretzelslab.github.io/medlog";
 
@@ -28,6 +29,7 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 export default function MedLog() {
+  useVisitLogger("/medlog");
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}

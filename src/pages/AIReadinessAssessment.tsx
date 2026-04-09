@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useVisitLogger } from "@/hooks/useVisitLogger";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
@@ -997,6 +998,7 @@ const AIReadinessPreview = () => (
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function AIReadinessAssessment() {
+  useVisitLogger("/ai-readiness");
   const [stage, setStage] = useState<"intro" | "questions" | "results">("intro");
   const [profile, setProfile] = useState<OrgProfile>({ name: "", industry: "", size: "", revenue: "", goal: "", region: "" });
   const [sectionIdx, setSectionIdx] = useState(0);

@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { useVisitLogger } from "@/hooks/useVisitLogger";
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell
@@ -45,6 +46,7 @@ const statTiles = [
 ];
 
 const Research = () => {
+  useVisitLogger("/research");
   const chartRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const scrollTo = (id: string) => {

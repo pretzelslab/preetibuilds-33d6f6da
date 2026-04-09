@@ -33,6 +33,13 @@ const RESPONSIBLE_AI: Project[] = [
     link: "/client-discovery",
   },
   {
+    title: "Carbon-Fairness Efficiency Frontier",
+    description: "The only tool that plots carbon cost against algorithmic fairness simultaneously. As you compress an AI model to save energy, minority groups are harmed more — this tool quantifies the tradeoff and recommends the optimal configuration under EU AI Act thresholds.",
+    tags: ["Python", "Recharts", "Sustainable AI", "EU AI Act"],
+    status: "preview",
+    link: "/carbon-fairness",
+  },
+  {
     title: "Algorithmic Fairness Auditor",
     description: "Audits AI systems for hidden bias — from quantization-induced disparate impact to real-world criminal justice (COMPAS recidivism). Applies disparate impact ratio, Cohen's d, false positive/negative rate parity, and chi-square testing.",
     tags: ["Python", "NumPy", "SciPy", "Google Colab"],

@@ -16,6 +16,7 @@ import ClientDiscovery from "./pages/ClientDiscovery";
 import MelodicFramework from "./pages/MelodicFramework";
 import AIReadinessAssessment from "./pages/AIReadinessAssessment";
 import AlgorithmicFairnessAuditor from "./pages/AlgorithmicFairnessAuditor";
+import CarbonFairnessFrontier from "./pages/CarbonFairnessFrontier";
 import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/melodic-framework":        "Melodic Framework (Raaga) | Preeti Builds",
   "/ai-readiness":             "AI Readiness Assessment | Preeti Builds",
   "/algorithmic-fairness":      "Algorithmic Fairness Auditor | Preeti Builds",
+  "/carbon-fairness":           "Carbon-Fairness Efficiency Frontier | Preeti Builds",
   "/admin":                    "Admin | Preeti Builds",
 };
 
@@ -63,6 +65,7 @@ const App = () => (
             <Route path="/melodic-framework" element={<MelodicFramework />} />
             <Route path="/ai-readiness" element={<AIReadinessAssessment />} />
             <Route path="/algorithmic-fairness" element={<AlgorithmicFairnessAuditor />} />
+            <Route path="/carbon-fairness" element={<CarbonFairnessFrontier />} />
             <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
