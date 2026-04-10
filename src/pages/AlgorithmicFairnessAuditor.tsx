@@ -276,6 +276,8 @@ function Verdict({ result, context }: { result: AuditResult; context?: string })
 // ── Preview ───────────────────────────────────────────────────────
 
 function AuditPreview() {
+  const [activeTab, setActiveTab] = useState<0 | 1 | 2 | 3 | 4>(0);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="sticky top-10 z-40 bg-background/95 backdrop-blur border-b border-border/40">
@@ -293,72 +295,266 @@ function AuditPreview() {
             <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border bg-amber-500/10 text-amber-600 border-amber-500/20">Preview</span>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
-            Two modules: a quantization bias auditor (simulated + real scenarios) and an independent replication of the ProPublica COMPAS criminal justice investigation.
+            Four modules: quantization bias auditor, COMPAS criminal justice replication, remediation simulator, and a real mortgage lending fairness audit using CFPB HMDA 2022 data.
           </p>
         </div>
 
-        {/* Tab switcher — static, not interactive */}
-        <div className="flex gap-1 p-1 rounded-xl bg-muted/30 border border-border/40 w-fit mb-8">
-          {["Tab 1 · Quantization Auditor", "Tab 2 · COMPAS Recidivism"].map((t, i) => (
-            <span key={t} className={`text-xs px-4 py-2 rounded-lg font-medium ${i === 0 ? "bg-background text-foreground shadow-sm border border-border/60" : "text-muted-foreground"}`}>{t}</span>
+        {/* Tab switcher — interactive */}
+        <div className="flex flex-wrap gap-1 p-1 rounded-xl bg-muted/30 border border-border/40 w-fit mb-8">
+          {["Tab 1 · Quantization Auditor", "Tab 2 · COMPAS Recidivism", "Tab 3 · COMPAS Remediation", "Tab 4 · Credit Scoring Audit", "Tab 5 · Credit Remediation"].map((t, i) => (
+            <button
+              key={t}
+              onClick={() => setActiveTab(i as 0 | 1 | 2 | 3 | 4)}
+              className={`text-xs px-4 py-2 rounded-lg font-medium transition-all ${activeTab === i ? "bg-background text-foreground shadow-sm border border-border/60" : "text-muted-foreground hover:text-foreground"}`}
+            >{t}</button>
           ))}
         </div>
 
-        {/* Tab 1 preview metrics */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          {[
-            { label: "Disparate Impact Ratio", value: "1.52×", sub: "minority harmed more" },
-            { label: "Cohen's d", value: "+0.76", sub: "medium error gap" },
-            { label: "Decision flips", value: "6", sub: "minority group only" },
-          ].map(c => (
-            <div key={c.label} className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
-              <p className="text-[10px] text-muted-foreground mb-1">{c.label}</p>
-              <p className="text-xl font-bold">{c.value}</p>
-              <p className="text-[10px] text-muted-foreground">{c.sub}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Tab 2 preview metrics */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          {[
-            { label: "Black defendants — FPR", value: "42.3%", sub: "wrongly flagged dangerous", highlight: true },
-            { label: "White defendants — FPR", value: "22.0%", sub: "wrongly flagged dangerous" },
-            { label: "Disparate Impact Ratio", value: "1.92×", sub: "above 1.25× legal threshold", highlight: true },
-          ].map(c => (
-            <div key={c.label} className={`rounded-lg border px-4 py-3 ${(c as { highlight?: boolean }).highlight ? "border-rose-500/30 bg-rose-500/5" : "border-border/60 bg-muted/20"}`}>
-              <p className="text-[10px] text-muted-foreground mb-1">{c.label}</p>
-              <p className={`text-xl font-bold ${(c as { highlight?: boolean }).highlight ? "text-rose-500" : ""}`}>{c.value}</p>
-              <p className="text-[10px] text-muted-foreground">{c.sub}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Blurred tool preview */}
-        <div className="relative rounded-xl border border-border/60 overflow-hidden mb-6">
-          <div className="bg-muted/10 px-5 py-4 space-y-2 select-none">
-            <div className="flex gap-2 mb-4">
-              {["Try a Scenario", "Upload CSV", "Live Entry"].map(t => (
-                <span key={t} className={`text-[10px] px-3 py-1 rounded-full border ${t === "Try a Scenario" ? "bg-primary/10 border-primary/40 text-primary" : "border-border/40 text-muted-foreground"}`}>{t}</span>
+        {/* Tab 1 — Quantization Auditor */}
+        {activeTab === 0 && (
+          <>
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              {[
+                { label: "Disparate Impact Ratio", value: "1.52×", sub: "minority harmed more" },
+                { label: "Cohen's d", value: "+0.76", sub: "medium error gap" },
+                { label: "Decision flips", value: "6", sub: "minority group only" },
+              ].map(c => (
+                <div key={c.label} className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
+                  <p className="text-[10px] text-muted-foreground mb-1">{c.label}</p>
+                  <p className="text-xl font-bold">{c.value}</p>
+                  <p className="text-[10px] text-muted-foreground">{c.sub}</p>
+                </div>
               ))}
             </div>
-            <div className="grid grid-cols-3 gap-2 mb-4">
-              {["🏦 Loan Approval", "⚖️ Bail Risk", "📋 Hiring Screen"].map(s => (
-                <div key={s} className="rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-[10px] text-muted-foreground">{s}</div>
-              ))}
-            </div>
-            <div className="blur-sm space-y-2">
-              <div className="h-32 rounded bg-muted/30" />
-              <div className="grid grid-cols-3 gap-2">
-                {[1, 2, 3].map(i => <div key={i} className="h-16 rounded bg-muted/30" />)}
+            <div className="relative rounded-xl border border-border/60 overflow-hidden mb-6">
+              <div className="bg-muted/10 px-5 py-4 space-y-2 select-none">
+                <div className="flex gap-2 mb-4">
+                  {["Try a Scenario", "Upload CSV", "Live Entry"].map(t => (
+                    <span key={t} className={`text-[10px] px-3 py-1 rounded-full border ${t === "Try a Scenario" ? "bg-primary/10 border-primary/40 text-primary" : "border-border/40 text-muted-foreground"}`}>{t}</span>
+                  ))}
+                </div>
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  {["🏦 Loan Approval", "⚖️ Bail Risk", "📋 Hiring Screen"].map(s => (
+                    <div key={s} className="rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-[10px] text-muted-foreground">{s}</div>
+                  ))}
+                </div>
+                <div className="blur-sm space-y-2">
+                  <div className="h-32 rounded bg-muted/30" />
+                  <div className="grid grid-cols-3 gap-2">
+                    {[1, 2, 3].map(i => <div key={i} className="h-16 rounded bg-muted/30" />)}
+                  </div>
+                </div>
               </div>
+              <DiagonalWatermark />
             </div>
-          </div>
-          <DiagonalWatermark />
-        </div>
-        <p className="text-xs text-muted-foreground text-center">
-          Enter access code to run the auditor with your own data or built-in scenarios.
-        </p>
+            <p className="text-xs text-muted-foreground text-center">
+              Enter access code to run the auditor with your own data or built-in scenarios.
+            </p>
+          </>
+        )}
+
+        {/* Tab 2 — COMPAS Recidivism */}
+        {activeTab === 1 && (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+              {[
+                { group: "African-American", fpr: "42.3%", fnr: "28.5%", dir: "1.92×", flagged: true },
+                { group: "Caucasian", fpr: "22.0%", fnr: "49.6%", dir: "1.00×", flagged: false },
+                { group: "Hispanic", fpr: "19.4%", fnr: "58.2%", dir: "0.88×", flagged: false },
+                { group: "Other", fpr: "12.8%", fnr: "66.1%", dir: "0.58×", flagged: false },
+              ].map(c => (
+                <div key={c.group} className={`rounded-lg border px-4 py-3 ${c.flagged ? "border-rose-500/30 bg-rose-500/5" : "border-border/60 bg-muted/20"}`}>
+                  <p className={`text-[10px] font-semibold mb-2 ${c.flagged ? "text-rose-600" : "text-muted-foreground"}`}>{c.group}</p>
+                  <p className="text-[10px] text-muted-foreground">FPR</p>
+                  <p className={`text-lg font-bold ${c.flagged ? "text-rose-500" : ""}`}>{c.fpr}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">FNR</p>
+                  <p className="text-sm font-semibold">{c.fnr}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">DIR</p>
+                  <p className={`text-sm font-bold ${c.flagged ? "text-rose-500" : ""}`}>{c.dir}</p>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-4 text-xs text-muted-foreground mb-6">
+              <strong className="text-foreground">Verdict: Deployment blocked.</strong> DIR 1.92× exceeds EU AI Act 1.25× threshold.
+              FPR gap of 29.5pp and FNR gap of 37.6pp both exceed critical thresholds.
+              Dual-direction bias: African-Americans overflaged, Hispanic and Other groups underflaged.
+            </div>
+            <div className="relative rounded-xl border border-border/60 overflow-hidden mb-6">
+              <div className="bg-muted/10 px-5 py-4 select-none">
+                <p className="text-[10px] font-semibold mb-3">Independent replication · ProPublica 2016 · n=6,172 Broward County defendants</p>
+                <div className="blur-sm pointer-events-none">
+                  <table className="w-full text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-border/60 bg-muted/20">
+                        {["Group","n","Base rate","FPR","FNR","DIR"].map(h => (
+                          <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        ["African-American","3,175","52.3%","42.3%","28.5%","1.92×"],
+                        ["Caucasian","2,103","39.1%","22.0%","49.6%","1.00×"],
+                        ["Hispanic","509","37.1%","19.4%","58.2%","0.88×"],
+                        ["Other","343","36.2%","12.8%","66.1%","0.58×"],
+                      ].map((row, i) => (
+                        <tr key={i} className="border-b border-border/40 last:border-0">
+                          {row.map((cell, j) => (
+                            <td key={j} className="px-3 py-2 font-medium">{cell}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <DiagonalWatermark />
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              Enter access code to explore the full audit, intersectional breakdowns, and remediation simulator.
+            </p>
+          </>
+        )}
+
+        {/* Tab 3 — Remediation Simulator */}
+        {activeTab === 2 && (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+              {[
+                { label: "AA threshold", value: "5 → ?", sub: "adjust to reduce FPR" },
+                { label: "Max DIR", value: "1.92×", sub: "target ≤ 1.25×" },
+                { label: "FPR gap", value: "29.5 pp", sub: "target ≤ 15 pp" },
+                { label: "FNR gap", value: "37.6 pp", sub: "Chouldechova limit" },
+              ].map(c => (
+                <div key={c.label} className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
+                  <p className="text-[10px] text-muted-foreground mb-1">{c.label}</p>
+                  <p className="text-xl font-bold">{c.value}</p>
+                  <p className="text-[10px] text-muted-foreground">{c.sub}</p>
+                </div>
+              ))}
+            </div>
+            <div className="relative rounded-xl border border-border/60 overflow-hidden mb-6">
+              <div className="bg-muted/10 px-5 py-4 select-none">
+                <p className="text-[10px] font-semibold mb-3">Group-specific threshold recalibration · before → after</p>
+                <div className="blur-sm pointer-events-none space-y-3">
+                  {["African-American", "Caucasian", "Hispanic", "Other"].map(g => (
+                    <div key={g} className="flex items-center gap-3">
+                      <span className="text-xs w-36">{g}</span>
+                      <div className="flex-1 h-2 rounded bg-muted/40" />
+                      <span className="text-xs w-8 text-right">5</span>
+                    </div>
+                  ))}
+                  <div className="h-24 rounded bg-muted/30 mt-2" />
+                </div>
+              </div>
+              <DiagonalWatermark />
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              Enter access code to run the simulator and explore the Chouldechova impossibility theorem interactively.
+            </p>
+          </>
+        )}
+
+        {/* Tab 4 — Credit Scoring Audit */}
+        {activeTab === 3 && (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+              {[
+                { label: "Black DIR", value: "1.81×", sub: "EU threshold 1.25×", flagged: true },
+                { label: "Hispanic DIR", value: "1.71×", sub: "EU threshold 1.25×", flagged: true },
+                { label: "Asian DIR", value: "1.11×", sub: "within threshold", flagged: false },
+                { label: "Dataset", value: "138k", sub: "HMDA 2022 NY", flagged: false },
+              ].map(c => (
+                <div key={c.label} className={`rounded-lg border px-4 py-3 ${c.flagged ? "border-rose-500/30 bg-rose-500/5" : "border-border/60 bg-muted/20"}`}>
+                  <p className="text-[10px] text-muted-foreground mb-1">{c.label}</p>
+                  <p className={`text-xl font-bold ${c.flagged ? "text-rose-500" : ""}`}>{c.value}</p>
+                  <p className="text-[10px] text-muted-foreground">{c.sub}</p>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs text-muted-foreground mb-6">
+              <strong className="text-foreground">Key finding: income doesn{"'"}t explain the gap.</strong> Black applicants in the highest income quartile face a DIR of 1.94× — higher than the lowest income quartile (1.55×). Proxy discrimination via zip code and credit history.
+            </div>
+            <div className="relative rounded-xl border border-border/60 overflow-hidden mb-6">
+              <div className="bg-muted/10 px-5 py-4 select-none">
+                <p className="text-[10px] font-semibold mb-3">Income-controlled DIR · CFPB HMDA 2022 · New York State</p>
+                <div className="blur-sm pointer-events-none">
+                  <table className="w-full text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-border/60 bg-muted/20">
+                        {["Group","Denial rate","DIR","Q1","Q2","Q3","Q4"].map(h => (
+                          <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        ["Black","18.9%","1.81×","1.55×","1.83×","1.95×","1.94×"],
+                        ["Hispanic","17.9%","1.71×","1.59×","1.56×","1.90×","1.87×"],
+                        ["Asian","11.6%","1.11×","1.20×","1.16×","1.44×","1.30×"],
+                        ["White","10.4%","1.00×","—","—","—","—"],
+                      ].map((row, i) => (
+                        <tr key={i} className="border-b border-border/40 last:border-0">
+                          {row.map((cell, j) => (
+                            <td key={j} className="px-3 py-2 font-medium">{cell}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <DiagonalWatermark />
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              Enter access code to explore the full audit, regulatory verdict, and income-controlled analysis.
+            </p>
+          </>
+        )}
+
+        {/* Tab 5 — Credit Remediation */}
+        {activeTab === 4 && (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+              {[
+                { label: "Black baseline DIR", value: "1.81×", sub: "target ≤ 1.25×" },
+                { label: "Hispanic baseline DIR", value: "1.71×", sub: "target ≤ 1.25×" },
+                { label: "Risk tradeoff", value: "Fairness", sub: "vs default rate" },
+                { label: "Groups modelled", value: "5", sub: "White · Black · Hispanic · Asian · Native Am." },
+              ].map(c => (
+                <div key={c.label} className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
+                  <p className="text-[10px] text-muted-foreground mb-1">{c.label}</p>
+                  <p className="text-xl font-bold">{c.value}</p>
+                  <p className="text-[10px] text-muted-foreground">{c.sub}</p>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 text-xs text-muted-foreground mb-6">
+              <strong className="text-foreground">Unlike COMPAS, the cost here is financial.</strong> Raising leniency approves more borderline applicants — lowering DIR but increasing estimated default risk. The simulator makes this tradeoff explicit.
+            </div>
+            <div className="relative rounded-xl border border-border/60 overflow-hidden mb-6">
+              <div className="bg-muted/10 px-5 py-4 select-none">
+                <p className="text-[10px] font-semibold mb-3">Approval leniency per group · denial rate before → after · default risk impact</p>
+                <div className="blur-sm pointer-events-none space-y-3">
+                  {["White", "Black", "Hispanic", "Asian", "Native American"].map(g => (
+                    <div key={g} className="flex items-center gap-3">
+                      <span className="text-xs w-36">{g}</span>
+                      <div className="flex-1 h-2 rounded bg-muted/40" />
+                      <span className="text-xs w-8 text-right">5</span>
+                      <span className="text-xs w-16 text-right text-muted-foreground">DIR: —</span>
+                    </div>
+                  ))}
+                  <div className="h-20 rounded bg-muted/30 mt-2" />
+                </div>
+              </div>
+              <DiagonalWatermark />
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              Enter access code to run the simulator and explore the fairness/risk tradeoff interactively.
+            </p>
+          </>
+        )}
+
       </div>
     </div>
   );
@@ -388,15 +584,73 @@ const COMPAS_DATA = {
   },
 } as const;
 
+// ── HMDA Credit Scoring data (CFPB HMDA 2022, New York State) ────
+// Conventional home purchase loans. n=138,665 after filtering.
+// Hispanic captured via derived_ethnicity (HMDA race/ethnicity split).
+
+const HMDA_METRICS = [
+  { race: "White",           n: 93900, denialRate: 10.4, approvalRate: 89.6, dir: 1.00, approvalRatio: 1.00, lowN: false },
+  { race: "Black",           n:  7931, denialRate: 18.9, approvalRate: 81.1, dir: 1.81, approvalRatio: 0.91, lowN: false },
+  { race: "Hispanic",        n: 11770, denialRate: 17.9, approvalRate: 82.1, dir: 1.71, approvalRatio: 0.92, lowN: false },
+  { race: "Asian",           n: 24608, denialRate: 11.6, approvalRate: 88.4, dir: 1.11, approvalRatio: 0.99, lowN: false },
+  { race: "Native American", n:   456, denialRate: 27.4, approvalRate: 72.6, dir: 2.63, approvalRatio: 0.81, lowN: true  },
+] as const;
+
+const HMDA_INCOME_CONTROLLED = [
+  { race: "Black",           quartiles: [{ q: "Q1 (lowest)", denialRate: 25.7, dir: 1.55 }, { q: "Q2", denialRate: 16.8, dir: 1.83 }, { q: "Q3", denialRate: 14.0, dir: 1.95 }, { q: "Q4 (highest)", denialRate: 14.1, dir: 1.94 }] },
+  { race: "Hispanic",        quartiles: [{ q: "Q1 (lowest)", denialRate: 26.2, dir: 1.59 }, { q: "Q2", denialRate: 14.3, dir: 1.56 }, { q: "Q3", denialRate: 13.7, dir: 1.90 }, { q: "Q4 (highest)", denialRate: 13.6, dir: 1.87 }] },
+  { race: "Asian",           quartiles: [{ q: "Q1 (lowest)", denialRate: 19.9, dir: 1.20 }, { q: "Q2", denialRate: 10.6, dir: 1.16 }, { q: "Q3", denialRate: 10.4, dir: 1.44 }, { q: "Q4 (highest)", denialRate:  9.4, dir: 1.30 }] },
+  { race: "Native American", quartiles: [{ q: "Q1 (lowest)", denialRate: 35.2, dir: 2.13 }, { q: "Q2", denialRate: 23.5, dir: 2.56 }, { q: "Q3", denialRate: 13.9, dir: 1.93 }, { q: "Q4 (highest)", denialRate: 16.7, dir: 2.29 }] },
+] as const;
+
 // ── Main page ─────────────────────────────────────────────────────
 
 type Tab = "scenarios" | "upload" | "live";
-type PageTab = "quant" | "compas";
+type PageTab = "quant" | "compas" | "remediate" | "credit" | "credit-remediate";
+
+// ── Credit remediation math ───────────────────────────────────────
+// Approval leniency slider: 1 = very strict, 10 = very lenient, 5 = baseline
+function denialAt(baseDenial: number, t: number): number {
+  const minDenial = Math.max(2, baseDenial * 0.25);
+  const maxDenial = Math.min(70, baseDenial * 2.2);
+  if (t <= 5) return Math.round((baseDenial + (maxDenial - baseDenial) * (5 - t) / 4) * 10) / 10;
+  return Math.round(Math.max(minDenial, baseDenial - (baseDenial - minDenial) * (t - 5) / 5) * 10) / 10;
+}
+// Estimated default risk increase: denied-but-now-approved applicants default at ~35%
+function defaultRiskIncrease(baseDenial: number, newDenial: number): number {
+  return Math.round(Math.max(0, (baseDenial - newDenial) * 0.35) * 10) / 10;
+}
+
+// ── Remediation simulator math ────────────────────────────────────
+function fprAt(baseFpr: number, t: number): number {
+  if (t <= 5) return 95 - (95 - baseFpr) * (t - 1) / 4;
+  return Math.max(2, baseFpr - (baseFpr - 2) * (t - 5) / 5);
+}
+function fnrAt(baseFnr: number, t: number): number {
+  if (t <= 5) return Math.max(2, 5 + (baseFnr - 5) * (t - 1) / 4);
+  return Math.min(98, baseFnr + (98 - baseFnr) * (t - 5) / 5);
+}
+function flagRate(fpr: number, fnr: number, recidRate: number): number {
+  return (fpr / 100) * (1 - recidRate / 100) + (1 - fnr / 100) * (recidRate / 100);
+}
+function calcDir(groupFlag: number, caucFlag: number): number {
+  return caucFlag > 0 ? groupFlag / caucFlag : 1;
+}
 
 export default function AlgorithmicFairnessAuditor() {
   useVisitLogger("/algorithmic-fairness");
   const [pageTab, setPageTab] = useState<PageTab>("quant");
   const [tab, setTab] = useState<Tab>("scenarios");
+
+  // COMPAS remediation thresholds — default 5
+  const [thresholds, setThresholds] = useState({ aa: 5, cauc: 5, hisp: 5, other: 5 });
+  const setT = (key: keyof typeof thresholds, val: number) =>
+    setThresholds(prev => ({ ...prev, [key]: val }));
+
+  // Credit remediation leniency — default 5
+  const [creditLeniency, setCreditLeniency] = useState({ white: 5, black: 5, hispanic: 5, asian: 5, native: 5 });
+  const setCL = (key: keyof typeof creditLeniency, val: number) =>
+    setCreditLeniency(prev => ({ ...prev, [key]: val }));
 
   // Scenario tab
   const [selected, setSelected] = useState<string | null>(null);
@@ -488,8 +742,11 @@ export default function AlgorithmicFairnessAuditor() {
         <div className="max-w-5xl mx-auto px-6 pt-6 pb-0">
           <div className="flex gap-1 p-1 rounded-xl bg-muted/30 border border-border/40 w-fit">
             {([
-              { id: "quant" as PageTab, label: "Tab 1 · Quantization Auditor" },
-              { id: "compas" as PageTab, label: "Tab 2 · COMPAS Recidivism" },
+              { id: "quant" as PageTab,            label: "Tab 1 · Quantization Auditor" },
+              { id: "compas" as PageTab,           label: "Tab 2 · COMPAS Recidivism" },
+              { id: "remediate" as PageTab,        label: "Tab 3 · COMPAS Remediation" },
+              { id: "credit" as PageTab,           label: "Tab 4 · Credit Scoring Audit" },
+              { id: "credit-remediate" as PageTab, label: "Tab 5 · Credit Remediation" },
             ] as { id: PageTab; label: string }[]).map(pt => (
               <button
                 key={pt.id}
@@ -640,6 +897,30 @@ export default function AlgorithmicFairnessAuditor() {
                   <p className="text-[10px] text-emerald-600 mt-3">✓ Within 2–3% on all metrics — independent replication confirmed</p>
                 </div>
 
+                {/* Deployment verdict */}
+                <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-4">
+                  <p className="text-xs font-bold text-rose-600 mb-3">Deployment Verdict — 4 Critical Threshold Breaches</p>
+                  <div className="space-y-2 mb-3">
+                    {[
+                      { check: "DIR — African-American/Caucasian", value: "1.92×", threshold: "≤ 1.25× (EU AI Act)", fail: true },
+                      { check: "FPR gap — AA vs Other", value: "29.5 pp", threshold: "≤ 15 pp (internal)", fail: true },
+                      { check: "FNR gap — Other vs AA", value: "37.6 pp", threshold: "≤ 15 pp (internal)", fail: true },
+                      { check: "US 4/5ths — African-American", value: "0.52", threshold: "≥ 0.80 (EEOC)", fail: true },
+                      { check: "Minimum group coverage", value: "343 (Other)", threshold: "≥ 100 records", fail: false },
+                    ].map(r => (
+                      <div key={r.check} className="flex items-start justify-between gap-2 text-[11px]">
+                        <span className="text-muted-foreground flex-1">{r.check}</span>
+                        <span className={`font-bold shrink-0 ${r.fail ? "text-rose-500" : "text-emerald-600"}`}>{r.value}</span>
+                        <span className={`shrink-0 ${r.fail ? "text-rose-400" : "text-emerald-500"}`}>{r.fail ? "❌" : "✅"}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-rose-600/80 leading-relaxed">
+                    COMPAS is blocked under EU AI Act, US 4/5ths Rule, and internal thresholds.
+                    See the <a href="https://github.com/pretzelslab/ai-safety-research/blob/main/COMPAS_Safety_Eval_Runbook.md" target="_blank" rel="noopener noreferrer" className="underline">Safety Eval Runbook</a> for escalation path and remediation options.
+                  </p>
+                </div>
+
                 {/* Footer */}
                 <div className="rounded-xl border border-border/60 bg-muted/10 p-4">
                   <p className="text-xs font-semibold mb-1">Built in Python · Google Colab</p>
@@ -703,6 +984,548 @@ export default function AlgorithmicFairnessAuditor() {
                       probability regardless of race. They{"'"}re technically right.
                       But calibration and equal FPR are mathematically incompatible when base rates differ.
                       Both sides were correct. That{"'"}s the point.
+                    </p>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* Remediation Simulator tab */}
+        {pageTab === "remediate" && (() => {
+          const groups = [
+            { key: "aa" as const,    label: "African-American", ...COMPAS_DATA.byRace[0] },
+            { key: "cauc" as const,  label: "Caucasian",        ...COMPAS_DATA.byRace[1] },
+            { key: "hisp" as const,  label: "Hispanic",         ...COMPAS_DATA.byRace[2] },
+            { key: "other" as const, label: "Other",            ...COMPAS_DATA.byRace[3] },
+          ];
+          const results = groups.map(g => {
+            const t = thresholds[g.key];
+            const newFpr = Math.round(fprAt(g.fpr, t) * 10) / 10;
+            const newFnr = Math.round(fnrAt(g.fnr, t) * 10) / 10;
+            const newFlag = flagRate(newFpr, newFnr, g.recidRate);
+            return { ...g, t, newFpr, newFnr, newFlag };
+          });
+          const caucFlag = results.find(r => r.key === "cauc")!.newFlag;
+          const withDir = results.map(r => ({
+            ...r,
+            newDir: Math.round(calcDir(r.newFlag, caucFlag) * 100) / 100,
+          }));
+          const maxFpr = Math.max(...withDir.map(r => r.newFpr));
+          const minFpr = Math.min(...withDir.map(r => r.newFpr));
+          const maxFnr = Math.max(...withDir.map(r => r.newFnr));
+          const minFnr = Math.min(...withDir.map(r => r.newFnr));
+          const maxDir = Math.max(...withDir.map(r => r.newDir));
+          const fprGap = Math.round((maxFpr - minFpr) * 10) / 10;
+          const fnrGap = Math.round((maxFnr - minFnr) * 10) / 10;
+          const dirPass = maxDir <= 1.25;
+          const fprPass = fprGap <= 15;
+          const fnrPass = fnrGap <= 15;
+          const usPass = withDir.every(r => r.key === "cauc" || r.newDir >= 0.8 || r.newDir <= 1.25);
+          const allPass = dirPass && fprPass && fnrPass;
+
+          return (
+            <div className="max-w-5xl mx-auto px-6 py-10">
+              <div className="mb-8">
+                <div className="flex items-center gap-3 mb-3">
+                  <h1 className="text-2xl font-bold">COMPAS Remediation Simulator</h1>
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${allPass ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : "bg-rose-500/10 text-rose-600 border-rose-500/20"}`}>
+                    {allPass ? "✓ Passes thresholds" : "✗ Still blocked"}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+                  Adjust the decision threshold per demographic group. A higher threshold means fewer defendants
+                  are flagged high-risk — lowering FPR but raising FNR. The simulator shows whether threshold
+                  recalibration alone can bring COMPAS within legal limits.
+                </p>
+              </div>
+
+              {/* Top: sliders + table side by side */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+                {/* Sliders */}
+                <div className="rounded-xl border border-border/60 bg-muted/10 p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold">Decision threshold per group</p>
+                    <button
+                      onClick={() => setThresholds({ aa: 5, cauc: 5, hisp: 5, other: 5 })}
+                      className="text-[11px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+                    >Reset</button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground -mt-2">1 = flag everyone · 10 = flag nobody · baseline = 5</p>
+                  {withDir.map(g => (
+                    <div key={g.key}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium">{g.label}</span>
+                        <span className="text-xs font-mono text-muted-foreground">{g.t}</span>
+                      </div>
+                      <input
+                        type="range" min={1} max={10} step={1} value={g.t}
+                        onChange={e => setT(g.key, +e.target.value)}
+                        className="w-full accent-primary"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Before / After table */}
+                <div className="flex flex-col gap-4">
+                  <div className="rounded-xl border border-border/60 overflow-hidden">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b border-border/40 bg-muted/20">
+                          <th className="text-left px-3 py-2 font-medium text-muted-foreground">Group</th>
+                          <th className="text-center px-2 py-2 font-medium text-muted-foreground">FPR →</th>
+                          <th className="text-center px-2 py-2 font-medium text-muted-foreground">FNR →</th>
+                          <th className="text-center px-2 py-2 font-medium text-muted-foreground">DIR</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {withDir.map(g => (
+                          <tr key={g.key} className="border-b border-border/30 last:border-0">
+                            <td className="px-3 py-2 font-medium text-[11px]">{g.label}</td>
+                            <td className="px-2 py-2 text-center text-[11px]">
+                              <span className="text-muted-foreground/60">{g.fpr}→</span>
+                              <span className={g.newFpr < g.fpr ? "text-emerald-600 font-bold" : g.newFpr > g.fpr ? "text-rose-500 font-bold" : "font-semibold"}>{g.newFpr}%</span>
+                            </td>
+                            <td className="px-2 py-2 text-center text-[11px]">
+                              <span className="text-muted-foreground/60">{g.fnr}→</span>
+                              <span className={g.newFnr > g.fnr ? "text-amber-600 font-bold" : g.newFnr < g.fnr ? "text-emerald-600 font-bold" : "font-semibold"}>{g.newFnr}%</span>
+                            </td>
+                            <td className={`px-2 py-2 text-center font-bold text-[11px] ${g.newDir > 1.25 ? "text-rose-500" : g.newDir < 0.8 ? "text-amber-600" : "text-emerald-600"}`}>
+                              {g.newDir.toFixed(2)}×
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Verdict */}
+                  <div className={`rounded-xl border p-4 ${allPass ? "border-emerald-500/30 bg-emerald-500/5" : "border-rose-500/30 bg-rose-500/5"}`}>
+                    <p className={`text-xs font-bold mb-2 ${allPass ? "text-emerald-600" : "text-rose-600"}`}>
+                      {allPass ? "✓ Passes — hold can be lifted" : "✗ Deployment still blocked"}
+                    </p>
+                    <div className="space-y-1">
+                      {[
+                        { label: "DIR max", value: `${maxDir.toFixed(2)}×`, threshold: "≤ 1.25×", pass: dirPass },
+                        { label: "FPR gap", value: `${fprGap} pp`, threshold: "≤ 15 pp", pass: fprPass },
+                        { label: "FNR gap", value: `${fnrGap} pp`, threshold: "≤ 15 pp", pass: fnrPass },
+                      ].map(r => (
+                        <div key={r.label} className="flex items-center gap-2 text-[11px]">
+                          <span>{r.pass ? "✅" : "❌"}</span>
+                          <span className="text-muted-foreground w-16">{r.label}</span>
+                          <span className={`font-bold ${r.pass ? "text-emerald-600" : "text-rose-500"}`}>{r.value}</span>
+                          <span className="text-muted-foreground/50">{r.threshold}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom: explanation cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {[
+                  { title: "Threshold recalibration", body: "A different cutoff score per group. Raising it flags fewer as high-risk — lowering FPR but raising FNR." },
+                  { title: "The tradeoff", body: "When base recidivism rates differ across groups, you cannot simultaneously equalise FPR, FNR, and calibration — Chouldechova impossibility theorem." },
+                  { title: "What actually fixes it", body: "Retraining with fairness constraints or structured human review. Threshold recalibration is an interim measure only." },
+                  { title: "Simulation note", body: "FPR/FNR at non-baseline thresholds use linear interpolation from known anchor points. Actual values need full score distributions.", amber: true },
+                ].map(c => (
+                  <div key={c.title} className={`rounded-lg border p-3 text-[11px] space-y-1 ${(c as {amber?: boolean}).amber ? "border-amber-500/20 bg-amber-500/5" : "border-border/60 bg-muted/10"}`}>
+                    <p className={`font-semibold text-xs ${(c as {amber?: boolean}).amber ? "text-amber-700 dark:text-amber-400" : ""}`}>{c.title}</p>
+                    <p className="text-muted-foreground leading-relaxed">{c.body}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Credit Remediation tab */}
+        {pageTab === "credit-remediate" && (() => {
+          const groups = [
+            { key: "white" as const,    label: "White",           baseDenial: 10.4 },
+            { key: "black" as const,    label: "Black",           baseDenial: 18.9 },
+            { key: "hispanic" as const, label: "Hispanic",        baseDenial: 17.9 },
+            { key: "asian" as const,    label: "Asian",           baseDenial: 11.6 },
+            { key: "native" as const,   label: "Native American", baseDenial: 27.4 },
+          ];
+          const results = groups.map(g => {
+            const t = creditLeniency[g.key];
+            const newDenial = denialAt(g.baseDenial, t);
+            const riskIncrease = defaultRiskIncrease(g.baseDenial, newDenial);
+            return { ...g, t, newDenial, riskIncrease };
+          });
+          const whiteDenial = results.find(r => r.key === "white")!.newDenial;
+          const withDir = results.map(r => ({
+            ...r,
+            newDir: r.key === "white" ? 1.00 : Math.round((r.newDenial / whiteDenial) * 100) / 100,
+          }));
+          const nonWhite = withDir.filter(r => r.key !== "white");
+          const maxDir = Math.max(...nonWhite.map(r => r.newDir));
+          const totalRisk = Math.round(withDir.reduce((sum, r) => sum + r.riskIncrease, 0) * 10) / 10;
+          const dirPass = nonWhite.filter(r => r.newDir > 1.25 && r.key !== "native").length === 0;
+          const allPass = dirPass;
+
+          return (
+            <div className="max-w-5xl mx-auto px-6 py-10">
+              <div className="mb-8">
+                <div className="flex items-center gap-3 mb-3">
+                  <h1 className="text-2xl font-bold">Credit Scoring Remediation Simulator</h1>
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${allPass ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : "bg-rose-500/10 text-rose-600 border-rose-500/20"}`}>
+                    {allPass ? "✓ Within threshold" : "✗ Still blocked"}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+                  Adjust approval leniency per demographic group. Higher leniency approves more applicants —
+                  reducing denial rate and DIR, but increasing estimated default risk.
+                  The simulator shows whether threshold recalibration alone can bring the model within
+                  EU AI Act limits, and at what financial cost.
+                </p>
+              </div>
+
+              {/* Top: sliders + table */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+                {/* Sliders */}
+                <div className="rounded-xl border border-border/60 bg-muted/10 p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold">Approval leniency per group</p>
+                    <button
+                      onClick={() => setCreditLeniency({ white: 5, black: 5, hispanic: 5, asian: 5, native: 5 })}
+                      className="text-[11px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+                    >Reset</button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground -mt-2">1 = very strict (more denials) · 10 = very lenient (fewer denials) · baseline = 5</p>
+                  {withDir.map(g => (
+                    <div key={g.key}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium">{g.label}</span>
+                        <span className="text-xs font-mono text-muted-foreground">{g.t}</span>
+                      </div>
+                      <input
+                        type="range" min={1} max={10} step={1} value={g.t}
+                        onChange={e => setCL(g.key, +e.target.value)}
+                        className="w-full accent-primary"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Before / After table + verdict */}
+                <div className="flex flex-col gap-4">
+                  <div className="rounded-xl border border-border/60 overflow-hidden">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b border-border/40 bg-muted/20">
+                          <th className="text-left px-3 py-2 font-medium text-muted-foreground">Group</th>
+                          <th className="text-center px-2 py-2 font-medium text-muted-foreground">Denial →</th>
+                          <th className="text-center px-2 py-2 font-medium text-muted-foreground">DIR</th>
+                          <th className="text-center px-2 py-2 font-medium text-muted-foreground">Risk +</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {withDir.map(g => (
+                          <tr key={g.key} className="border-b border-border/30 last:border-0">
+                            <td className="px-3 py-2 font-medium text-[11px]">
+                              {g.label}
+                              {g.key === "native" && <span className="ml-1 text-[10px] text-amber-600">⚠</span>}
+                            </td>
+                            <td className="px-2 py-2 text-center text-[11px]">
+                              <span className="text-muted-foreground/60">{g.baseDenial}→</span>
+                              <span className={g.newDenial < g.baseDenial ? "text-emerald-600 font-bold" : g.newDenial > g.baseDenial ? "text-rose-500 font-bold" : "font-semibold"}>{g.newDenial}%</span>
+                            </td>
+                            <td className={`px-2 py-2 text-center font-bold text-[11px] ${g.newDir > 1.25 ? "text-rose-500" : g.newDir < 0.8 ? "text-amber-600" : "text-emerald-600"}`}>
+                              {g.key === "white" ? "1.00×" : `${g.newDir.toFixed(2)}×`}
+                            </td>
+                            <td className={`px-2 py-2 text-center text-[11px] ${g.riskIncrease > 2 ? "text-rose-500 font-semibold" : g.riskIncrease > 0 ? "text-amber-600" : "text-muted-foreground"}`}>
+                              {g.riskIncrease > 0 ? `+${g.riskIncrease} pp` : "—"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Verdict */}
+                  <div className={`rounded-xl border p-4 ${allPass ? "border-emerald-500/30 bg-emerald-500/5" : "border-rose-500/30 bg-rose-500/5"}`}>
+                    <p className={`text-xs font-bold mb-2 ${allPass ? "text-emerald-600" : "text-rose-600"}`}>
+                      {allPass ? "✓ Within EU AI Act threshold" : "✗ Deployment still blocked"}
+                    </p>
+                    <div className="space-y-1">
+                      {[
+                        { label: "Max DIR (ex. Native Am.)", value: `${maxDir.toFixed(2)}×`, threshold: "≤ 1.25×", pass: maxDir <= 1.25 },
+                        { label: "Black DIR", value: `${withDir.find(r => r.key === "black")!.newDir.toFixed(2)}×`, threshold: "≤ 1.25×", pass: withDir.find(r => r.key === "black")!.newDir <= 1.25 },
+                        { label: "Hispanic DIR", value: `${withDir.find(r => r.key === "hispanic")!.newDir.toFixed(2)}×`, threshold: "≤ 1.25×", pass: withDir.find(r => r.key === "hispanic")!.newDir <= 1.25 },
+                        { label: "Est. total default risk", value: `+${totalRisk} pp`, threshold: "monitor", pass: totalRisk < 3 },
+                      ].map(r => (
+                        <div key={r.label} className="flex items-center gap-2 text-[11px]">
+                          <span>{r.pass ? "✅" : "❌"}</span>
+                          <span className="text-muted-foreground w-40">{r.label}</span>
+                          <span className={`font-bold ${r.pass ? "text-emerald-600" : "text-rose-500"}`}>{r.value}</span>
+                          <span className="text-muted-foreground/50">{r.threshold}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom: explanation cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {[
+                  { title: "Approval leniency", body: "Raising leniency for a group approves more borderline applicants — lowering their denial rate and DIR vs White. The bank accepts more credit risk in exchange for fairer outcomes." },
+                  { title: "The fairness/risk tradeoff", body: "Unlike COMPAS (where the cost is liberty), the tradeoff in lending is financial. Approving riskier applicants increases expected defaults. This is the measurable cost of remediation." },
+                  { title: "Why this is interim only", body: "Threshold recalibration treats the symptom, not the cause. Proxy variables (zip code, credit history) still carry racial signal. Real fix: feature audit and fairness-constrained retraining." },
+                  { title: "Simulation note", body: "Denial rates at non-baseline leniency use linear interpolation between anchor points. Actual default risk depends on the full score distribution — real values need the model's output probabilities.", amber: true },
+                ].map(c => (
+                  <div key={c.title} className={`rounded-lg border p-3 text-[11px] space-y-1 ${(c as { amber?: boolean }).amber ? "border-amber-500/20 bg-amber-500/5" : "border-border/60 bg-muted/10"}`}>
+                    <p className={`font-semibold text-xs ${(c as { amber?: boolean }).amber ? "text-amber-700 dark:text-amber-400" : ""}`}>{c.title}</p>
+                    <p className="text-muted-foreground leading-relaxed">{c.body}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Credit Scoring tab */}
+        {pageTab === "credit" && (
+          <div className="max-w-5xl mx-auto px-6 py-10">
+
+            {/* Header */}
+            <div className="mb-8">
+              <div className="flex items-center gap-3 mb-3">
+                <h1 className="text-2xl font-bold">Credit Scoring Fairness Audit</h1>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border bg-blue-500/10 text-blue-600 border-blue-500/20">Real Data</span>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+                Credit models don{"'"}t use race directly — but they use zip code, employment type, and credit history length.
+                These proxy variables correlate so strongly with race that the bias transfers anyway.
+                We analyse 138,665 real mortgage applications from New York State (CFPB HMDA 2022) to measure denial rate disparities across demographic groups.
+              </p>
+            </div>
+
+            {/* Two-column layout */}
+            <div className="flex flex-col lg:flex-row gap-8">
+
+              {/* Left: main content */}
+              <div className="flex-1 min-w-0 space-y-6">
+
+                {/* How it works */}
+                <div className="rounded-xl border border-border/60 bg-muted/10 p-4">
+                  <div className="grid grid-cols-3 gap-4 text-xs text-muted-foreground">
+                    {[
+                      { step: "01 · The Data", text: "CFPB HMDA 2022 — all conventional home purchase loan applications in New York State, n=138,665 after filtering." },
+                      { step: "02 · The Metric", text: "Denial rate per demographic group. Disparate Impact Ratio = group denial rate ÷ White denial rate. Threshold: 1.25× (EU AI Act)." },
+                      { step: "03 · The Test", text: "Income-controlled DIR: does the disparity persist even within the same income bracket? If yes, income doesn't explain the gap." },
+                    ].map(s => (
+                      <div key={s.step}>
+                        <p className="font-mono text-[10px] text-primary/60 mb-1">{s.step}</p>
+                        <p className="leading-relaxed">{s.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Headline finding */}
+                <div className="space-y-3">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50">Headline finding — Denial rate by race</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 px-4 py-3">
+                      <p className="text-[10px] text-muted-foreground mb-1">Black applicants — denial rate</p>
+                      <p className="text-3xl font-bold text-rose-500">18.9%</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">of mortgage applications denied</p>
+                    </div>
+                    <div className="rounded-xl border border-border/60 bg-muted/10 px-4 py-3">
+                      <p className="text-[10px] text-muted-foreground mb-1">White applicants — denial rate</p>
+                      <p className="text-3xl font-bold">10.4%</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">of mortgage applications denied</p>
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 px-4 py-3 flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground mb-0.5">Disparate Impact Ratio — Black</p>
+                      <p className="text-2xl font-bold text-rose-500">1.81×</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-rose-600 font-semibold leading-relaxed">
+                        A Black applicant is 1.81× more likely to be denied a mortgage than an equivalent White applicant.
+                      </p>
+                      <p className="text-[10px] text-rose-600/60 mt-1">EU AI Act threshold: 1.25× · This result: 1.81×</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Full denial rate table */}
+                <div>
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50 mb-3">All groups · DIR baseline = White · CFPB HMDA 2022 NY</p>
+                  <div className="rounded-xl border border-border/60 overflow-hidden">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b border-border/40 bg-muted/20">
+                          <th className="text-left px-4 py-2 font-semibold">Group</th>
+                          <th className="text-right px-3 py-2 font-semibold">n</th>
+                          <th className="text-right px-3 py-2 font-semibold">Denial rate</th>
+                          <th className="text-right px-3 py-2 font-semibold">DIR</th>
+                          <th className="text-right px-3 py-2 font-semibold">4/5ths ratio</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {HMDA_METRICS.map(row => (
+                          <tr key={row.race} className="border-b border-border/30 last:border-0">
+                            <td className="px-4 py-2 font-medium">
+                              {row.race}
+                              {row.lowN && <span className="ml-1.5 text-[10px] text-amber-600">⚠ low n</span>}
+                            </td>
+                            <td className="px-3 py-2 text-right text-muted-foreground">{row.n.toLocaleString()}</td>
+                            <td className={`px-3 py-2 text-right font-semibold ${row.dir > 1.25 ? "text-rose-500" : "text-foreground"}`}>{row.denialRate}%</td>
+                            <td className={`px-3 py-2 text-right font-bold ${row.dir > 1.25 ? "text-rose-500" : row.dir < 0.8 ? "text-amber-600" : "text-emerald-600"}`}>
+                              {row.dir.toFixed(2)}×
+                            </td>
+                            <td className={`px-3 py-2 text-right ${row.approvalRatio < 0.8 ? "text-rose-500 font-semibold" : "text-muted-foreground"}`}>{row.approvalRatio.toFixed(2)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground/50 mt-1.5">DIR &gt; 1.25× = over-denied · 4/5ths ratio &lt; 0.80 = US EEOC adverse impact threshold</p>
+                </div>
+
+                {/* Income-controlled section */}
+                <div>
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50 mb-3">Income-controlled DIR — does the gap persist within the same income bracket?</p>
+                  <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 mb-4">
+                    <p className="text-xs font-semibold mb-1.5">The income argument doesn{"'"}t hold</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      If the denial disparity were explained by income differences, controlling for income should reduce the DIR toward 1.0×.
+                      Instead, for Black applicants the DIR <em>increases</em> as income rises — reaching 1.94× in the highest income quartile.
+                      High-earning Black applicants face greater relative disadvantage than low-earning ones. Income is not the explanation.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border/60 overflow-hidden">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b border-border/40 bg-muted/20">
+                          <th className="text-left px-4 py-2 font-semibold">Group</th>
+                          <th className="text-center px-3 py-2 font-semibold">Q1 (lowest)</th>
+                          <th className="text-center px-3 py-2 font-semibold">Q2</th>
+                          <th className="text-center px-3 py-2 font-semibold">Q3</th>
+                          <th className="text-center px-3 py-2 font-semibold">Q4 (highest)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {HMDA_INCOME_CONTROLLED.map(row => (
+                          <tr key={row.race} className="border-b border-border/30 last:border-0">
+                            <td className="px-4 py-2 font-medium">{row.race}</td>
+                            {row.quartiles.map(q => (
+                              <td key={q.q} className="px-3 py-2 text-center">
+                                <span className="block text-[10px] text-muted-foreground">{q.denialRate}%</span>
+                                <span className={`font-bold text-[11px] ${q.dir > 1.25 ? "text-rose-500" : "text-emerald-600"}`}>{q.dir.toFixed(2)}×</span>
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground/50 mt-1.5">Each cell: denial rate (top) · DIR vs White in same income quartile (bottom)</p>
+                </div>
+
+                {/* Regulatory verdict */}
+                <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-4">
+                  <p className="text-xs font-bold text-rose-600 mb-3">Regulatory Verdict — Mortgage Lending Model</p>
+                  <div className="space-y-2 mb-3">
+                    {[
+                      { check: "DIR — Black/White",          value: "1.81×",  threshold: "≤ 1.25× (EU AI Act Annex III)", fail: true },
+                      { check: "DIR — Hispanic/White",       value: "1.71×",  threshold: "≤ 1.25× (EU AI Act Annex III)", fail: true },
+                      { check: "DIR — Native American",      value: "2.63×",  threshold: "≤ 1.25× — ⚠ low n (n=456)",    fail: true },
+                      { check: "US 4/5ths — Black",          value: "0.91",   threshold: "≥ 0.80 (EEOC)",                 fail: false },
+                      { check: "ECOA adverse impact — Black", value: "FLAGGED", threshold: "DIR > 1.25×",                  fail: true },
+                      { check: "ECOA adverse impact — Hispanic", value: "FLAGGED", threshold: "DIR > 1.25×",               fail: true },
+                      { check: "Reg B adverse action notice", value: "Required", threshold: "Must explain all denials",    fail: false },
+                    ].map(r => (
+                      <div key={r.check} className="flex items-start justify-between gap-2 text-[11px]">
+                        <span className="text-muted-foreground flex-1">{r.check}</span>
+                        <span className={`font-bold shrink-0 ${r.fail ? "text-rose-500" : "text-emerald-600"}`}>{r.value}</span>
+                        <span className={`shrink-0 ${r.fail ? "text-rose-400" : "text-emerald-500"}`}>{r.fail ? "❌" : "✅"}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-rose-600/80 leading-relaxed">
+                    Black and Hispanic applicants face statistically significant denial rate disparities that persist after controlling for income.
+                    EU AI Act Annex III classifies credit scoring as high-risk — this finding triggers a mandatory conformity assessment before deployment.
+                  </p>
+                </div>
+
+                {/* Footer */}
+                <div className="rounded-xl border border-border/60 bg-muted/10 p-4">
+                  <p className="text-xs font-semibold mb-1">Built in Python · Google Colab · CFPB HMDA 2022</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Analysis uses the CFPB Home Mortgage Disclosure Act dataset — all conventional home purchase loan applications in New York State, 2022.
+                    Hispanic applicants extracted via derived_ethnicity field (HMDA follows US Census race/ethnicity split).
+                    n=138,665 after filtering to decided applications (originated, approved not accepted, denied).
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {["Python", "Pandas", "Google Colab", "CFPB HMDA 2022", "New York State"].map(t => (
+                      <span key={t} className="text-[10px] font-mono text-muted-foreground/60 bg-muted/40 px-2 py-0.5 rounded">{t}</span>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Right: explanation panel */}
+              <div className="lg:w-72 shrink-0">
+                <div className="lg:sticky lg:top-24 space-y-4">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50">What the metrics mean</p>
+
+                  <div className="rounded-lg border border-border/60 bg-muted/10 p-4 space-y-2">
+                    <p className="text-xs font-semibold">Denial Rate</p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      What percentage of applications from this group were denied? A denied mortgage doesn{"'"}t just mean no loan —
+                      it can block a family from building wealth through home ownership for years.
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg border border-border/60 bg-muted/10 p-4 space-y-2">
+                    <p className="text-xs font-semibold">Disparate Impact Ratio (DIR)</p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      Group denial rate ÷ White denial rate. A DIR of 1.81× means Black applicants are denied at 1.81 times the rate of White applicants.
+                    </p>
+                    <div className="space-y-1 mt-1">
+                      {[
+                        { range: "< 0.80×", label: "Fewer denials than White baseline", color: "text-emerald-600" },
+                        { range: "0.80–1.25×", label: "Within fair threshold", color: "text-emerald-600" },
+                        { range: "> 1.25×", label: "EU AI Act adverse impact flag", color: "text-rose-500" },
+                      ].map(r => (
+                        <div key={r.range} className="flex items-start gap-2">
+                          <span className="font-mono text-[10px] w-20 shrink-0 text-muted-foreground">{r.range}</span>
+                          <span className={`text-[10px] ${r.color}`}>{r.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-border/60 bg-muted/10 p-4 space-y-2">
+                    <p className="text-xs font-semibold">Proxy variables</p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      Credit models can{"'"}t legally use race. But zip code, credit history length, and employment type all correlate
+                      with race due to decades of discriminatory policy (redlining, lending exclusions).
+                      The model learns from history — and reproduces it.
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg border border-border/60 bg-muted/10 p-4 space-y-2">
+                    <p className="text-xs font-semibold">ECOA + Reg B</p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      The Equal Credit Opportunity Act prohibits disparate impact on protected classes. Regulation B requires
+                      lenders to send adverse action notices explaining every denial — a black-box AI that can{"'"}t explain its
+                      output may violate this regardless of intent.
                     </p>
                   </div>
 

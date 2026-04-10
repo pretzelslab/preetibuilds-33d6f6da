@@ -216,6 +216,59 @@ const Research = () => {
             <span className="text-[10px] text-muted-foreground">EU AI Act · NIST RMF · n=6,172 records</span>
           </div>
         </div>
+
+        {/* Credit Scoring Safety Eval Runbook */}
+        <div className="rounded-xl border border-border bg-card p-8 shadow-card">
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 text-[11px] font-medium mb-3">
+                AI Safety · Financial Services
+              </div>
+              <h2 className="text-xl font-semibold tracking-tight text-foreground">
+                Credit Scoring Fairness Evaluation Runbook
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                Fairness evaluation framework for AI-assisted mortgage lending decisions,
+                built from real CFPB HMDA 2022 data. Covers denial rate disparities,
+                income-controlled analysis, and obligations under EU AI Act Annex III, ECOA, and Regulation B.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            {[
+              { value: "1.81×", label: "Black DIR (EU limit 1.25×)", flagged: true },
+              { value: "1.71×", label: "Hispanic DIR", flagged: true },
+              { value: "1.94×", label: "Income-controlled DIR (Q4)", flagged: true },
+              { value: "3 Groups", label: "Exceed EU AI Act threshold", flagged: true },
+            ].map(t => (
+              <div key={t.label} className="rounded-lg border border-rose-500/20 bg-rose-500/5 px-4 py-3">
+                <p className="text-lg font-bold text-rose-600">{t.value}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{t.label}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 text-xs text-muted-foreground mb-5">
+            <strong className="text-foreground">Key finding: income doesn't explain the gap.</strong> Black applicants
+            in the highest income quartile face a DIR of 1.94× — higher than the lowest quartile (1.55×).
+            Proxy discrimination via zip code and credit history length is the likely mechanism.
+            EU AI Act conformity assessment triggered. ECOA adverse impact flagged for Black and Hispanic applicants.
+          </div>
+
+          <div className="flex items-center gap-3">
+            <a
+              href="https://github.com/pretzelslab/ai-safety-research/blob/main/Credit_Scoring_Safety_Eval_Runbook.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border/60 bg-background text-xs font-medium text-foreground hover:border-foreground/40 transition-colors"
+            >
+              View full runbook on GitHub →
+            </a>
+            <span className="text-[10px] text-muted-foreground">EU AI Act Annex III · ECOA · Reg B · n=138,665 records</span>
+          </div>
+        </div>
+
       </div>
     </div>
   );
