@@ -56,6 +56,146 @@ const Research = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-4xl mx-auto px-6 py-16 space-y-12">
+
+        {/* Evaluation Philosophy */}
+        <div className="space-y-6">
+          <div>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50 mb-3">Evaluation Philosophy</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-4">
+              How I think about AI safety evaluation
+            </h1>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+              Most AI fairness work stops at measurement — compute a metric, compare to a threshold, move on.
+              That misses the point. A number without a decision framework is not an evaluation. It is a statistic.
+              Evaluation means taking a model all the way from measurement to a defensible, documented deployment decision —
+              and being able to show your work at every step.
+            </p>
+          </div>
+
+          {/* The four-stage cycle */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              {
+                step: "01",
+                title: "Audit",
+                body: "Measure what the model actually does across demographic groups. Reproduce the numbers independently. Validate against published findings where they exist.",
+                color: "border-blue-500/20 bg-blue-500/5",
+                label: "text-blue-600 dark:text-blue-400",
+              },
+              {
+                step: "02",
+                title: "Safety Eval",
+                body: "Apply regulatory thresholds — EU AI Act, ECOA, NIST AI RMF. Document findings formally. Classify severity. Define escalation paths and monitoring cadence.",
+                color: "border-amber-500/20 bg-amber-500/5",
+                label: "text-amber-600 dark:text-amber-400",
+              },
+              {
+                step: "03",
+                title: "Remediation",
+                body: "Show what is fixable and at what cost. Threshold recalibration reduces disparity — but surfaces the Chouldechova impossibility: you cannot simultaneously equalise all error rates when base rates differ.",
+                color: "border-rose-500/20 bg-rose-500/5",
+                label: "text-rose-600 dark:text-rose-400",
+              },
+              {
+                step: "04",
+                title: "Cross-domain",
+                body: "The same methodology applied to criminal justice (COMPAS, n=6,172) and mortgage lending (HMDA 2022, n=138,665) produces comparable findings. Methodology that only works on one dataset is not a methodology.",
+                color: "border-emerald-500/20 bg-emerald-500/5",
+                label: "text-emerald-600 dark:text-emerald-400",
+              },
+            ].map(s => (
+              <div key={s.step} className={`rounded-xl border p-4 ${s.color}`}>
+                <p className={`text-[10px] font-mono font-bold mb-1 ${s.label}`}>{s.step} · {s.title}</p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">{s.body}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Key principles */}
+          <div className="rounded-xl border border-border/60 bg-muted/10 p-6 space-y-4">
+            <p className="text-xs font-semibold">Three principles that guide this work</p>
+            <div className="space-y-3">
+              {[
+                {
+                  title: "Fairness is not a single number.",
+                  body: "DIR, FPR, and FNR measure different things and can point in opposite directions. A model can pass the US 4/5ths rule and fail the EU AI Act simultaneously. Evaluation requires choosing which constraint binds — and documenting why.",
+                },
+                {
+                  title: "The goal is a defensible decision, not a clean result.",
+                  body: "COMPAS was blocked. HMDA showed two groups exceeding the EU AI Act threshold after controlling for income. Those are the right outputs — not evidence of failure, but of a framework that does what it is supposed to do: make the tradeoffs explicit so the organisation can decide with open eyes.",
+                },
+                {
+                  title: "Reproducibility is the floor, not the ceiling.",
+                  body: "Every metric in this portfolio can be recomputed from primary sources. COMPAS numbers are validated against ProPublica's published findings within 2–3%. HMDA numbers are derived directly from the CFPB dataset. If you cannot reproduce the result, you cannot trust the evaluation.",
+                },
+              ].map(p => (
+                <div key={p.title} className="flex gap-3 text-xs">
+                  <span className="text-primary/40 mt-0.5 shrink-0">→</span>
+                  <div>
+                    <span className="font-semibold text-foreground">{p.title}</span>
+                    <span className="text-muted-foreground leading-relaxed"> {p.body}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Tool map */}
+          <div className="rounded-xl border border-border/60 bg-muted/10 p-6">
+            <p className="text-xs font-semibold mb-4">How the portfolio tools connect</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-muted-foreground">
+              <div className="space-y-2">
+                <p className="font-semibold text-foreground text-[11px]">Criminal justice</p>
+                <div className="space-y-1">
+                  {[
+                    "Tab 2 · COMPAS Recidivism Audit — n=6,172, 4 demographic groups, DIR 1.92×",
+                    "COMPAS Safety Eval Runbook — thresholds, escalation, monitoring cadence",
+                    "Tab 3 · COMPAS Remediation — threshold recalibration, Chouldechova limit",
+                  ].map(t => (
+                    <div key={t} className="flex gap-2">
+                      <span className="text-primary/40 shrink-0">·</span>
+                      <span className="leading-relaxed">{t}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="font-semibold text-foreground text-[11px]">Financial services</p>
+                <div className="space-y-1">
+                  {[
+                    "Tab 4 · Credit Scoring Audit — HMDA 2022, n=138,665, Black DIR 1.81×",
+                    "Credit Scoring Safety Eval Runbook — ECOA, Reg B, EU AI Act Annex III",
+                    "Tab 5 · Credit Remediation — leniency sliders, fairness/default risk tradeoff",
+                  ].map(t => (
+                    <div key={t} className="flex gap-2">
+                      <span className="text-primary/40 shrink-0">·</span>
+                      <span className="leading-relaxed">{t}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="font-semibold text-foreground text-[11px]">Foundations</p>
+                <div className="space-y-1">
+                  {[
+                    "Tab 1 · Quantization Auditor — how model compression introduces disparate impact",
+                    "Carbon-Fairness Frontier — accuracy, energy, and fairness as a three-way tradeoff",
+                    "GitHub: pretzelslab/ai-safety-research — all runbooks and methodology",
+                  ].map(t => (
+                    <div key={t} className="flex gap-2">
+                      <span className="text-primary/40 shrink-0">·</span>
+                      <span className="leading-relaxed">{t}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-border/40" />
+
         {/* Header */}
         <div className="rounded-xl border border-border bg-card p-8 shadow-card">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
