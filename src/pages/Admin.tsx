@@ -14,6 +14,15 @@ interface Visit {
 
 function parseSource(referrer: string | null): string {
   if (!referrer) return "Direct";
+  if (referrer.startsWith("utm:")) {
+    const src = referrer.slice(4);
+    const labels: Record<string, string> = {
+      linkedin: "LinkedIn", google: "Google", github: "GitHub",
+      twitter: "Twitter / X", x: "Twitter / X", email: "Email",
+      whatsapp: "WhatsApp", instagram: "Instagram",
+    };
+    return labels[src] ?? src.charAt(0).toUpperCase() + src.slice(1);
+  }
   if (referrer.includes("linkedin")) return "LinkedIn";
   if (referrer.includes("google")) return "Google";
   if (referrer.includes("github")) return "GitHub";

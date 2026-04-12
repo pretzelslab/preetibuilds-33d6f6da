@@ -291,14 +291,12 @@ function CarbonPreview() {
   const configs = CARBON_DATA.content.configurations;
   return (
     <div className="min-h-screen bg-background">
-      {/* Nav */}
       <div className="sticky top-10 z-40 bg-background/95 backdrop-blur border-b border-border/40">
         <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
           <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors">← Back to Portfolio</Link>
           <span className="text-xs font-mono text-emerald-600">Preview</span>
         </div>
       </div>
-
       <div className="max-w-5xl mx-auto px-6 py-12">
 
         {/* Title */}
@@ -400,7 +398,7 @@ export default function CarbonFairnessFrontier() {
   ];
 
   return (
-    <PageGate previewContent={<CarbonPreview />}>
+    <PageGate backTo="/#projects" previewContent={<CarbonPreview />}>
       <div className="min-h-screen bg-background relative">
         <DiagonalWatermark />
 

@@ -12,6 +12,13 @@ type Project = {
 
 const RESPONSIBLE_AI: Project[] = [
   {
+    title: "AI Compliance Monitoring Agent",
+    description: "End-to-end agentic pipeline — Python data pipeline computes fairness metrics, LangGraph agent routes on severity, Claude Haiku writes compliance reports and escalation memos. Runs automatically every week via GitHub Actions. Private repo.",
+    tags: ["LangGraph", "Python", "GitHub Actions", "Claude Haiku", "Pandas"],
+    status: "preview",
+    link: "/research",
+  },
+  {
     title: "AI Readiness Assessment",
     description: "25-question self-service diagnostic across Strategy, Data, Technology, People, and Governance — scored report with ROI signal and prioritised gaps.",
     tags: ["React", "TypeScript", "Recharts"],

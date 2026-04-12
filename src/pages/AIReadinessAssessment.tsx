@@ -866,7 +866,7 @@ const PREVIEW_GAPS = [
 ];
 
 const AIReadinessPreview = () => (
-  <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif", background: "#f8fafc", minHeight: "100vh" }}>
+  <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif", background: "hsl(var(--background))", minHeight: "100vh" }}>
     <DiagonalWatermark />
 
     {/* Sticky header — below PageGate banner (~40px) */}

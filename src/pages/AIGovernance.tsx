@@ -7,15 +7,15 @@ import { useVisitLogger } from "@/hooks/useVisitLogger";
 const AIGovernance = () => {
   useVisitLogger("/ai-governance");
   return (
-    <div className="min-h-screen bg-white relative">
+    <div className="min-h-screen bg-background relative">
       <DiagonalWatermark />
-      <nav className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur-md border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+      <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur border-border/40">
+        <div className="max-w-7xl mx-auto px-6 py-3">
           <Link
             to="/#projects"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to Portfolio
+            ← Back to Portfolio
           </Link>
         </div>
       </nav>

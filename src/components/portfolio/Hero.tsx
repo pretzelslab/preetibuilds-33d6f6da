@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 
 const CREDENTIALS = [
-  "Responsible AI toolkit — governance policy tracking (EU AI Act, NIST AI RMF, ISO 42001), readiness diagnostics, client risk assessment, and statistical fairness auditing including quantization bias detection",
+  "Responsible AI toolkit — full enforcement cycle across criminal justice (COMPAS recidivism) and financial services (HMDA mortgage lending): statistical fairness audits, safety evaluation runbooks, and remediation simulators. AI governance policy tracking (EU AI Act, NIST AI RMF, ISO 42001), readiness diagnostics, and client risk assessment.",
   "18+ years across B2B SaaS — HR tech, CRM, BI, and AI-driven platforms",
   "Product management, GTM, and technical program delivery across enterprise systems and cloud",
 ];
@@ -21,7 +21,7 @@ const Hero = () => (
           <span className="text-gradient">Preethi Raghuveeran</span>
         </h1>
         <p className="text-base text-muted-foreground mb-5 leading-relaxed">
-          Building Responsible AI tools and governance frameworks for practitioners.
+          Building end-to-end Responsible AI tools and governance frameworks — from audit to regulatory verdict to remediation.
         </p>
         <ul className="space-y-2 mb-8">
           {CREDENTIALS.map((c) => (

@@ -1,8 +1,10 @@
 import { useRef } from "react";
+import { Link } from "react-router-dom";
 import { useVisitLogger } from "@/hooks/useVisitLogger";
+import { PageGate } from "@/components/ui/PageGate";
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Cell
+  ResponsiveContainer, Cell, ReferenceLine
 } from "recharts";
 
 const nationalTrend = [
@@ -38,12 +40,182 @@ const stateData = [
   { state: "Assam", cases: 1113 },
 ];
 
+const complianceAgentDIR = [
+  { group: "African-American", dir: 1.74, severity: "DOUBLE-CRITICAL" },
+  { group: "Hispanic",         dir: 1.04, severity: "WARNING" },
+  { group: "Caucasian",        dir: 0.93, severity: "WARNING" },
+  { group: "Other",            dir: 0.78, severity: "WARNING" },
+];
+
 const statTiles = [
   { value: "38,947", label: "Peak reported cases (2016)", scrollTo: "chart-trend" },
   { value: "88.7%", label: "Rapes by a known person (2021)", scrollTo: "chart-trend" },
   { value: "12.38%", label: "Max trial completion rate (any year 2013–2022)", scrollTo: "chart-backlog" },
   { value: "198,285", label: "Pending trial backlog (end of 2022)", scrollTo: "chart-backlog" },
 ];
+
+const ComplianceAgentCard = () => (
+  <div className="rounded-xl border border-border bg-card p-8 shadow-card">
+    <div className="flex items-start justify-between gap-4 mb-4">
+      <div>
+        <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-600 text-[11px] font-medium mb-3">
+          Agentic AI · CI/CD · Governance
+        </div>
+        <h2 className="text-xl font-semibold tracking-tight text-foreground">
+          AI Compliance Monitoring Agent
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+          An end-to-end agentic pipeline that takes a model audit dataset through a full compliance workflow —
+          automatically. A Python data pipeline computes fairness metrics, a LangGraph agent routes on severity,
+          and Claude Haiku writes compliance reports and escalation memos. Runs on a weekly schedule via GitHub Actions.
+        </p>
+      </div>
+    </div>
+
+    {/* Architecture flow */}
+    <div className="grid grid-cols-3 gap-2 mb-6">
+      {[
+        { step: "01", title: "Data Pipeline", body: "COMPAS data → FPR, FNR, DIR per group → threshold checks (EU AI Act, NIST, 4/5ths) → severity classification → audit_report.json", color: "border-violet-500/20 bg-violet-500/5", label: "text-violet-600 dark:text-violet-400" },
+        { step: "02", title: "LangGraph Agent", body: "Assess → Classify → Route: WARNING → monitoring report · CRITICAL → compliance report · DOUBLE-CRITICAL → report + escalation memo + deployment block", color: "border-violet-500/20 bg-violet-500/5", label: "text-violet-600 dark:text-violet-400" },
+        { step: "03", title: "GitHub Actions CI/CD", body: "Scheduled weekly trigger. Runs pipeline + agent automatically. Commits compliance_report.md and escalation_memo.md back to repo. No human intervention.", color: "border-violet-500/20 bg-violet-500/5", label: "text-violet-600 dark:text-violet-400" },
+      ].map(s => (
+        <div key={s.step} className={`rounded-xl border p-4 ${s.color}`}>
+          <p className={`text-[10px] font-mono font-bold mb-1 ${s.label}`}>{s.step} · {s.title}</p>
+          <p className="text-[11px] text-muted-foreground leading-relaxed">{s.body}</p>
+        </div>
+      ))}
+    </div>
+
+    {/* Live chart — pipeline output */}
+    <div className="rounded-xl border border-violet-500/20 bg-violet-500/5 p-4 mb-6">
+      <p className="text-[10px] font-mono font-semibold text-violet-600 mb-3 uppercase tracking-wider">
+        Pipeline output — Disparate Impact Ratio by group
+      </p>
+      <ResponsiveContainer width="100%" height={180}>
+        <BarChart data={complianceAgentDIR} margin={{ top: 4, right: 16, bottom: 4, left: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 15% 88%)" vertical={false} />
+          <XAxis
+            dataKey="group"
+            tick={{ fontSize: 11 }}
+            stroke="hsl(220 10% 60%)"
+            tickFormatter={(v: string) => v.split("-")[0]}
+          />
+          <YAxis
+            domain={[0, 2.2]}
+            tick={{ fontSize: 11 }}
+            stroke="hsl(220 10% 60%)"
+            tickFormatter={(v: number) => `${v.toFixed(1)}×`}
+            width={38}
+          />
+          <Tooltip
+            formatter={(v: number) => [`${v.toFixed(2)}×`, "DIR"]}
+            contentStyle={{ fontSize: 11 }}
+          />
+          <ReferenceLine
+            y={1.25}
+            stroke="hsl(0 72% 51%)"
+            strokeDasharray="5 3"
+            label={{ value: "EU AI Act limit 1.25×", position: "insideTopRight", fontSize: 10, fill: "hsl(0 72% 51%)" }}
+          />
+          <Bar dataKey="dir" radius={[4, 4, 0, 0]}>
+            {complianceAgentDIR.map((entry) => (
+              <Cell
+                key={entry.group}
+                fill={entry.severity === "DOUBLE-CRITICAL" ? "hsl(0 72% 51%)" : "hsl(250 60% 60%)"}
+              />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+      <p className="text-[10px] text-muted-foreground mt-2">
+        African-American DIR 1.74× exceeds the EU AI Act 1.25× threshold → agent routes to DOUBLE-CRITICAL → deployment block issued.
+      </p>
+    </div>
+
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      {[
+        { value: "DOUBLE-CRITICAL", label: "COMPAS overall verdict" },
+        { value: "3 nodes", label: "LangGraph routing paths" },
+        { value: "Weekly", label: "Automated CI/CD cadence" },
+        { value: "2 docs", label: "Auto-generated per run" },
+      ].map(t => (
+        <div key={t.label} className="rounded-lg border border-violet-500/20 bg-violet-500/5 px-4 py-3">
+          <p className="text-sm font-bold text-violet-600">{t.value}</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">{t.label}</p>
+        </div>
+      ))}
+    </div>
+
+    <div className="rounded-lg border border-border/60 bg-muted/10 p-4 text-xs text-muted-foreground mb-5">
+      <strong className="text-foreground">How it works:</strong> The pipeline reads raw audit data and outputs a structured JSON verdict.
+      The LangGraph agent reads the JSON, decides the severity path, and calls Claude Haiku to write
+      a compliance report and — for DOUBLE-CRITICAL findings — a deployment block memo addressed to the Chief Risk Officer.
+      GitHub Actions runs the full pipeline weekly and commits the outputs automatically.
+    </div>
+
+    <div className="flex flex-wrap items-center gap-3">
+      <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border/60 bg-muted/20 text-xs text-muted-foreground">
+        Private repo · available on request
+      </span>
+      <span className="text-[10px] text-muted-foreground">LangGraph · Python · GitHub Actions · Claude Haiku · Pandas</span>
+    </div>
+  </div>
+);
+
+const ResearchPreview = () => (
+  <div className="min-h-screen">
+    {/* Sticky nav — matches all other preview pages */}
+    <div className="sticky top-10 z-40 bg-background/95 backdrop-blur border-b border-border/40">
+      <div className="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between">
+        <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+          ← Back to Portfolio
+        </Link>
+        <span className="text-xs font-mono text-violet-600">Preview</span>
+      </div>
+    </div>
+
+    <div className="max-w-4xl mx-auto px-6 py-12 space-y-8 pb-64">
+      <div>
+        <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50 mb-2">Research · Preview</p>
+        <h1 className="text-xl font-semibold tracking-tight text-foreground mb-1">
+          AI Compliance Monitoring Agent
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Unlock to access the full research page — evaluation framework, COMPAS safety runbook, credit scoring analysis, and NCRB dataset.
+        </p>
+      </div>
+      <ComplianceAgentCard />
+      {/* Blurred skeleton hints of locked content below */}
+      <div style={{ filter: "blur(5px)", opacity: 0.38, pointerEvents: "none", userSelect: "none" }}>
+        <div className="space-y-6">
+          <div className="rounded-xl border border-border bg-card p-8">
+            <div className="h-5 w-36 rounded-full bg-rose-500/20 mb-3" />
+            <div className="h-6 w-72 rounded bg-muted/60 mb-3" />
+            <div className="space-y-2 mb-6">
+              <div className="h-3 w-full rounded bg-muted/40" />
+              <div className="h-3 w-5/6 rounded bg-muted/40" />
+              <div className="h-3 w-4/6 rounded bg-muted/40" />
+            </div>
+            <div className="grid grid-cols-4 gap-3">
+              {[0,1,2,3].map(i => <div key={i} className="h-16 rounded-lg border border-rose-500/20 bg-rose-500/5" />)}
+            </div>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-8">
+            <div className="h-5 w-44 rounded-full bg-blue-500/20 mb-3" />
+            <div className="h-6 w-80 rounded bg-muted/60 mb-3" />
+            <div className="space-y-2 mb-6">
+              <div className="h-3 w-full rounded bg-muted/40" />
+              <div className="h-3 w-4/6 rounded bg-muted/40" />
+            </div>
+            <div className="grid grid-cols-4 gap-3">
+              {[0,1,2,3].map(i => <div key={i} className="h-16 rounded-lg border border-rose-500/20 bg-rose-500/5" />)}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 const Research = () => {
   useVisitLogger("/research");
@@ -54,7 +226,16 @@ const Research = () => {
   };
 
   return (
+    <PageGate backTo="/#projects" previewContent={<ResearchPreview />}>
     <div className="min-h-screen bg-background text-foreground">
+      {/* Sticky nav — shown in unlocked state */}
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border/40">
+        <div className="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between">
+          <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+            ← Back to Portfolio
+          </Link>
+        </div>
+      </div>
       <div className="max-w-4xl mx-auto px-6 py-16 space-y-12">
 
         {/* Evaluation Philosophy */}
@@ -143,7 +324,7 @@ const Research = () => {
           {/* Tool map */}
           <div className="rounded-xl border border-border/60 bg-muted/10 p-6">
             <p className="text-xs font-semibold mb-4">How the portfolio tools connect</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-muted-foreground">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs text-muted-foreground">
               <div className="space-y-2">
                 <p className="font-semibold text-foreground text-[11px]">Criminal justice</p>
                 <div className="space-y-1">
@@ -166,6 +347,21 @@ const Research = () => {
                     "Tab 4 · Credit Scoring Audit — HMDA 2022, n=138,665, Black DIR 1.81×",
                     "Credit Scoring Safety Eval Runbook — ECOA, Reg B, EU AI Act Annex III",
                     "Tab 5 · Credit Remediation — leniency sliders, fairness/default risk tradeoff",
+                  ].map(t => (
+                    <div key={t} className="flex gap-2">
+                      <span className="text-primary/40 shrink-0">·</span>
+                      <span className="leading-relaxed">{t}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="font-semibold text-foreground text-[11px]">Agentic AI</p>
+                <div className="space-y-1">
+                  {[
+                    "Compliance Monitoring Agent — LangGraph + CI/CD, COMPAS DOUBLE-CRITICAL",
+                    "Pipeline → Agent handoff via audit_report.json (structured JSON contract)",
+                    "GitHub Actions weekly run — commits compliance reports automatically",
                   ].map(t => (
                     <div key={t} className="flex gap-2">
                       <span className="text-primary/40 shrink-0">·</span>
@@ -409,8 +605,11 @@ const Research = () => {
           </div>
         </div>
 
+        <ComplianceAgentCard />
+
       </div>
     </div>
+    </PageGate>
   );
 };
 

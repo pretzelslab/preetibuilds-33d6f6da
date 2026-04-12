@@ -45,7 +45,7 @@ const levelStyle = (l: string) => ({
 });
 
 const WorkbookPreview = () => (
-  <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif", background: "#f8fafc", minHeight: "100vh" }}>
+  <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif", background: "hsl(var(--background))", minHeight: "100vh" }}>
     <DiagonalWatermark />
 
     {/* Header — sticky below the PageGate banner (~40px) */}
@@ -203,7 +203,7 @@ const WorkbookPreview = () => (
 const ClientDiscoveryPage = () => {
   useVisitLogger("/client-discovery");
   return (
-    <PageGate previewContent={<WorkbookPreview />}>
+    <PageGate backTo="/#projects" previewContent={<WorkbookPreview />}>
       <div className="min-h-screen bg-white">
         <nav className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur-md border-gray-200">
           <div className="max-w-7xl mx-auto px-6 py-4">

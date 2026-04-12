@@ -16,8 +16,18 @@ async function getLocation(): Promise<{ city: string | null; country: string | n
   }
 }
 
+function getSource(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  const utm = params.get("utm_source");
+  if (utm) return `utm:${utm.toLowerCase()}`;
+  return document.referrer || null;
+}
+
 export function useVisitLogger(page: string) {
   useEffect(() => {
+    const hostname = window.location.hostname;
+    if (hostname === "localhost" || hostname === "127.0.0.1") return;
+
     const isOwner = !!localStorage.getItem(OWNER_KEY);
     const sessionKey = `vl_${page}`;
     const alreadyLogged = !!sessionStorage.getItem(sessionKey);
@@ -26,7 +36,7 @@ export function useVisitLogger(page: string) {
     getLocation().then(({ city, country }) => {
       govDb.from("visit_logs").insert({
         page,
-        referrer: document.referrer || null,
+        referrer: getSource(),
         user_agent: navigator.userAgent || null,
         city,
         country,

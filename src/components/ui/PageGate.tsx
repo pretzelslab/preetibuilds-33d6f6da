@@ -1,6 +1,18 @@
 import { useState, useEffect, ReactNode } from "react";
 import { Link } from "react-router-dom";
 
+// ── Master template for all preview content ───────────────────────────────────
+// Wrap your preview JSX in <PreviewShell> to get consistent padding,
+// max-width, and spacing. PageGate handles background, foreground, and
+// the gradient fade — do not add those in the preview component itself.
+export function PreviewShell({ children }: { children: ReactNode }) {
+  return (
+    <div className="max-w-4xl mx-auto px-6 py-14 space-y-8">
+      {children}
+    </div>
+  );
+}
+
 const ACCESS_CODE = "PRL2026";
 const STORAGE_KEY = "pl_session_access";
 
@@ -130,16 +142,32 @@ export function PageGate({
               Enter code
             </button>
           )}
-          <Link to={backTo} style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid #334155", background: "transparent", color: "#64748b", fontSize: 12, textDecoration: "none", fontWeight: 500 }}>
-            ← Back to Portfolio
-          </Link>
         </div>
       </div>
 
       {/* Content: either static preview (clear) or blurred children */}
       {previewContent ? (
-        <div onContextMenu={e => e.preventDefault()} style={{ userSelect: "none" }}>
+        <div
+          onContextMenu={e => e.preventDefault()}
+          style={{
+            userSelect: "none",
+            position: "relative",
+            background: "hsl(var(--background))",
+            color: "hsl(var(--foreground))",
+            minHeight: "calc(100vh - 41px)",
+            overflow: "hidden",
+          }}
+        >
           {previewContent}
+          {/* Gradient fade — applied universally, do not replicate in individual preview components */}
+          <div style={{
+            position: "absolute",
+            bottom: 0, left: 0, right: 0,
+            height: "240px",
+            background: "linear-gradient(to bottom, transparent, hsl(var(--background)))",
+            pointerEvents: "none",
+            zIndex: 10,
+          }} />
         </div>
       ) : (
         <div
