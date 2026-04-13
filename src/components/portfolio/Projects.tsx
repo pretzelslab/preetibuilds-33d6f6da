@@ -40,6 +40,13 @@ const RESPONSIBLE_AI: Project[] = [
     link: "/client-discovery",
   },
   {
+    title: "AI Carbon Footprint Calculator",
+    description: "Interactive calculator for AI training and inference energy, carbon, and water footprint. Compare two model configurations side by side with regulatory flags (EU GPAI, CSRD, GRI 305). Formulas validated against Strubell 2019, Patterson 2021, BLOOM 2022.",
+    tags: ["Sustainable AI", "TypeScript", "Electricity Maps API", "CSRD", "EU GPAI"],
+    status: "preview",
+    link: "/carbon-depth",
+  },
+  {
     title: "Carbon-Fairness Efficiency Frontier",
     description: "The only tool that plots carbon cost against algorithmic fairness simultaneously. As you compress an AI model to save energy, minority groups are harmed more — this tool quantifies the tradeoff and recommends the optimal configuration under EU AI Act thresholds.",
     tags: ["Python", "Recharts", "Sustainable AI", "EU AI Act"],

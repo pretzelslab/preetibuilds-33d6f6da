@@ -159,9 +159,9 @@ export function PageGate({
           }}
         >
           {previewContent}
-          {/* Gradient fade — applied universally, do not replicate in individual preview components */}
+          {/* Gradient fade — fixed to viewport bottom so it shows regardless of content length */}
           <div style={{
-            position: "absolute",
+            position: "fixed",
             bottom: 0, left: 0, right: 0,
             height: "240px",
             background: "linear-gradient(to bottom, transparent, hsl(var(--background)))",

@@ -23,6 +23,8 @@ function getSource(): string | null {
   return document.referrer || null;
 }
 
+const OWNED_DOMAINS = ["preetibuilds-33d6f6da.vercel.app", "preetibuilds.vercel.app"];
+
 export function useVisitLogger(page: string) {
   useEffect(() => {
     const hostname = window.location.hostname;
@@ -32,6 +34,13 @@ export function useVisitLogger(page: string) {
     const sessionKey = `vl_${page}`;
     const alreadyLogged = !!sessionStorage.getItem(sessionKey);
     if (isOwner || alreadyLogged) return;
+
+    // Skip self-referrals (Preeti navigating between own pages in a new session)
+    const referrer = document.referrer;
+    if (referrer && OWNED_DOMAINS.some(d => referrer.includes(d))) {
+      sessionStorage.setItem(sessionKey, "1"); // mark as seen so future navigation doesn't log either
+      return;
+    }
 
     getLocation().then(({ city, country }) => {
       govDb.from("visit_logs").insert({

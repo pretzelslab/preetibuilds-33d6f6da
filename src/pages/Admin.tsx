@@ -74,6 +74,8 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [newCount, setNewCount] = useState(0);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [hideSelfReferrals, setHideSelfReferrals] = useState(false);
 
   useEffect(() => {
     try { localStorage.setItem("pl_session_access", "1"); } catch {}
@@ -91,7 +93,19 @@ export default function Admin() {
           try {
             const last = parseInt(localStorage.getItem(LAST_SEEN_KEY) ?? "0", 10);
             const diff = data.length - last;
-            setNewCount(diff > 0 ? diff : 0);
+            const count = diff > 0 ? diff : 0;
+            setNewCount(count);
+            // Browser notification when new visitors detected
+            if (count > 0 && "Notification" in window) {
+              Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                  new Notification("preetibuilds", {
+                    body: `${count} new visitor${count > 1 ? "s" : ""} since you last checked.`,
+                    icon: "/favicon.ico",
+                  });
+                }
+              });
+            }
           } catch {}
         }
         setLoading(false);
@@ -104,17 +118,33 @@ export default function Admin() {
   }
 
   async function deleteVisit(id: string) {
-    await govDb.from("visit_logs").delete().eq("id", id);
+    setDeleteError(null);
+    const { error } = await govDb.from("visit_logs").delete().eq("id", id);
+    if (error) {
+      setDeleteError(`Delete failed: ${error.message} — check Supabase RLS policy for visit_logs DELETE.`);
+      return;
+    }
     setVisits(v => v.filter(x => x.id !== id));
   }
 
   async function deleteSelected(ids: string[]) {
-    await govDb.from("visit_logs").delete().in("id", ids);
+    setDeleteError(null);
+    const { error } = await govDb.from("visit_logs").delete().in("id", ids);
+    if (error) {
+      setDeleteError(`Delete failed: ${error.message} — check Supabase RLS policy for visit_logs DELETE.`);
+      return;
+    }
     setVisits(v => v.filter(x => !ids.includes(x.id)));
   }
 
+  const SELF_DOMAINS = ["preetibuilds-33d6f6da.vercel.app", "preetibuilds.vercel.app"];
+  const isSelfReferral = (v: Visit) =>
+    SELF_DOMAINS.some(d => v.referrer?.includes(d));
+
   const pages = ["all", ...Array.from(new Set(visits.map(v => v.page))).sort()];
-  const filtered = filter === "all" ? visits : visits.filter(v => v.page === filter);
+  const filtered = visits
+    .filter(v => filter === "all" || v.page === filter)
+    .filter(v => !hideSelfReferrals || !isSelfReferral(v));
 
   const sourceCounts = visits.reduce<Record<string, number>>((acc, v) => {
     const s = parseSource(v.referrer);
@@ -164,6 +194,14 @@ export default function Admin() {
           </div>
         </div>
 
+        {/* Delete error */}
+        {deleteError && (
+          <div className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-xs text-rose-500 flex items-start justify-between gap-3">
+            <span>{deleteError}</span>
+            <button onClick={() => setDeleteError(null)} className="shrink-0 text-rose-400 hover:text-rose-200">✕</button>
+          </div>
+        )}
+
         {/* Source breakdown */}
         {Object.keys(sourceCounts).length > 0 && (
           <div className="rounded-xl border border-border/60 bg-muted/10 p-5">
@@ -183,6 +221,12 @@ export default function Admin() {
           <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
             <p className="text-xs font-semibold">Recent visits</p>
             <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setHideSelfReferrals(v => !v)}
+                className={`text-[11px] px-2 py-1 rounded border transition-colors ${hideSelfReferrals ? "border-blue-500/40 text-blue-500" : "border-border/60 text-muted-foreground hover:text-blue-500 hover:border-blue-500/40"}`}
+              >
+                {hideSelfReferrals ? "Showing filtered" : "Hide self-referrals"}
+              </button>
               <button
                 onClick={() => {
                   const directIds = visits.filter(v => !v.referrer).map(v => v.id);
