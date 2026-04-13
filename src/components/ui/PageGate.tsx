@@ -154,16 +154,16 @@ export function PageGate({
             position: "relative",
             background: "hsl(var(--background))",
             color: "hsl(var(--foreground))",
-            minHeight: "calc(100vh - 41px)",
+            height: "calc(100vh - 41px)",
             overflow: "hidden",
           }}
         >
           {previewContent}
-          {/* Gradient fade — fixed to viewport bottom so it shows regardless of content length */}
+          {/* Gradient fade — absolute bottom of the clipped viewport container */}
           <div style={{
-            position: "fixed",
+            position: "absolute",
             bottom: 0, left: 0, right: 0,
-            height: "240px",
+            height: "260px",
             background: "linear-gradient(to bottom, transparent, hsl(var(--background)))",
             pointerEvents: "none",
             zIndex: 10,

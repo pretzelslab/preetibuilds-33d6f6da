@@ -497,11 +497,20 @@ function CarbonDepthPreview() {
           <ComparisonTable a={PREVIEW_A} b={PREVIEW_B} labelA="7B Model" labelB="70B Model" />
         </div>
 
-        {/* Blurred input tease */}
+        {/* Blurred content tease */}
         <div style={{ filter: "blur(5px)", opacity: 0.35, pointerEvents: "none", userSelect: "none" }}>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="rounded-xl border border-border/40 h-72 bg-muted/10" />
-            <div className="rounded-xl border border-border/40 h-72 bg-muted/10" />
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="rounded-xl border border-border/40 h-52 bg-muted/10" />
+            <div className="rounded-xl border border-border/40 h-52 bg-muted/10" />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {[0,1,2].map(i => (
+              <div key={i} className="rounded-xl border border-violet-500/20 bg-violet-500/5 p-4 h-28">
+                <div className="h-2 w-16 rounded bg-muted/50 mb-2" />
+                <div className="h-6 w-24 rounded bg-muted/60 mb-2" />
+                <div className="h-2 w-20 rounded bg-muted/30" />
+              </div>
+            ))}
           </div>
         </div>
       </div>
