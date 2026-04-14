@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { govDb } from "@/lib/supabase-governance";
+import { PageGate } from "@/components/ui/PageGate";
 
 interface Visit {
   id: string;
@@ -77,9 +78,7 @@ export default function Admin() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [hideSelfReferrals, setHideSelfReferrals] = useState(false);
 
-  useEffect(() => {
-    try { localStorage.setItem("pl_session_access", "1"); } catch {}
-  }, []);
+  // Owner flag is set by PageGate on unlock — no auto-set here
 
   useEffect(() => {
     govDb
@@ -152,7 +151,15 @@ export default function Admin() {
     return acc;
   }, {});
 
+  const preview = (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 12, opacity: 0.5 }}>
+      <span style={{ fontSize: 32 }}>🔒</span>
+      <span style={{ fontSize: 13, fontFamily: "monospace", color: "hsl(var(--muted-foreground))" }}>Admin · Restricted</span>
+    </div>
+  );
+
   return (
+    <PageGate backTo="/" previewContent={preview}>
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border/40">
         <div className="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between">
@@ -266,10 +273,17 @@ export default function Admin() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((v, i) => (
-                    <tr key={v.id} className={`border-b border-border/40 last:border-0 ${i % 2 === 0 ? "" : "bg-muted/10"}`}>
+                  {filtered.map((v, i) => {
+                    const src = parseSource(v.referrer);
+                    const srcColor = src === "Direct" ? "text-muted-foreground/50" :
+                      src === "LinkedIn" ? "text-blue-500" :
+                      src === "GitHub" ? "text-foreground" :
+                      src === "Google" ? "text-emerald-500" : "text-violet-400";
+                    const isSelf = isSelfReferral(v);
+                    return (
+                    <tr key={v.id} className={`border-b border-border/40 last:border-0 ${isSelf ? "opacity-40" : ""} ${i % 2 === 0 ? "" : "bg-muted/10"}`}>
                       <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">
-                        <span className="block">{timeAgo(v.visited_at)}</span>
+                        <span className="block font-medium text-foreground">{timeAgo(v.visited_at)}</span>
                         <span className="block text-[10px] opacity-50">{formatDateTime(v.visited_at)}</span>
                       </td>
                       <td className="px-3 py-2 font-medium">{PAGE_LABELS[v.page] ?? v.page}</td>
@@ -278,7 +292,12 @@ export default function Admin() {
                           ? <span>{[v.city, v.country].filter(Boolean).join(", ")}</span>
                           : <span className="opacity-40">—</span>}
                       </td>
-                      <td className="px-3 py-2 text-muted-foreground">{parseSource(v.referrer)}</td>
+                      <td className={`px-3 py-2 font-medium ${srcColor}`}>
+                        <span className="block">{src}</span>
+                        {v.referrer && !v.referrer.startsWith("utm:") && (
+                          <span className="block text-[10px] text-muted-foreground/40 font-normal truncate max-w-[120px]">{v.referrer}</span>
+                        )}
+                      </td>
                       <td className="px-3 py-2 text-muted-foreground">{parseDevice(v.user_agent)}</td>
                       <td className="px-2 py-2">
                         <button
@@ -288,7 +307,8 @@ export default function Admin() {
                         >✕</button>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -297,5 +317,6 @@ export default function Admin() {
 
       </div>
     </div>
+    </PageGate>
   );
 }

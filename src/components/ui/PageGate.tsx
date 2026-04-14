@@ -151,23 +151,15 @@ export function PageGate({
           onContextMenu={e => e.preventDefault()}
           style={{
             userSelect: "none",
-            position: "relative",
             background: "hsl(var(--background))",
             color: "hsl(var(--foreground))",
             height: "calc(100vh - 41px)",
             overflow: "hidden",
+            WebkitMaskImage: "linear-gradient(to bottom, black 45%, transparent 92%)",
+            maskImage: "linear-gradient(to bottom, black 45%, transparent 92%)",
           }}
         >
           {previewContent}
-          {/* Gradient fade — absolute bottom of the clipped viewport container */}
-          <div style={{
-            position: "absolute",
-            bottom: 0, left: 0, right: 0,
-            height: "260px",
-            background: "linear-gradient(to bottom, transparent, hsl(var(--background)))",
-            pointerEvents: "none",
-            zIndex: 10,
-          }} />
         </div>
       ) : (
         <div

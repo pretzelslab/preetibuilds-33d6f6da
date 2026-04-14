@@ -466,9 +466,24 @@ const PREVIEW_A = calculateFootprint(DEFAULT_MODEL_A, 1.1, 0.35, 380);
 const PREVIEW_B = calculateFootprint(DEFAULT_MODEL_B, 1.1, 0.35, 380);
 
 function CarbonDepthPreview() {
+  const fmt = (n: number, d = 1) => n.toFixed(d);
+  const metrics = [
+    { label: "Training energy",     a: `${fmt(PREVIEW_A.trainTotalEnergyKwh)} kWh`,   b: `${fmt(PREVIEW_B.trainTotalEnergyKwh)} kWh`,   ratio: PREVIEW_B.trainTotalEnergyKwh / PREVIEW_A.trainTotalEnergyKwh,   hot: true },
+    { label: "Training carbon",     a: `${fmt(PREVIEW_A.trainCarbonKg)} kg`,           b: `${fmt(PREVIEW_B.trainCarbonKg)} kg`,           ratio: PREVIEW_B.trainCarbonKg / PREVIEW_A.trainCarbonKg,               hot: true },
+    { label: "Training water",      a: `${fmt(PREVIEW_A.trainWaterLitres)} L`,         b: `${fmt(PREVIEW_B.trainWaterLitres)} L`,         ratio: PREVIEW_B.trainWaterLitres / PREVIEW_A.trainWaterLitres,         hot: false },
+    { label: "Inf energy / day",    a: `${fmt(PREVIEW_A.infEnergyKwhDay, 3)} kWh`,     b: `${fmt(PREVIEW_B.infEnergyKwhDay, 3)} kWh`,     ratio: PREVIEW_B.infEnergyKwhDay / PREVIEW_A.infEnergyKwhDay,           hot: false },
+    { label: "Inf carbon / day",    a: `${fmt(PREVIEW_A.infCarbonKgDay, 4)} kg`,       b: `${fmt(PREVIEW_B.infCarbonKgDay, 4)} kg`,       ratio: PREVIEW_B.infCarbonKgDay / PREVIEW_A.infCarbonKgDay,             hot: false },
+    { label: "Inf water / day",     a: `${fmt(PREVIEW_A.infWaterLitresDay, 3)} L`,     b: `${fmt(PREVIEW_B.infWaterLitresDay, 3)} L`,     ratio: PREVIEW_B.infWaterLitresDay / PREVIEW_A.infWaterLitresDay,       hot: false },
+    { label: "Cost / inference",    a: `$${(PREVIEW_A.costPerRequestCents / 100).toExponential(2)}`, b: `$${(PREVIEW_B.costPerRequestCents / 100).toExponential(2)}`, ratio: PREVIEW_B.costPerRequestCents / PREVIEW_A.costPerRequestCents, hot: false },
+  ];
+
+  const crossA = fmt(PREVIEW_A.crossoverDays, 0);
+  const crossB = fmt(PREVIEW_B.crossoverDays, 0);
+
   return (
-    <div className="min-h-screen">
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border/40">
+    <div>
+      {/* Nav */}
+      <div className="bg-background/95 backdrop-blur border-b border-border/40">
         <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
           <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
             ← Back to Portfolio
@@ -477,38 +492,83 @@ function CarbonDepthPreview() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 py-10 space-y-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono text-violet-500 bg-violet-500/10 px-2 py-0.5 rounded">Sustainable AI</span>
-            <span className="text-xs font-mono text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded">Phase 1</span>
+      <div className="max-w-5xl mx-auto px-6 pt-5 pb-4 space-y-4">
+        {/* Header */}
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[10px] font-mono text-violet-500 bg-violet-500/10 px-2 py-0.5 rounded">Sustainable AI</span>
+            <span className="text-[10px] font-mono text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded">Phase 1 · Live</span>
           </div>
-          <h1 className="text-2xl font-bold">AI Carbon Footprint Calculator</h1>
-          <p className="text-sm text-muted-foreground max-w-2xl">
-            Calculate, compare, and benchmark the energy, carbon, and water footprint of AI training and inference workloads.
-            Validated against Strubell 2019, Patterson 2021, BLOOM 2022 — accuracy ±15%.
+          <h1 className="text-xl font-bold mb-1">AI Carbon Footprint Calculator</h1>
+          <p className="text-xs text-muted-foreground">
+            Energy, carbon, and water footprint for AI training and inference — with EU GPAI Act and CSRD regulatory flags.
+            Validated against Strubell 2019, Patterson 2021, BLOOM 2022 (±15%).
           </p>
         </div>
 
-        <div className="space-y-2">
-          <div className="text-xs text-muted-foreground">
-            Sample — 7B vs 70B · 100k req/day · US-East hyperscaler · live grid 380 gCO₂/kWh
+        {/* Full 7-metric comparison */}
+        <div>
+          <p className="text-[10px] text-muted-foreground mb-1.5">Sample — 7B vs 70B model · 100k req/day · US-East hyperscaler · 380 gCO₂/kWh</p>
+          <div className="rounded-xl border border-border/60 overflow-hidden">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border/60 bg-muted/20">
+                  <th className="text-left px-3 py-1.5 text-muted-foreground font-medium">Metric</th>
+                  <th className="text-right px-3 py-1.5 text-muted-foreground font-medium">7B Model</th>
+                  <th className="text-right px-3 py-1.5 text-muted-foreground font-medium">70B Model</th>
+                  <th className="text-right px-3 py-1.5 text-muted-foreground font-medium">Ratio</th>
+                </tr>
+              </thead>
+              <tbody>
+                {metrics.map((m, i) => (
+                  <tr key={m.label} className={`border-b border-border/40 last:border-0 ${i % 2 === 0 ? "" : "bg-muted/10"}`}>
+                    <td className="px-3 py-1.5 font-medium">{m.label}</td>
+                    <td className="px-3 py-1.5 text-right text-muted-foreground font-mono">{m.a}</td>
+                    <td className="px-3 py-1.5 text-right text-muted-foreground font-mono">{m.b}</td>
+                    <td className={`px-3 py-1.5 text-right font-mono font-bold ${m.ratio > 5 ? "text-rose-500" : m.ratio > 2 ? "text-amber-500" : "text-muted-foreground"}`}>
+                      {fmt(m.ratio)}×
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          <ComparisonTable a={PREVIEW_A} b={PREVIEW_B} labelA="7B Model" labelB="70B Model" />
         </div>
 
-        {/* Blurred content tease */}
-        <div style={{ filter: "blur(5px)", opacity: 0.35, pointerEvents: "none", userSelect: "none" }}>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="rounded-xl border border-border/40 h-52 bg-muted/10" />
-            <div className="rounded-xl border border-border/40 h-52 bg-muted/10" />
+        {/* Crossover insight cards */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+            <p className="text-[10px] font-mono text-emerald-500 uppercase tracking-wider mb-1">7B — inference crossover</p>
+            <p className="text-lg font-bold">{crossA} days</p>
+            <p className="text-[10px] text-muted-foreground">until daily inference carbon exceeds training</p>
+          </div>
+          <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 px-4 py-3">
+            <p className="text-[10px] font-mono text-rose-500 uppercase tracking-wider mb-1">70B — inference crossover</p>
+            <p className="text-lg font-bold">{crossB} days</p>
+            <p className="text-[10px] text-muted-foreground">training carbon is the dominant cost for longer</p>
+          </div>
+        </div>
+
+        {/* Blurred tease — interactive inputs + reg flags */}
+        <div style={{ filter: "blur(4px)", opacity: 0.38, pointerEvents: "none", userSelect: "none" }} className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-xl border border-border/40 bg-muted/10 p-4 space-y-2">
+              {[20, 16, 24, 16, 20, 16].map((w, i) => (
+                <div key={i} className={`h-${i % 2 === 0 ? "8" : "2"} w-${i % 2 === 0 ? "full" : w} rounded bg-muted/${i % 2 === 0 ? "40" : "60"}`} />
+              ))}
+            </div>
+            <div className="rounded-xl border border-border/40 bg-muted/10 p-4 space-y-2">
+              {[20, 16, 24, 16, 20, 16].map((w, i) => (
+                <div key={i} className={`h-${i % 2 === 0 ? "8" : "2"} w-${i % 2 === 0 ? "full" : w} rounded bg-muted/${i % 2 === 0 ? "40" : "60"}`} />
+              ))}
+            </div>
           </div>
           <div className="grid grid-cols-3 gap-3">
-            {[0,1,2].map(i => (
-              <div key={i} className="rounded-xl border border-violet-500/20 bg-violet-500/5 p-4 h-28">
-                <div className="h-2 w-16 rounded bg-muted/50 mb-2" />
-                <div className="h-6 w-24 rounded bg-muted/60 mb-2" />
-                <div className="h-2 w-20 rounded bg-muted/30" />
+            {["EU GPAI Act", "CSRD / ESRS E1", "GRI 305"].map(label => (
+              <div key={label} className="rounded-xl border border-violet-500/20 bg-violet-500/5 p-3">
+                <div className="text-[10px] font-mono text-violet-400 mb-1">{label}</div>
+                <div className="h-2 rounded-full bg-muted/40 mb-1.5" />
+                <div className="h-2 w-2/3 rounded bg-muted/30" />
               </div>
             ))}
           </div>
