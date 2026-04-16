@@ -13,10 +13,10 @@ type Project = {
 const RESPONSIBLE_AI: Project[] = [
   {
     title: "AI Compliance Monitoring Agent",
-    description: "End-to-end agentic pipeline — Python data pipeline computes fairness metrics, LangGraph agent routes on severity, Claude Haiku writes compliance reports and escalation memos. Runs automatically every week via GitHub Actions. Private repo.",
+    description: "LangGraph multi-node agent + Python data pipeline + GitHub Actions CI/CD. Computes fairness metrics (DIR, FPR, FNR) against EU AI Act and NIST thresholds, routes on severity, and auto-generates compliance reports and escalation memos — on a weekly schedule.",
     tags: ["LangGraph", "Python", "GitHub Actions", "Claude Haiku", "Pandas"],
     status: "preview",
-    link: "/research",
+    link: "/compliance-agent",
   },
   {
     title: "AI Readiness Assessment",
@@ -52,6 +52,13 @@ const RESPONSIBLE_AI: Project[] = [
     tags: ["Python", "Recharts", "Sustainable AI", "EU AI Act"],
     status: "preview",
     link: "/carbon-fairness",
+  },
+  {
+    title: "AI Sustainability Standards Tracker",
+    description: "Live reference across 10 disclosure frameworks — CSRD/ESRS E1, EU AI Act GPAI, ISSB S2, GRI 305, TCFD, SEC Climate Rule, and more. Each framework: AI-specific obligations, enforcement status, penalty exposure, and jurisdiction scope. Includes tool directory and industry adoption map.",
+    tags: ["Sustainable AI", "CSRD", "ISSB S2", "EU AI Act", "GRI 305", "TypeScript"],
+    status: "preview",
+    link: "/sustainability-standards",
   },
   {
     title: "Algorithmic Fairness Auditor",

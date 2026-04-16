@@ -203,7 +203,7 @@ const WorkbookPreview = () => (
 const ClientDiscoveryPage = () => {
   useVisitLogger("/client-discovery");
   return (
-    <PageGate backTo="/#projects" previewContent={<WorkbookPreview />}>
+    <PageGate pageId="client-discovery" backTo="/#projects" previewContent={<WorkbookPreview />}>
       <div className="min-h-screen bg-white">
         <nav className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur-md border-gray-200">
           <div className="max-w-7xl mx-auto px-6 py-4">

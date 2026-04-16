@@ -238,8 +238,8 @@ const POLICIES = [
     yearReleased: 2024,
     summary: "World's first comprehensive legal framework on AI. Risk-based classification: Unacceptable, High, Limited, Minimal. Bans certain AI outright and imposes strict obligations on high-risk systems including conformity assessments, human oversight, and fundamental rights impact assessments.",
     industries: ["Healthcare","Finance","Law Enforcement","Education","Employment","Critical Infrastructure","Border Control","Justice"],
-    latestUpdateDate: "2024-08-01",
-    latestUpdateSummary: "Entered into force August 2024. Phased implementation: prohibitions Aug 2025 · GPAI rules Aug 2025 · high-risk obligations Aug 2026 · remaining provisions Aug 2027.",
+    latestUpdateDate: "2025-08-01",
+    latestUpdateSummary: "Prohibitions and GPAI rules in force from August 2025. High-risk AI obligations (conformity assessments, human oversight, FRIA, EU database registration) apply from August 2026. AI Office issued first enforcement guidance Q1 2026.",
     regulatingBody: "European Commission / EU AI Office",
     color: { bg: "#eff6ff", border: "#bfdbfe", text: "#1d4ed8", badge: "#dbeafe" },
     emoji: "🇪🇺",
@@ -278,8 +278,8 @@ const POLICIES = [
     yearReleased: 2023,
     summary: "Voluntary framework for managing AI risks across four functions: Govern, Map, Measure, Manage. Widely adopted internationally. Companion NIST AI 600-1 (2024) addresses generative AI risks specifically.",
     industries: ["All Sectors","Finance","Healthcare","Government","Technology","Defence"],
-    latestUpdateDate: "2024-07-26",
-    latestUpdateSummary: "Sector-specific profiles (financial services, healthcare) published July 2024. NIST AI 600-1 for generative AI published August 2024. Playbook resources updated.",
+    latestUpdateDate: "2025-12-01",
+    latestUpdateSummary: "Sector-specific profiles (financial, healthcare) published July 2024. NIST AI 600-1 for GenAI published August 2024. Draft Cyber AI Profile (cybersecurity for AI systems) published December 2025 for comment. Increasingly referenced by OCC, CFPB, and HHS in supervisory guidance.",
     regulatingBody: "NIST (National Institute of Standards and Technology)",
     color: { bg: "#f0fdf4", border: "#bbf7d0", text: "#15803d", badge: "#dcfce7" },
     emoji: "🇺🇸",
@@ -392,6 +392,74 @@ const POLICIES = [
       { category: "Reporting", clause: "Domain 7", parameter: "Audit Reporting & Follow-Up", pillars: ["governance","risk"], description: "Produce audit reports with findings, risk ratings, and recommendations. Track corrective actions.", biasConsideration: "Bias findings rated using standardised severity scale. Critical findings require immediate response.", genderConsideration: "Gender equity findings tracked separately with dedicated follow-up timeline.", complianceAction: "Issue draft report. Obtain management response. Track to closure. Report to audit committee.", riskLevel: "High" },
     ],
   },
+  {
+    id: "korea-ai-basic-act",
+    name: "South Korea AI Basic Act",
+    geography: "Asia Pacific",
+    type: "Regulation",
+    countries: ["South Korea"],
+    yearReleased: 2025,
+    summary: "South Korea's comprehensive AI framework law — the first in Asia to consolidate 19 separate AI bills into a single statute. Classifies AI by impact level, requires pre-deployment risk assessments, mandates AI-generated content disclosure, and establishes fundamental rights impact assessments for high-impact systems. In force January 22, 2026.",
+    industries: ["All Sectors","Healthcare","Finance","Transportation","Energy","Employment","Education","Technology"],
+    latestUpdateDate: "2026-01-22",
+    latestUpdateSummary: "In force January 22, 2026. Ministry of Science and ICT enforcement decree finalised. High-impact AI threshold: systems trained with ≥10²⁶ FLOPs or operating in healthcare, energy, transport, hiring, or biometric sectors. Phased guidance period — penalties follow after initial support phase.",
+    regulatingBody: "Ministry of Science and ICT (MSIT)",
+    color: { bg: "#f0fdf4", border: "#bbf7d0", text: "#15803d", badge: "#dcfce7" },
+    emoji: "🇰🇷",
+    clauses: [
+      { category: "Scope & Classification", clause: "Article 2", parameter: "High-Impact AI Definition", pillars: ["governance","risk"], description: "High-impact AI = systems trained with ≥10²⁶ FLOPs OR operating in healthcare, energy, transportation, hiring/employment, or biometric analysis. Extraterritorial: applies to overseas AI affecting the South Korean market.", biasConsideration: "Employment and hiring AI is explicitly high-impact — must undergo bias examination before deployment.", genderConsideration: "Biometric analysis systems classified high-impact — gender inference from biometrics subject to full compliance burden.", complianceAction: "Classify every AI system against both the compute threshold and the sector list. Document classification determination in writing.", riskLevel: "High" },
+      { category: "Pre-Deployment", clause: "Article 28–30", parameter: "AI Risk Assessment", pillars: ["risk","governance"], description: "High-impact AI operators must conduct a risk assessment before deploying AI in any product or service. Assessment covers safety measures, fundamental rights impacts, and disclosure obligations.", biasConsideration: "Risk assessment must address discriminatory outputs and demographic performance gaps.", genderConsideration: "Fundamental rights impact on gender equality is a mandatory assessment dimension.", complianceAction: "Complete pre-deployment risk assessment for every high-impact AI system. Retain documentation. Re-assess on material update.", riskLevel: "High" },
+      { category: "Transparency", clause: "Article 32", parameter: "AI Use Disclosure", pillars: ["ethics","governance"], description: "Operators must notify users in advance if a product or service uses AI. Disclosure must be clear and prominent — not buried in terms of service.", biasConsideration: "Transparency enables users to seek human review of AI-driven decisions that may be discriminatory.", genderConsideration: "Disclosure requirements apply to all AI systems regardless of the gender of the affected user.", complianceAction: "Audit all customer-facing AI touchpoints. Add explicit 'this service uses AI' disclosure at first interaction.", riskLevel: "Medium" },
+      { category: "Generative AI", clause: "Article 33", parameter: "AI-Generated Content Labelling", pillars: ["ethics","governance"], description: "Generative AI operators must clearly label AI-generated sound, image, or video that is difficult to distinguish from human-created content. Applies to text-to-image, deepfake-style synthesis, and AI voiceovers.", biasConsideration: "Labelling enables audiences to critically assess AI-generated content that may embed stereotypes or bias.", genderConsideration: "AI-generated content depicting or referencing individuals must be labelled — particularly relevant for image synthesis systems with gender implications.", complianceAction: "Implement content labelling for all AI-generated media outputs. Design disclosure into the generation pipeline, not as a post-production step.", riskLevel: "Medium" },
+      { category: "Rights Assessment", clause: "Article 35", parameter: "Fundamental Rights Impact Assessment", pillars: ["ethics","privacy","risk"], description: "High-impact AI operators must designate a local representative in South Korea and conduct fundamental rights impact assessments before deployment.", biasConsideration: "Assessment must explicitly address discriminatory impacts on protected groups.", genderConsideration: "Gender equity assessment is a mandatory component — intersectional analysis recommended.", complianceAction: "Appoint South Korea local representative (required for overseas operators). Conduct and document fundamental rights assessment. Retain for regulatory inspection.", riskLevel: "High" },
+      { category: "Penalties", clause: "Article 56", parameter: "Enforcement & Fines", pillars: ["risk"], description: "Fines up to KRW 30 million (~USD 21,000) for violations. Potential imprisonment. Initial enforcement takes a phased approach — guidance and support before administrative penalties. First enforcement decisions expected late 2026.", biasConsideration: "Discriminatory AI deployment triggering rights harms increases fine exposure.", genderConsideration: "Gender-based harm from AI deployment falls within the fundamental rights violation enforcement pathway.", complianceAction: "Establish South Korea AI compliance programme. Monitor MSIT enforcement guidance. Build evidence file for each high-impact AI system.", riskLevel: "Medium" },
+    ],
+  },
+  {
+    id: "china-anthropomorphic-ai",
+    name: "China Anthropomorphic AI Measures",
+    geography: "Asia Pacific",
+    type: "Regulation",
+    countries: ["China"],
+    yearReleased: 2026,
+    summary: "The world's first regulation specifically governing AI companion and anthropomorphic services — AI that simulates human personality, emotion, and social interaction. Mandates opt-in consent, dedicated protections for minors and the elderly, addiction intervention mechanisms, and human takeover requirements for psychological distress scenarios. Effective July 15, 2026.",
+    industries: ["Technology","Consumer Apps","Social Media","Healthcare","Education","Entertainment"],
+    latestUpdateDate: "2026-04-10",
+    latestUpdateSummary: "Announced April 10, 2026 by CAC, NDRC, MIIT, MPS, and SAMR jointly. Effective July 15, 2026. First regulation globally targeting AI companion/emotional interaction services as a specific category.",
+    regulatingBody: "Cyberspace Administration of China (CAC) + NDRC + MIIT + MPS + SAMR",
+    color: { bg: "#fff7ed", border: "#fed7aa", text: "#c2410c", badge: "#ffedd5" },
+    emoji: "🇨🇳",
+    clauses: [
+      { category: "Scope", clause: "Article 2", parameter: "Covered Services", pillars: ["governance","ethics"], description: "Applies to any provider offering AI services that simulate human personality traits, thinking patterns, and communication styles and engage in emotional interaction through text, image, audio, or video — within PRC territory.", biasConsideration: "Services simulating human interaction must not embed stereotypes or discriminatory interaction patterns.", genderConsideration: "AI companions must not reinforce gender stereotypes or enable gender-based harassment through simulated personas.", complianceAction: "Determine whether any product feature involves emotional simulation or human-likeness — if yes, full compliance required by July 15, 2026.", riskLevel: "High" },
+      { category: "Consent", clause: "Article 4–5", parameter: "Opt-In Data Consent", pillars: ["privacy","ethics"], description: "Opt-in consent required for user data collection and model training — not opt-out. Users must actively consent before any personal or emotional data is used. Reverses the default that applies to most services.", biasConsideration: "Opt-in default prevents marginalised users from being unknowingly enrolled in training data collection.", genderConsideration: "Consent mechanisms must be equally accessible and comprehensible to all users regardless of gender or digital literacy.", complianceAction: "Redesign consent flows from opt-out to opt-in. Separate consent for data collection, model training, and emotional interaction features.", riskLevel: "High" },
+      { category: "Minor Protection", clause: "Article 8–9", parameter: "Under-14 & Under-18 Safeguards", pillars: ["ethics","governance"], description: "Virtual companion and virtual intimate relationship services are prohibited for minors. Parental consent required for emotional companionship services to users under 14. Minor mode must be activated on identification.", biasConsideration: "Protects minors from AI systems that could shape their understanding of relationships and social norms.", genderConsideration: "Prohibition on virtual intimate relationships prevents gender-based exploitation of minor users.", complianceAction: "Implement age verification at onboarding. Build minor mode that disables companion/intimate features. Register emergency contacts for under-14 users.", riskLevel: "Critical" },
+      { category: "Vulnerable User Protection", clause: "Article 10", parameter: "Elderly User Safeguards", pillars: ["ethics","governance"], description: "Providers must identify elderly users and provide guidance on healthy service use, safety risk alerts, and protective measures per state provisions.", biasConsideration: "Elderly users at higher risk of AI dependency and financial exploitation — targeted protection mechanisms required.", genderConsideration: "Elderly women disproportionately targeted by emotional manipulation scams — specific risk mitigation required.", complianceAction: "Implement elderly user identification flow. Add in-app safety guidance. Design alerts triggered by interaction patterns associated with dependency risk.", riskLevel: "High" },
+      { category: "Addiction Intervention", clause: "Article 11", parameter: "Dependency Detection & Intervention", pillars: ["ethics","governance"], description: "Providers must analyse user emotions and interaction patterns to identify dependency or addiction, and intervene with reminders and break suggestions. Unique to this regulation — no equivalent in any other jurisdiction.", biasConsideration: "Dependency detection must not be biased by the user's demographic profile.", genderConsideration: "Women at statistically higher risk of emotional dependency on companion AI — detection models must not under-flag for any gender group.", complianceAction: "Build interaction pattern analysis to detect dependency signals. Design intervention UX (break reminders, usage summaries, escalation to human support). Document detection methodology.", riskLevel: "High" },
+      { category: "Crisis Response", clause: "Article 12", parameter: "Psychological Distress Protocol", pillars: ["ethics","governance"], description: "Template responses required for psychological distress situations. If self-harm or suicide is mentioned, human takeover is mandatory — AI cannot continue handling the conversation alone.", biasConsideration: "Crisis response must be equally sensitive and effective regardless of the user's demographic background.", genderConsideration: "Self-harm risk patterns differ by gender — crisis detection and response must be calibrated accordingly.", complianceAction: "Design psychological distress detection layer. Build template response library. Implement human escalation routing. Test detection sensitivity and false-negative rate.", riskLevel: "Critical" },
+      { category: "Penalties", clause: "Article 29", parameter: "Enforcement", pillars: ["risk"], description: "Warnings or orders for rectification within a specified period. Service suspension if refusal to rectify or if circumstances are serious. Enforcement by CAC with co-regulators.", biasConsideration: "Service suspension is the primary penalty — reputational and commercial consequences for non-compliant providers.", genderConsideration: "Violations causing harm to minors or vulnerable groups likely to trigger the higher-severity enforcement pathway.", complianceAction: "Complete compliance assessment before July 15, 2026. Establish internal review cycle for all covered services quarterly.", riskLevel: "High" },
+    ],
+  },
+  {
+    id: "us-take-it-down",
+    name: "TAKE IT DOWN Act",
+    geography: "United States",
+    type: "Regulation",
+    countries: ["United States"],
+    yearReleased: 2025,
+    summary: "The first US federal law specifically addressing AI-generated deepfakes. Prohibits non-consensual publication of intimate imagery and AI-generated deepfakes intended to cause harm. Requires online platforms to establish notice-and-takedown systems with mandatory 48-hour removal. Signed May 19, 2025 — in force.",
+    industries: ["Technology","Social Media","Consumer Apps","Entertainment","Media"],
+    latestUpdateDate: "2025-05-19",
+    latestUpdateSummary: "Signed into law May 19, 2025 (House: 409-2). FTC enforcement authority confirmed. First conviction under the Act: Ohio case, April 2026. Platforms required to maintain notice-and-takedown infrastructure — compliance audits expected to begin H2 2026.",
+    regulatingBody: "Federal Trade Commission (FTC)",
+    color: { bg: "#eff6ff", border: "#bfdbfe", text: "#1d4ed8", badge: "#dbeafe" },
+    emoji: "🇺🇸",
+    clauses: [
+      { category: "Prohibition", clause: "Section 2", parameter: "Non-Consensual Intimate Imagery & Deepfakes", pillars: ["ethics","governance"], description: "Prohibits knowingly publishing non-consensual intimate imagery or AI-generated deepfakes (intimate or non-intimate) intended to cause harm to an identifiable person. Covers both real images and AI-synthesised content.", biasConsideration: "Deepfake harm disproportionately targets women, minorities, and public figures — prohibition directly addresses AI-enabled harassment at scale.", genderConsideration: "Women are the primary victims of non-consensual intimate imagery — this is the central harm the law was designed to address.", complianceAction: "Audit all user-generated content platforms for exposure to non-consensual deepfake uploads. Review moderation and detection capabilities against the prohibition scope.", riskLevel: "Critical" },
+      { category: "Platform Obligations", clause: "Section 3", parameter: "Notice-and-Takedown System", pillars: ["governance","risk"], description: "Online platforms must establish a notice-and-takedown process. After notification, covered content must be removed within 48 hours. Platforms must maintain a clear, accessible reporting mechanism.", biasConsideration: "Takedown systems must be accessible to all affected users regardless of technical literacy or language.", genderConsideration: "Reporting mechanisms must be designed with victim experience in mind — women and non-binary individuals are the most frequent complainants.", complianceAction: "Build or audit existing content takedown infrastructure for the 48-hour SLA. Design accessible reporting flow. Train trust & safety teams on covered content categories.", riskLevel: "High" },
+      { category: "Criminal Penalties", clause: "Section 4", parameter: "Imprisonment & Fines", pillars: ["risk"], description: "Criminal penalties of up to 3 years imprisonment for distribution of non-consensual intimate AI-generated content. First criminal conviction issued April 2026 (Ohio case) — establishes that prosecutions are active.", biasConsideration: "Criminal enforcement creates deterrent effect that benefits the most at-risk communities.", genderConsideration: "Prosecution track record demonstrates the law is actively protecting women from AI-enabled sexual exploitation.", complianceAction: "Ensure all relevant staff understand the criminal liability exposure. Add to employee code of conduct and acceptable use policy.", riskLevel: "Critical" },
+      { category: "FTC Enforcement", clause: "Section 5", parameter: "Civil Enforcement", pillars: ["risk","governance"], description: "FTC has civil enforcement authority against platforms that fail to establish or maintain the required notice-and-takedown systems. Platform liability attaches to systemic non-compliance, not individual uploads.", biasConsideration: "FTC enforcement focuses on whether platforms have adequate systems — not just individual bad actors.", genderConsideration: "Civil enforcement pathway enables systematic action against platforms that create environments where gender-based deepfake harm can proliferate.", complianceAction: "Document notice-and-takedown compliance programme. Retain records of takedown requests, response times, and content removal. Prepare for FTC inquiry readiness review.", riskLevel: "High" },
+    ],
+  },
 ];
 
 // ─── FRAMEWORK NAVIGATOR DATA ────────────────────────────────────────────────
@@ -412,6 +480,8 @@ const GEOS_NAV = [
   "United Kingdom",
   "Global / International",
   "Asia-Pacific",
+  "China",
+  "South Korea",
 ];
 
 const FRAMEWORK_HIGHLIGHTS: Record<string, string[]> = {
@@ -421,6 +491,28 @@ const FRAMEWORK_HIGHLIGHTS: Record<string, string[]> = {
   "iso-42001":    ["Only internationally certifiable AI governance standard", "Integrates with ISO 27001 and ISO 9001", "Clause 5 board-level leadership is the most common audit failure"],
   "fair":         ["Quantifies AI risk in financial terms — not qualitative ratings", "Outputs: expected annual loss ranges for board reporting", "Complements governance frameworks — answers 'how much to invest?'"],
   "aaia":         ["Structured AI audit methodology for internal audit teams", "Domain 3 covers algorithmic bias testing protocols", "Requires AI audit findings to reach board / audit committee"],
+  "korea-ai-basic-act": ["In force January 2026 — first comprehensive AI law in Asia", "High-impact threshold: ≥10²⁶ FLOPs or 5 named sectors", "Extraterritorial — overseas AI affecting Korean market is in scope"],
+  "china-anthropomorphic-ai": ["World's first AI companion regulation — effective July 2026", "Mandatory addiction detection and human crisis handover", "Prohibits virtual intimate services for minors under 14"],
+  "us-take-it-down": ["First US federal AI statute — signed May 2025, in force now", "48-hour takedown mandate for non-consensual deepfakes", "FTC civil + criminal enforcement: up to 3 years imprisonment"],
+};
+
+// ─── REGULATORY RADAR METADATA ───────────────────────────────────────────────
+const RADAR_META: Record<string, {
+  status: "In Force" | "Upcoming" | "Proposed" | "Consultation";
+  enforcementDate: string;
+  nextDeadline?: string;
+  severity: "Critical" | "High" | "Medium";
+  keyWatch: string;
+}> = {
+  "eu-ai-act":               { status: "In Force",   enforcementDate: "2025-08-01", nextDeadline: "2026-08-01", severity: "Critical", keyWatch: "Prohibitions in force Aug 2025. High-risk conformity assessments, FRIA, and EU database registration apply Aug 2026 — the hardest deadline." },
+  "nist-ai-rmf":             { status: "In Force",   enforcementDate: "2023-01-26", severity: "High",     keyWatch: "Cyber AI Profile draft (Dec 2025) extends obligations to AI cybersecurity. De-facto required by US sector regulators (OCC, CFPB, HHS)." },
+  "nist-csf":                { status: "In Force",   enforcementDate: "2024-02-26", severity: "High",     keyWatch: "Mandatory for US federal agencies and contractors. GOVERN function now covers AI security and supply chain risk." },
+  "iso-42001":               { status: "In Force",   enforcementDate: "2023-12-01", severity: "High",     keyWatch: "Only internationally certifiable AI governance standard. Increasingly required in enterprise procurement and regulatory submissions globally." },
+  "fair":                    { status: "In Force",   enforcementDate: "2005-01-01", severity: "Medium",   keyWatch: "Adopted by financial and healthcare AI teams to translate AI risk into board-level financial terms. Supplements EU AI Act risk classification." },
+  "aaia":                    { status: "In Force",   enforcementDate: "2024-03-01", severity: "High",     keyWatch: "Regulated sector boards expect independent AI audit assurance. CAAIA certification now includes EU AI Act and NIST RMF alignment." },
+  "korea-ai-basic-act":      { status: "In Force",   enforcementDate: "2026-01-22", severity: "High",     keyWatch: "First comprehensive AI law in Asia. Extraterritorial — any AI affecting the Korean market is in scope. Guidance phase active; penalties follow." },
+  "china-anthropomorphic-ai":{ status: "Upcoming",   enforcementDate: "2026-07-15", severity: "High",     keyWatch: "World's first AI companion regulation. Opt-in consent, addiction detection, and crisis human handover are engineering requirements — not policy." },
+  "us-take-it-down":         { status: "In Force",   enforcementDate: "2025-05-19", severity: "Critical", keyWatch: "First US federal AI statute. 48-hour deepfake takedown SLA is live. First criminal conviction April 2026 confirms active enforcement." },
 };
 
 type NavLevel = "Required" | "Recommended" | "Advisory";
@@ -464,6 +556,24 @@ const NAVIGATOR_RULES: Record<string, NavRule[]> = {
       reason: "Regulated sectors increasingly require independent AI assurance to board level — AAIA provides the structured audit methodology to deliver it." },
     { geos: ["All"], industries: ["Technology & SaaS","HR Technology","Retail & E-commerce","Manufacturing"], level: "Advisory",
       reason: "Any organisation with an internal audit function should extend the audit charter to cover AI — AAIA provides the methodology to do so." },
+  ],
+  "korea-ai-basic-act": [
+    { geos: ["South Korea","Asia-Pacific"], industries: ["All"], level: "Required",
+      reason: "In force January 2026. Applies to all AI operators in or affecting the South Korean market — including overseas providers with Korean users." },
+    { geos: ["EU / Europe","United States","United Kingdom","Global / International"], industries: ["Technology & SaaS","Healthcare","Finance"], level: "Recommended",
+      reason: "Extraterritorial application means any organisation with South Korean users or market presence is in scope regardless of HQ location." },
+  ],
+  "china-anthropomorphic-ai": [
+    { geos: ["China","Asia-Pacific"], industries: ["Technology & SaaS","Consumer Apps","Social Media"], level: "Required",
+      reason: "Effective July 15, 2026. Applies to all providers offering AI emotional interaction or companion services within PRC territory — including foreign providers with Chinese users." },
+    { geos: ["EU / Europe","United States","United Kingdom","Global / International"], industries: ["Technology & SaaS","Consumer Apps"], level: "Advisory",
+      reason: "Directly applicable only to PRC market. However, similar companion AI regulations are emerging globally — this law establishes the likely compliance template." },
+  ],
+  "us-take-it-down": [
+    { geos: ["United States"], industries: ["Technology & SaaS","Social Media","Consumer Apps","Entertainment","Media"], level: "Required",
+      reason: "Federal law in force May 2025. Applies to all online platforms accessible in the US — 48-hour takedown obligation is immediate and FTC-enforced." },
+    { geos: ["EU / Europe","United Kingdom","Global / International","Asia-Pacific"], industries: ["Technology & SaaS","Social Media","Consumer Apps"], level: "Recommended",
+      reason: "Any global platform with US users is in scope. Similar deepfake legislation is being drafted in the EU and UK — early compliance builds a transferable framework." },
   ],
 };
 
@@ -2510,6 +2620,216 @@ function FrameworkNavigatorTab({ policies, onSelectPolicy }: { policies: any[]; 
   );
 }
 
+// ─── REGULATORY RADAR TAB ─────────────────────────────────────────────────────
+function RegulatoryRadarTab({ policies, onSelectPolicy }: { policies: any[]; onSelectPolicy: (p: any) => void }) {
+  const [filterStatus, setFilterStatus]   = useState("All");
+  const [filterType,   setFilterType]     = useState("All");
+  const [filterGeo,    setFilterGeo]      = useState("All");
+  const [filterSev,    setFilterSev]      = useState("All");
+  const [sortBy,       setSortBy]         = useState<"date"|"severity"|"name">("date");
+
+  function deriveSeverity(p: any): "Critical"|"High"|"Medium" {
+    const meta = RADAR_META[p.id];
+    if (meta?.severity) return meta.severity;
+    if (p.clauses?.some((c: any) => c.riskLevel === "Critical")) return "Critical";
+    if (p.clauses?.some((c: any) => c.riskLevel === "High")) return "High";
+    return "Medium";
+  }
+
+  function daysUntil(d: string) { return Math.ceil((new Date(d).getTime() - Date.now()) / 86400000); }
+  function fmtDate(d: string)   { return new Date(d).toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" }); }
+
+  const enriched = policies.map(p => ({
+    ...p,
+    radar: RADAR_META[p.id] ?? { status: "In Force" as const, enforcementDate: p.latestUpdateDate, severity: deriveSeverity(p), keyWatch: p.latestUpdateSummary },
+    sev: deriveSeverity(p),
+  }));
+
+  const SEV_ORDER: Record<string, number> = { Critical: 0, High: 1, Medium: 2 };
+  const filtered = enriched
+    .filter(p => filterStatus === "All" || p.radar.status === filterStatus)
+    .filter(p => filterType   === "All" || p.type === filterType)
+    .filter(p => filterGeo    === "All" || p.geography.includes(filterGeo))
+    .filter(p => filterSev    === "All" || p.sev === filterSev)
+    .sort((a, b) =>
+      sortBy === "severity" ? SEV_ORDER[a.sev] - SEV_ORDER[b.sev] :
+      sortBy === "name"     ? a.name.localeCompare(b.name) :
+      new Date(a.radar.enforcementDate).getTime() - new Date(b.radar.enforcementDate).getTime()
+    );
+
+  const statusCounts = enriched.reduce<Record<string, number>>((acc, p) => { acc[p.radar.status] = (acc[p.radar.status] || 0) + 1; return acc; }, {});
+  const geos  = [...new Set(policies.map(p => p.geography.split(" /")[0].trim()))];
+  const types = [...new Set(policies.map(p => p.type))];
+
+  const SEV_CFG: Record<string, { bg: string; text: string; border: string; dot: string }> = {
+    Critical: { bg: "#fef2f2", text: "#dc2626", border: "#fecaca", dot: "●" },
+    High:     { bg: "#fff7ed", text: "#ea580c", border: "#fed7aa", dot: "◉" },
+    Medium:   { bg: "#fefce8", text: "#ca8a04", border: "#fde68a", dot: "○" },
+  };
+  const STA_CFG: Record<string, { bg: string; text: string; border: string }> = {
+    "In Force":     { bg: "#f0fdf4", text: "#16a34a", border: "#bbf7d0" },
+    "Upcoming":     { bg: "#eff6ff", text: "#2563eb", border: "#bfdbfe" },
+    "Proposed":     { bg: "#fffbeb", text: "#d97706", border: "#fde68a" },
+    "Consultation": { bg: "#f8fafc", text: "#64748b", border: "#e2e8f0" },
+  };
+  const TYPE_CFG: Record<string, { bg: string; text: string }> = {
+    Regulation: { bg: "#fef2f2", text: "#dc2626" },
+    Framework:  { bg: "#eff6ff", text: "#2563eb" },
+    Standard:   { bg: "#f0fdf4", text: "#16a34a" },
+    Methodology:{ bg: "#fdf4ff", text: "#9333ea" },
+  };
+
+  const sel = { fontSize: 12, padding: "6px 10px", borderRadius: 8, border: "1px solid #e2e8f0", background: "#fff", color: "#374151", outline: "none" };
+
+  return (
+    <div>
+      {/* Header */}
+      <div style={{ marginBottom: 20 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0f172a", margin: "0 0 4px" }}>Regulatory Radar</h2>
+        <p style={{ fontSize: 13, color: "#64748b", margin: 0 }}>All AI laws and frameworks — jurisdiction, type, enforcement date, status, and what to expect.</p>
+      </div>
+
+      {/* Status quick-filter chips */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+        {(["All", "In Force", "Upcoming", "Proposed", "Consultation"] as const).map(s => {
+          const cfg = STA_CFG[s] || { bg: "#0f172a", text: "#fff", border: "#0f172a" };
+          const active = filterStatus === s;
+          return (
+            <button key={s} onClick={() => setFilterStatus(s)} style={{
+              padding: "5px 13px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer",
+              border: `1.5px solid ${active ? (s === "All" ? "#0f172a" : cfg.border) : "#e2e8f0"}`,
+              background: active ? (s === "All" ? "#0f172a" : cfg.bg) : "transparent",
+              color: active ? (s === "All" ? "#fff" : cfg.text) : "#94a3b8",
+            }}>
+              {s}{s === "All" ? ` · ${enriched.length}` : statusCounts[s] ? ` · ${statusCounts[s]}` : ""}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Filter bar */}
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 18 }}>
+        <select value={filterType} onChange={e => setFilterType(e.target.value)} style={sel}>
+          <option value="All">All types</option>
+          {types.map(t => <option key={t} value={t}>{t}</option>)}
+        </select>
+        <select value={filterGeo} onChange={e => setFilterGeo(e.target.value)} style={sel}>
+          <option value="All">All jurisdictions</option>
+          {geos.map(g => <option key={g} value={g}>{g}</option>)}
+        </select>
+        <select value={filterSev} onChange={e => setFilterSev(e.target.value)} style={sel}>
+          <option value="All">All severity</option>
+          <option value="Critical">Critical</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+        </select>
+        <select value={sortBy} onChange={e => setSortBy(e.target.value as "date"|"severity"|"name")} style={sel}>
+          <option value="date">Sort: by date</option>
+          <option value="severity">Sort: by severity</option>
+          <option value="name">Sort: A–Z</option>
+        </select>
+        <span style={{ fontSize: 12, color: "#94a3b8", marginLeft: "auto" }}>{filtered.length} of {enriched.length} shown</span>
+      </div>
+
+      {/* Table */}
+      <div style={{ overflowX: "auto", borderRadius: 12, border: "1px solid #e2e8f0" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <thead>
+            <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+              {["Law / Framework","Jurisdiction","Type","Industries","Enforcement","Status","Severity","What to expect"].map(h => (
+                <th key={h} style={{ textAlign: "left", padding: "10px 12px", fontWeight: 600, color: "#64748b", fontSize: 11, whiteSpace: "nowrap" }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((p, i) => {
+              const sc  = SEV_CFG[p.sev] ?? SEV_CFG.Medium;
+              const stc = STA_CFG[p.radar.status] ?? STA_CFG["In Force"];
+              const tc  = TYPE_CFG[p.type] ?? { bg: "#f1f5f9", text: "#64748b" };
+              const days = p.radar.status === "Upcoming" ? daysUntil(p.radar.enforcementDate) : null;
+              return (
+                <tr key={p.id}
+                  onClick={() => onSelectPolicy(p)}
+                  style={{ borderBottom: i < filtered.length - 1 ? "1px solid #f1f5f9" : "none", background: i % 2 === 0 ? "#fff" : "#fafafa", cursor: "pointer" }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "#f0f9ff")}
+                  onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? "#fff" : "#fafafa")}
+                >
+                  {/* Law name */}
+                  <td style={{ padding: "11px 12px", fontWeight: 600, color: "#0f172a", whiteSpace: "nowrap" }}>
+                    <span style={{ marginRight: 6 }}>{p.emoji}</span>{p.name}
+                    {p.radar.nextDeadline && (
+                      <span style={{ display: "block", fontSize: 10, color: "#f59e0b", fontWeight: 500, marginTop: 2 }}>
+                        Next deadline: {fmtDate(p.radar.nextDeadline)}
+                      </span>
+                    )}
+                  </td>
+                  {/* Jurisdiction */}
+                  <td style={{ padding: "11px 12px", color: "#374151", whiteSpace: "nowrap", fontSize: 12 }}>
+                    {p.geography.split(" /")[0].trim()}
+                  </td>
+                  {/* Type */}
+                  <td style={{ padding: "11px 12px", whiteSpace: "nowrap" }}>
+                    <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 12, background: tc.bg, color: tc.text, fontWeight: 600 }}>{p.type}</span>
+                  </td>
+                  {/* Industries */}
+                  <td style={{ padding: "11px 12px" }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 3, minWidth: 120 }}>
+                      {p.industries.slice(0, 2).map((ind: string) => (
+                        <span key={ind} style={{ fontSize: 10, padding: "1px 6px", borderRadius: 8, background: "#f1f5f9", color: "#64748b", whiteSpace: "nowrap" }}>{ind}</span>
+                      ))}
+                      {p.industries.length > 2 && (
+                        <span style={{ fontSize: 10, color: "#94a3b8", whiteSpace: "nowrap" }}>+{p.industries.length - 2}</span>
+                      )}
+                    </div>
+                  </td>
+                  {/* Enforcement date */}
+                  <td style={{ padding: "11px 12px", color: "#374151", whiteSpace: "nowrap", fontSize: 12 }}>
+                    {fmtDate(p.radar.enforcementDate)}
+                  </td>
+                  {/* Status */}
+                  <td style={{ padding: "11px 12px", whiteSpace: "nowrap" }}>
+                    <span style={{ fontSize: 11, padding: "3px 9px", borderRadius: 12, background: stc.bg, color: stc.text, border: `1px solid ${stc.border}`, fontWeight: 600, whiteSpace: "nowrap" }}>
+                      {p.radar.status}{days !== null && days > 0 ? ` · ${days}d` : ""}
+                    </span>
+                  </td>
+                  {/* Severity */}
+                  <td style={{ padding: "11px 12px", whiteSpace: "nowrap" }}>
+                    <span style={{ fontSize: 11, padding: "3px 9px", borderRadius: 12, background: sc.bg, color: sc.text, border: `1px solid ${sc.border}`, fontWeight: 600 }}>
+                      {sc.dot} {p.sev}
+                    </span>
+                  </td>
+                  {/* Key watch */}
+                  <td style={{ padding: "11px 12px", color: "#64748b", fontSize: 12, maxWidth: 300 }}>
+                    <span style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden" }}>
+                      {p.radar.keyWatch}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        {filtered.length === 0 && (
+          <div style={{ textAlign: "center", padding: "48px 0", color: "#94a3b8", fontSize: 14 }}>No laws match the current filters.</div>
+        )}
+      </div>
+
+      {/* Legend */}
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 16, paddingTop: 12, borderTop: "1px solid #f1f5f9" }}>
+        <span style={{ fontSize: 11, color: "#94a3b8" }}>Status:</span>
+        {Object.entries(STA_CFG).map(([k, v]) => (
+          <span key={k} style={{ fontSize: 11, padding: "2px 8px", borderRadius: 10, background: v.bg, color: v.text, border: `1px solid ${v.border}` }}>{k}</span>
+        ))}
+        <span style={{ fontSize: 11, color: "#94a3b8", marginLeft: 8 }}>Severity:</span>
+        {Object.entries(SEV_CFG).map(([k, v]) => (
+          <span key={k} style={{ fontSize: 11, padding: "2px 8px", borderRadius: 10, background: v.bg, color: v.text, border: `1px solid ${v.border}` }}>{v.dot} {k}</span>
+        ))}
+        <span style={{ fontSize: 11, color: "#94a3b8", marginLeft: "auto" }}>Click any row for full detail →</span>
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function AIGovernanceTracker() {
   const [unlocked, setUnlocked] = useState(() => {
@@ -2730,6 +3050,7 @@ export default function AIGovernanceTracker() {
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 32px", display: "flex", gap: 4, alignItems: "stretch" }}>
           {[
             { id: "policies",   label: "📋 Policy Grid",          locked: false },
+            { id: "radar",      label: "📡 Regulatory Radar",      locked: !unlocked },
             { id: "topics",     label: "🧭 Topics Framework",      locked: !unlocked },
             { id: "digests",    label: "📖 Policy Digests",        locked: !unlocked },
             { id: "navigator",  label: "🗺 Framework Navigator",   locked: !unlocked },
@@ -2838,7 +3159,8 @@ export default function AIGovernanceTracker() {
       {view !== "policies" && !unlocked ? (
         <div style={{ position: "relative" }}>
           <div style={{ filter: "blur(7px)", pointerEvents: "none", userSelect: "none", opacity: 0.55, maxHeight: 480, overflow: "hidden" }}>
-            {view === "digests"    ? <PolicyDigestGrid policies={POLICIES} onSelect={() => {}} /> :
+            {view === "radar"      ? <RegulatoryRadarTab policies={POLICIES} onSelectPolicy={() => {}} /> :
+             view === "digests"    ? <PolicyDigestGrid policies={POLICIES} onSelect={() => {}} /> :
              view === "topics"     ? <TopicsView onSelectPolicy={() => {}} /> :
              view === "navigator"  ? <FrameworkNavigatorTab policies={POLICIES} onSelectPolicy={() => {}} /> :
                                      <GRCBridgeTab onSelectAIPolicy={() => {}} />}
@@ -2854,6 +3176,10 @@ export default function AIGovernanceTracker() {
               </button>
             </div>
           </div>
+        </div>
+      ) : view === "radar" ? (
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
+          <RegulatoryRadarTab policies={POLICIES} onSelectPolicy={pol => setSelected(pol)} />
         </div>
       ) : view === "digests" ? (
         <PolicyDigestGrid policies={POLICIES} onSelect={pol => setSelectedDigest(pol)} />

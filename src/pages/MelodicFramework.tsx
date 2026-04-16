@@ -1481,7 +1481,7 @@ export default function MelodicFramework() {
   });
 
   return (
-    <PageGate previewContent={<MelodicPreview />} backTo="/#projects">
+    <PageGate pageId="melodic" previewContent={<MelodicPreview />} backTo="/#projects">
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border/50 bg-background/80 backdrop-blur sticky top-0 z-10">

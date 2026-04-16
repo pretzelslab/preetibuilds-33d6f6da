@@ -18,6 +18,8 @@ import AIReadinessAssessment from "./pages/AIReadinessAssessment";
 import AlgorithmicFairnessAuditor from "./pages/AlgorithmicFairnessAuditor";
 import CarbonFairnessFrontier from "./pages/CarbonFairnessFrontier";
 import CarbonDepth from "./pages/CarbonDepth";
+import ComplianceAgent from "./pages/ComplianceAgent";
+import SustainabilityStandards from "./pages/SustainabilityStandards";
 import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
@@ -35,7 +37,9 @@ const ROUTE_TITLES: Record<string, string> = {
   "/algorithmic-fairness":      "Algorithmic Fairness Auditor | Preeti Builds",
   "/carbon-fairness":           "Carbon-Fairness Efficiency Frontier | Preeti Builds",
   "/carbon-depth":              "AI Carbon Footprint Calculator | Preeti Builds",
-  "/admin":                    "Admin | Preeti Builds",
+  "/compliance-agent":          "AI Compliance Monitoring Agent | Preeti Builds",
+  "/sustainability-standards":  "AI Sustainability Standards Tracker | Preeti Builds",
+  "/admin":                     "Admin | Preeti Builds",
 };
 
 const RouteTitle = () => {
@@ -69,6 +73,8 @@ const App = () => (
             <Route path="/algorithmic-fairness" element={<AlgorithmicFairnessAuditor />} />
             <Route path="/carbon-fairness" element={<CarbonFairnessFrontier />} />
             <Route path="/carbon-depth" element={<CarbonDepth />} />
+            <Route path="/compliance-agent" element={<ComplianceAgent />} />
+            <Route path="/sustainability-standards" element={<SustainabilityStandards />} />
             <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

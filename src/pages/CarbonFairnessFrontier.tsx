@@ -398,7 +398,7 @@ export default function CarbonFairnessFrontier() {
   ];
 
   return (
-    <PageGate backTo="/#projects" previewContent={<CarbonPreview />}>
+    <PageGate pageId="carbon-fairness" backTo="/#projects" previewContent={<CarbonPreview />}>
       <div className="min-h-screen bg-background relative">
         <DiagonalWatermark />
 

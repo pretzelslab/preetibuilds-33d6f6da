@@ -1,20 +1,24 @@
 import { useState, useEffect, ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-// ── Master template for all preview content ───────────────────────────────────
-// Wrap your preview JSX in <PreviewShell> to get consistent padding,
-// max-width, and spacing. PageGate handles background, foreground, and
-// the gradient fade — do not add those in the preview component itself.
-export function PreviewShell({ children }: { children: ReactNode }) {
-  return (
-    <div className="max-w-4xl mx-auto px-6 py-14 space-y-8">
-      {children}
-    </div>
-  );
-}
+// ── Access code registry ───────────────────────────────────────────────────────
+// PRL2026 = master (unlocks everything — Preeti only)
+// Page codes = selective access, share one at a time with specific visitors
+const MASTER_CODE = "PRL2026";
+const MASTER_KEY  = "pl_session_access";
 
-const ACCESS_CODE = "PRL2026";
-const STORAGE_KEY = "pl_session_access";
+const PAGE_CODES: Record<string, string> = {
+  "research":          "RSC2026",
+  "carbon-depth":      "CDX2026",
+  "ai-readiness":      "ARD2026",
+  "fairness":          "FAR2026",
+  "carbon-fairness":   "CFR2026",
+  "client-discovery":  "CLN2026",
+  "melodic":           "MEL2026",
+  "admin":             "ADM2026",
+};
+
+function pageKey(key: string): string { return `pl_access_${key}`; }
 
 function safeGet(key: string): string | null {
   try { return localStorage.getItem(key); } catch { return null; }
@@ -26,51 +30,79 @@ function safeRemove(key: string): void {
   try { localStorage.removeItem(key); } catch {}
 }
 
-export function useGateUnlocked(): boolean {
-  return safeGet(STORAGE_KEY) === "1";
+function isUnlocked(page: string): boolean {
+  return safeGet(MASTER_KEY) === "1" || safeGet(pageKey(page)) === "1";
 }
 
+// ── PreviewShell ───────────────────────────────────────────────────────────────
+export function PreviewShell({ children }: { children: ReactNode }) {
+  return (
+    <div className="max-w-4xl mx-auto px-6 py-14 space-y-8">
+      {children}
+    </div>
+  );
+}
+
+// ── useGateUnlocked ────────────────────────────────────────────────────────────
+// Pass the same pageId used in <PageGate pageId="..."> to check that specific page.
+// No arg = check master key only.
+export function useGateUnlocked(pageId = ""): boolean {
+  if (pageId) return isUnlocked(pageId);
+  return safeGet(MASTER_KEY) === "1";
+}
+
+// ── PageGate ───────────────────────────────────────────────────────────────────
 export function PageGate({
   children,
   backTo = "/#projects",
   previewContent,
+  pageId = "",
 }: {
   children: ReactNode;
   backTo?: string;
   previewContent?: ReactNode;
+  pageId?: string;
 }) {
-  const [unlocked, setUnlocked] = useState(() => safeGet(STORAGE_KEY) === "1");
-  const [code, setCode] = useState("");
-  const [error, setError] = useState(false);
-  const [shaking, setShaking] = useState(false);
+  const [unlocked, setUnlocked] = useState(() => isUnlocked(pageId));
+  const [code, setCode]         = useState("");
+  const [error, setError]       = useState(false);
+  const [shaking, setShaking]   = useState(false);
   const [showInput, setShowInput] = useState(false);
 
+  // Hash-based unlock: /carbon-depth#PRL2026 or /carbon-depth#CDX2026
   useEffect(() => {
     const hash = window.location.hash.replace("#", "").toUpperCase().trim();
-    if (hash === ACCESS_CODE) {
-      safeSet(STORAGE_KEY, "1");
+    if (!hash) return;
+    if (hash === MASTER_CODE) {
+      safeSet(MASTER_KEY, "1");
       setUnlocked(true);
-      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    } else if (pageId && hash === PAGE_CODES[pageId]) {
+      safeSet(pageKey(pageId), "1");
+      setUnlocked(true);
     }
-  }, []);
+    if (hash) window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  }, [pageId]);
 
   const tryUnlock = () => {
-    if (code.toUpperCase().trim() === ACCESS_CODE) {
-      safeSet(STORAGE_KEY, "1");
+    const entered = code.toUpperCase().trim();
+    if (entered === MASTER_CODE) {
+      safeSet(MASTER_KEY, "1");
+      setUnlocked(true);
+    } else if (pageId && PAGE_CODES[pageId] && entered === PAGE_CODES[pageId]) {
+      safeSet(pageKey(pageId), "1");
       setUnlocked(true);
     } else {
-      setError(true);
-      setShaking(true);
+      setError(true); setShaking(true);
       setTimeout(() => { setError(false); setShaking(false); }, 800);
       setCode("");
     }
   };
 
   const lock = () => {
-    safeRemove(STORAGE_KEY);
+    safeRemove(MASTER_KEY);
+    if (pageId) safeRemove(pageKey(pageId));
     setUnlocked(false);
-    setCode("");
-    setShowInput(false);
+    setCode(""); setShowInput(false);
   };
 
   if (unlocked) {
@@ -90,7 +122,7 @@ export function PageGate({
     );
   }
 
-  // ── Locked state ──────────────────────────────────────────────────────────
+  // ── Locked state ─────────────────────────────────────────────────────────────
   return (
     <div style={{ position: "relative", minHeight: "100vh" }}>
       <style>{`
@@ -120,7 +152,10 @@ export function PageGate({
                 value={code}
                 autoFocus
                 onChange={e => setCode(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter") tryUnlock(); if (e.key === "Escape") { setShowInput(false); setCode(""); } }}
+                onKeyDown={e => {
+                  if (e.key === "Enter") tryUnlock();
+                  if (e.key === "Escape") { setShowInput(false); setCode(""); }
+                }}
                 style={{
                   padding: "6px 12px", borderRadius: 8, fontSize: 13,
                   border: `1.5px solid ${error ? "#dc2626" : "#334155"}`,
@@ -145,7 +180,7 @@ export function PageGate({
         </div>
       </div>
 
-      {/* Content: either static preview (clear) or blurred children */}
+      {/* Content: preview (masked) or blurred children */}
       {previewContent ? (
         <div
           onContextMenu={e => e.preventDefault()}
@@ -155,11 +190,25 @@ export function PageGate({
             color: "hsl(var(--foreground))",
             height: "calc(100vh - 41px)",
             overflow: "hidden",
-            WebkitMaskImage: "linear-gradient(to bottom, black 45%, transparent 92%)",
-            maskImage: "linear-gradient(to bottom, black 45%, transparent 92%)",
+            position: "relative",
           }}
         >
-          {previewContent}
+          {/* Top zone — sharp */}
+          <div style={{
+            position: "absolute", inset: 0,
+            WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 55%, transparent 74%)",
+            maskImage:        "linear-gradient(to bottom, black 0%, black 55%, transparent 74%)",
+          }}>
+            {previewContent}
+          </div>
+          {/* Bottom peek — faded in from below */}
+          <div style={{
+            position: "absolute", inset: 0,
+            WebkitMaskImage: "linear-gradient(to top, black 0%, black 38%, transparent 62%)",
+            maskImage:        "linear-gradient(to top, black 0%, black 38%, transparent 62%)",
+          }}>
+            {previewContent}
+          </div>
         </div>
       ) : (
         <div

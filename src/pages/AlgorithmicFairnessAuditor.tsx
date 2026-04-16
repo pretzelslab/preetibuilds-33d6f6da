@@ -729,7 +729,7 @@ export default function AlgorithmicFairnessAuditor() {
   ];
 
   return (
-    <PageGate backTo="/#projects" previewContent={<AuditPreview />}>
+    <PageGate pageId="fairness" backTo="/#projects" previewContent={<AuditPreview />}>
       <div className="min-h-screen bg-background">
         <div className="sticky top-10 z-40 bg-background/95 backdrop-blur border-b border-border/40">
           <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">

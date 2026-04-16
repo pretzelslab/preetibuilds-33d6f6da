@@ -2,6 +2,13 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { govDb } from "@/lib/supabase-governance";
 import { PageGate } from "@/components/ui/PageGate";
+import {
+  getCustomGPUs, saveCustomGPUs,
+  getCustomRegions, saveCustomRegions,
+  exportGPUSnippet, exportRegionSnippet,
+} from "@/lib/carbonCustomData";
+import { GPU_PRESETS, REGION_ZONES, STATIC_INTENSITY } from "@/data/carbonDepthData";
+import type { CustomGPU, CustomRegion } from "@/lib/carbonCustomData";
 
 interface Visit {
   id: string;
@@ -69,6 +76,295 @@ const PAGE_LABELS: Record<string, string> = {
 };
 
 const LAST_SEEN_KEY = "admin_last_seen_count";
+
+// ── Carbon Depth Data Manager ─────────────────────────────────────────────────
+function CarbonDataManager() {
+  const [open, setOpen] = useState(false);
+
+  // ── GPU state ──────────────────────────────────────────────────────────────
+  const [customGPUs, setCustomGPUs]   = useState<CustomGPU[]>(() => getCustomGPUs());
+  const [gpuName, setGpuName]         = useState("");
+  const [gpuTdp, setGpuTdp]           = useState("");
+  const [gpuSource, setGpuSource]     = useState("");
+  const [gpuError, setGpuError]       = useState("");
+  const [gpuCopied, setGpuCopied]     = useState(false);
+
+  // ── Region state ───────────────────────────────────────────────────────────
+  const [customRegions, setCustomRegions] = useState<CustomRegion[]>(() => getCustomRegions());
+  const [rLabel, setRLabel]               = useState("");
+  const [rZone, setRZone]                 = useState("");
+  const [rIntensity, setRIntensity]       = useState("");
+  const [rSource, setRSource]             = useState("");
+  const [rError, setRError]               = useState("");
+  const [rCopied, setRCopied]             = useState(false);
+
+  // ── GPU actions ────────────────────────────────────────────────────────────
+  function addGPU() {
+    setGpuError("");
+    const name = gpuName.trim();
+    const tdp  = Number(gpuTdp);
+    if (!name)              return setGpuError("GPU name is required.");
+    if (isNaN(tdp) || tdp <= 0) return setGpuError("TDP must be a positive number (watts).");
+    if (GPU_PRESETS[name])  return setGpuError(`"${name}" already exists in the built-in list.`);
+    if (customGPUs.find(g => g.name === name)) return setGpuError(`"${name}" already added.`);
+    const updated = [...customGPUs, { name, tdpWatts: tdp, source: gpuSource.trim() || "manual entry" }];
+    setCustomGPUs(updated);
+    saveCustomGPUs(updated);
+    setGpuName(""); setGpuTdp(""); setGpuSource("");
+  }
+
+  function deleteGPU(name: string) {
+    const updated = customGPUs.filter(g => g.name !== name);
+    setCustomGPUs(updated);
+    saveCustomGPUs(updated);
+  }
+
+  function copyGPUSnippet() {
+    navigator.clipboard.writeText(exportGPUSnippet()).then(() => {
+      setGpuCopied(true);
+      setTimeout(() => setGpuCopied(false), 2000);
+    });
+  }
+
+  // ── Region actions ─────────────────────────────────────────────────────────
+  function addRegion() {
+    setRError("");
+    const label     = rLabel.trim();
+    const zone      = rZone.trim().toUpperCase();
+    const intensity = Number(rIntensity);
+    if (!label)                    return setRError("Region label is required (e.g. me-south-1 (Bahrain)).");
+    if (!zone)                     return setRError("Zone ID is required (e.g. BH).");
+    if (isNaN(intensity) || intensity <= 0) return setRError("Intensity must be a positive number (gCO₂/kWh).");
+    if (REGION_ZONES[label])       return setRError(`"${label}" already exists in the built-in list.`);
+    if (customRegions.find(r => r.label === label)) return setRError(`"${label}" already added.`);
+    const updated = [...customRegions, { label, zoneId: zone, intensityGCO2: intensity, source: rSource.trim() || "manual entry" }];
+    setCustomRegions(updated);
+    saveCustomRegions(updated);
+    setRLabel(""); setRZone(""); setRIntensity(""); setRSource("");
+  }
+
+  function deleteRegion(label: string) {
+    const updated = customRegions.filter(r => r.label !== label);
+    setCustomRegions(updated);
+    saveCustomRegions(updated);
+  }
+
+  function copyRegionSnippet() {
+    navigator.clipboard.writeText(exportRegionSnippet()).then(() => {
+      setRCopied(true);
+      setTimeout(() => setRCopied(false), 2000);
+    });
+  }
+
+  const inputCls = "w-full bg-muted/30 border border-border/40 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-violet-500/60 text-foreground placeholder:text-muted-foreground/40";
+  const btnCls   = "px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors";
+
+  return (
+    <div className="mt-8 rounded-2xl border border-border/40 bg-card/50 overflow-hidden">
+      <button
+        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-muted/10 transition-colors"
+        onClick={() => setOpen(v => !v)}
+      >
+        <div>
+          <span className="text-sm font-bold">Carbon Depth — Data Manager</span>
+          <span className="text-xs text-muted-foreground ml-3">
+            Add GPUs · regions · export code snippet
+          </span>
+        </div>
+        <span className="text-muted-foreground">{open ? "▾" : "▸"}</span>
+      </button>
+
+      {open && (
+        <div className="px-5 pb-6 space-y-8">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Entries added here are saved in your browser (localStorage) and appear immediately in the
+            Carbon Depth calculator dropdowns. They do not modify the source file.
+            Use the <span className="font-semibold text-foreground/60">Export snippet</span> button
+            to get the updated TypeScript constant — paste it into{" "}
+            <span className="font-mono text-violet-400/70">src/data/carbonDepthData.ts</span> to make it permanent.
+          </p>
+
+          {/* ── GPU section ──────────────────────────────────────────────── */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">GPU Presets</h3>
+              <button
+                onClick={copyGPUSnippet}
+                className={`${btnCls} border-violet-500/30 bg-violet-500/10 text-violet-400 hover:bg-violet-500/20`}
+              >
+                {gpuCopied ? "✓ Copied!" : "Export snippet"}
+              </button>
+            </div>
+
+            {/* Table — static + custom */}
+            <div className="rounded-xl border border-border/30 overflow-hidden">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-border/30 bg-muted/20">
+                    <th className="text-left px-3 py-2 font-semibold text-muted-foreground">GPU</th>
+                    <th className="text-right px-3 py-2 font-semibold text-muted-foreground">TDP (W)</th>
+                    <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Source</th>
+                    <th className="px-3 py-2" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(GPU_PRESETS).map(([name, tdp]) => (
+                    <tr key={name} className="border-b border-border/20">
+                      <td className="px-3 py-1.5 font-mono font-semibold">{name}</td>
+                      <td className="px-3 py-1.5 text-right font-mono">{tdp}</td>
+                      <td className="px-3 py-1.5 text-muted-foreground/60 italic text-[10px]">built-in</td>
+                      <td className="px-3 py-1.5" />
+                    </tr>
+                  ))}
+                  {customGPUs.map(g => (
+                    <tr key={g.name} className="border-b border-border/20 bg-violet-500/5">
+                      <td className="px-3 py-1.5 font-mono font-semibold text-violet-400">{g.name}</td>
+                      <td className="px-3 py-1.5 text-right font-mono">{g.tdpWatts}</td>
+                      <td className="px-3 py-1.5 text-muted-foreground/60 text-[10px]">{g.source}</td>
+                      <td className="px-3 py-1.5 text-right">
+                        <button
+                          onClick={() => deleteGPU(g.name)}
+                          className="text-[10px] text-rose-400/60 hover:text-rose-400 transition-colors"
+                        >
+                          remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Add GPU form */}
+            <div className="rounded-xl border border-border/30 bg-muted/5 p-4 space-y-3">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Add GPU</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <input
+                  placeholder="GPU name  e.g. H200"
+                  value={gpuName} onChange={e => setGpuName(e.target.value)}
+                  className={inputCls}
+                />
+                <input
+                  placeholder="TDP in watts  e.g. 700"
+                  type="number" min={1}
+                  value={gpuTdp} onChange={e => setGpuTdp(e.target.value)}
+                  className={inputCls}
+                />
+                <input
+                  placeholder="Source  e.g. NVIDIA datasheet 2024"
+                  value={gpuSource} onChange={e => setGpuSource(e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+              {gpuError && <p className="text-[10px] text-rose-400">{gpuError}</p>}
+              <button
+                onClick={addGPU}
+                className={`${btnCls} border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20`}
+              >
+                + Add GPU
+              </button>
+            </div>
+          </div>
+
+          {/* ── Region section ────────────────────────────────────────────── */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Cloud Regions</h3>
+              <button
+                onClick={copyRegionSnippet}
+                className={`${btnCls} border-violet-500/30 bg-violet-500/10 text-violet-400 hover:bg-violet-500/20`}
+              >
+                {rCopied ? "✓ Copied!" : "Export snippet"}
+              </button>
+            </div>
+
+            {/* Table — static + custom */}
+            <div className="rounded-xl border border-border/30 overflow-hidden">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-border/30 bg-muted/20">
+                    <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Region</th>
+                    <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Zone ID</th>
+                    <th className="text-right px-3 py-2 font-semibold text-muted-foreground">gCO₂/kWh</th>
+                    <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Source</th>
+                    <th className="px-3 py-2" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(REGION_ZONES).map(([label, zone]) => (
+                    <tr key={label} className="border-b border-border/20">
+                      <td className="px-3 py-1.5">{label}</td>
+                      <td className="px-3 py-1.5 font-mono text-[10px]">{zone}</td>
+                      <td className="px-3 py-1.5 text-right font-mono">{STATIC_INTENSITY[zone] ?? "—"}</td>
+                      <td className="px-3 py-1.5 text-muted-foreground/60 italic text-[10px]">built-in</td>
+                      <td className="px-3 py-1.5" />
+                    </tr>
+                  ))}
+                  {customRegions.map(r => (
+                    <tr key={r.label} className="border-b border-border/20 bg-violet-500/5">
+                      <td className="px-3 py-1.5 text-violet-400">{r.label}</td>
+                      <td className="px-3 py-1.5 font-mono text-[10px] text-violet-400/70">{r.zoneId}</td>
+                      <td className="px-3 py-1.5 text-right font-mono">{r.intensityGCO2}</td>
+                      <td className="px-3 py-1.5 text-muted-foreground/60 text-[10px]">{r.source}</td>
+                      <td className="px-3 py-1.5 text-right">
+                        <button
+                          onClick={() => deleteRegion(r.label)}
+                          className="text-[10px] text-rose-400/60 hover:text-rose-400 transition-colors"
+                        >
+                          remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Add region form */}
+            <div className="rounded-xl border border-border/30 bg-muted/5 p-4 space-y-3">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Add Region</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <input
+                  placeholder="Region label  e.g. me-south-1 (Bahrain)"
+                  value={rLabel} onChange={e => setRLabel(e.target.value)}
+                  className={inputCls}
+                />
+                <input
+                  placeholder="Electricity Maps zone ID  e.g. BH"
+                  value={rZone} onChange={e => setRZone(e.target.value)}
+                  className={inputCls}
+                />
+                <input
+                  placeholder="Grid intensity  e.g. 504  (gCO₂/kWh)"
+                  type="number" min={1}
+                  value={rIntensity} onChange={e => setRIntensity(e.target.value)}
+                  className={inputCls}
+                />
+                <input
+                  placeholder="Source  e.g. Electricity Maps 2024"
+                  value={rSource} onChange={e => setRSource(e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+              <div className="text-[10px] text-muted-foreground/50 leading-relaxed">
+                Zone ID = the Electricity Maps identifier for this region (used for live API lookups).
+                Find it at <span className="font-mono">electricitymaps.com/map</span> — hover a region to see its zone code.
+              </div>
+              {rError && <p className="text-[10px] text-rose-400">{rError}</p>}
+              <button
+                onClick={addRegion}
+                className={`${btnCls} border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20`}
+              >
+                + Add Region
+              </button>
+            </div>
+          </div>
+
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Admin() {
   const [visits, setVisits] = useState<Visit[]>([]);
@@ -159,10 +455,10 @@ export default function Admin() {
   );
 
   return (
-    <PageGate backTo="/" previewContent={preview}>
+    <PageGate pageId="admin" backTo="/" previewContent={preview}>
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border/40">
-        <div className="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
           <Link to="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors">← Back to Portfolio</Link>
           <div className="flex items-center gap-3">
             {newCount > 0 && (
@@ -179,7 +475,7 @@ export default function Admin() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-10 space-y-8">
+      <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
 
         {/* Summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -223,8 +519,11 @@ export default function Admin() {
           </div>
         )}
 
-        {/* Visit log table */}
-        <div>
+        {/* Main two-column: visit log + access codes sidebar */}
+        <div className="flex gap-5 items-start">
+
+          {/* Visit log — main column */}
+          <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
             <p className="text-xs font-semibold">Recent visits</p>
             <div className="flex items-center gap-2 flex-wrap">
@@ -268,7 +567,7 @@ export default function Admin() {
                     <th className="text-left px-3 py-2 font-medium text-muted-foreground">Page</th>
                     <th className="text-left px-3 py-2 font-medium text-muted-foreground">Location</th>
                     <th className="text-left px-3 py-2 font-medium text-muted-foreground">Source</th>
-                    <th className="text-left px-3 py-2 font-medium text-muted-foreground">Device</th>
+                    <th className="text-left px-2 py-2 font-medium text-muted-foreground">Dev</th>
                     <th className="px-2 py-2"></th>
                   </tr>
                 </thead>
@@ -298,7 +597,11 @@ export default function Admin() {
                           <span className="block text-[10px] text-muted-foreground/40 font-normal truncate max-w-[120px]">{v.referrer}</span>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-muted-foreground">{parseDevice(v.user_agent)}</td>
+                      <td className="px-2 py-2">
+                        <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${parseDevice(v.user_agent) === "Mobile" ? "border-violet-500/30 text-violet-400 bg-violet-500/10" : "border-border/40 text-muted-foreground bg-muted/20"}`}>
+                          {parseDevice(v.user_agent) === "Mobile" ? "M" : "D"}
+                        </span>
+                      </td>
                       <td className="px-2 py-2">
                         <button
                           onClick={() => deleteVisit(v.id)}
@@ -313,7 +616,42 @@ export default function Admin() {
               </table>
             </div>
           )}
-        </div>
+          </div>{/* end visit log column */}
+
+          {/* Access codes — sidebar */}
+          <div className="w-40 shrink-0">
+            <div className="rounded-xl border border-border/60 bg-muted/10 p-4">
+              <p className="text-[11px] font-semibold mb-3 text-muted-foreground">Access codes</p>
+              <div className="space-y-1">
+                {[
+                  { page: "Master",           code: "PRL2026", master: true },
+                  { page: "Research",         code: "RSC2026" },
+                  { page: "Carbon Depth",     code: "CDX2026" },
+                  { page: "AI Readiness",     code: "ARD2026" },
+                  { page: "Fairness Auditor", code: "FAR2026" },
+                  { page: "Carbon-Fairness",  code: "CFR2026" },
+                  { page: "Client Discovery", code: "CLN2026" },
+                  { page: "Melodic",          code: "MEL2026" },
+                  { page: "Admin",            code: "ADM2026" },
+                ].map(({ page, code, master }) => (
+                  <div key={code} className="flex items-center justify-between gap-2">
+                    <span className={`text-[11px] truncate ${master ? "text-blue-500 dark:text-blue-400 font-medium" : "text-muted-foreground"}`}>{page}</span>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(code)}
+                      className={`font-mono text-[10px] px-1.5 py-0.5 rounded border transition-colors shrink-0 ${master ? "border-blue-500/30 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20" : "border-border/40 bg-muted/30 text-foreground hover:border-blue-500/30 hover:text-blue-500"}`}
+                      title="Copy"
+                    >{code}</button>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground/40 mt-3">Click to copy</p>
+            </div>
+          </div>
+
+        </div>{/* end two-column row */}
+
+        {/* ── Carbon Depth Data Manager ─────────────────────────────────── */}
+        <CarbonDataManager />
 
       </div>
     </div>

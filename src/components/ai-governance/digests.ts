@@ -394,4 +394,191 @@ export const POLICY_DIGESTS: Record<string, PolicyDigestData> = {
 
     practicalTip: "Start with a charter amendment and a single high-priority AI audit — ideally a credit scoring model, hiring algorithm, or fraud detection system where bias risk is high and business impact is clear. This first audit will reveal your capability gaps, produce a concrete finding to report to the audit committee, and build the business case for investing in ongoing AI audit capability.",
   },
+
+  "korea-ai-basic-act": {
+    tldr: "South Korea's AI Basic Act is the first comprehensive AI law in Asia and entered into force on January 22, 2026. It consolidates 19 separate AI bills into a single framework, classifies AI systems by impact level, and imposes pre-deployment risk assessments, fundamental rights impact assessments, and mandatory disclosure obligations for AI use and AI-generated content. The extraterritorial scope means any overseas organisation whose AI affects the Korean market is in scope.",
+
+    criticalPoints: [
+      {
+        heading: "Two routes to 'high-impact AI' — and most organisations miss the compute threshold",
+        text: "High-impact AI is defined two ways: systems trained with ≥10²⁶ FLOPs (a compute threshold), OR systems operating in healthcare, energy, transportation, hiring/employment, or biometric analysis regardless of compute. Most organisations focus only on the sector list and overlook that large foundation model training also triggers high-impact obligations — even for models not deployed in a regulated sector.",
+        critical: true,
+      },
+      {
+        heading: "Extraterritorial reach is real and immediate",
+        text: "The Act applies to AI activities that affect the South Korean market — not just Korean companies. If your product, service, or AI model is used by South Korean residents or businesses, you are in scope. You are required to designate a local representative in South Korea. This is often the last obligation organisations discover and the hardest to remediate quickly.",
+        critical: true,
+      },
+      {
+        heading: "AI disclosure is mandatory at the point of interaction — not buried in terms",
+        text: "Users must be notified before interacting with an AI-powered product or service. Clear labelling of AI-generated content (images, audio, video) is required for generative AI operators. Disclosure buried in a terms of service document does not satisfy this requirement — it must be prominent and at the point of first use.",
+        critical: true,
+      },
+      {
+        heading: "Phased enforcement means now is the compliance window, not a delay",
+        text: "The South Korean government announced an initial guidance and support phase before active penalty enforcement. This is a compliance window — not permission to defer. Organisations that use this period to build their compliance programme will be in a substantially stronger position when enforcement begins.",
+        critical: false,
+      },
+    ],
+
+    keyObligations: [
+      "Classify all AI systems against both the compute threshold (≥10²⁶ FLOPs) and the sector list (healthcare, energy, transportation, hiring, biometrics)",
+      "Conduct pre-deployment risk assessment for every high-impact AI system",
+      "Complete fundamental rights impact assessment before deployment — gender, age, disability, ethnicity in scope",
+      "Designate a local representative in South Korea (mandatory for overseas operators)",
+      "Add explicit AI use disclosure at first user interaction — not in terms of service",
+      "Label all AI-generated content that could be confused for human-created content",
+      "Re-assess on material model update or change of deployment context",
+    ],
+
+    whoNeedsToAct: [
+      "Any technology company with South Korean users or B2B customers",
+      "Healthcare AI providers selling into or operating in South Korea",
+      "HR technology platforms used by Korean companies for hiring or performance management",
+      "Generative AI providers with Korean users — content labelling applies immediately",
+      "Large foundation model providers whose training compute exceeds 10²⁶ FLOPs",
+    ],
+
+    commonMisconceptions: [
+      {
+        myth: "We're a US/EU company so Korean law doesn't apply to us.",
+        truth: "The Act's extraterritorial scope applies to any AI affecting the Korean market. If South Korean users interact with your AI product, you are in scope regardless of where your company is headquartered.",
+      },
+      {
+        myth: "The phased enforcement period means we don't need to act yet.",
+        truth: "The phased guidance period is a compliance support window — not a delay in legal obligations. The Act is in force. Fines and enforcement follow the support phase.",
+      },
+      {
+        myth: "Only AI companies need to comply.",
+        truth: "Any organisation that deploys AI in products, services, or operational processes — in any sector — may be in scope if they operate high-impact AI or have Korean users.",
+      },
+    ],
+
+    practicalTip: "Start with a two-step classification exercise: (1) list every AI system and check it against the five high-impact sectors; (2) check training compute for foundation models against the 10²⁶ FLOPs threshold. For each high-impact system, assign a compliance owner and initiate the risk assessment immediately. The local representative requirement is the longest lead-time item — address it first if you have Korean market exposure.",
+  },
+
+  "china-anthropomorphic-ai": {
+    tldr: "China's Interim Measures for Anthropomorphic AI Interaction Services — effective July 15, 2026 — are the world's first regulation specifically targeting AI companion, emotional interaction, and human-simulating services. Jointly issued by five government agencies, the regulation mandates opt-in consent, dedicated protection mechanisms for minors and the elderly, mandatory addiction detection and intervention, and human takeover requirements when users show signs of psychological distress. Any AI service that simulates personality, emotion, or social interaction is in scope.",
+
+    criticalPoints: [
+      {
+        heading: "Any AI that simulates human personality or emotion is covered — not just dedicated companion apps",
+        text: "The regulation covers all AI services that simulate human personality traits, thinking patterns, or communication styles and engage in emotional interaction. This is intentionally broad — customer service bots, AI tutors, mental wellness apps, and social AI features inside larger platforms all potentially qualify. Organisations must assess every AI-powered feature, not just standalone companion products.",
+        critical: true,
+      },
+      {
+        heading: "Opt-in consent for data collection reverses the default",
+        text: "Most AI services use opt-out consent for data collection — users are enrolled by default and must take action to leave. This regulation mandates opt-in: users must actively consent before any personal or emotional data is collected or used for model training. Redesigning consent flows from opt-out to opt-in is a significant UX and engineering change that cannot be done quickly.",
+        critical: true,
+      },
+      {
+        heading: "Virtual intimate relationship and companion services are prohibited for minors under 14",
+        text: "The prohibition is absolute — no consent mechanism, no parental override. If a user is identified as under 14, virtual companion and intimate relationship services must be unavailable. Providers must implement robust age verification at onboarding. Minor mode is required on identification, with emergency contact registration mandatory for under-14 users.",
+        critical: true,
+      },
+      {
+        heading: "Addiction detection and crisis response are technical requirements, not policy statements",
+        text: "Providers must build systems that analyse interaction patterns to detect dependency and addiction — and implement in-product interventions (break reminders, usage limits). If a user mentions self-harm or suicide, the AI must immediately escalate to human support — it cannot continue the conversation alone. These are engineering requirements that need to be built and tested, not policies that can be documented in a PDF.",
+        critical: true,
+      },
+    ],
+
+    keyObligations: [
+      "Conduct scope assessment — identify all AI features involving emotional simulation or human-likeness",
+      "Redesign data consent from opt-out to opt-in before July 15, 2026",
+      "Implement age verification at onboarding; build minor mode disabling companion/intimate features",
+      "Register emergency contacts for users identified as under 14",
+      "Build interaction pattern analysis for addiction/dependency detection; deploy in-app intervention UX",
+      "Implement psychological distress detection layer with template crisis responses and human escalation routing",
+      "Establish algorithm review, ethics review, and data security management systems",
+      "Complete internal compliance assessment by July 1, 2026 — 2-week buffer before effective date",
+    ],
+
+    whoNeedsToAct: [
+      "Consumer AI app providers with any Chinese user base (companion, wellness, social, education)",
+      "Enterprise AI providers whose chatbots or assistants have human-like personas",
+      "Global AI platform operators (social, messaging, gaming) with PRC market presence",
+      "Mental health and wellness AI providers operating in China",
+      "AI tutoring and education platforms with emotionally interactive features",
+    ],
+
+    commonMisconceptions: [
+      {
+        myth: "This only applies to dedicated companion apps like Replika-style products.",
+        truth: "The scope covers any AI that simulates human personality or emotion during interaction — including customer service bots, AI tutors, wellness assistants, and social AI features. A broad platform audit is required.",
+      },
+      {
+        myth: "We can address this by updating our privacy policy.",
+        truth: "Addiction detection, crisis response, and minor protection are technical engineering requirements. Policy documents do not satisfy them. Systems must be built, tested, and operational by the effective date.",
+      },
+      {
+        myth: "Enforcement won't be immediate so we have time after July 2026.",
+        truth: "Five co-regulating agencies issued this measure jointly. That level of inter-agency coordination indicates serious enforcement intent. The PRC regulatory environment rewards early compliance — not late remediation.",
+      },
+    ],
+
+    practicalTip: "Run a product feature audit against the scope definition first — any feature where the AI takes on a persona, expresses emotions, or engages in sustained dialogue should be flagged for review. Prioritise age verification and minor protection above all other obligations: the prohibition on companion/intimate services for under-14 users is absolute, and violations in this area will attract the most severe enforcement response.",
+  },
+
+  "us-take-it-down": {
+    tldr: "The TAKE IT DOWN Act — signed May 19, 2025 — is the first federal US law specifically addressing AI-generated deepfakes. It prohibits the knowing publication of non-consensual intimate imagery and AI-synthesised deepfakes intended to cause harm to identifiable individuals. Online platforms must establish notice-and-takedown systems with a mandatory 48-hour removal window. The FTC has civil enforcement authority; criminal penalties of up to 3 years imprisonment apply for distribution. The first conviction was secured in April 2026.",
+
+    criticalPoints: [
+      {
+        heading: "The 48-hour takedown window is a hard operational requirement",
+        text: "Once a platform receives a valid takedown notice for covered content, the 48-hour clock starts. There is no grace period, no appeals process before removal, and no threshold of harm required — if the content is covered and a valid notice has been received, it must be removed within 48 hours or the platform is in breach. Existing content moderation queues and review pipelines were not designed for this SLA — most platforms need to build dedicated fast-track workflows.",
+        critical: true,
+      },
+      {
+        heading: "Platform liability attaches to systemic non-compliance — not individual uploads",
+        text: "The FTC's civil enforcement target is platforms that fail to establish or maintain the required notice-and-takedown systems. A single missed takedown will not trigger FTC action. A pattern of failures, an inadequate reporting mechanism, or the absence of any process will. The compliance question is: 'Does our notice-and-takedown infrastructure meet the statutory requirements?' — not 'Did we remove this specific piece of content?'",
+        critical: true,
+      },
+      {
+        heading: "AI-generated content is explicitly covered — detection capability is now a compliance question",
+        text: "The law covers both real intimate images and AI-synthesised deepfakes. Platforms that cannot detect AI-generated content face a structural compliance problem: they cannot confidently identify covered content from user reports, and their moderation teams may not recognise sophisticated synthetic imagery. AI detection tooling is not mandated but is the practical prerequisite for reliable compliance.",
+        critical: true,
+      },
+      {
+        heading: "Criminal enforcement is active — the first conviction was April 2026",
+        text: "The April 2026 Ohio case established that criminal prosecutions under this law are not theoretical. Individuals who distribute covered content face up to 3 years imprisonment. For platforms, this means employees involved in content decisions need to understand their personal liability exposure — not just the company's corporate risk.",
+        critical: false,
+      },
+    ],
+
+    keyObligations: [
+      "Establish a clear, accessible reporting/notice mechanism for non-consensual intimate imagery and deepfakes",
+      "Build a dedicated 48-hour takedown workflow separate from standard content moderation queues",
+      "Train trust and safety teams on covered content categories — intimate imagery and AI-synthesised deepfakes",
+      "Implement or evaluate AI-generated content detection tooling",
+      "Update acceptable use policy and employee code of conduct to reflect criminal liability exposure",
+      "Retain records of all takedown requests, response times, and removal decisions for FTC inquiry readiness",
+      "Conduct a readiness audit of existing notice-and-takedown infrastructure against statutory requirements",
+    ],
+
+    whoNeedsToAct: [
+      "Social media platforms with US users (mandatory compliance)",
+      "Image and video hosting platforms — any site allowing user-generated content uploads",
+      "Messaging platforms with shared media capabilities",
+      "AI image/video generation platforms — direct liability exposure for generated content distribution",
+      "All SaaS platforms with user-generated content features that are accessible in the US",
+    ],
+
+    commonMisconceptions: [
+      {
+        myth: "We already have DMCA takedown processes — that covers this.",
+        truth: "DMCA covers copyright, not consent. The TAKE IT DOWN Act creates a separate, standalone obligation for intimate imagery and deepfakes — a dedicated process with its own 48-hour SLA is required in addition to existing DMCA infrastructure.",
+      },
+      {
+        myth: "This only applies to porn sites or adult content platforms.",
+        truth: "The law applies to any online platform that allows user content uploads — including mainstream social networks, messaging apps, cloud storage, and professional networking sites. Any platform where intimate imagery could be posted is in scope.",
+      },
+      {
+        myth: "We're not a US company so this doesn't apply to us.",
+        truth: "If your platform is accessible to US users and allows them to post or share content, you are likely in scope. FTC jurisdiction follows market access, not company location.",
+      },
+    ],
+
+    practicalTip: "Audit your existing notice-and-takedown infrastructure against three questions: (1) Is the reporting mechanism clearly labelled and accessible on every page where user content appears? (2) Does your moderation workflow have a fast-track queue capable of 48-hour resolution independent of normal review SLAs? (3) Can your trust and safety team reliably identify AI-generated intimate imagery? If the answer to any of these is no, that is your starting point.",
+  },
 };

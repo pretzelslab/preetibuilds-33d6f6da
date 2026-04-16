@@ -1155,7 +1155,7 @@ export default function AIReadinessAssessment() {
   const profileComplete = profile.industry && profile.size && profile.region;
 
   return (
-    <PageGate previewContent={<AIReadinessPreview />} backTo="/#projects">
+    <PageGate pageId="ai-readiness" previewContent={<AIReadinessPreview />} backTo="/#projects">
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border/50 bg-background/80 backdrop-blur sticky top-0 z-10">
