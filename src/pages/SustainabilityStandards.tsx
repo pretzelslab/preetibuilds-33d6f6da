@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { useVisitLogger } from "@/hooks/useVisitLogger";
 import { DiagonalWatermark } from "@/components/ui/DiagonalWatermark";
 import { PageGate } from "@/components/ui/PageGate";
@@ -749,6 +749,14 @@ function StandardsTab() {
   const [filterStatus,       setFilterStatus]       = useState("All");
   const [filterIndustry,     setFilterIndustry]     = useState("All");
   const [selected,           setSelected]           = useState<Standard | null>(null);
+  const detailPanelRef = useRef<HTMLDivElement>(null);
+
+  // Scroll detail panel to top whenever selection changes
+  useEffect(() => {
+    if (selected && detailPanelRef.current) {
+      detailPanelRef.current.scrollTo({ top: 0, behavior: "instant" });
+    }
+  }, [selected]);
 
   const jurisdictions = ["All", ...Array.from(new Set(STANDARDS.map(s => s.jurisdiction)))];
   const types         = ["All", ...Array.from(new Set(STANDARDS.map(s => s.type)))];
@@ -810,11 +818,8 @@ function StandardsTab() {
         <span className="text-[11px] text-muted-foreground/50 ml-auto">{filtered.length} of {STANDARDS.length} frameworks</span>
       </div>
 
-      {/* Master-detail layout — click backdrop to dismiss */}
-      <div
-        className="flex gap-4 items-start"
-        onClick={() => setSelected(null)}
-      >
+      {/* Master-detail layout */}
+      <div className="flex gap-4 items-start">
 
         {/* LEFT — table grid */}
         <div
@@ -901,9 +906,10 @@ function StandardsTab() {
           )}
         </div>
 
-        {/* RIGHT — detail panel — stopPropagation so clicks inside don't dismiss */}
+        {/* RIGHT — detail panel */}
         <div
-          className="w-[460px] xl:w-[540px] shrink-0 sticky top-6 self-start"
+          ref={detailPanelRef}
+          className="w-[460px] xl:w-[540px] shrink-0 sticky top-6 self-start max-h-[calc(100vh-6rem)] overflow-y-auto"
           onClick={e => e.stopPropagation()}
         >
           <DetailPanel s={selected} onClose={() => setSelected(null)} />
@@ -964,6 +970,8 @@ function SustainabilityPreview() {
 // ── Main page ──────────────────────────────────────────────────────────────────
 export default function SustainabilityStandards() {
   useVisitLogger("/sustainability-standards");
+  const location = useLocation();
+  const referrer = (location.state as { from?: string; fromLabel?: string } | null);
   const [activeTab, setActiveTab] = useState<"standards" | "tools" | "players">("standards");
 
   const tabs = [
@@ -979,14 +987,20 @@ export default function SustainabilityStandards() {
 
         {/* Nav */}
         <nav className="sticky top-10 z-40 border-b bg-background/95 backdrop-blur border-border/40">
-          <div className="max-w-[1400px] mx-auto px-6 py-3">
+          <div className="max-w-[1400px] mx-auto px-6 py-3 flex items-center gap-4">
             <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
               ← Back to Portfolio
             </Link>
+            {referrer?.from && (
+              <Link to={referrer.from} className="text-xs text-violet-400 hover:text-violet-300 transition-colors border-l border-border pl-4">
+                ← Back to {referrer.fromLabel ?? "Framework"}
+              </Link>
+            )}
           </div>
         </nav>
 
-        <div className="max-w-[1400px] mx-auto px-6 py-10 space-y-8">
+        {/* Clicking anywhere outside the table/panel dismisses the selection */}
+        <div className="max-w-[1400px] mx-auto px-6 py-10 space-y-8" onClick={() => setSelected(null)}>
 
           {/* Header */}
           <div className="space-y-3">

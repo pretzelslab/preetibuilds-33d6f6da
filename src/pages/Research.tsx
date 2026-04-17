@@ -607,6 +607,60 @@ const Research = () => {
 
         <ComplianceAgentCard />
 
+        {/* Carbon Depth Formula Validation */}
+        <div className="rounded-xl border border-border bg-card p-8 shadow-card">
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-[11px] font-medium mb-3">
+                Sustainable AI · Carbon Accounting
+              </div>
+              <h2 className="text-xl font-semibold tracking-tight text-foreground">
+                Carbon Depth Formula Validation
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                Independent validation of the Carbon Depth Calculator's energy and carbon formula against
+                three peer-reviewed papers. Formula: energy (kWh) = GPU TDP × hours × count × PUE;
+                carbon (kgCO₂e) = energy × live grid intensity. Key finding: static annual grid averages
+                overestimate by up to 2.4× versus live Electricity Maps data.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            {[
+              { value: "−0.1%", label: "BERT-base (Strubell 2019)", flagged: false },
+              { value: "0.0%",  label: "T5-11B (Patterson 2021)",   flagged: false },
+              { value: "+0.1%", label: "BLOOM 176B (Luccioni 2022)", flagged: false },
+              { value: "2.4×",  label: "Static grid overestimate",  flagged: true  },
+            ].map(t => (
+              <div key={t.label} className={`rounded-lg border px-4 py-3 ${t.flagged ? "border-amber-500/20 bg-amber-500/5" : "border-emerald-500/20 bg-emerald-500/5"}`}>
+                <p className={`text-lg font-bold ${t.flagged ? "text-amber-500" : "text-emerald-600"}`}>{t.value}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{t.label}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4 text-xs text-muted-foreground mb-5">
+            <strong className="text-foreground">Mean deviation ±0.1% with correct grid inputs.</strong> The BLOOM
+            deviation appears large (+144.7%) only when using France's annual average grid intensity (56 gCO₂/kWh).
+            Using the actual live grid during BLOOM's training period (22.9 gCO₂/kWh — France's nuclear at full capacity
+            March–July 2022) restores accuracy to +0.1%. This validates Carbon Depth's Electricity Maps API integration
+            over static annual averages.
+          </div>
+
+          <div className="flex items-center gap-3">
+            <a
+              href="https://github.com/pretzelslab/ai-safety-research"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border/60 bg-background text-xs font-medium text-foreground hover:border-foreground/40 transition-colors"
+            >
+              View notebook on GitHub →
+            </a>
+            <span className="text-[10px] text-muted-foreground">GHG Protocol Scope 2 · Green Software Foundation SCI · Electricity Maps API</span>
+          </div>
+        </div>
+
       </div>
     </div>
     </PageGate>

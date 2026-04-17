@@ -20,6 +20,7 @@ import CarbonFairnessFrontier from "./pages/CarbonFairnessFrontier";
 import CarbonDepth from "./pages/CarbonDepth";
 import ComplianceAgent from "./pages/ComplianceAgent";
 import SustainabilityStandards from "./pages/SustainabilityStandards";
+import SustainabilityFramework from "./pages/SustainabilityFramework";
 import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/carbon-depth":              "AI Carbon Footprint Calculator | Preeti Builds",
   "/compliance-agent":          "AI Compliance Monitoring Agent | Preeti Builds",
   "/sustainability-standards":  "AI Sustainability Standards Tracker | Preeti Builds",
+  "/sustainability-framework":  "AI Sustainability Disclosure Framework | Preeti Builds",
   "/admin":                     "Admin | Preeti Builds",
 };
 
@@ -75,6 +77,7 @@ const App = () => (
             <Route path="/carbon-depth" element={<CarbonDepth />} />
             <Route path="/compliance-agent" element={<ComplianceAgent />} />
             <Route path="/sustainability-standards" element={<SustainabilityStandards />} />
+            <Route path="/sustainability-framework" element={<SustainabilityFramework />} />
             <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

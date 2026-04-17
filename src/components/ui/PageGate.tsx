@@ -8,14 +8,15 @@ const MASTER_CODE = "PRL2026";
 const MASTER_KEY  = "pl_session_access";
 
 const PAGE_CODES: Record<string, string> = {
-  "research":          "RSC2026",
-  "carbon-depth":      "CDX2026",
-  "ai-readiness":      "ARD2026",
-  "fairness":          "FAR2026",
-  "carbon-fairness":   "CFR2026",
-  "client-discovery":  "CLN2026",
-  "melodic":           "MEL2026",
-  "admin":             "ADM2026",
+  "research":                  "RSC2026",
+  "carbon-depth":              "CDX2026",
+  "ai-readiness":              "ARD2026",
+  "fairness":                  "FAR2026",
+  "carbon-fairness":           "CFR2026",
+  "client-discovery":          "CLN2026",
+  "melodic":                   "MEL2026",
+  "admin":                     "ADM2026",
+  "sustainability-framework":  "SFW2026",
 };
 
 function pageKey(key: string): string { return `pl_access_${key}`; }

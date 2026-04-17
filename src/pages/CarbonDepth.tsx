@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
   ReferenceLine, ResponsiveContainer,
@@ -2323,14 +2323,24 @@ function CarbonDepthPage() {
     setGridSource(`static average (${zone})`);
   };
 
+  const location = useLocation();
+  const referrer = (location.state as { from?: string; fromLabel?: string } | null);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Sticky nav */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border/40">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
-          <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-            ← Back to Portfolio
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              ← Back to Portfolio
+            </Link>
+            {referrer?.from && (
+              <Link to={referrer.from} className="text-xs text-violet-400 hover:text-violet-300 transition-colors border-l border-border pl-4">
+                ← Back to {referrer.fromLabel ?? "Framework"}
+              </Link>
+            )}
+          </div>
           <span className="text-xs text-muted-foreground font-mono hidden sm:block">
             Energy ±15% · validated vs Strubell 2019 · Patterson 2021 · BLOOM 2022
           </span>

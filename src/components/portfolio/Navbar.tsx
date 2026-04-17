@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 
 const Navbar = () => (
@@ -6,7 +7,10 @@ const Navbar = () => (
       <a href="/" className="font-mono text-sm font-semibold tracking-tight text-foreground hover:text-primary transition-colors">
         preethi<span className="text-primary">.</span>builds
       </a>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
+        <Link to="/research" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
+          Research
+        </Link>
         <ThemeToggle />
         <a
           href="mailto:chinmayipriti@gmail.com"

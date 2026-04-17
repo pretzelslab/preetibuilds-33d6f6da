@@ -12,18 +12,18 @@ type Project = {
 
 const RESPONSIBLE_AI: Project[] = [
   {
+    title: "Algorithmic Fairness Auditor",
+    description: "Audits AI systems for hidden bias — from quantization-induced disparate impact to real-world criminal justice (COMPAS recidivism). Applies disparate impact ratio, Cohen's d, false positive/negative rate parity, and chi-square testing.",
+    tags: ["Python", "NumPy", "SciPy", "Google Colab"],
+    status: "preview",
+    link: "/algorithmic-fairness",
+  },
+  {
     title: "AI Compliance Monitoring Agent",
     description: "LangGraph multi-node agent + Python data pipeline + GitHub Actions CI/CD. Computes fairness metrics (DIR, FPR, FNR) against EU AI Act and NIST thresholds, routes on severity, and auto-generates compliance reports and escalation memos — on a weekly schedule.",
     tags: ["LangGraph", "Python", "GitHub Actions", "Claude Haiku", "Pandas"],
     status: "preview",
     link: "/compliance-agent",
-  },
-  {
-    title: "AI Readiness Assessment",
-    description: "25-question self-service diagnostic across Strategy, Data, Technology, People, and Governance — scored report with ROI signal and prioritised gaps.",
-    tags: ["React", "TypeScript", "Recharts"],
-    status: "preview",
-    link: "/ai-readiness",
   },
   {
     title: "AI Ethics & Governance Tracker",
@@ -38,6 +38,23 @@ const RESPONSIBLE_AI: Project[] = [
     tags: ["React", "TypeScript", "Supabase"],
     status: "preview",
     link: "/client-discovery",
+  },
+  {
+    title: "AI Readiness Assessment",
+    description: "25-question self-service diagnostic across Strategy, Data, Technology, People, and Governance — scored report with ROI signal and prioritised gaps.",
+    tags: ["React", "TypeScript", "Recharts"],
+    status: "preview",
+    link: "/ai-readiness",
+  },
+];
+
+const SUSTAINABLE_AI: Project[] = [
+  {
+    title: "AI Sustainability Disclosure Framework",
+    description: "5-step practitioner framework for measuring, benchmarking, optimising, and disclosing the environmental footprint of AI systems. Maps to CSRD (2024), EU GPAI Art.53 (Aug 2025), and ISSB S2. Includes business case intake form with personalised obligation mapping and penalty exposure.",
+    tags: ["Sustainable AI", "CSRD", "EU GPAI Art.53", "ISSB S2", "GRI 305", "TypeScript"],
+    status: "preview",
+    link: "/sustainability-framework",
   },
   {
     title: "AI Carbon Footprint Calculator",
@@ -55,17 +72,10 @@ const RESPONSIBLE_AI: Project[] = [
   },
   {
     title: "AI Sustainability Standards Tracker",
-    description: "Live reference across 10 disclosure frameworks — CSRD/ESRS E1, EU AI Act GPAI, ISSB S2, GRI 305, TCFD, SEC Climate Rule, and more. Each framework: AI-specific obligations, enforcement status, penalty exposure, and jurisdiction scope. Includes tool directory and industry adoption map.",
+    description: "Live reference across 11 disclosure frameworks — CSRD/ESRS E1, EU AI Act GPAI, ISSB S2, GRI 305, TCFD, SEC Climate Rule, and more. Each framework: AI-specific obligations, enforcement status, penalty exposure, and jurisdiction scope. Includes tool directory and industry adoption map.",
     tags: ["Sustainable AI", "CSRD", "ISSB S2", "EU AI Act", "GRI 305", "TypeScript"],
     status: "preview",
     link: "/sustainability-standards",
-  },
-  {
-    title: "Algorithmic Fairness Auditor",
-    description: "Audits AI systems for hidden bias — from quantization-induced disparate impact to real-world criminal justice (COMPAS recidivism). Applies disparate impact ratio, Cohen's d, false positive/negative rate parity, and chi-square testing.",
-    tags: ["Python", "NumPy", "SciPy", "Google Colab"],
-    status: "preview",
-    link: "/algorithmic-fairness",
   },
 ];
 
@@ -176,6 +186,11 @@ const Projects = () => (
       <SectionHeader label="Responsible AI" />
       <div className="mb-8">
         {RESPONSIBLE_AI.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+      </div>
+
+      <SectionHeader label="Sustainable AI" />
+      <div className="mb-8">
+        {SUSTAINABLE_AI.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
 
       <SectionHeader label="GTM & Product Ops" />
