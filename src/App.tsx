@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { useEffect } from "react";
 import Index from "./pages/Index";
@@ -22,6 +22,7 @@ import ComplianceAgent from "./pages/ComplianceAgent";
 import SustainabilityStandards from "./pages/SustainabilityStandards";
 import SustainabilityFramework from "./pages/SustainabilityFramework";
 import Admin from "./pages/Admin";
+import AIWebinar from "./pages/AIWebinar";
 
 const queryClient = new QueryClient();
 
@@ -42,15 +43,41 @@ const ROUTE_TITLES: Record<string, string> = {
   "/sustainability-standards":  "AI Sustainability Standards Tracker | Preeti Builds",
   "/sustainability-framework":  "AI Sustainability Disclosure Framework | Preeti Builds",
   "/admin":                     "Admin | Preeti Builds",
+  "/ai-sustainability-webinar": "AI Sustainability Webinar | Preeti Builds",
 };
+
+const UNREAD_KEY = "pl_new_visits";
 
 const RouteTitle = () => {
   const { pathname } = useLocation();
+  const navType = useNavigationType();
+
+  // Save scroll position when leaving a route
   useEffect(() => {
-    document.title = ROUTE_TITLES[pathname] ?? "Preeti Builds";
-    // Scroll to top on every route change (unless returning to / which has hash anchors)
-    if (pathname !== "/") window.scrollTo({ top: 0, behavior: "instant" });
+    return () => {
+      sessionStorage.setItem(`scroll_${pathname}`, String(window.scrollY));
+    };
   }, [pathname]);
+
+  // Set title + restore/reset scroll on route change
+  useEffect(() => {
+    const unread = parseInt(localStorage.getItem(UNREAD_KEY) ?? "0", 10);
+    const prefix = unread > 0 ? `(${unread}) ` : "";
+    document.title = prefix + (ROUTE_TITLES[pathname] ?? "Preeti Builds");
+
+    if (navType === "POP") {
+      const saved = sessionStorage.getItem(`scroll_${pathname}`);
+      if (saved) {
+        // Double rAF: wait for React render + browser paint before restoring
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          window.scrollTo(0, parseInt(saved, 10));
+        }));
+        return;
+      }
+    }
+    if (pathname !== "/") window.scrollTo({ top: 0, behavior: "instant" });
+  }, [pathname, navType]);
+
   return null;
 };
 
@@ -79,6 +106,7 @@ const App = () => (
             <Route path="/sustainability-standards" element={<SustainabilityStandards />} />
             <Route path="/sustainability-framework" element={<SustainabilityFramework />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/ai-sustainability-webinar" element={<AIWebinar />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -17,6 +17,7 @@ const PAGE_CODES: Record<string, string> = {
   "melodic":                   "MEL2026",
   "admin":                     "ADM2026",
   "sustainability-framework":  "SFW2026",
+  "ai-sustainability-webinar": "WBN2026",
 };
 
 function pageKey(key: string): string { return `pl_access_${key}`; }
@@ -76,6 +77,7 @@ export function PageGate({
     if (!hash) return;
     if (hash === MASTER_CODE) {
       safeSet(MASTER_KEY, "1");
+      try { localStorage.setItem("pl_session_access", "1"); } catch {}
       setUnlocked(true);
     } else if (pageId && hash === PAGE_CODES[pageId]) {
       safeSet(pageKey(pageId), "1");
@@ -88,6 +90,8 @@ export function PageGate({
     const entered = code.toUpperCase().trim();
     if (entered === MASTER_CODE) {
       safeSet(MASTER_KEY, "1");
+      // Mark as owner so useVisitLogger stops logging future visits from this browser
+      try { localStorage.setItem("pl_session_access", "1"); } catch {}
       setUnlocked(true);
     } else if (pageId && PAGE_CODES[pageId] && entered === PAGE_CODES[pageId]) {
       safeSet(pageKey(pageId), "1");

@@ -76,6 +76,7 @@ const PAGE_LABELS: Record<string, string> = {
 };
 
 const LAST_SEEN_KEY = "admin_last_seen_count";
+const UNREAD_KEY    = "pl_new_visits"; // shared with App.tsx RouteTitle for tab badge
 
 // ── Carbon Depth Data Manager ─────────────────────────────────────────────────
 function CarbonDataManager() {
@@ -373,8 +374,23 @@ export default function Admin() {
   const [newCount, setNewCount] = useState(0);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [hideSelfReferrals, setHideSelfReferrals] = useState(false);
+  const [hideOldVisits, setHideOldVisits] = useState(true);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
-  // Owner flag is set by PageGate on unlock — no auto-set here
+  function copyCode(text: string) {
+    const doFallback = () => {
+      const el = document.createElement("textarea");
+      el.value = text; el.style.position = "fixed"; el.style.opacity = "0";
+      document.body.appendChild(el); el.select();
+      try { document.execCommand("copy"); } catch {}
+      document.body.removeChild(el);
+      setCopiedCode(text); setTimeout(() => setCopiedCode(null), 1500);
+    };
+    if (!navigator.clipboard) { doFallback(); return; }
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedCode(text); setTimeout(() => setCopiedCode(null), 1500);
+    }).catch(doFallback);
+  }
 
   useEffect(() => {
     govDb
@@ -390,6 +406,8 @@ export default function Admin() {
             const diff = data.length - last;
             const count = diff > 0 ? diff : 0;
             setNewCount(count);
+            // Persist unread count for browser tab badge (read by RouteTitle in App.tsx)
+            try { localStorage.setItem(UNREAD_KEY, String(count)); } catch {}
             // Browser notification when new visitors detected
             if (count > 0 && "Notification" in window) {
               Notification.requestPermission().then(permission => {
@@ -408,8 +426,13 @@ export default function Admin() {
   }, []);
 
   function markSeen() {
-    try { localStorage.setItem(LAST_SEEN_KEY, String(visits.length)); } catch {}
+    try {
+      localStorage.setItem(LAST_SEEN_KEY, String(visits.length));
+      localStorage.setItem(UNREAD_KEY, "0");
+    } catch {}
     setNewCount(0);
+    // Clear tab badge immediately
+    document.title = ROUTE_TITLES["/admin"] ?? "Admin | Preeti Builds";
   }
 
   async function deleteVisit(id: string) {
@@ -436,10 +459,17 @@ export default function Admin() {
   const isSelfReferral = (v: Visit) =>
     SELF_DOMAINS.some(d => v.referrer?.includes(d));
 
+  const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString();
   const pages = ["all", ...Array.from(new Set(visits.map(v => v.page))).sort()];
   const filtered = visits
     .filter(v => filter === "all" || v.page === filter)
-    .filter(v => !hideSelfReferrals || !isSelfReferral(v));
+    .filter(v => !hideSelfReferrals || !isSelfReferral(v))
+    .filter(v => !hideOldVisits || v.visited_at >= fiveDaysAgo);
+  const hiddenOldCount = hideOldVisits ? visits.filter(v =>
+    (filter === "all" || v.page === filter) &&
+    (!hideSelfReferrals || !isSelfReferral(v)) &&
+    v.visited_at < fiveDaysAgo
+  ).length : 0;
 
   const sourceCounts = visits.reduce<Record<string, number>>((acc, v) => {
     const s = parseSource(v.referrer);
@@ -458,7 +488,7 @@ export default function Admin() {
     <PageGate pageId="admin" backTo="/" previewContent={preview}>
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border/40">
-        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
+        <div className="max-w-[1400px] mx-auto px-6 py-3 flex items-center justify-between">
           <Link to="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors">← Back to Portfolio</Link>
           <div className="flex items-center gap-3">
             {newCount > 0 && (
@@ -475,7 +505,7 @@ export default function Admin() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
+      <div className="max-w-[1400px] mx-auto px-6 py-10 space-y-8">
 
         {/* Summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -496,6 +526,48 @@ export default function Admin() {
             <p className="text-2xl font-bold">{new Set(visits.map(v => v.page)).size}</p>
           </div>
         </div>
+
+        {/* Visits-by-day sparkline chart */}
+        {visits.length > 0 && (() => {
+          // Build last-14-days buckets
+          const today = new Date();
+          const days = Array.from({ length: 14 }, (_, i) => {
+            const d = new Date(today);
+            d.setDate(d.getDate() - (13 - i));
+            return d.toISOString().slice(0, 10);
+          });
+          const counts = days.map(day => ({
+            day,
+            label: new Date(day + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }),
+            count: visits.filter(v => v.visited_at.startsWith(day)).length,
+          }));
+          const maxCount = Math.max(...counts.map(d => d.count), 1);
+          return (
+            <div className="rounded-xl border border-border/60 bg-muted/10 p-5">
+              <p className="text-xs font-semibold mb-4">Visits — last 14 days</p>
+              <div className="flex items-end gap-1.5 h-16">
+                {counts.map(({ day, label, count }) => (
+                  <div key={day} className="flex-1 flex flex-col items-center gap-1 group relative">
+                    <div
+                      className="w-full rounded-t-sm transition-all bg-violet-500/60 hover:bg-violet-400/80"
+                      style={{ height: `${Math.max((count / maxCount) * 56, count > 0 ? 4 : 1)}px` }}
+                    />
+                    {count > 0 && (
+                      <span className="absolute -top-5 text-[9px] font-bold text-violet-400 opacity-0 group-hover:opacity-100 transition-opacity">{count}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-1.5 mt-1">
+                {counts.map(({ day, label }) => (
+                  <div key={day} className="flex-1 text-center">
+                    <span className="text-[8px] text-muted-foreground/40 whitespace-nowrap">{label.split(" ")[0]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Delete error */}
         {deleteError && (
@@ -542,6 +614,14 @@ export default function Admin() {
               >
                 Clear direct visits
               </button>
+              <button
+                onClick={() => setHideOldVisits(v => !v)}
+                className={`text-[11px] px-2 py-1 rounded border transition-colors ${hideOldVisits ? "border-amber-500/40 text-amber-500" : "border-border/60 text-muted-foreground hover:text-amber-500 hover:border-amber-500/40"}`}
+              >
+                {hideOldVisits
+                  ? `Older hidden${hiddenOldCount > 0 ? ` (${hiddenOldCount})` : ""}`
+                  : "Hide older visits"}
+              </button>
               <select
                 value={filter}
                 onChange={e => setFilter(e.target.value)}
@@ -563,12 +643,12 @@ export default function Admin() {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-border/60 bg-muted/20">
-                    <th className="text-left px-3 py-2 font-medium text-muted-foreground">When</th>
-                    <th className="text-left px-3 py-2 font-medium text-muted-foreground">Page</th>
-                    <th className="text-left px-3 py-2 font-medium text-muted-foreground">Location</th>
-                    <th className="text-left px-3 py-2 font-medium text-muted-foreground">Source</th>
-                    <th className="text-left px-2 py-2 font-medium text-muted-foreground">Dev</th>
-                    <th className="px-2 py-2"></th>
+                    <th className="text-left px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">When</th>
+                    <th className="text-left px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">Page</th>
+                    <th className="text-left px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">Location</th>
+                    <th className="text-left px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">Source</th>
+                    <th className="text-left px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">Dev</th>
+                    <th className="px-2 py-1.5" />
                   </tr>
                 </thead>
                 <tbody>
@@ -580,32 +660,27 @@ export default function Admin() {
                       src === "Google" ? "text-emerald-500" : "text-violet-400";
                     const isSelf = isSelfReferral(v);
                     return (
-                    <tr key={v.id} className={`border-b border-border/40 last:border-0 ${isSelf ? "opacity-40" : ""} ${i % 2 === 0 ? "" : "bg-muted/10"}`}>
-                      <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">
-                        <span className="block font-medium text-foreground">{timeAgo(v.visited_at)}</span>
-                        <span className="block text-[10px] opacity-50">{formatDateTime(v.visited_at)}</span>
+                    <tr key={v.id} className={`border-b border-border/30 last:border-0 ${isSelf ? "opacity-40" : ""} ${i % 2 === 0 ? "" : "bg-muted/5"}`}>
+                      <td className="px-3 py-1 whitespace-nowrap">
+                        <span className="text-[11px] font-medium text-foreground">{timeAgo(v.visited_at)}</span>
+                        <span className="text-[10px] text-muted-foreground/40 ml-1.5">{formatDateTime(v.visited_at)}</span>
                       </td>
-                      <td className="px-3 py-2 font-medium">{PAGE_LABELS[v.page] ?? v.page}</td>
-                      <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">
+                      <td className="px-3 py-1 text-[11px] font-medium text-foreground/80 whitespace-nowrap">{PAGE_LABELS[v.page] ?? v.page}</td>
+                      <td className="px-3 py-1 text-[11px] text-muted-foreground whitespace-nowrap">
                         {v.city || v.country
-                          ? <span>{[v.city, v.country].filter(Boolean).join(", ")}</span>
-                          : <span className="opacity-40">—</span>}
+                          ? [v.city, v.country].filter(Boolean).join(", ")
+                          : <span className="opacity-30">—</span>}
                       </td>
-                      <td className={`px-3 py-2 font-medium ${srcColor}`}>
-                        <span className="block">{src}</span>
-                        {v.referrer && !v.referrer.startsWith("utm:") && (
-                          <span className="block text-[10px] text-muted-foreground/40 font-normal truncate max-w-[120px]">{v.referrer}</span>
-                        )}
-                      </td>
-                      <td className="px-2 py-2">
-                        <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${parseDevice(v.user_agent) === "Mobile" ? "border-violet-500/30 text-violet-400 bg-violet-500/10" : "border-border/40 text-muted-foreground bg-muted/20"}`}>
+                      <td className={`px-3 py-1 text-[11px] font-medium whitespace-nowrap ${srcColor}`}>{src}</td>
+                      <td className="px-2 py-1">
+                        <span className={`text-[9px] font-mono px-1 py-0.5 rounded border ${parseDevice(v.user_agent) === "Mobile" ? "border-violet-500/30 text-violet-400 bg-violet-500/10" : "border-border/40 text-muted-foreground/50 bg-muted/10"}`}>
                           {parseDevice(v.user_agent) === "Mobile" ? "M" : "D"}
                         </span>
                       </td>
-                      <td className="px-2 py-2">
+                      <td className="px-2 py-1">
                         <button
                           onClick={() => deleteVisit(v.id)}
-                          className="text-muted-foreground/30 hover:text-rose-500 transition-colors text-[11px]"
+                          className="text-muted-foreground/20 hover:text-rose-500 transition-colors text-[11px]"
                           title="Delete this visit"
                         >✕</button>
                       </td>
@@ -619,32 +694,40 @@ export default function Admin() {
           </div>{/* end visit log column */}
 
           {/* Access codes — sidebar */}
-          <div className="w-40 shrink-0">
+          <div className="w-64 shrink-0">
             <div className="rounded-xl border border-border/60 bg-muted/10 p-4">
               <p className="text-[11px] font-semibold mb-3 text-muted-foreground">Access codes</p>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 {[
-                  { page: "Master",           code: "PRL2026", master: true },
-                  { page: "Research",         code: "RSC2026" },
-                  { page: "Carbon Depth",     code: "CDX2026" },
-                  { page: "AI Readiness",     code: "ARD2026" },
-                  { page: "Fairness Auditor", code: "FAR2026" },
-                  { page: "Carbon-Fairness",  code: "CFR2026" },
-                  { page: "Client Discovery", code: "CLN2026" },
-                  { page: "Melodic",          code: "MEL2026" },
-                  { page: "Admin",            code: "ADM2026" },
+                  { page: "Master (all pages)", code: "PRL2026", master: true },
+                  { page: "Research",           code: "RSC2026" },
+                  { page: "Carbon Depth",       code: "CDX2026" },
+                  { page: "AI Readiness",       code: "ARD2026" },
+                  { page: "Fairness Auditor",   code: "FAR2026" },
+                  { page: "Carbon-Fairness",    code: "CFR2026" },
+                  { page: "Client Discovery",   code: "CLN2026" },
+                  { page: "Sustainability Fwk", code: "SFW2026" },
+                  { page: "AI Webinar",         code: "WBN2026" },
+                  { page: "Melodic",            code: "MEL2026" },
+                  { page: "Admin",              code: "ADM2026" },
                 ].map(({ page, code, master }) => (
                   <div key={code} className="flex items-center justify-between gap-2">
                     <span className={`text-[11px] truncate ${master ? "text-blue-500 dark:text-blue-400 font-medium" : "text-muted-foreground"}`}>{page}</span>
                     <button
-                      onClick={() => navigator.clipboard.writeText(code)}
-                      className={`font-mono text-[10px] px-1.5 py-0.5 rounded border transition-colors shrink-0 ${master ? "border-blue-500/30 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20" : "border-border/40 bg-muted/30 text-foreground hover:border-blue-500/30 hover:text-blue-500"}`}
-                      title="Copy"
-                    >{code}</button>
+                      onClick={() => copyCode(code)}
+                      className={`font-mono text-[10px] px-2 py-0.5 rounded border transition-colors shrink-0 min-w-[72px] text-center ${
+                        copiedCode === code
+                          ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
+                          : master
+                          ? "border-blue-500/30 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
+                          : "border-border/40 bg-muted/30 text-foreground hover:border-blue-500/30 hover:text-blue-500"
+                      }`}
+                      title="Click to copy"
+                    >{copiedCode === code ? "Copied ✓" : code}</button>
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] text-muted-foreground/40 mt-3">Click to copy</p>
+              <p className="text-[10px] text-muted-foreground/40 mt-3">Click code to copy</p>
             </div>
           </div>
 
