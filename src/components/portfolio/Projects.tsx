@@ -166,7 +166,7 @@ const ProjectRow = ({ project, index }: { project: Project; index: number }) => 
           </p>
           <div className="flex flex-wrap gap-1.5">
             {project.tags.map((tag) => (
-              <span key={tag} className="text-[10px] font-mono text-slate-500 dark:text-slate-300 bg-slate-500/10 border border-slate-400/20 px-2 py-0.5 rounded">
+              <span key={tag} className="text-[10px] font-mono text-slate-400 dark:text-slate-400 bg-slate-500/8 border border-slate-400/15 px-2 py-0.5 rounded">
                 {tag}
               </span>
             ))}
