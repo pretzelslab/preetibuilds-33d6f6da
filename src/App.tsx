@@ -22,6 +22,8 @@ import ComplianceAgent from "./pages/ComplianceAgent";
 import SustainabilityStandards from "./pages/SustainabilityStandards";
 import SustainabilityFramework from "./pages/SustainabilityFramework";
 import Admin from "./pages/Admin";
+import AIWebinar from "./pages/AIWebinar";
+import PrivacyAuditor from "./pages/PrivacyAuditor";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +44,8 @@ const ROUTE_TITLES: Record<string, string> = {
   "/sustainability-standards":  "AI Sustainability Standards Tracker | Preeti Builds",
   "/sustainability-framework":  "AI Sustainability Disclosure Framework | Preeti Builds",
   "/admin":                     "Admin | Preeti Builds",
+  "/ai-sustainability-webinar": "AI Sustainability Webinar | Preeti Builds",
+  "/privacy-auditor":           "Privacy Impact Auditor | Preeti Builds",
 };
 
 const RouteTitle = () => {
@@ -79,6 +83,8 @@ const App = () => (
             <Route path="/sustainability-standards" element={<SustainabilityStandards />} />
             <Route path="/sustainability-framework" element={<SustainabilityFramework />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/ai-sustainability-webinar" element={<AIWebinar />} />
+            <Route path="/privacy-auditor" element={<PrivacyAuditor />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

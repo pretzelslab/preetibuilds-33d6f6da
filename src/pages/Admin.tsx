@@ -624,15 +624,18 @@ export default function Admin() {
               <p className="text-[11px] font-semibold mb-3 text-muted-foreground">Access codes</p>
               <div className="space-y-1">
                 {[
-                  { page: "Master",           code: "PRL2026", master: true },
-                  { page: "Research",         code: "RSC2026" },
-                  { page: "Carbon Depth",     code: "CDX2026" },
-                  { page: "AI Readiness",     code: "ARD2026" },
-                  { page: "Fairness Auditor", code: "FAR2026" },
-                  { page: "Carbon-Fairness",  code: "CFR2026" },
-                  { page: "Client Discovery", code: "CLN2026" },
-                  { page: "Melodic",          code: "MEL2026" },
-                  { page: "Admin",            code: "ADM2026" },
+                  { page: "Master (all pages)", code: "PRL2026", master: true },
+                  { page: "Research",           code: "RSC2026" },
+                  { page: "Carbon Depth",       code: "CDX2026" },
+                  { page: "AI Readiness",       code: "ARD2026" },
+                  { page: "Fairness Auditor",   code: "FAR2026" },
+                  { page: "Carbon-Fairness",    code: "CFR2026" },
+                  { page: "Client Discovery",   code: "CLN2026" },
+                  { page: "Sustainability Fwk", code: "SFW2026" },
+                  { page: "AI Webinar",         code: "WBN2026" },
+                  { page: "Privacy Auditor",    code: "PRI2026" },
+                  { page: "Melodic",            code: "MEL2026" },
+                  { page: "Admin",              code: "ADM2026" },
                 ].map(({ page, code, master }) => (
                   <div key={code} className="flex items-center justify-between gap-2">
                     <span className={`text-[11px] truncate ${master ? "text-blue-500 dark:text-blue-400 font-medium" : "text-muted-foreground"}`}>{page}</span>

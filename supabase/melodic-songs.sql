@@ -41,7 +41,7 @@ alter table melodic_song_requests enable row level security;
 Melodic: 
 1. Move you tube search below song title.
 2. Once corrected names are added, retain names to allow repopualiton in future
-3. Allow auto-populate in sing title entry when keying in to select next word in turn enabling youtube list display to allow end user to choose from the youtube list 
+3. Allow auto-populate in song title entry when keying in to select next word in turn enabling youtube list display to allow end user to choose from the youtube list 
 4. Youtube entry once selecetd and removed removes the youtube search option completely. Youtube search option to persist
 5. Positioning of Back to Portfolio in Melodic to stay consistent across the portfolio. Indenation doesn't seem to match with other projects 
 6. Since Melodic has few additional things underway to be compleetd when it comes to search lets do a preview option for that too in vercel for now

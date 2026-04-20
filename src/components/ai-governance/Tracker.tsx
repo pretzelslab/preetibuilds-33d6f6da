@@ -460,6 +460,192 @@ const POLICIES = [
       { category: "FTC Enforcement", clause: "Section 5", parameter: "Civil Enforcement", pillars: ["risk","governance"], description: "FTC has civil enforcement authority against platforms that fail to establish or maintain the required notice-and-takedown systems. Platform liability attaches to systemic non-compliance, not individual uploads.", biasConsideration: "FTC enforcement focuses on whether platforms have adequate systems — not just individual bad actors.", genderConsideration: "Civil enforcement pathway enables systematic action against platforms that create environments where gender-based deepfake harm can proliferate.", complianceAction: "Document notice-and-takedown compliance programme. Retain records of takedown requests, response times, and content removal. Prepare for FTC inquiry readiness review.", riskLevel: "High" },
     ],
   },
+  // ─── US STATE AI LAWS ──────────────────────────────────────────────────────
+  {
+    id: "colorado-ai-act",
+    name: "Colorado AI Act",
+    geography: "United States — Colorado",
+    type: "Regulation",
+    countries: ["United States"],
+    yearReleased: 2024,
+    summary: "Colorado SB 205 — the first comprehensive US state AI law. In force February 1, 2026. Prohibits algorithmic discrimination in high-risk AI systems affecting consequential decisions: employment, credit, housing, education, and healthcare. Applies to both AI developers and deployers.",
+    industries: ["Finance","Healthcare","Employment","Education","Government"],
+    latestUpdateDate: "2026-02-01",
+    latestUpdateSummary: "In force February 1, 2026. Colorado AG has enforcement authority. Developers must disclose known limitations and bias risks to deployers. Deployers must complete annual impact assessments and provide consumers with a right to appeal automated decisions. First AG enforcement guidance expected H2 2026.",
+    regulatingBody: "Colorado Attorney General",
+    color: { bg: "#eff6ff", border: "#bfdbfe", text: "#1d4ed8", badge: "#dbeafe" },
+    emoji: "🇺🇸",
+    clauses: [
+      { category: "Algorithmic Discrimination", clause: "§6-1-1703", parameter: "Non-Discrimination Obligation", pillars: ["ethics","governance"], description: "Developers and deployers must use reasonable care to protect consumers from known or reasonably foreseeable risks of algorithmic discrimination in high-risk AI systems.", biasConsideration: "Covers race, colour, ethnicity, sex, religion, age, national origin, disability, citizenship, primary language, and genetic information.", genderConsideration: "Sex is explicitly listed — gender-based algorithmic discrimination triggers liability for both developer and deployer.", complianceAction: "Conduct algorithmic impact assessments. Document bias testing methodology. Remediate disparities before deployment and on discovery.", riskLevel: "Critical" },
+      { category: "Developer Obligations", clause: "§6-1-1704", parameter: "Developer Disclosure Requirements", pillars: ["governance","risk"], description: "Developers must disclose to deployers: purpose of high-risk AI, known limitations, bias risks, data governance practices, and performance metrics disaggregated by protected class.", biasConsideration: "Disaggregated performance metrics by protected class are a mandatory disclosure — not optional documentation.", genderConsideration: "Gender-disaggregated performance data must be provided. Known gender bias must be explicitly disclosed to deployers.", complianceAction: "Create developer disclosure package for each high-risk AI system. Update on significant model changes. Retain for 3 years.", riskLevel: "High" },
+      { category: "Consumer Rights", clause: "§6-1-1706", parameter: "Appeal and Correction Rights", pillars: ["ethics","privacy"], description: "Consumers subject to consequential decisions by high-risk AI must be told AI was used, given a plain-language explanation, and offered an opportunity to correct errors or appeal.", biasConsideration: "Appeal mechanisms must be accessible to all consumer segments regardless of language or literacy.", genderConsideration: "Explanation notices must not use gendered language that signals demographic profiling.", complianceAction: "Build consumer-facing AI disclosure notice. Design appeal workflow. Train customer-facing staff on AI decision explanation.", riskLevel: "High" },
+      { category: "Impact Assessment", clause: "§6-1-1705", parameter: "Annual Impact Assessment", pillars: ["risk","governance"], description: "Deployers of high-risk AI must complete an annual impact assessment covering: known risks of algorithmic discrimination, data governance, purpose limitations, and post-market monitoring plan.", biasConsideration: "Annual cadence ensures ongoing monitoring — not just pre-deployment assessment.", genderConsideration: "Impact assessment must explicitly evaluate gender-related harm scenarios for each high-risk AI system.", complianceAction: "Schedule annual AI impact assessments. Use standardised template. Retain records for 3 years.", riskLevel: "High" },
+    ],
+  },
+  {
+    id: "california-ai-regulation",
+    name: "California AI Regulation",
+    geography: "United States — California",
+    type: "Regulation",
+    countries: ["United States"],
+    yearReleased: 2024,
+    summary: "California has enacted multiple AI laws with active CPPA rulemaking underway. SB 1047 (large model safety) was vetoed September 2024. AB 2013 (training data transparency) and AB 302 (state AI inventory) signed 2024. California Privacy Protection Agency developing AI automated decision-making rules under CCPA — expected 2025–2026.",
+    industries: ["Technology","Finance","Healthcare","Employment","Consumer Apps"],
+    latestUpdateDate: "2025-01-01",
+    latestUpdateSummary: "SB 1047 vetoed September 2024 — Governor cited risk to innovation. AB 2013 (training data transparency for generative AI) and AB 302 (state AI use inventory) signed. CPPA AI rulemaking expected 2025–2026 — will create consumer rights including opt-out, logic access, and human review for AI decisions under CCPA.",
+    regulatingBody: "California Privacy Protection Agency (CPPA) / California AG",
+    color: { bg: "#eff6ff", border: "#bfdbfe", text: "#1d4ed8", badge: "#dbeafe" },
+    emoji: "🇺🇸",
+    clauses: [
+      { category: "Training Data Transparency", clause: "AB 2013 (2024)", parameter: "Generative AI Training Data Disclosure", pillars: ["governance","ethics"], description: "Generative AI systems deployed to Californians must disclose on developer websites: categories of training data, known limitations, and whether personal data was used.", biasConsideration: "Disclosure requirements extend to data categories that may reflect demographic composition — a precursor to full bias audit requirements.", genderConsideration: "Gender data or proxies in training corpora must be acknowledged in disclosures.", complianceAction: "Publish training data disclosure page. Update with each major model version. Include data category, source type, and known limitations.", riskLevel: "High" },
+      { category: "CCPA AI Rulemaking", clause: "CPPA Rulemaking (2025–2026)", parameter: "Automated Decision-Making Rights", pillars: ["privacy","ethics"], description: "CPPA developing rules granting California residents rights over automated decision-making: right to opt out, right to access decision logic, and right to human review for consequential decisions including employment, credit, housing, and healthcare.", biasConsideration: "Right of access to decision logic enables consumer-side bias challenge — a significant shift in enforcement posture.", genderConsideration: "Gender-based profiling subject to opt-out rights. Consent required for AI use of gender-sensitive personal data.", complianceAction: "Monitor CPPA final rulemaking (expected 2026). Prepare consent mechanisms and logic-access infrastructure for California users.", riskLevel: "High" },
+      { category: "SB 1047 — Vetoed", clause: "SB 1047 (vetoed Sep 2024)", parameter: "Large Model Safety — Withdrawn", pillars: ["governance","risk"], description: "Would have required large AI model developers (>$100M training cost) to implement safety frameworks, pre-deployment evaluations, and kill-switch capabilities. Vetoed by Governor Newsom as overly broad — cited innovation risk. Successor legislation expected.", biasConsideration: "Veto signals preference for targeted use-case regulation over broad model-level obligations — watch for narrower successor bills.", genderConsideration: "Proposed safety evaluations included demographic impact assessments — may resurface in narrower form.", complianceAction: "Monitor successor legislation. CPPA rulemaking is the active California AI compliance pathway for 2025–2026.", riskLevel: "Medium" },
+    ],
+  },
+  {
+    id: "texas-ai-bill",
+    name: "Texas AI Governance (HB 4049)",
+    geography: "United States — Texas",
+    type: "Regulation",
+    countries: ["United States"],
+    yearReleased: 2025,
+    summary: "Texas Responsible AI Governance Act — progressing through 2025 Texas legislative session. Mirrors Colorado AI Act: algorithmic discrimination prohibition, impact assessment requirements, consumer appeal rights for consequential AI decisions in credit, employment, housing, and education.",
+    industries: ["Finance","Healthcare","Employment","Education"],
+    latestUpdateDate: "2025-06-01",
+    latestUpdateSummary: "HB 4049 advancing through Texas Legislature 2025 session. Closely mirrors Colorado AI Act in structure. If passed, Texas becomes the second major US state with comprehensive high-risk AI obligations. AG enforcement authority proposed. Effective date January 1, 2026 if passed on current timeline.",
+    regulatingBody: "Texas Attorney General (proposed)",
+    color: { bg: "#eff6ff", border: "#bfdbfe", text: "#1d4ed8", badge: "#dbeafe" },
+    emoji: "🇺🇸",
+    clauses: [
+      { category: "Algorithmic Discrimination", clause: "§17.951 (proposed)", parameter: "Non-Discrimination", pillars: ["ethics","governance"], description: "Proposed prohibition on algorithmic discrimination in high-risk AI affecting consequential decisions — employment, credit, housing, education, and healthcare access. Protected class coverage mirrors Colorado AI Act.", biasConsideration: "Proposed protected classes: race, sex, religion, national origin, disability, age, and genetic information.", genderConsideration: "Sex-based algorithmic discrimination in high-risk AI decisions explicitly prohibited under proposed text.", complianceAction: "Monitor bill progress. Colorado AI Act compliance posture is largely transferable — document cross-state mapping.", riskLevel: "High" },
+      { category: "Impact Assessment", clause: "§17.953 (proposed)", parameter: "Pre-Deployment Impact Assessment", pillars: ["risk","governance"], description: "High-risk AI deployers must complete impact assessments before deployment and annually thereafter. Assessments must cover bias risks, data governance, purpose limitations, and monitoring plan.", biasConsideration: "Annual assessment creates an ongoing bias monitoring obligation — not a one-time pre-deployment check.", genderConsideration: "Gender impact analysis is a required component of high-risk AI impact assessments under proposed rules.", complianceAction: "Design impact assessment templates to satisfy both Colorado and Texas simultaneously. Treat Texas as an imminent compliance obligation.", riskLevel: "High" },
+    ],
+  },
+  {
+    id: "illinois-ai-laws",
+    name: "Illinois AI Laws",
+    geography: "United States — Illinois",
+    type: "Regulation",
+    countries: ["United States"],
+    yearReleased: 2020,
+    summary: "Illinois has the most comprehensive US state AI employment law stack: Artificial Intelligence Video Interview Act (AIVIA, 2020) requires consent and annual bias audit for AI-driven hiring; Illinois Human Rights Act amendment (2022) prohibits AI discrimination in employment; SB 2185 (2025) expands to all AI-assisted employment decisions.",
+    industries: ["Employment","HR Technology","Technology"],
+    latestUpdateDate: "2025-01-01",
+    latestUpdateSummary: "AIVIA (2020) in force — requires employer consent notice and annual independent bias audit for AI video interview tools. Illinois Human Rights Act amendment in force — AI employment decisions subject to anti-discrimination law. SB 2185 (2025) expands scope to all AI-assisted employment decisions including resume screening.",
+    regulatingBody: "Illinois Department of Labor / Illinois Human Rights Commission",
+    color: { bg: "#eff6ff", border: "#bfdbfe", text: "#1d4ed8", badge: "#dbeafe" },
+    emoji: "🇺🇸",
+    clauses: [
+      { category: "AI Video Interviews", clause: "AIVIA — 820 ILCS 42/5", parameter: "Consent + Annual Bias Audit", pillars: ["ethics","governance"], description: "Employers using AI to evaluate video interviews must: (1) notify applicants before use, (2) obtain consent, (3) not share footage with third parties, (4) destroy footage within 30 days on request. Annual independent bias audit required for AI scoring.", biasConsideration: "Annual independent bias audit is mandatory — employers cannot self-certify. Results must be disclosed to applicants on request.", genderConsideration: "Bias audit must test for gender-based disparities in interview scoring. Facial affect AI is particularly scrutinised under AIVIA.", complianceAction: "Implement consent flow before AI video interview. Commission annual third-party bias audit. Establish footage deletion process.", riskLevel: "High" },
+      { category: "Employment Discrimination", clause: "Illinois Human Rights Act §2-102(A)", parameter: "AI Discrimination in Employment", pillars: ["ethics","governance"], description: "AI-driven employment decisions (hiring, promotion, termination, compensation) subject to full anti-discrimination obligations. Protected characteristics include race, sex, age, disability, and national origin.", biasConsideration: "Illinois Human Rights Commission can investigate AI employment systems as discrimination instruments — disparate impact burden shifts to employer.", genderConsideration: "Gender-based disparities in AI hiring outcomes trigger investigation risk. Statistical evidence of lower female scoring constitutes prima facie discrimination.", complianceAction: "Conduct disparate impact analysis on all AI employment tools. Document remediation of identified disparities. Maintain bias audit records for 3 years.", riskLevel: "Critical" },
+    ],
+  },
+  // ─── CANADA ────────────────────────────────────────────────────────────────
+  {
+    id: "canada-aida",
+    name: "Canada AIDA (Bill C-27)",
+    geography: "Canada",
+    type: "Regulation",
+    countries: ["Canada"],
+    yearReleased: 2022,
+    summary: "Artificial Intelligence and Data Act — Part 3 of Canada's Digital Charter Implementation Act 2022 (Bill C-27). Establishes requirements for high-impact AI systems: mandatory risk assessments, transparency to affected individuals, human oversight, and anomaly response. ISED Minister has enforcement authority. Awaiting royal assent.",
+    industries: ["All Sectors","Finance","Healthcare","Employment","Government"],
+    latestUpdateDate: "2025-06-01",
+    latestUpdateSummary: "Bill C-27 progressing through Parliament. AIDA companion regulations under consultation — to define 'high-impact system' thresholds. Canada AI Safety Institute established 2024. Timeline to royal assent uncertain — industry preparation recommended ahead of passage.",
+    regulatingBody: "Minister of Innovation, Science and Economic Development (ISED)",
+    color: { bg: "#f0fdf4", border: "#bbf7d0", text: "#15803d", badge: "#dcfce7" },
+    emoji: "🇨🇦",
+    clauses: [
+      { category: "High-Impact AI", clause: "AIDA §5–6", parameter: "Risk Assessment for High-Impact Systems", pillars: ["governance","risk"], description: "Operators of 'high-impact AI systems' must assess and mitigate risks of physical or psychological harm, property damage, and adverse effects on fundamental interests including equality rights.", biasConsideration: "Risk assessment must address impacts on protected groups — race, sex, disability, age, and national origin.", genderConsideration: "Gender equity impacts are a required component of high-impact AI risk assessment under companion regulations.", complianceAction: "Identify high-impact AI systems against ISED threshold guidance. Conduct risk assessment using AIDA template once regulations finalised.", riskLevel: "High" },
+      { category: "Transparency", clause: "AIDA §7", parameter: "Notification to Affected Individuals", pillars: ["ethics","governance"], description: "Individuals significantly affected by a high-impact AI system decision must be notified that AI was used. Plain-language explanation required.", biasConsideration: "Notification requirement enables individual challenge of AI decisions — an equity safeguard.", genderConsideration: "Affected individuals have a right to know when AI influenced a decision — particularly in employment, credit, and public services.", complianceAction: "Design consumer-facing AI disclosure notice. Integrate into customer journey touchpoints for high-impact AI use cases.", riskLevel: "High" },
+      { category: "Anomaly Response", clause: "AIDA §9–10", parameter: "Incident Reporting and Response", pillars: ["risk","governance"], description: "Operators must monitor high-impact AI for anomalies. Serious harm must be reported to the Minister. Systems causing harm must be taken offline until corrective action is documented.", biasConsideration: "Bias-induced harm (systematic adverse impact on protected groups) qualifies as a reportable anomaly.", genderConsideration: "Gender-based discriminatory outputs causing demonstrable harm trigger mandatory reporting and system suspension.", complianceAction: "Establish AI monitoring programme. Define anomaly thresholds. Create incident response playbook with Minister notification templates.", riskLevel: "High" },
+    ],
+  },
+  // ─── UNITED KINGDOM ────────────────────────────────────────────────────────
+  {
+    id: "uk-ai-regulation",
+    name: "UK AI Regulation",
+    geography: "United Kingdom",
+    type: "Framework",
+    countries: ["United Kingdom"],
+    yearReleased: 2023,
+    summary: "The UK has adopted a principles-based, sector-led approach — no single UK AI Act. Five principles (safety, transparency, fairness, accountability, contestability) implemented by existing sector regulators (FCA, ICO, CQC, Ofcom). AI Safety Institute (AISI, now AI Security Institute) established 2023 for frontier AI evaluation. Pro-innovation stance maintained.",
+    industries: ["All Sectors","Finance","Healthcare","Technology","Government"],
+    latestUpdateDate: "2025-04-01",
+    latestUpdateSummary: "UK AI Safety Institute renamed AI Security Institute 2025 — expanded remit. ICO published AI and data protection guidance 2024. FCA consulting on AI in financial services 2025. No UK AI Act expected — sector regulators remain primary enforcement route. AI Opportunities Action Plan published February 2025.",
+    regulatingBody: "Sector regulators (FCA, ICO, CQC, Ofcom) + DSIT",
+    color: { bg: "#fef3c7", border: "#fde68a", text: "#92400e", badge: "#fef3c7" },
+    emoji: "🇬🇧",
+    clauses: [
+      { category: "ICO AI Guidance", clause: "ICO AI Guidance (2024)", parameter: "AI and Data Protection (GDPR)", pillars: ["privacy","governance"], description: "ICO confirms UK GDPR applies to AI — data minimisation in training, lawful basis for AI processing, fairness obligations, explainability under Article 22, and DPIA for high-risk AI processing.", biasConsideration: "ICO views AI systems with potential for discriminatory outcomes as inherently high-risk — DPIAs must address fairness and protected characteristics.", genderConsideration: "Gender data in AI training or inference requires explicit lawful basis and fairness assessment.", complianceAction: "Apply UK GDPR compliance to all AI systems processing UK personal data. Conduct DPIA for high-risk AI. Implement Article 22 safeguards for automated decisions.", riskLevel: "High" },
+      { category: "FCA AI Framework", clause: "FCA AI Discussion Paper (2025)", parameter: "AI in Financial Services", pillars: ["governance","risk"], description: "FCA consulting on AI governance in financial services: model risk management, explainability of AI lending and insurance decisions, fairness to retail consumers, and SMCR accountability for AI outcomes.", biasConsideration: "Consumer Duty (in force 2023) already applies to AI outputs — firms must demonstrate fair outcomes for all consumer segments including vulnerable groups.", genderConsideration: "FCA expects evidence that AI financial services decisions do not systematically disadvantage women or other protected groups.", complianceAction: "Respond to FCA consultation. Extend model risk management to AI. Map AI decisions to SMCR senior manager accountability.", riskLevel: "High" },
+      { category: "AI Safety / Security", clause: "AISI Evaluation Framework", parameter: "Frontier AI Safety Evaluation", pillars: ["risk","governance"], description: "UK AI Security Institute (formerly Safety Institute) conducts safety evaluations of frontier AI models — CBRN risks, cybersecurity misuse, misinformation. Voluntary engagement; expected to become mandatory.", biasConsideration: "Safety evaluations include demographic bias testing as a core component.", genderConsideration: "Gender-related harms (harassment, stereotype amplification) are explicit AISI evaluation categories.", complianceAction: "Engage with AISI voluntary evaluation programme. Review published evaluation reports for third-party models used.", riskLevel: "Medium" },
+    ],
+  },
+  // ─── SINGAPORE ─────────────────────────────────────────────────────────────
+  {
+    id: "singapore-mas-ai",
+    name: "Singapore MAS AI Governance",
+    geography: "Asia-Pacific",
+    type: "Framework",
+    countries: ["Singapore"],
+    yearReleased: 2019,
+    summary: "MAS FEAT Principles (Fairness, Ethics, Accountability, Transparency) — the first major AI governance framework for financial services in Asia. Supported by Veritas Consortium (30+ financial institutions). Companion: Singapore Model AI Governance Framework (IMDA). Project MindForge (2024) added generative AI risk framework for financial institutions.",
+    industries: ["Finance","Banking & Lending","Insurtech / Insurance","Technology"],
+    latestUpdateDate: "2024-06-01",
+    latestUpdateSummary: "Project MindForge published June 2024 — MAS-led framework for responsible GenAI in financial services. Covers hallucination risk, third-party model dependency, data leakage, prompt injection. Veritas Consortium v2.0 published quantitative fairness methodology for credit, insurance, and customer marketing AI.",
+    regulatingBody: "Monetary Authority of Singapore (MAS) / IMDA",
+    color: { bg: "#f0fdf4", border: "#bbf7d0", text: "#15803d", badge: "#dcfce7" },
+    emoji: "🇸🇬",
+    clauses: [
+      { category: "FEAT Principles", clause: "MAS FEAT (2019)", parameter: "Fairness, Ethics, Accountability, Transparency", pillars: ["ethics","governance"], description: "Four foundational principles for responsible AI in financial services: Fairness (no bias, explainable decisions), Ethics (human welfare priority), Accountability (clear AI ownership), Transparency (explainable to customers and regulators).", biasConsideration: "Fairness principle explicitly requires financial AI to not discriminate on protected characteristics including race, gender, religion, and national origin.", genderConsideration: "Gender-based disparities in financial AI decisions are directly addressed — MAS expects evidence of testing and remediation.", complianceAction: "Adopt FEAT self-assessment tool for each AI use case. Complete Veritas methodology assessment for credit/insurance/marketing AI.", riskLevel: "High" },
+      { category: "Veritas Methodology", clause: "Veritas v2.0 (2023)", parameter: "Quantitative Fairness Metrics", pillars: ["ethics","risk"], description: "Prescriptive fairness metrics (demographic parity, equalised odds, calibration) with defined tolerance thresholds for credit risk, insurance underwriting, and customer marketing AI in Singapore.", biasConsideration: "Most operationally specific fairness guidance in Asia — disparity above threshold triggers documented remediation plan.", genderConsideration: "Gender disaggregation required for all Veritas metrics. Significant gender disparity triggers a documented remediation plan.", complianceAction: "Apply Veritas methodology to customer-facing financial AI. Disaggregate results by gender and protected characteristics.", riskLevel: "High" },
+      { category: "GenAI Risk", clause: "Project MindForge (2024)", parameter: "Generative AI in Financial Services", pillars: ["risk","governance"], description: "MAS framework for managing GenAI risks: hallucination and factual accuracy, third-party model concentration risk, data leakage via prompts, prompt injection, and regulatory compliance of GenAI outputs.", biasConsideration: "Hallucination risks disproportionately affect underserved communities relying on AI-generated financial advice.", genderConsideration: "GenAI outputs in financial services must be tested for gender-biased recommendations.", complianceAction: "Implement MindForge risk controls for GenAI deployments. Red-team test for harmful outputs. Establish human review for GenAI customer advice.", riskLevel: "High" },
+    ],
+  },
+  // ─── AUSTRALIA ─────────────────────────────────────────────────────────────
+  {
+    id: "australia-ai-framework",
+    name: "Australia AI Ethics Framework",
+    geography: "Asia-Pacific",
+    type: "Framework",
+    countries: ["Australia"],
+    yearReleased: 2019,
+    summary: "Australia's AI Ethics Principles (2019) — 8 principles: human wellbeing, human-centred values, fairness, privacy and security, reliability and safety, transparency and explainability, contestability, accountability. Non-binding for private sector but required for Australian government agencies. Mandatory AI Guardrails for high-risk settings proposed September 2024.",
+    industries: ["Government","Finance","Healthcare","Technology","All Sectors"],
+    latestUpdateDate: "2024-09-01",
+    latestUpdateSummary: "10 Mandatory AI Guardrails for high-risk AI settings published for consultation September 2024 — expected to be finalised 2025. National AI Framework (NAIF) updated. OAIC published AI privacy guidance 2024 confirming Privacy Act obligations apply to AI training and inference.",
+    regulatingBody: "Department of Industry, Science and Resources / OAIC",
+    color: { bg: "#fff7ed", border: "#fed7aa", text: "#c2410c", badge: "#fff7ed" },
+    emoji: "🇦🇺",
+    clauses: [
+      { category: "AI Ethics Principles", clause: "Australia AI Ethics Principles (2019)", parameter: "8 Core Principles", pillars: ["ethics","governance"], description: "Eight principles covering human wellbeing, fairness, privacy, reliability, transparency, contestability, and accountability. Government agencies must implement; private sector adoption strongly encouraged.", biasConsideration: "Principle 3 (Fairness) explicitly requires AI not create unfair discrimination. Testing against protected characteristics required.", genderConsideration: "Fairness principle requires gender bias testing. Human-centred values requires respecting the dignity and rights of all individuals.", complianceAction: "Map each AI system against the 8 principles. Government: document compliance. Private sector: voluntary self-assessment recommended as regulatory intent signal.", riskLevel: "Medium" },
+      { category: "Mandatory Guardrails (High-Risk)", clause: "Mandatory AI Guardrails (2024)", parameter: "10 Mandatory Controls", pillars: ["governance","risk"], description: "Proposed mandatory guardrails for high-risk AI: accountability, risk assessment, data governance, testing and evaluation, human oversight, transparency, record-keeping, incident reporting, and stakeholder engagement.", biasConsideration: "Data governance and testing guardrails together mandate bias testing and diverse data sourcing for high-risk AI.", genderConsideration: "Testing and evaluation guardrail requires performance disaggregation by gender for high-risk AI decisions.", complianceAction: "Monitor final guardrail publication (expected 2025). Government agencies: prepare now. Private sector: use as governance baseline.", riskLevel: "High" },
+      { category: "Privacy", clause: "OAIC AI Privacy Guidance (2024)", parameter: "Privacy Act Obligations for AI", pillars: ["privacy","governance"], description: "Privacy Act (1988) applies to AI: lawful basis for AI training on personal data, purpose limitation, data minimisation, right of access to AI decisions, and DPIAs recommended for high-risk AI.", biasConsideration: "Privacy Act fairness obligations apply to AI systems making or influencing decisions about individuals.", genderConsideration: "Sensitive information (including gender identity) in AI training requires heightened governance and explicit consent.", complianceAction: "Review AI data processing against 13 Australian Privacy Principles. Conduct DPIA for high-risk AI. Build personal data deletion capability.", riskLevel: "High" },
+    ],
+  },
+  // ─── GAO ACCOUNTABILITY FRAMEWORK ──────────────────────────────────────────
+  {
+    id: "gao-ai-accountability",
+    name: "GAO AI Accountability Framework",
+    geography: "United States / International",
+    type: "Framework",
+    countries: ["United States"],
+    yearReleased: 2021,
+    summary: "GAO-21-519SP: An Accountability Framework for Federal Agencies and Other Entities. Defines four accountability practices for responsible AI: governance, data, performance, and monitoring. Published June 2021. Adopted across US federal agencies and widely referenced internationally as a practical AI accountability template.",
+    industries: ["Government","Public Sector / Government","All Sectors"],
+    latestUpdateDate: "2021-06-01",
+    latestUpdateSummary: "Published June 2021. Adopted as baseline by multiple US federal agencies per OMB AI governance guidance. Referenced in Biden EO 13960 and subsequent guidance. Increasingly cited in international AI governance discussions as a practical accountability template for all organisations, not just government.",
+    regulatingBody: "US Government Accountability Office (GAO)",
+    color: { bg: "#f0fdf4", border: "#bbf7d0", text: "#15803d", badge: "#dcfce7" },
+    emoji: "🇺🇸",
+    clauses: [
+      { category: "Governance", clause: "GAO Practice 1", parameter: "Responsible Parties and Processes", pillars: ["governance","risk"], description: "Establish clear accountability structures: identify responsible parties, define AI deployment decision rights, create risk escalation processes, ensure board-level visibility of material AI risks.", biasConsideration: "Governance structures must include designated owners responsible for AI fairness outcomes — not just performance.", genderConsideration: "Board-level AI governance should include diverse perspectives to reduce systemic blind spots.", complianceAction: "Designate AI governance roles. Establish risk escalation path. Brief board on AI risk annually.", riskLevel: "High" },
+      { category: "Data", clause: "GAO Practice 2", parameter: "Data Provenance and Quality", pillars: ["ethics","privacy"], description: "Document training data provenance, quality, and known limitations. Assess representativeness across demographic groups. Identify and mitigate bias in source data before model training.", biasConsideration: "Demographic representativeness assessment explicitly required — under-representation of groups in training data is a documented risk.", genderConsideration: "Gender representativeness in training data must be documented. Known gender bias must be disclosed in model documentation.", complianceAction: "Create data provenance records for each AI system. Document demographic coverage of training data. Flag known data quality issues in model card.", riskLevel: "High" },
+      { category: "Performance", clause: "GAO Practice 3", parameter: "Testing and Evaluation", pillars: ["risk","ethics"], description: "Test AI performance across intended use cases AND vulnerable population sub-groups. Establish performance baselines. Document known failure modes. Conduct independent evaluation before high-stakes deployment.", biasConsideration: "Sub-group performance testing is explicitly required. Performance gaps between demographic groups must be documented and addressed.", genderConsideration: "Gender-disaggregated performance metrics are a required component of the GAO performance accountability practice.", complianceAction: "Run disaggregated performance tests before deployment. Establish baselines by sub-group. Document failure modes. Engage independent evaluator for high-stakes AI.", riskLevel: "High" },
+      { category: "Monitoring", clause: "GAO Practice 4", parameter: "Ongoing Oversight", pillars: ["governance","risk"], description: "Establish ongoing monitoring of AI performance, fairness, and impact. Define triggers for review and decommissioning. Create feedback channels for affected individuals. Audit periodically.", biasConsideration: "Post-deployment monitoring must track bias metrics — bias can emerge or worsen as data distributions shift over time.", genderConsideration: "Monitor gender-disaggregated performance over time. Alert on statistically significant divergence from baseline.", complianceAction: "Set up post-deployment monitoring. Define fairness alert thresholds. Schedule annual AI audit. Build affected-individual feedback channel.", riskLevel: "High" },
+    ],
+  },
 ];
 
 // ─── FRAMEWORK NAVIGATOR DATA ────────────────────────────────────────────────
@@ -478,8 +664,11 @@ const GEOS_NAV = [
   "EU / Europe",
   "United States",
   "United Kingdom",
+  "Canada",
   "Global / International",
   "Asia-Pacific",
+  "Australia",
+  "Singapore",
   "China",
   "South Korea",
 ];
@@ -493,7 +682,16 @@ const FRAMEWORK_HIGHLIGHTS: Record<string, string[]> = {
   "aaia":         ["Structured AI audit methodology for internal audit teams", "Domain 3 covers algorithmic bias testing protocols", "Requires AI audit findings to reach board / audit committee"],
   "korea-ai-basic-act": ["In force January 2026 — first comprehensive AI law in Asia", "High-impact threshold: ≥10²⁶ FLOPs or 5 named sectors", "Extraterritorial — overseas AI affecting Korean market is in scope"],
   "china-anthropomorphic-ai": ["World's first AI companion regulation — effective July 2026", "Mandatory addiction detection and human crisis handover", "Prohibits virtual intimate services for minors under 14"],
-  "us-take-it-down": ["First US federal AI statute — signed May 2025, in force now", "48-hour takedown mandate for non-consensual deepfakes", "FTC civil + criminal enforcement: up to 3 years imprisonment"],
+  "us-take-it-down":          ["First US federal AI statute — signed May 2025, in force now", "48-hour takedown mandate for non-consensual deepfakes", "FTC civil + criminal enforcement: up to 3 years imprisonment"],
+  "colorado-ai-act":          ["In force February 1, 2026 — first comprehensive US state AI law", "Algorithmic discrimination prohibition for high-risk AI decisions", "Annual impact assessment + consumer appeal rights mandatory"],
+  "california-ai-regulation": ["SB 1047 vetoed Sep 2024 — CPPA automated decision-making rulemaking is active pathway", "AB 2013 training data transparency in force for generative AI", "CCPA AI consumer rights (opt-out, logic access, human review) expected 2025–2026"],
+  "texas-ai-bill":            ["Progressing through Texas Legislature 2025 — mirrors Colorado AI Act", "AG enforcement + annual impact assessments proposed", "Monitor for passage: CO+TX coverage = significant US market exposure"],
+  "illinois-ai-laws":         ["AIVIA (2020): mandatory consent + annual independent bias audit for AI video interviews", "Illinois Human Rights Act: AI employment discrimination = active liability", "SB 2185 (2025) expands to all AI-assisted employment decisions"],
+  "canada-aida":              ["Part of Digital Charter Implementation Act 2022 — awaiting royal assent", "High-impact AI: mandatory risk assessment + consumer notification + anomaly reporting", "Canada AI Safety Institute established 2024 — prepare ahead of passage"],
+  "uk-ai-regulation":         ["Principles-based, sector-led — no UK AI Act expected", "FCA, ICO, CQC, Ofcom each apply AI obligations in their sectors", "Consumer Duty (2023) + UK GDPR are the live AI obligations for financial services"],
+  "singapore-mas-ai":         ["FEAT Principles: Fairness, Ethics, Accountability, Transparency", "Veritas Consortium v2.0: most prescriptive quantitative fairness metrics in Asia", "Project MindForge (2024): GenAI risk framework for MAS-regulated firms"],
+  "australia-ai-framework":   ["8 AI Ethics Principles: government mandatory, private sector strongly encouraged", "10 mandatory guardrails for high-risk AI proposed 2024 — finalisation expected 2025", "OAIC confirms Privacy Act obligations apply to AI training and inference"],
+  "gao-ai-accountability":    ["4 accountability practices: Governance · Data · Performance · Monitoring", "Sub-group performance testing explicitly required — not optional", "Baseline for US federal AI; widely adopted internationally as practical accountability template"],
 };
 
 // ─── REGULATORY RADAR METADATA ───────────────────────────────────────────────
@@ -512,7 +710,16 @@ const RADAR_META: Record<string, {
   "aaia":                    { status: "In Force",   enforcementDate: "2024-03-01", severity: "High",     keyWatch: "Regulated sector boards expect independent AI audit assurance. CAAIA certification now includes EU AI Act and NIST RMF alignment." },
   "korea-ai-basic-act":      { status: "In Force",   enforcementDate: "2026-01-22", severity: "High",     keyWatch: "First comprehensive AI law in Asia. Extraterritorial — any AI affecting the Korean market is in scope. Guidance phase active; penalties follow." },
   "china-anthropomorphic-ai":{ status: "Upcoming",   enforcementDate: "2026-07-15", severity: "High",     keyWatch: "World's first AI companion regulation. Opt-in consent, addiction detection, and crisis human handover are engineering requirements — not policy." },
-  "us-take-it-down":         { status: "In Force",   enforcementDate: "2025-05-19", severity: "Critical", keyWatch: "First US federal AI statute. 48-hour deepfake takedown SLA is live. First criminal conviction April 2026 confirms active enforcement." },
+  "us-take-it-down":          { status: "In Force",   enforcementDate: "2025-05-19", severity: "Critical", keyWatch: "First US federal AI statute. 48-hour deepfake takedown SLA is live. First criminal conviction April 2026 confirms active enforcement." },
+  "colorado-ai-act":          { status: "In Force",   enforcementDate: "2026-02-01", severity: "High",     keyWatch: "In force February 2026. First comprehensive US state AI law. Annual impact assessments + consumer appeal rights for high-risk AI. Colorado AG enforcement active." },
+  "california-ai-regulation": { status: "In Force",   enforcementDate: "2024-09-01", nextDeadline: "2026-01-01", severity: "High", keyWatch: "AB 2013 training data transparency in force. CPPA automated decision-making rulemaking expected 2025–2026 — monitor for CCPA AI consumer rights obligations." },
+  "texas-ai-bill":            { status: "Proposed",   enforcementDate: "2025-06-01", severity: "High",     keyWatch: "Progressing through Texas Legislature 2025. If passed, Colorado-equivalent obligations apply January 2026. Monitor quarterly." },
+  "illinois-ai-laws":         { status: "In Force",   enforcementDate: "2020-01-01", severity: "High",     keyWatch: "AIVIA in force since 2020 — annual independent bias audit for AI video interviews is a live obligation. SB 2185 (2025) expands to all AI employment decisions." },
+  "canada-aida":              { status: "Proposed",   enforcementDate: "2026-01-01", severity: "High",     keyWatch: "Bill C-27 awaiting royal assent. AIDA companion regulations under consultation. Prepare high-impact AI risk assessment framework ahead of passage." },
+  "uk-ai-regulation":         { status: "In Force",   enforcementDate: "2023-03-01", severity: "High",     keyWatch: "No UK AI Act — ICO GDPR guidance and FCA consultation are active obligations. Consumer Duty (2023) applies to AI outputs. AI Security Institute expanding frontier AI evaluation." },
+  "singapore-mas-ai":         { status: "In Force",   enforcementDate: "2019-11-01", severity: "High",     keyWatch: "Project MindForge (2024) adds GenAI risk governance for MAS-regulated firms. Veritas v2.0 quantitative fairness metrics expected for credit and insurance AI." },
+  "australia-ai-framework":   { status: "In Force",   enforcementDate: "2019-11-01", nextDeadline: "2025-12-01", severity: "Medium", keyWatch: "Mandatory guardrails for high-risk AI proposed 2024 — finalisation expected 2025. Government agencies: immediate impact. Private sector: prepare voluntary compliance." },
+  "gao-ai-accountability":    { status: "In Force",   enforcementDate: "2021-06-01", severity: "Medium",   keyWatch: "US federal agencies reference as baseline AI accountability framework. Sub-group performance testing requirement is frequently cited in AI audit findings globally." },
 };
 
 type NavLevel = "Required" | "Recommended" | "Advisory";
@@ -574,6 +781,56 @@ const NAVIGATOR_RULES: Record<string, NavRule[]> = {
       reason: "Federal law in force May 2025. Applies to all online platforms accessible in the US — 48-hour takedown obligation is immediate and FTC-enforced." },
     { geos: ["EU / Europe","United Kingdom","Global / International","Asia-Pacific"], industries: ["Technology & SaaS","Social Media","Consumer Apps"], level: "Recommended",
       reason: "Any global platform with US users is in scope. Similar deepfake legislation is being drafted in the EU and UK — early compliance builds a transferable framework." },
+  ],
+  "colorado-ai-act": [
+    { geos: ["United States"], industries: ["Financial Services / Fintech","Banking & Lending","Healthcare","Employment","Education","Government"], level: "Required",
+      reason: "In force February 2026. Any organisation deploying high-risk AI affecting Colorado residents is in scope — including out-of-state companies whose AI is used in Colorado." },
+    { geos: ["United States"], industries: ["Technology & SaaS","HR Technology"], level: "Recommended",
+      reason: "If your product is used in Colorado or you process data of Colorado residents in high-risk AI applications, compliance is required. Treat as leading indicator of multi-state obligations." },
+  ],
+  "california-ai-regulation": [
+    { geos: ["United States"], industries: ["Technology & SaaS","Consumer Apps","Financial Services / Fintech","HR Technology"], level: "Required",
+      reason: "AB 2013 training data transparency obligations in force. CPPA automated decision-making rules expected 2025–2026 — prepare consent and logic-access infrastructure for California users now." },
+    { geos: ["EU / Europe","United Kingdom","Global / International"], industries: ["Technology & SaaS","Consumer Apps"], level: "Recommended",
+      reason: "CPPA rulemaking may create GDPR-equivalent AI obligations for global platforms with California users. Monitor for extraterritorial impact." },
+  ],
+  "texas-ai-bill": [
+    { geos: ["United States"], industries: ["Financial Services / Fintech","Banking & Lending","Healthcare","Employment","Education"], level: "Recommended",
+      reason: "Bill progressing through Texas Legislature. If passed, Colorado-equivalent high-risk AI obligations apply in Texas. Combined CO+TX represents significant US market exposure." },
+  ],
+  "illinois-ai-laws": [
+    { geos: ["United States"], industries: ["HR Technology","Employment","Technology & SaaS"], level: "Required",
+      reason: "AIVIA in force since 2020 — any employer using AI video interview tools in Illinois must comply: consent, annual bias audit, footage deletion. Illinois Human Rights Act applies to all AI employment decisions." },
+  ],
+  "canada-aida": [
+    { geos: ["Canada","Global / International"], industries: ["All"], level: "Recommended",
+      reason: "Bill C-27 awaiting royal assent. High-impact AI obligations will apply to organisations operating in Canada. Begin risk assessment framework design before passage to avoid compressed timelines." },
+  ],
+  "uk-ai-regulation": [
+    { geos: ["United Kingdom"], industries: ["Financial Services / Fintech","Banking & Lending","Insurtech / Insurance","Healthcare","Technology & SaaS"], level: "Required",
+      reason: "ICO GDPR guidance and FCA consultation create active AI obligations for UK-regulated firms. Consumer Duty (2023) applies to AI outputs in retail financial services." },
+    { geos: ["EU / Europe","Global / International"], industries: ["All"], level: "Advisory",
+      reason: "UK principles-based approach useful reference but obligations attach to sector regulation, not a single AI law. GDPR equivalence maintained post-Brexit." },
+  ],
+  "singapore-mas-ai": [
+    { geos: ["Singapore","Asia-Pacific"], industries: ["Financial Services / Fintech","Banking & Lending","Insurtech / Insurance"], level: "Required",
+      reason: "MAS-regulated financial institutions must comply with FEAT principles. Veritas methodology is expected for credit, insurance, and marketing AI." },
+    { geos: ["EU / Europe","United States","United Kingdom","Global / International"], industries: ["Financial Services / Fintech","Banking & Lending"], level: "Advisory",
+      reason: "Veritas quantitative fairness methodology is the most operationally prescriptive in Asia — useful reference for any financial services AI team designing bias testing programmes." },
+  ],
+  "australia-ai-framework": [
+    { geos: ["Australia","Asia-Pacific"], industries: ["Government","Public Sector / Government"], level: "Required",
+      reason: "Australian government agencies must implement the 8 AI Ethics Principles and prepare for mandatory guardrails (high-risk AI settings) expected 2025." },
+    { geos: ["Australia","Asia-Pacific"], industries: ["All"], level: "Recommended",
+      reason: "Mandatory guardrails likely to extend to private sector safety-critical applications. Voluntary adoption now reduces compliance risk when finalised." },
+    { geos: ["EU / Europe","United States","United Kingdom","Global / International"], industries: ["All"], level: "Advisory",
+      reason: "Australia's 8 Ethics Principles align with international responsible AI standards — useful framework baseline for global organisations." },
+  ],
+  "gao-ai-accountability": [
+    { geos: ["United States"], industries: ["Government","Public Sector / Government"], level: "Required",
+      reason: "US federal agencies reference GAO framework as accountability baseline per OMB AI governance guidance. Inspectors general use it in AI audit findings." },
+    { geos: ["All"], industries: ["All"], level: "Advisory",
+      reason: "4-practice framework (Governance, Data, Performance, Monitoring) is a practical accountability structure applicable to any organisation — widely adopted beyond government." },
   ],
 };
 
@@ -2626,7 +2883,16 @@ function RegulatoryRadarTab({ policies, onSelectPolicy }: { policies: any[]; onS
   const [filterType,   setFilterType]     = useState("All");
   const [filterGeo,    setFilterGeo]      = useState("All");
   const [filterSev,    setFilterSev]      = useState("All");
-  const [sortBy,       setSortBy]         = useState<"date"|"severity"|"name">("date");
+  const [filterInd,    setFilterInd]      = useState("All");
+  const [colSort,      setColSort]        = useState<string>("date");
+  const [sortDir,      setSortDir]        = useState<"asc"|"desc">("asc");
+  const [hoveredInd,   setHoveredInd]     = useState<number | null>(null);
+  const [keyWatchTip,  setKeyWatchTip]    = useState<{ top: number; bottom: number; left: number; text: string } | null>(null);
+
+  function handleColSort(key: string) {
+    if (colSort === key) setSortDir(d => d === "asc" ? "desc" : "asc");
+    else { setColSort(key); setSortDir("asc"); }
+  }
 
   function deriveSeverity(p: any): "Critical"|"High"|"Medium" {
     const meta = RADAR_META[p.id];
@@ -2645,21 +2911,38 @@ function RegulatoryRadarTab({ policies, onSelectPolicy }: { policies: any[]; onS
     sev: deriveSeverity(p),
   }));
 
-  const SEV_ORDER: Record<string, number> = { Critical: 0, High: 1, Medium: 2 };
+  const SEV_ORDER: Record<string, number>    = { Critical: 0, High: 1, Medium: 2 };
+  const STATUS_ORDER: Record<string, number> = { "In Force": 0, "Upcoming": 1, "Proposed": 2, "Consultation": 3 };
+
+  function colSortVal(p: any): string | number {
+    switch (colSort) {
+      case "name":       return p.name.toLowerCase();
+      case "geo":        return p.geography.split(" /")[0].trim().toLowerCase();
+      case "type":       return p.type.toLowerCase();
+      case "industries": return p.industries.length;
+      case "date":       return new Date(p.radar.enforcementDate).getTime();
+      case "status":     return STATUS_ORDER[p.radar.status] ?? 9;
+      case "severity":   return SEV_ORDER[p.sev] ?? 9;
+      default:           return 0;
+    }
+  }
+
   const filtered = enriched
     .filter(p => filterStatus === "All" || p.radar.status === filterStatus)
     .filter(p => filterType   === "All" || p.type === filterType)
     .filter(p => filterGeo    === "All" || p.geography.includes(filterGeo))
     .filter(p => filterSev    === "All" || p.sev === filterSev)
-    .sort((a, b) =>
-      sortBy === "severity" ? SEV_ORDER[a.sev] - SEV_ORDER[b.sev] :
-      sortBy === "name"     ? a.name.localeCompare(b.name) :
-      new Date(a.radar.enforcementDate).getTime() - new Date(b.radar.enforcementDate).getTime()
-    );
+    .filter(p => filterInd    === "All" || p.industries.includes(filterInd))
+    .sort((a, b) => {
+      const va = colSortVal(a), vb = colSortVal(b);
+      const cmp = typeof va === "string" ? va.localeCompare(vb as string) : (va as number) - (vb as number);
+      return sortDir === "asc" ? cmp : -cmp;
+    });
 
   const statusCounts = enriched.reduce<Record<string, number>>((acc, p) => { acc[p.radar.status] = (acc[p.radar.status] || 0) + 1; return acc; }, {});
   const geos  = [...new Set(policies.map(p => p.geography.split(" /")[0].trim()))];
   const types = [...new Set(policies.map(p => p.type))];
+  const industries = [...new Set(policies.flatMap(p => p.industries))].sort();
 
   const SEV_CFG: Record<string, { bg: string; text: string; border: string; dot: string }> = {
     Critical: { bg: "#fef2f2", text: "#dc2626", border: "#fecaca", dot: "●" },
@@ -2723,10 +3006,9 @@ function RegulatoryRadarTab({ policies, onSelectPolicy }: { policies: any[]; onS
           <option value="High">High</option>
           <option value="Medium">Medium</option>
         </select>
-        <select value={sortBy} onChange={e => setSortBy(e.target.value as "date"|"severity"|"name")} style={sel}>
-          <option value="date">Sort: by date</option>
-          <option value="severity">Sort: by severity</option>
-          <option value="name">Sort: A–Z</option>
+        <select value={filterInd} onChange={e => setFilterInd(e.target.value)} style={sel}>
+          <option value="All">All industries</option>
+          {industries.map(ind => <option key={ind} value={ind}>{ind}</option>)}
         </select>
         <span style={{ fontSize: 12, color: "#94a3b8", marginLeft: "auto" }}>{filtered.length} of {enriched.length} shown</span>
       </div>
@@ -2736,9 +3018,38 @@ function RegulatoryRadarTab({ policies, onSelectPolicy }: { policies: any[]; onS
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
-              {["Law / Framework","Jurisdiction","Type","Industries","Enforcement","Status","Severity","What to expect"].map(h => (
-                <th key={h} style={{ textAlign: "left", padding: "10px 12px", fontWeight: 600, color: "#64748b", fontSize: 11, whiteSpace: "nowrap" }}>{h}</th>
-              ))}
+              {([
+                ["Law / Framework", "name"],
+                ["Jurisdiction",    "geo"],
+                ["Type",            "type"],
+                ["Industries",      "industries"],
+                ["Enforcement",     "date"],
+                ["Status",          "status"],
+                ["Severity",        "severity"],
+                ["What to expect",  null],
+              ] as [string, string | null][]).map(([h, key]) => {
+                const active = key && colSort === key;
+                return (
+                  <th key={h}
+                    onClick={() => key && handleColSort(key)}
+                    style={{
+                      textAlign: "left", padding: "10px 12px", fontWeight: 600, fontSize: 11,
+                      whiteSpace: "nowrap", cursor: key ? "pointer" : "default",
+                      userSelect: "none" as const,
+                      color: active ? "#0f172a" : "#64748b",
+                      background: active ? "#eef2f7" : undefined,
+                      borderBottom: active ? "2px solid #6366f1" : undefined,
+                    }}
+                  >
+                    {h}
+                    {key && (
+                      <span style={{ marginLeft: 4, fontSize: 9, color: active ? "#6366f1" : "#cbd5e1" }}>
+                        {active ? (sortDir === "asc" ? "▲" : "▼") : "⇅"}
+                      </span>
+                    )}
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
@@ -2771,14 +3082,37 @@ function RegulatoryRadarTab({ policies, onSelectPolicy }: { policies: any[]; onS
                   <td style={{ padding: "11px 12px", whiteSpace: "nowrap" }}>
                     <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 12, background: tc.bg, color: tc.text, fontWeight: 600 }}>{p.type}</span>
                   </td>
-                  {/* Industries */}
+                  {/* Industries — shows first 2, hover reveals all */}
                   <td style={{ padding: "11px 12px" }}>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 3, minWidth: 120 }}>
-                      {p.industries.slice(0, 2).map((ind: string) => (
-                        <span key={ind} style={{ fontSize: 10, padding: "1px 6px", borderRadius: 8, background: "#f1f5f9", color: "#64748b", whiteSpace: "nowrap" }}>{ind}</span>
-                      ))}
-                      {p.industries.length > 2 && (
-                        <span style={{ fontSize: 10, color: "#94a3b8", whiteSpace: "nowrap" }}>+{p.industries.length - 2}</span>
+                    <div
+                      style={{ position: "relative", display: "inline-block" }}
+                      onMouseEnter={() => p.industries.length > 2 && setHoveredInd(i)}
+                      onMouseLeave={() => setHoveredInd(null)}
+                    >
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 3, minWidth: 120 }}>
+                        {p.industries.slice(0, 2).map((ind: string) => (
+                          <span key={ind} style={{ fontSize: 10, padding: "1px 6px", borderRadius: 8, background: "#f1f5f9", color: "#64748b", whiteSpace: "nowrap" }}>{ind}</span>
+                        ))}
+                        {p.industries.length > 2 && (
+                          <span style={{ fontSize: 10, color: "#2563eb", whiteSpace: "nowrap", cursor: "default", textDecoration: "underline dotted" }}>
+                            +{p.industries.length - 2} more
+                          </span>
+                        )}
+                      </div>
+                      {hoveredInd === i && p.industries.length > 2 && (
+                        <div style={{
+                          position: "absolute", top: "100%", left: 0, zIndex: 50,
+                          background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10,
+                          boxShadow: "0 4px 16px rgba(0,0,0,0.10)", padding: "10px 12px",
+                          minWidth: 180, marginTop: 4,
+                        }}>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>All industries</div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                            {p.industries.map((ind: string) => (
+                              <span key={ind} style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: "#f1f5f9", color: "#374151", whiteSpace: "nowrap" }}>{ind}</span>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
                   </td>
@@ -2798,11 +3132,21 @@ function RegulatoryRadarTab({ policies, onSelectPolicy }: { policies: any[]; onS
                       {sc.dot} {p.sev}
                     </span>
                   </td>
-                  {/* Key watch */}
+                  {/* Key watch — 2-line clamp with full tooltip on hover (fixed-position to avoid overflow clipping) */}
                   <td style={{ padding: "11px 12px", color: "#64748b", fontSize: 12, maxWidth: 300 }}>
-                    <span style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden" }}>
-                      {p.radar.keyWatch}
-                    </span>
+                    <div
+                      style={{ width: "100%" }}
+                      onMouseEnter={e => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const clampedLeft = Math.min(rect.left, window.innerWidth - 440);
+                        setKeyWatchTip({ top: rect.top, bottom: rect.bottom, left: Math.max(8, clampedLeft), text: p.radar.keyWatch });
+                      }}
+                      onMouseLeave={() => setKeyWatchTip(null)}
+                    >
+                      <span style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", cursor: "default", textDecoration: "underline dotted #cbd5e1" }}>
+                        {p.radar.keyWatch}
+                      </span>
+                    </div>
                   </td>
                 </tr>
               );
@@ -2813,6 +3157,28 @@ function RegulatoryRadarTab({ policies, onSelectPolicy }: { policies: any[]; onS
           <div style={{ textAlign: "center", padding: "48px 0", color: "#94a3b8", fontSize: 14 }}>No laws match the current filters.</div>
         )}
       </div>
+
+      {/* Key watch fixed tooltip — outside overflow wrapper, never gets clipped */}
+      {keyWatchTip && (() => {
+        const TOOLTIP_EST_HEIGHT = 200; // generous estimate
+        const showBelow = keyWatchTip.top < TOOLTIP_EST_HEIGHT + 16;
+        return (
+          <div style={{
+            position: "fixed",
+            top: showBelow ? keyWatchTip.bottom + 8 : keyWatchTip.top - 8,
+            left: keyWatchTip.left,
+            transform: showBelow ? "none" : "translateY(-100%)",
+            zIndex: 9999,
+            background: "#1e293b", color: "#f1f5f9",
+            borderRadius: 10, boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+            padding: "12px 16px", maxWidth: 420, width: "max-content",
+            fontSize: 12, lineHeight: 1.65, pointerEvents: "none",
+          }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>What to expect</div>
+            {keyWatchTip.text}
+          </div>
+        );
+      })()}
 
       {/* Legend */}
       <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 16, paddingTop: 12, borderTop: "1px solid #f1f5f9" }}>

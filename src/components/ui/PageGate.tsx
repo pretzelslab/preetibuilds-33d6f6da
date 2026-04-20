@@ -17,6 +17,8 @@ const PAGE_CODES: Record<string, string> = {
   "melodic":                   "MEL2026",
   "admin":                     "ADM2026",
   "sustainability-framework":  "SFW2026",
+  "ai-sustainability-webinar": "WBN2026",
+  "privacy-auditor":           "PRI2026",
 };
 
 function pageKey(key: string): string { return `pl_access_${key}`; }

@@ -46,6 +46,13 @@ const RESPONSIBLE_AI: Project[] = [
     status: "preview",
     link: "/ai-readiness",
   },
+  {
+    title: "Privacy Impact Auditor",
+    description: "AI-specific DPIA tool with dynamic combinatorial risk scoring — risks multiply, not add. Maps 12-question profile to 13 regulations (GDPR, EU AI Act Annex III, NYC LL144, CCPA, Illinois BIPA, Colorado AI Act). Includes differential privacy cost curve and proxy discrimination detection.",
+    tags: ["React", "TypeScript", "GDPR", "EU AI Act", "NYC LL144", "Recharts"],
+    status: "preview",
+    link: "/privacy-auditor",
+  },
 ];
 
 const SUSTAINABLE_AI: Project[] = [
