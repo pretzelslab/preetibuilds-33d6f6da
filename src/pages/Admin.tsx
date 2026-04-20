@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { govDb } from "@/lib/supabase-governance";
 import { PageGate } from "@/components/ui/PageGate";
 import {
@@ -373,6 +374,8 @@ export default function Admin() {
   const [newCount, setNewCount] = useState(0);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [hideSelfReferrals, setHideSelfReferrals] = useState(false);
+  const [visitsPage, setVisitsPage] = useState(1);
+  const PAGE_SIZE = 20;
 
   // Owner flag is set by PageGate on unlock — no auto-set here
 
@@ -441,11 +444,26 @@ export default function Admin() {
     .filter(v => filter === "all" || v.page === filter)
     .filter(v => !hideSelfReferrals || !isSelfReferral(v));
 
+  const pagedVisits = filtered.slice(0, visitsPage * PAGE_SIZE);
+  const hasMore = filtered.length > visitsPage * PAGE_SIZE;
+
   const sourceCounts = visits.reduce<Record<string, number>>((acc, v) => {
     const s = parseSource(v.referrer);
     acc[s] = (acc[s] || 0) + 1;
     return acc;
   }, {});
+
+  // 14-day visits chart data
+  const chartData = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (13 - i));
+    const dateStr = d.toISOString().slice(0, 10);
+    const label = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+    return {
+      date: label,
+      visits: visits.filter(v => v.visited_at.slice(0, 10) === dateStr).length,
+    };
+  });
 
   const preview = (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 12, opacity: 0.5 }}>
@@ -458,7 +476,7 @@ export default function Admin() {
     <PageGate pageId="admin" backTo="/" previewContent={preview}>
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border/40">
-        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           <Link to="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors">← Back to Portfolio</Link>
           <div className="flex items-center gap-3">
             {newCount > 0 && (
@@ -475,7 +493,7 @@ export default function Admin() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
+      <div className="max-w-7xl mx-auto px-6 py-10 space-y-8">
 
         {/* Summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -496,6 +514,29 @@ export default function Admin() {
             <p className="text-2xl font-bold">{new Set(visits.map(v => v.page)).size}</p>
           </div>
         </div>
+
+        {/* 14-day visits chart */}
+        {visits.length > 0 && (
+          <div className="rounded-xl border border-border/60 bg-muted/10 p-5">
+            <p className="text-xs font-semibold mb-4">Visits — last 14 days</p>
+            <ResponsiveContainer width="100%" height={120}>
+              <BarChart data={chartData} barSize={18} margin={{ top: 0, right: 0, left: -28, bottom: 0 }}>
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip
+                  contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 11 }}
+                  labelStyle={{ color: "hsl(var(--foreground))", fontWeight: 600 }}
+                  cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }}
+                />
+                <Bar dataKey="visits" radius={[4, 4, 0, 0]}>
+                  {chartData.map((entry, i) => (
+                    <Cell key={i} fill={entry.visits > 0 ? "hsl(var(--primary))" : "hsl(var(--muted))"} opacity={entry.visits > 0 ? 0.85 : 0.25} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
 
         {/* Delete error */}
         {deleteError && (
@@ -544,7 +585,7 @@ export default function Admin() {
               </button>
               <select
                 value={filter}
-                onChange={e => setFilter(e.target.value)}
+                onChange={e => { setFilter(e.target.value); setVisitsPage(1); }}
                 className="text-[11px] px-2 py-1 rounded border border-border bg-background outline-none"
               >
                 {pages.map(p => (
@@ -572,7 +613,7 @@ export default function Admin() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((v, i) => {
+                  {pagedVisits.map((v, i) => {
                     const src = parseSource(v.referrer);
                     const srcColor = src === "Direct" ? "text-muted-foreground/50" :
                       src === "LinkedIn" ? "text-blue-500" :
@@ -581,28 +622,28 @@ export default function Admin() {
                     const isSelf = isSelfReferral(v);
                     return (
                     <tr key={v.id} className={`border-b border-border/40 last:border-0 ${isSelf ? "opacity-40" : ""} ${i % 2 === 0 ? "" : "bg-muted/10"}`}>
-                      <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">
-                        <span className="block font-medium text-foreground">{timeAgo(v.visited_at)}</span>
+                      <td className="px-3 py-1 text-muted-foreground whitespace-nowrap">
+                        <span className="block font-medium text-foreground text-[11px]">{timeAgo(v.visited_at)}</span>
                         <span className="block text-[10px] opacity-50">{formatDateTime(v.visited_at)}</span>
                       </td>
-                      <td className="px-3 py-2 font-medium">{PAGE_LABELS[v.page] ?? v.page}</td>
-                      <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">
+                      <td className="px-3 py-1 font-medium">{PAGE_LABELS[v.page] ?? v.page}</td>
+                      <td className="px-3 py-1 text-muted-foreground whitespace-nowrap">
                         {v.city || v.country
                           ? <span>{[v.city, v.country].filter(Boolean).join(", ")}</span>
                           : <span className="opacity-40">—</span>}
                       </td>
-                      <td className={`px-3 py-2 font-medium ${srcColor}`}>
+                      <td className={`px-3 py-1 font-medium ${srcColor}`}>
                         <span className="block">{src}</span>
                         {v.referrer && !v.referrer.startsWith("utm:") && (
-                          <span className="block text-[10px] text-muted-foreground/40 font-normal truncate max-w-[120px]">{v.referrer}</span>
+                          <span className="block text-[10px] text-muted-foreground/40 font-normal truncate max-w-[140px]">{v.referrer}</span>
                         )}
                       </td>
-                      <td className="px-2 py-2">
+                      <td className="px-2 py-1">
                         <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${parseDevice(v.user_agent) === "Mobile" ? "border-violet-500/30 text-violet-400 bg-violet-500/10" : "border-border/40 text-muted-foreground bg-muted/20"}`}>
                           {parseDevice(v.user_agent) === "Mobile" ? "M" : "D"}
                         </span>
                       </td>
-                      <td className="px-2 py-2">
+                      <td className="px-2 py-1">
                         <button
                           onClick={() => deleteVisit(v.id)}
                           className="text-muted-foreground/30 hover:text-rose-500 transition-colors text-[11px]"
@@ -614,12 +655,25 @@ export default function Admin() {
                   })}
                 </tbody>
               </table>
+              {hasMore && (
+                <div className="px-4 py-2.5 border-t border-border/40 flex items-center justify-between">
+                  <span className="text-[10px] text-muted-foreground">
+                    Showing {pagedVisits.length} of {filtered.length}
+                  </span>
+                  <button
+                    onClick={() => setVisitsPage(p => p + 1)}
+                    className="text-[11px] px-3 py-1 rounded border border-border/60 text-muted-foreground hover:text-foreground hover:border-blue-500/40 transition-colors"
+                  >
+                    Show more
+                  </button>
+                </div>
+              )}
             </div>
           )}
           </div>{/* end visit log column */}
 
           {/* Access codes — sidebar */}
-          <div className="w-40 shrink-0">
+          <div className="w-64 shrink-0">
             <div className="rounded-xl border border-border/60 bg-muted/10 p-4">
               <p className="text-[11px] font-semibold mb-3 text-muted-foreground">Access codes</p>
               <div className="space-y-1">
