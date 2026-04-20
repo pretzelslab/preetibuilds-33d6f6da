@@ -372,6 +372,66 @@ function buildRemediations(flags: RegulationFlag[], d: IntakeData): RemediationI
   return items.sort((a, b) => a.priority - b.priority);
 }
 
+// ─── Proxy Discrimination Logic ───────────────────────────────────────────────
+
+const FEATURE_RISK_MAP: Record<string, {
+  risk: "direct" | "known-proxy" | "correlated" | "neutral";
+  proxiesFor?: string[];
+  regulation?: string;
+  explanation: string;
+}> = {
+  "race-ethnicity": { risk: "direct", explanation: "Direct protected characteristic under GDPR Art.9, ECOA, and EU AI Act. Cannot be used in employment or credit models without explicit legal justification." },
+  "gender": { risk: "direct", explanation: "Direct protected characteristic — heightened scrutiny for employment and credit decisions under EU AI Act, Equality Act 2010, and ECOA." },
+  "age": { risk: "correlated", proxiesFor: ["Disability", "Pregnancy"], explanation: "Correlated with disability and pregnancy. Age-based scoring in employment models is documented disparate impact under ADEA and Equality Act 2010 (Sch.9)." },
+  "postcode": { risk: "known-proxy", proxiesFor: ["Race", "Income class"], regulation: "EU AI Act Art.10 · ECOA · Colorado AI Act", explanation: "Classic redlining proxy. Encodes residential segregation patterns. Cited in multiple CFPB fair lending enforcement actions — postcode correlates with race more strongly than credit score in many US metro areas." },
+  "employment-history": { risk: "known-proxy", proxiesFor: ["Gender", "Pregnancy"], regulation: "EU AI Act Art.10 · EEOC AI Guidance (2023)", explanation: "Employment gaps correlate strongly with pregnancy and primary caregiving (predominantly female). EEOC 2023 guidance flags employment gap analysis in automated hiring as a documented gender discrimination vector." },
+  "browser-device": { risk: "correlated", proxiesFor: ["Income class"], explanation: "Device type and browser version correlate with household income. Models trained on digital engagement data systematically disadvantage lower-income users operating older hardware." },
+  "income": { risk: "correlated", proxiesFor: ["Race", "Gender"], explanation: "Income reflects historical labour market discrimination. Models using income as a feature can perpetuate race and gender pay gaps already embedded in the training distribution." },
+  "social-media": { risk: "known-proxy", proxiesFor: ["Political views", "Religion", "Ethnicity"], regulation: "GDPR Art.9 · EU AI Act Art.10", explanation: "Social media activity can expose political opinions, religious beliefs, and ethnic community affiliations — all special category data under GDPR Art.9. Inference from social graphs is extremely hard to audit for disparate impact." },
+  "credit-history": { risk: "known-proxy", proxiesFor: ["Race", "Income class"], regulation: "ECOA · EU AI Act Art.10 · Fair Housing Act", explanation: "Credit scores encode historical lending discrimination. Obermeyer et al. 2019 and ProPublica COMPAS analysis both document systematic underscoring of minority groups even after controlling for objective risk factors." },
+  "name": { risk: "correlated", proxiesFor: ["Ethnicity", "Gender"], explanation: "Names encode ethnic origin and gender. NLP-based name analysis is a documented CV screening discrimination vector — Bertrand & Mullainathan (2004) showed identical CVs with 'Black-sounding' names received 50% fewer callbacks." },
+  "health": { risk: "direct", explanation: "Special category under GDPR Art.9. Direct protected characteristic (disability) under ADA and Equality Act 2010. Requires explicit consent or Schedule 1 legal basis." },
+  "biometric": { risk: "direct", explanation: "Special category under GDPR Art.9. Triggers Illinois BIPA mandatory written consent, retention policy, and statutory damages ($1k–$5k per violation)." },
+  "other": { risk: "neutral", explanation: "Risk profile depends on specific data type. Review individually for correlation with protected characteristics before including in a high-risk AI model." },
+};
+
+interface CombinationRisk {
+  features: string[];
+  combinedProxy: string;
+  regulation: string;
+  risk: "critical" | "high" | "medium";
+  explanation: string;
+}
+
+const COMBINATION_RULES: CombinationRisk[] = [
+  { features: ["postcode", "employment-history", "browser-device"], combinedProxy: "Race + Income + Gender", regulation: "EU AI Act Art.10 · ECOA · NYC LL144", risk: "critical", explanation: "Triple-proxy cluster. Each feature looks innocent individually; combined they create a high-confidence discriminatory signal for race, income class, and gender without using any protected characteristic directly. Cited pattern in multiple CFPB fair lending examinations." },
+  { features: ["postcode", "credit-history"], combinedProxy: "Race + Socioeconomic Status", regulation: "ECOA · EU AI Act Art.10 · Colorado AI Act", risk: "high", explanation: "The archetypal redlining proxy. Postcode × credit history compounds residential segregation with historical lending discrimination. Multiple CFPB enforcement actions cite this exact combination as evidence of disparate impact." },
+  { features: ["postcode", "income"], combinedProxy: "Race + Socioeconomic Status", regulation: "ECOA · EU AI Act Art.10", risk: "high", explanation: "Location + income amplifies socioeconomic disparities that correlate strongly with race in US and UK contexts — creating a geography-based discrimination signal without using race data." },
+  { features: ["employment-history", "income"], combinedProxy: "Gender + Socioeconomic Status", regulation: "EU AI Act Art.10 · Equality Act 2010 · EEOC", risk: "high", explanation: "Employment gaps × income creates a compound penalty for women who took maternity or caregiving breaks — lower income and higher gap frequency compounding from the same underlying protected characteristic." },
+  { features: ["social-media", "postcode"], combinedProxy: "Ethnicity + Religion + Residential Location", regulation: "GDPR Art.9 · EU AI Act Art.10", risk: "critical", explanation: "Social media + location enables fine-grained ethnic and religious community inference that neither feature alone would expose. The combination constitutes de facto processing of special category data under GDPR Art.9." },
+  { features: ["age", "employment-history"], combinedProxy: "Disability + Gender", regulation: "Equality Act 2010 · ADA · EU AI Act Art.10", risk: "medium", explanation: "Age × employment gaps compounds disability-related work interruptions with pregnancy-related career breaks — a double penalty for older women and disabled workers that neither feature alone would create." },
+  { features: ["name", "postcode"], combinedProxy: "Ethnicity + Residential Segregation", regulation: "ECOA · EU AI Act Art.10", risk: "high", explanation: "Name-based ethnicity inference combined with residential location creates a high-confidence proxy for ethnic origin — a direct protected characteristic — without touching ethnic data." },
+];
+
+function detectProxyCombinations(dataTypes: string[]): CombinationRisk[] {
+  return COMBINATION_RULES.filter(rule => rule.features.every(f => dataTypes.includes(f)));
+}
+
+// ─── Nutrition Label Scoring ──────────────────────────────────────────────────
+
+function computeNutritionScores(d: IntakeData): Record<string, "green" | "amber" | "red"> {
+  return {
+    "Data Collection":        (d.specialCategoryData || d.dataTypes.includes("biometric")) ? "red" : d.dataTypes.length > 6 ? "amber" : "green",
+    "Purpose Limitation":     (d.useCase && d.modelType) ? "green" : "amber",
+    "Automated Decisions":    d.deployment === "automated" ? "red" : d.deployment === "human-reviews" ? "amber" : "green",
+    "Human Oversight":        (!d.humanReview && d.deployment === "automated") ? "red" : d.humanReview ? "green" : "amber",
+    "Right to Explanation":   !d.appealsExist ? "red" : "green",
+    "Bias Testing":           (d.dataSource === "third-party" && !d.dataMinimisationDone) ? "red" : !d.dataMinimisationDone ? "amber" : "green",
+    "Data Minimisation":      !d.dataMinimisationDone ? (d.dataTypes.length > 6 ? "red" : "amber") : "green",
+    "Cross-border Transfers": d.jurisdictions.length > 3 ? "red" : d.jurisdictions.length > 1 ? "amber" : "green",
+  };
+}
+
 // ─── Differential Privacy Math ─────────────────────────────────────────────────
 
 function buildDPCurve(baseAccuracy: number) {
@@ -1090,6 +1150,8 @@ function RiskDashboard({ result, intake }: { result: RiskResult; intake: IntakeD
         </div>
       </div>
 
+      <ProxyDetectorSection dataTypes={intake.dataTypes} />
+
       <div style={{ marginTop: 16, padding: "10px 14px", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, fontSize: 11, color: "#92400e" }}>
         This tool is for educational and preliminary assessment purposes. It does not constitute legal advice. Consult a qualified DPO or privacy counsel before deployment.
       </div>
@@ -1166,6 +1228,81 @@ function RemediationChecklist({ result, onToggle }: { result: RiskResult; onTogg
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+// ─── Your Model DP (Phase 2 personalised simulation) ─────────────────────────
+
+function YourModelDP() {
+  const [baseAcc, setBaseAcc] = useState(80);
+  const [minAcc, setMinAcc]   = useState(70);
+  const [open, setOpen]       = useState(false);
+
+  const curve = useMemo(() => buildDPCurve(baseAcc / 100).map(p => ({ ...p, accuracy: Math.round(p.accuracy * 10) / 10 })), [baseAcc]);
+
+  const crossover = useMemo(() => {
+    const found = [...curve].reverse().find(p => p.accuracy >= minAcc);
+    return found ?? null;
+  }, [curve, minAcc]);
+
+  return (
+    <div style={{ border: "1px solid hsl(var(--border,#e2e8f0))", borderRadius: 10, overflow: "hidden" }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: "hsl(var(--card,#f8fafc))", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "hsl(var(--foreground))" }}
+      >
+        <span>Your Model — Personalised DP Simulation</span>
+        <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600 }}>{open ? "▲ collapse" : "▼ expand"}</span>
+      </button>
+      {open && (
+        <div style={{ padding: "20px 20px 24px" }}>
+          <p style={{ fontSize: 12, color: "#64748b", marginBottom: 20, lineHeight: 1.6 }}>
+            Enter your model's baseline accuracy and the minimum accuracy you can accept. The tool will calculate the tightest privacy budget (lowest ε) your model can sustain while staying above your accuracy floor.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24 }}>
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 8 }}>
+                Baseline accuracy (no privacy): <span style={{ color: "#6366f1" }}>{baseAcc}%</span>
+              </label>
+              <input type="range" min={55} max={99} step={1} value={baseAcc} onChange={e => setBaseAcc(Number(e.target.value))} style={{ width: "100%", accentColor: "#6366f1" }} />
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#94a3b8", marginTop: 2 }}>
+                <span>55%</span><span>99%</span>
+              </div>
+            </div>
+            <div>
+              <label style={{ fontSize: 12, fontWeight: 700, display: "block", marginBottom: 8 }}>
+                Minimum acceptable accuracy: <span style={{ color: "#dc2626" }}>{minAcc}%</span>
+              </label>
+              <input type="range" min={50} max={baseAcc - 2} step={1} value={Math.min(minAcc, baseAcc - 2)} onChange={e => setMinAcc(Number(e.target.value))} style={{ width: "100%", accentColor: "#dc2626" }} />
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#94a3b8", marginTop: 2 }}>
+                <span>50%</span><span>{baseAcc - 2}%</span>
+              </div>
+            </div>
+          </div>
+
+          {crossover && (
+            <div style={{ padding: "14px 18px", background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 8, marginBottom: 20, fontSize: 12, color: "#0c4a6e", lineHeight: 1.6 }}>
+              <strong>Result:</strong> With a baseline of {baseAcc}% and a floor of {minAcc}%, your model can sustain a privacy budget of <strong>ε = {crossover.epsilon}</strong> — {crossover.epsilon <= 0.1 ? "strong privacy" : crossover.epsilon <= 1 ? "commonly accepted balance" : crossover.epsilon <= 10 ? "weak privacy" : "minimal privacy protection"}.
+              {crossover.epsilon > 1 && <span style={{ color: "#d97706" }}> Consider whether stronger privacy (ε ≤ 1) is achievable by improving baseline accuracy first.</span>}
+            </div>
+          )}
+
+          <div style={{ height: 200 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={curve} margin={{ top: 8, right: 20, left: 0, bottom: 16 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="epsilonLabel" tick={{ fontSize: 10, fill: "#94a3b8" }} label={{ value: "ε (epsilon)", position: "insideBottom", offset: -10, fontSize: 10, fill: "#94a3b8" }} />
+                <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} domain={[50, Math.ceil(baseAcc / 10) * 10]} unit="%" />
+                <Tooltip formatter={(v: number) => [`${v}%`, "Accuracy"]} labelFormatter={(l: string) => `ε = ${l}`} contentStyle={{ fontSize: 12 }} />
+                <ReferenceLine y={minAcc} stroke="#dc2626" strokeDasharray="4 3" label={{ value: `floor ${minAcc}%`, fontSize: 9, fill: "#dc2626", position: "right" }} />
+                {crossover && <ReferenceLine x={String(crossover.epsilon)} stroke="#6366f1" strokeDasharray="4 3" label={{ value: `ε=${crossover.epsilon}`, fontSize: 9, fill: "#6366f1", position: "top" }} />}
+                <Line type="monotone" dataKey="accuracy" stroke="#6366f1" strokeWidth={2.5} dot={{ r: 3, fill: "#6366f1" }} activeDot={{ r: 5 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1254,7 +1391,7 @@ function DiffPrivacySimulator() {
       </div>
 
       {/* Explanation callout */}
-      <div style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 8, padding: "12px 16px", fontSize: 12, color: "#0c4a6e", lineHeight: 1.6 }}>
+      <div style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 8, padding: "12px 16px", fontSize: 12, color: "#0c4a6e", lineHeight: 1.6, marginBottom: 28 }}>
         <strong>How this works:</strong> Differential privacy adds calibrated noise (Laplace mechanism, sensitivity=1) to model outputs.
         The privacy budget ε controls how much noise: smaller ε = more noise = stronger privacy guarantee.
         At ε=1 (the commonly accepted standard), this credit scoring model loses ~{Math.round(82 - currentPoint.accuracy)}pp of accuracy
@@ -1263,6 +1400,9 @@ function DiffPrivacySimulator() {
         <strong>Why it matters:</strong> EU AI Act technical standards and NIST AI RMF reference differential privacy as a privacy-preserving technique.
         This tradeoff curve shows practitioners exactly what accuracy they're giving up for each level of privacy protection.
       </div>
+
+      {/* Your Model — personalised simulation */}
+      <YourModelDP />
     </div>
   );
 }
@@ -1277,6 +1417,471 @@ function Phase2Stub({ title, description }: { title: string; description: string
       <div style={{ fontSize: 13, maxWidth: 400, margin: "0 auto", lineHeight: 1.6 }}>{description}</div>
       <div style={{ marginTop: 16, display: "inline-block", fontSize: 11, fontWeight: 700, color: "#6366f1", background: "#eef2ff", padding: "4px 12px", borderRadius: 20, textTransform: "uppercase", letterSpacing: "0.06em" }}>
         Phase 2 — Coming next session
+      </div>
+    </div>
+  );
+}
+
+// ─── Proxy Discrimination Detector (section within RiskDashboard) ────────────
+
+function ProxyDetectorSection({ dataTypes }: { dataTypes: string[] }) {
+  const relevant = dataTypes.filter(d => d in FEATURE_RISK_MAP);
+  if (relevant.length === 0) return null;
+  const combinations = detectProxyCombinations(dataTypes);
+
+  const RISK_COLORS = {
+    direct:        { border: "#fecaca", bg: "#fef2f2", badge: "#dc2626", text: "#dc2626" },
+    "known-proxy": { border: "#fed7aa", bg: "#fff7ed", badge: "#ea580c", text: "#c2410c" },
+    correlated:    { border: "#fde68a", bg: "#fffbeb", badge: "#d97706", text: "#92400e" },
+    neutral:       { border: "#e2e8f0", bg: "#f8fafc", badge: "#94a3b8", text: "#475569" },
+  };
+  const RISK_LABELS = { direct: "Direct protected", "known-proxy": "Known proxy", correlated: "Correlated", neutral: "Neutral" };
+  const COMBO_COLORS = { critical: { border: "#fecaca", bg: "#fef2f2", text: "#dc2626" }, high: { border: "#fed7aa", bg: "#fff7ed", text: "#c2410c" }, medium: { border: "#fde68a", bg: "#fffbeb", text: "#92400e" } };
+
+  return (
+    <div style={{ marginTop: 28 }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 16 }}>
+        Proxy Discrimination Analysis
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 8, marginBottom: 20 }}>
+        {relevant.map(feat => {
+          const info = FEATURE_RISK_MAP[feat];
+          const c = RISK_COLORS[info.risk];
+          const label = DATA_TYPE_OPTIONS.find(o => o.value === feat)?.label ?? feat;
+          return (
+            <div key={feat} style={{ background: c.bg, border: `1px solid ${c.border}`, borderRadius: 8, padding: "10px 14px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 10, fontWeight: 800, color: c.badge, background: `${c.badge}18`, padding: "2px 8px", borderRadius: 4, textTransform: "uppercase" }}>{RISK_LABELS[info.risk]}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: c.text }}>{label}</span>
+              </div>
+              <p style={{ fontSize: 11, color: "#64748b", margin: 0, lineHeight: 1.5 }}>{info.explanation}</p>
+              {info.proxiesFor && (
+                <div style={{ marginTop: 6, display: "flex", flexWrap: "wrap", gap: 4 }}>
+                  {info.proxiesFor.map(p => (
+                    <span key={p} style={{ fontSize: 10, color: c.text, background: `${c.badge}12`, border: `1px solid ${c.badge}30`, padding: "1px 6px", borderRadius: 3 }}>Proxy for: {p}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {combinations.length > 0 && (
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>
+            Dangerous Feature Combinations ({combinations.length} detected)
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {combinations.map((combo, i) => {
+              const c = COMBO_COLORS[combo.risk];
+              return (
+                <div key={i} style={{ background: c.bg, border: `1px solid ${c.border}`, borderLeft: `4px solid ${c.text}`, borderRadius: 8, padding: "12px 16px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: c.text, textTransform: "uppercase" }}>{combo.risk} risk</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: c.text }}>→ {combo.combinedProxy}</span>
+                    <span style={{ fontSize: 10, color: "#94a3b8", marginLeft: "auto" }}>{combo.regulation}</span>
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8 }}>
+                    {combo.features.map(f => (
+                      <span key={f} style={{ fontSize: 10, fontWeight: 700, color: c.text, background: `${c.text}15`, border: `1px solid ${c.text}30`, padding: "2px 8px", borderRadius: 4 }}>
+                        {DATA_TYPE_OPTIONS.find(o => o.value === f)?.label ?? f}
+                      </span>
+                    ))}
+                  </div>
+                  <p style={{ fontSize: 12, color: "#64748b", margin: 0, lineHeight: 1.5 }}>{combo.explanation}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {combinations.length === 0 && (
+        <div style={{ padding: "12px 16px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, fontSize: 12, color: "#15803d" }}>
+          No dangerous feature combinations detected for the current data profile. Continue to monitor as features change.
+        </div>
+      )}
+      <div style={{ marginTop: 12, fontSize: 10, color: "#94a3b8", lineHeight: 1.5 }}>
+        Sources: Bertrand & Mullainathan (2004) · Obermeyer et al. (2019) · Angwin/ProPublica COMPAS (2016) · CFPB fair lending guidance · EEOC AI/ML guidance (2023) · EU AI Act Art.10 recitals
+      </div>
+    </div>
+  );
+}
+
+// ─── Tab 2: Full DPIA Report ───────────────────────────────────────────────────
+
+function DPIAReport({ result, intake }: { result: RiskResult; intake: IntakeData }) {
+  const [copied, setCopied] = useState(false);
+
+  const report = {
+    generated: new Date().toISOString(),
+    tool: "Privacy Impact Auditor",
+    disclaimer: "Educational and preliminary assessment only. Does not constitute legal advice.",
+    section1_system: { modelType: intake.modelType, useCase: intake.useCase, outputType: intake.outputType, deployment: intake.deployment, populationSize: intake.populationSize, jurisdictions: intake.jurisdictions },
+    section2_necessity: { dataTypes: intake.dataTypes, specialCategoryData: intake.specialCategoryData, specialCategories: intake.specialCategories, dataSource: intake.dataSource, dataMinimisationReviewed: intake.dataMinimisationDone },
+    section3_dataFlows: { collectionMethod: intake.dataSource, processingPurpose: intake.useCase, automatedDecision: intake.deployment === "automated", humanReview: intake.humanReview, appealsMechanism: intake.appealsExist },
+    section4_risk: { overallScore: result.score, riskLevel: result.level, breakdown: result.breakdown, triggers: result.flags.map(f => ({ article: f.article, severity: f.severity, description: f.description })) },
+    section5_mitigations: result.remediations.slice(0, 5).map(r => ({ action: r.what, regulation: r.law, effort: r.effort, owner: r.owner })),
+    section6_dpoSignoff: { dpoName: "[DPO Name]", reviewDate: "[Date]", nextReview: "[Next Review Date]", status: "[Pending / Approved / Rejected]", comments: "[Comments]" },
+  };
+
+  const handleCopy = () => { navigator.clipboard.writeText(JSON.stringify(report, null, 2)); setCopied(true); setTimeout(() => setCopied(false), 2000); };
+  const c = LEVEL_COLORS[result.level];
+  const sectionTitle = (n: string) => (
+    <div style={{ fontSize: 14, fontWeight: 800, color: "hsl(var(--foreground))", marginBottom: 12, paddingBottom: 6, borderBottom: "1px solid hsl(var(--border,#e2e8f0))" }}>{n}</div>
+  );
+  const field = (label: string, value: string | boolean | string[]) => {
+    const v = typeof value === "boolean" ? (value ? "Yes" : "No") : Array.isArray(value) ? (value.join(", ") || "None") : (value || "—");
+    return (
+      <div style={{ display: "flex", gap: 12, fontSize: 12, marginBottom: 6 }}>
+        <span style={{ color: "#94a3b8", fontWeight: 600, minWidth: 200, flexShrink: 0 }}>{label}</span>
+        <span style={{ color: "hsl(var(--foreground))", fontWeight: 500 }}>{v}</span>
+      </div>
+    );
+  };
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 8 }}>
+        <div>
+          <h2 style={{ fontSize: 16, fontWeight: 800, margin: 0 }}>Data Protection Impact Assessment</h2>
+          <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0" }}>Generated {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</p>
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ fontSize: 10, fontWeight: 800, color: c.text, background: c.bg, border: `1px solid ${c.border}`, padding: "4px 12px", borderRadius: 6, textTransform: "uppercase" }}>
+            {result.level} — {result.score}/100
+          </div>
+          <button onClick={handleCopy} style={{ padding: "6px 14px", borderRadius: 6, border: "1px solid hsl(var(--border,#e2e8f0))", background: copied ? "#f0fdf4" : "hsl(var(--card,#f8fafc))", color: copied ? "#15803d" : "hsl(var(--foreground))", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+            {copied ? "✓ Copied" : "Copy JSON"}
+          </button>
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 28 }}>
+        {sectionTitle("1 — System Description")}
+        {field("Model type", intake.modelType)}
+        {field("Primary use case", intake.useCase)}
+        {field("Output type", intake.outputType)}
+        {field("Deployment context", intake.deployment)}
+        {field("Affected population", intake.populationSize)}
+        {field("Jurisdictions", intake.jurisdictions)}
+      </div>
+
+      <div style={{ marginBottom: 28 }}>
+        {sectionTitle("2 — Necessity & Proportionality")}
+        {field("Data types processed", intake.dataTypes)}
+        {field("Special category data", intake.specialCategoryData ? `Yes — ${intake.specialCategories.join(", ") || "categories not specified"}` : "No")}
+        {field("Training data source", intake.dataSource)}
+        {field("Data minimisation review", intake.dataMinimisationDone)}
+        <div style={{ marginTop: 8, padding: "10px 14px", background: intake.dataMinimisationDone ? "#f0fdf4" : "#fffbeb", border: `1px solid ${intake.dataMinimisationDone ? "#bbf7d0" : "#fde68a"}`, borderRadius: 6, fontSize: 11, color: intake.dataMinimisationDone ? "#15803d" : "#92400e" }}>
+          {intake.dataMinimisationDone ? "Data minimisation review completed. Each feature documented as necessary and proportionate." : "Data minimisation review not completed. GDPR Art.5(1)(c) requires documenting why each data type is necessary. Required before deployment."}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 28 }}>
+        {sectionTitle("3 — Processing Activities & Data Flows")}
+        {field("Data collection method", intake.dataSource)}
+        {field("Processing purpose", `${intake.useCase} — ${intake.outputType}`)}
+        {field("Decision automation level", intake.deployment)}
+        {field("Human review step", intake.humanReview ? (intake.humanReviewDesc ? `Yes — ${intake.humanReviewDesc}` : "Yes") : "No")}
+        {field("Appeals & correction mechanism", intake.appealsExist)}
+      </div>
+
+      <div style={{ marginBottom: 28 }}>
+        {sectionTitle("4 — Risk Assessment")}
+        <div style={{ padding: "14px 20px", background: c.bg, border: `1px solid ${c.border}`, borderRadius: 8, marginBottom: 16 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: c.text, textTransform: "uppercase", marginBottom: 4 }}>Overall Risk Level</div>
+          <div style={{ fontSize: 24, fontWeight: 900, color: c.text }}>{result.score}/100 — {result.level.toUpperCase()}</div>
+        </div>
+        {result.flags.map(f => (
+          <div key={f.id} style={{ display: "flex", gap: 12, fontSize: 12, marginBottom: 6 }}>
+            <span style={{ color: SEV_COLORS[f.severity], fontWeight: 700, minWidth: 200, flexShrink: 0 }}>{f.article}</span>
+            <span style={{ color: "#64748b", fontSize: 11 }}>{f.description}</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginBottom: 28 }}>
+        {sectionTitle(`5 — Proposed Mitigations (${Math.min(5, result.remediations.length)})`)}
+        {result.remediations.slice(0, 5).map((r, i) => (
+          <div key={r.id} style={{ display: "flex", gap: 12, marginBottom: 10, padding: "10px 14px", background: "hsl(var(--card,#f8fafc))", border: "1px solid hsl(var(--border,#e2e8f0))", borderRadius: 8 }}>
+            <span style={{ fontSize: 12, fontWeight: 800, color: "#94a3b8", minWidth: 20 }}>{i + 1}.</span>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "hsl(var(--foreground))", marginBottom: 2 }}>{r.what}</div>
+              <div style={{ fontSize: 11, color: "#64748b" }}>↳ {r.law} · {r.effort}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginBottom: 20 }}>
+        {sectionTitle("6 — DPO Sign-off")}
+        <div style={{ background: "hsl(var(--card,#f8fafc))", border: "1px solid hsl(var(--border,#e2e8f0))", borderRadius: 8, padding: "16px 20px" }}>
+          {["DPO Name", "Review Date", "Next Review Date", "Approval Status", "Comments"].map(f => (
+            <div key={f} style={{ display: "flex", gap: 12, fontSize: 12, marginBottom: 6 }}>
+              <span style={{ color: "#94a3b8", fontWeight: 600, minWidth: 200, flexShrink: 0 }}>{f}</span>
+              <span style={{ color: "#94a3b8", fontStyle: "italic" }}>[Complete manually]</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop: 8, fontSize: 11, color: "#94a3b8", fontStyle: "italic" }}>
+          For preliminary assessment only. Does not constitute legal advice. Consult a qualified DPO or privacy counsel before regulatory submission.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Tab 4: Privacy Nutrition Label ───────────────────────────────────────────
+
+function PrivacyNutritionLabelFull({ intake }: { intake: IntakeData }) {
+  const scores = computeNutritionScores(intake);
+  const colors  = { red: "#dc2626", amber: "#d97706", green: "#16a34a" };
+  const bgs     = { red: "#fef2f2", amber: "#fffbeb", green: "#f0fdf4" };
+  const borders = { red: "#fecaca", amber: "#fde68a", green: "#bbf7d0" };
+  const ICONS: Record<string, string> = { "Data Collection": "🗂️", "Purpose Limitation": "🎯", "Automated Decisions": "🤖", "Human Oversight": "👤", "Right to Explanation": "📋", "Bias Testing": "⚖️", "Data Minimisation": "🔬", "Cross-border Transfers": "🌍" };
+  const EXPLANATIONS: Record<string, Record<string, string>> = {
+    "Data Collection":        { red: "Special category or biometric data present — heightened obligations apply.", amber: "More than 6 data types — review whether all are necessary (GDPR Art.5(1)(c)).", green: "Data collection appears proportionate for the stated purpose." },
+    "Purpose Limitation":     { red: "Use case or model type not clearly defined.", amber: "Processing purpose could be better bounded.", green: "Processing purpose clearly defined." },
+    "Automated Decisions":    { red: "Fully automated — triggers GDPR Art.22, NYC LL144, and EU AI Act obligations.", amber: "Human reviews but may not actively approve — review GDPR Art.22 scope.", green: "Human must approve before decisions are enacted." },
+    "Human Oversight":        { red: "No human review step — automated decision without oversight.", amber: "Human involvement not confirmed — clarify review process.", green: "Human review step documented." },
+    "Right to Explanation":   { red: "No appeals mechanism — GDPR Art.22, Colorado AI Act, and CCPA all require contestability.", amber: "Contestability mechanism partially defined.", green: "Appeals and correction mechanism in place." },
+    "Bias Testing":           { red: "Third-party data with no bias testing — EU AI Act Art.10 hard fail.", amber: "Bias testing or data minimisation review incomplete.", green: "Data minimisation and bias testing documented." },
+    "Data Minimisation":      { red: "Large dataset with no minimisation review — GDPR Art.5(1)(c) non-compliant.", amber: "Minimisation review not yet completed.", green: "Data minimisation review completed." },
+    "Cross-border Transfers": { red: "High jurisdictional complexity — multiple transfer mechanisms required.", amber: "Multi-jurisdiction deployment — verify transfer safeguards are in place.", green: "Jurisdiction profile manageable." },
+  };
+
+  const vals = Object.values(scores);
+  const counts = { red: vals.filter(s => s === "red").length, amber: vals.filter(s => s === "amber").length, green: vals.filter(s => s === "green").length };
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
+        <div>
+          <h2 style={{ fontSize: 16, fontWeight: 800, margin: 0 }}>Privacy Nutrition Label</h2>
+          <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0" }}>8-category privacy profile scored from your intake answers.</p>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          {[{ label: `${counts.red} Action required`, color: "#dc2626", bg: "#fef2f2" }, { label: `${counts.amber} Review`, color: "#d97706", bg: "#fffbeb" }, { label: `${counts.green} Pass`, color: "#16a34a", bg: "#f0fdf4" }].map(b => (
+            <div key={b.label} style={{ background: b.bg, color: b.color, fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 6 }}>{b.label}</div>
+          ))}
+        </div>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 24 }}>
+        {Object.entries(scores).map(([cat, score]) => (
+          <div key={cat} style={{ background: bgs[score], border: `2px solid ${borders[score]}`, borderRadius: 12, padding: "16px 14px", textAlign: "center" }}>
+            <div style={{ fontSize: 22, marginBottom: 8 }}>{ICONS[cat]}</div>
+            <div style={{ width: 14, height: 14, borderRadius: "50%", background: colors[score], margin: "0 auto 8px", boxShadow: `0 0 8px ${colors[score]}50` }} />
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#374151", lineHeight: 1.3, marginBottom: 4 }}>{cat}</div>
+            <div style={{ fontSize: 10, color: colors[score], fontWeight: 700, textTransform: "uppercase" }}>{score === "red" ? "Action required" : score === "amber" ? "Review" : "Pass"}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {Object.entries(scores).map(([cat, score]) => (
+          <div key={cat} style={{ display: "flex", gap: 12, padding: "10px 14px", background: bgs[score], border: `1px solid ${borders[score]}`, borderRadius: 8 }}>
+            <span style={{ fontSize: 16, flexShrink: 0 }}>{ICONS[cat]}</span>
+            <div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "hsl(var(--foreground))" }}>{cat}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: colors[score], textTransform: "uppercase", marginLeft: 8 }}>{score === "red" ? "⚠ Action required" : score === "amber" ? "▲ Review" : "✓ Pass"}</span>
+              <p style={{ fontSize: 11, color: "#64748b", margin: "3px 0 0", lineHeight: 1.5 }}>{EXPLANATIONS[cat]?.[score] ?? ""}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: 12, fontSize: 10, color: "#94a3b8" }}>Scores are derived from your intake form answers using the same combinatorial risk engine. Preliminary assessment only.</div>
+    </div>
+  );
+}
+
+// ─── Tab 5: Model Card ────────────────────────────────────────────────────────
+
+function ModelCard({ result, intake }: { result: RiskResult; intake: IntakeData }) {
+  const [copied, setCopied] = useState(false);
+
+  const md = `# Model Card — ${intake.useCase || "AI System"} (${intake.modelType || "model"})
+> Generated by Privacy Impact Auditor · ${new Date().toLocaleDateString("en-GB")}
+> Maps to EU AI Act Art.13 transparency obligations · Mitchell et al. (2019) format
+
+---
+
+## 1. Model Details
+- **Model type:** ${intake.modelType || "—"}
+- **Output type:** ${intake.outputType || "—"}
+- **Deployment context:** ${intake.deployment || "—"}
+- **Affected population:** ${intake.populationSize || "—"}
+- **Jurisdictions:** ${intake.jurisdictions.join(", ") || "—"}
+
+## 2. Intended Use
+- **Primary use case:** ${intake.useCase || "—"}
+- **Primary users:** [Describe who operates or is affected by this system]
+- **Out-of-scope uses:** [Explicitly state uses this system was NOT designed for]
+
+## 3. Training Data
+- **Data source:** ${intake.dataSource || "—"}
+- **Data types used:** ${intake.dataTypes.join(", ") || "—"}
+- **Special category data:** ${intake.specialCategoryData ? "Yes — " + (intake.specialCategories.join(", ") || "categories not specified") : "No"}
+- **Data minimisation review:** ${intake.dataMinimisationDone ? "Completed" : "Not completed — required before deployment"}
+
+## 4. Evaluation Results
+- **Privacy risk score:** ${result.score}/100 (${result.level.toUpperCase()})
+- **Regulation triggers:** ${result.flags.length} (${result.flags.map(f => f.name).join(", ") || "none"})
+- **Risk breakdown:** Data ${result.breakdown.data} · Process ${result.breakdown.process} · Regulatory ${result.breakdown.regulatory} · Proxy ${result.breakdown.proxy}
+
+## 5. Ethical Considerations
+${result.flags.length > 0 ? result.flags.slice(0, 5).map(f => `- **${f.article}:** ${f.description}`).join("\n") : "- No high-risk regulation triggers detected for this profile."}
+
+## 6. Caveats & Recommendations
+${result.remediations.slice(0, 3).map(r => `- ${r.what} (${r.law})`).join("\n") || "- No critical remediations identified."}
+
+## 7. Privacy Assessment Summary
+- **DPIA required:** ${(result.level === "critical" || result.level === "high") ? "Yes — mandatory" : "Recommended"}
+- **Human review step:** ${intake.humanReview ? "Yes" : "No — required for GDPR Art.22 compliance"}
+- **Appeals mechanism:** ${intake.appealsExist ? "Yes" : "No — required by multiple regulations"}
+- **Assessment date:** ${new Date().toLocaleDateString("en-GB")}
+- **DPO sign-off:** [Pending]
+`;
+
+  const handleCopy = () => { navigator.clipboard.writeText(md); setCopied(true); setTimeout(() => setCopied(false), 2000); };
+
+  const lines = md.split("\n");
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 8 }}>
+        <div>
+          <h2 style={{ fontSize: 16, fontWeight: 800, margin: 0 }}>Model Card</h2>
+          <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0" }}>EU AI Act Art.13 format · Mitchell et al. (2019) · Pre-filled from your intake answers</p>
+        </div>
+        <button onClick={handleCopy} style={{ padding: "6px 14px", borderRadius: 6, border: "1px solid hsl(var(--border,#e2e8f0))", background: copied ? "#f0fdf4" : "hsl(var(--card,#f8fafc))", color: copied ? "#15803d" : "hsl(var(--foreground))", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+          {copied ? "✓ Copied Markdown" : "Copy as Markdown"}
+        </button>
+      </div>
+      <div style={{ background: "hsl(var(--card,#f8fafc))", border: "1px solid hsl(var(--border,#e2e8f0))", borderRadius: 10, padding: "20px 24px", lineHeight: 1.7 }}>
+        {lines.map((line, i) => {
+          if (line.startsWith("# ")) return <div key={i} style={{ fontSize: 15, fontWeight: 900, color: "hsl(var(--foreground))", marginBottom: 4 }}>{line.replace("# ", "")}</div>;
+          if (line.startsWith("## ")) return <div key={i} style={{ fontSize: 13, fontWeight: 800, color: "#6366f1", marginTop: i > 0 ? 16 : 0, marginBottom: 6 }}>{line.replace("## ", "")}</div>;
+          if (line.startsWith("> ")) return <div key={i} style={{ fontSize: 11, color: "#64748b", fontStyle: "italic", marginBottom: 8, paddingLeft: 8, borderLeft: "3px solid #e2e8f0" }}>{line.replace("> ", "")}</div>;
+          if (line === "---") return <hr key={i} style={{ border: "none", borderTop: "1px solid hsl(var(--border,#e2e8f0))", margin: "10px 0" }} />;
+          if (line === "") return <div key={i} style={{ height: 4 }} />;
+          const boldMatch = line.match(/^- \*\*(.+?):\*\* (.+)$/);
+          if (boldMatch) return (
+            <div key={i} style={{ display: "flex", gap: 8, marginBottom: 4, fontSize: 12 }}>
+              <span style={{ color: "#94a3b8", flexShrink: 0 }}>·</span>
+              <span><span style={{ fontWeight: 700, color: "hsl(var(--foreground))" }}>{boldMatch[1]}:</span>{" "}<span style={{ color: "#64748b" }}>{boldMatch[2]}</span></span>
+            </div>
+          );
+          return <div key={i} style={{ fontSize: 12, color: "#64748b" }}>{line}</div>;
+        })}
+      </div>
+      <div style={{ marginTop: 12, padding: "10px 14px", background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 8, fontSize: 11, color: "#0c4a6e" }}>
+        <strong>EU AI Act Art.13:</strong> Fields marked [Complete manually] must be filled before deployment. The card must be updated after each significant model change.
+      </div>
+    </div>
+  );
+}
+
+// ─── Tab 6: Methodology Eval ──────────────────────────────────────────────────
+
+function MethodologyEval() {
+  return (
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 800, margin: 0 }}>Methodology Evaluation</h2>
+        <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0" }}>This tool audits its own scoring methodology — a meta-DPIA. Documenting methodology is itself an EU AI Act Art.13 transparency obligation.</p>
+      </div>
+
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 12, paddingBottom: 6, borderBottom: "1px solid hsl(var(--border,#e2e8f0))" }}>Scoring Methodology</div>
+        <p style={{ fontSize: 12, color: "#64748b", marginBottom: 12, lineHeight: 1.6 }}>
+          The risk score uses two phases: (1) a base score across four risk categories, then (2) multiplicative amplifiers for high-risk combinations. Standard checklist tools add risks linearly — this tool multiplies them, which more accurately reflects how legal risk compounds in practice.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {[
+            { rule: "Data Risk base", detail: "Special category: +25 · Biometric: +18 · Health: +15 · Third-party data: +12 · No minimisation review: +10 · >6 features: +8", source: "GDPR Art.9 · EU AI Act Art.10" },
+            { rule: "Process Risk base", detail: "Fully automated: +30 · No appeals: +20 · No human review: +10 · Human reviews (not approves): +12", source: "GDPR Art.22 · Colorado AI Act" },
+            { rule: "Regulatory Risk base", detail: "EU/UK jurisdiction: +15 · NYC hiring: +20 · Illinois biometric: +25 · High-risk use case: +10 · Large population: +8", source: "NYC LL144 · Illinois BIPA · GDPR" },
+            { rule: "Proxy Discrimination base", detail: "1 proxy feature: +6 · Each additional proxy: +8/feature", source: "EU AI Act Art.10 · ECOA" },
+            { rule: "Multiplier: automated × special category", detail: "Total score ×2.5", source: "GDPR Art.22 + Art.9 combined" },
+            { rule: "Multiplier: large population × no appeals × automated", detail: "Escalated to Critical floor (score ≥ 82)", source: "GDPR Art.35 · Colorado AI Act" },
+            { rule: "Multiplier: EU high-risk AI × automated", detail: "Total score ×1.8", source: "EU AI Act Annex III + Art.22 interaction" },
+            { rule: "Hard floor: Illinois + biometric", detail: "Always Critical (score ≥ 85)", source: "Illinois BIPA statutory damages rule" },
+          ].map((r, i) => (
+            <div key={i} style={{ display: "grid", gridTemplateColumns: "180px 1fr 200px", gap: 12, padding: "8px 12px", background: "hsl(var(--card,#f8fafc))", border: "1px solid hsl(var(--border,#e2e8f0))", borderRadius: 6, fontSize: 11 }}>
+              <span style={{ fontWeight: 700, color: "hsl(var(--foreground))" }}>{r.rule}</span>
+              <span style={{ color: "#64748b" }}>{r.detail}</span>
+              <span style={{ color: "#6366f1", fontWeight: 600 }}>{r.source}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 12, paddingBottom: 6, borderBottom: "1px solid hsl(var(--border,#e2e8f0))" }}>Regulation Coverage — 13 triggers across 8 jurisdictions</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {["GDPR Art.35", "GDPR Art.22", "GDPR Art.5(1)(c)", "GDPR Art.9", "EU AI Act Annex III", "EU AI Act Art.10", "EU AI Act Art.13", "NYC Local Law 144", "Colorado AI Act", "CCPA / CPRA", "Illinois BIPA", "Canada PIPEDA / C-27", "UK GDPR"].map(r => (
+            <span key={r} style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", background: "#eef2ff", border: "1px solid #c7d2fe", padding: "3px 10px", borderRadius: 6 }}>{r}</span>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 12, paddingBottom: 6, borderBottom: "1px solid hsl(var(--border,#e2e8f0))" }}>Comparison to Standard DPIA Templates</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {[
+            { aspect: "Scoring model", ico: "Checkbox (yes/no)", cnil: "Checkbox", tool: "Combinatorial multipliers — risks compound, not add" },
+            { aspect: "AI-specific triggers", ico: "Partial (large-scale automated)", cnil: "Partial", tool: "13 AI triggers (EU AI Act Annex III, NYC LL144, Illinois BIPA)" },
+            { aspect: "Proxy discrimination", ico: "Not covered", cnil: "Not covered", tool: "Feature classifier + combination graph (7 combination rules)" },
+            { aspect: "Differential privacy", ico: "Not covered", cnil: "Not covered", tool: "Laplace mechanism epsilon cost curve + personalised simulation" },
+            { aspect: "Output artefacts", ico: "Word template", cnil: "PDF template", tool: "Risk dashboard + nutrition label + model card + DPIA report + checklist" },
+          ].map((r, i) => (
+            <div key={i} style={{ display: "grid", gridTemplateColumns: "160px 1fr 1fr 1fr", gap: 12, padding: "8px 12px", background: "hsl(var(--card,#f8fafc))", border: "1px solid hsl(var(--border,#e2e8f0))", borderRadius: 6, fontSize: 11 }}>
+              <span style={{ fontWeight: 700, color: "hsl(var(--foreground))" }}>{r.aspect}</span>
+              <span style={{ color: "#94a3b8" }}>ICO: {r.ico}</span>
+              <span style={{ color: "#94a3b8" }}>CNIL: {r.cnil}</span>
+              <span style={{ color: "#16a34a", fontWeight: 600 }}>This tool: {r.tool}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 12, paddingBottom: 6, borderBottom: "1px solid hsl(var(--border,#e2e8f0))" }}>Known Limitations</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {[
+            "DP model uses standard Laplace mechanism (sensitivity=1, global DP). Local DP and other mechanisms not modelled.",
+            "Regulation triggers rely on jurisdiction self-report — the tool cannot verify actual deployment geography.",
+            "Proxy rules are based on published research and case law. Novel proxy relationships not yet in the literature are not detected.",
+            "Risk multipliers are calibrated for regulatory consistency but are not legally validated thresholds.",
+            "Output must be reviewed by a qualified DPO or privacy counsel before any regulatory submission.",
+            "Regulation data accurate as of April 2026. EU AI Act enforcement timeline, CCPA amendments, and US state AI laws change frequently.",
+          ].map((l, i) => (
+            <div key={i} style={{ display: "flex", gap: 10, padding: "8px 12px", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 6 }}>
+              <span style={{ color: "#d97706", fontWeight: 700, flexShrink: 0 }}>!</span>
+              <span style={{ fontSize: 11, color: "#92400e", lineHeight: 1.5 }}>{l}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 12, paddingBottom: 6, borderBottom: "1px solid hsl(var(--border,#e2e8f0))" }}>Primary Sources</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          {[
+            "Angwin, J. et al. (2016). Machine Bias. ProPublica — COMPAS recidivism disparate impact analysis.",
+            "Obermeyer, Z. et al. (2019). Dissecting racial bias in an algorithm used to manage health populations. Science.",
+            "Bertrand, M. & Mullainathan, S. (2004). Are Emily and Greg more employable than Lakisha and Jamal? AER.",
+            "Mitchell, M. et al. (2019). Model Cards for Model Reporting. FAccT — model card format used in Tab 5.",
+            "EU AI Act (Regulation 2024/1689) — Articles 9, 10, 13, Annex III. Official Journal of the EU.",
+            "GDPR (Regulation 2016/679) — Articles 5, 9, 22, 35. Official Journal of the EU.",
+            "NYC Local Law 144 of 2021 — Automated employment decision tools.",
+            "Illinois BIPA (740 ILCS 14) — Biometric Information Privacy Act.",
+            "Colorado AI Act (SB24-205) — Consequential decisions algorithmic discrimination.",
+            "NIST AI RMF (2023) — AI Risk Management Framework.",
+          ].map((c, i) => (
+            <div key={i} style={{ fontSize: 11, color: "#64748b", padding: "4px 0", borderBottom: "1px solid hsl(var(--border,#e2e8f0)/40)", lineHeight: 1.5 }}>
+              <span style={{ color: "#94a3b8", marginRight: 8 }}>[{i + 1}]</span>{c}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -1319,15 +1924,15 @@ export default function PrivacyAuditor() {
     setUserChecklist(prev => prev.map(item => item.id === id ? { ...item, done: !item.done } : item));
   };
 
-  const TABS: { id: Tab; label: string; phase: 1 | 2 }[] = [
-    { id: "form",        label: "Intake Form",      phase: 1 },
-    { id: "dashboard",   label: "Risk Dashboard",   phase: 1 },
-    { id: "checklist",   label: "Remediation",      phase: 1 },
-    { id: "dpsim",       label: "DP Simulator",     phase: 1 },
-    { id: "report",      label: "DPIA Report",      phase: 2 },
-    { id: "nutrition",   label: "Nutrition Label",  phase: 2 },
-    { id: "modelcard",   label: "Model Card",       phase: 2 },
-    { id: "methodology", label: "Methodology Eval", phase: 2 },
+  const TABS: { id: Tab; label: string }[] = [
+    { id: "form",        label: "Intake Form"      },
+    { id: "dashboard",   label: "Risk Dashboard"   },
+    { id: "checklist",   label: "Remediation"      },
+    { id: "dpsim",       label: "DP Simulator"     },
+    { id: "report",      label: "DPIA Report"      },
+    { id: "nutrition",   label: "Nutrition Label"  },
+    { id: "modelcard",   label: "Model Card"       },
+    { id: "methodology", label: "Methodology Eval" },
   ];
 
   const resultForChecklist = result ? { ...result, remediations: checklist } : null;
@@ -1381,11 +1986,9 @@ export default function PrivacyAuditor() {
                   background: "transparent", cursor: "pointer", whiteSpace: "nowrap",
                   borderBottom: tab === t.id ? "2px solid #6366f1" : "2px solid transparent",
                   color: tab === t.id ? "#6366f1" : "#94a3b8",
-                  opacity: t.phase === 2 && t.id !== "form" ? 0.6 : 1,
                 }}
               >
                 {t.label}
-                {t.phase === 2 && <span style={{ marginLeft: 4, fontSize: 9, fontWeight: 700, color: "#6366f1", background: "#eef2ff", padding: "1px 5px", borderRadius: 3 }}>P2</span>}
               </button>
             ))}
           </div>
@@ -1454,10 +2057,22 @@ export default function PrivacyAuditor() {
 
           {tab === "dpsim" && <DiffPrivacySimulator />}
 
-          {tab === "report" && <Phase2Stub title="Full DPIA Report" description="Structured report with necessity & proportionality analysis, data flows, risk assessment, and DPO sign-off section. Downloadable as JSON." />}
-          {tab === "nutrition" && <Phase2Stub title="Privacy Nutrition Label" description="One-page visual — 8 categories each scored green/amber/red. Screenshot-able and shareable." />}
-          {tab === "modelcard" && <Phase2Stub title="Model Card" description="Mitchell et al. 2019 template pre-filled from intake form. Maps to EU AI Act Art.13 transparency obligations." />}
-          {tab === "methodology" && <Phase2Stub title="Methodology Eval" description="Meta-DPIA: the tool audits its own scoring methodology. Shows scoring rubric, known gaps, and citations to source regulations." />}
+          {tab === "report" && (
+            result && intake
+              ? <DPIAReport result={result} intake={intake} />
+              : <div style={{ textAlign: "center", padding: "48px", color: "#64748b" }}>Complete the intake form first. <button onClick={() => setTab("form")} style={{ color: "#6366f1", cursor: "pointer", border: "none", background: "transparent", fontWeight: 700, fontSize: 13 }}>Go to form →</button></div>
+          )}
+          {tab === "nutrition" && (
+            intake
+              ? <PrivacyNutritionLabelFull intake={intake} />
+              : <div style={{ textAlign: "center", padding: "48px", color: "#64748b" }}>Complete the intake form first. <button onClick={() => setTab("form")} style={{ color: "#6366f1", cursor: "pointer", border: "none", background: "transparent", fontWeight: 700, fontSize: 13 }}>Go to form →</button></div>
+          )}
+          {tab === "modelcard" && (
+            result && intake
+              ? <ModelCard result={result} intake={intake} />
+              : <div style={{ textAlign: "center", padding: "48px", color: "#64748b" }}>Complete the intake form first. <button onClick={() => setTab("form")} style={{ color: "#6366f1", cursor: "pointer", border: "none", background: "transparent", fontWeight: 700, fontSize: 13 }}>Go to form →</button></div>
+          )}
+          {tab === "methodology" && <MethodologyEval />}
         </div>
       </div>
     </PageGate>
