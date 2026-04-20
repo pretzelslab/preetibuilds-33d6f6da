@@ -1905,9 +1905,6 @@ function SustainabilityFrameworkPreview() {
     <div className="relative">
       <DiagonalWatermark />
       <div className="max-w-[900px] mx-auto px-6 py-14">
-        <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors mb-6 inline-block print:hidden">
-          ← Back to Portfolio
-        </Link>
         <div className="flex flex-wrap gap-2 mb-4">
           {["Sustainable AI", "CSRD", "EU GPAI Art.53", "ISSB S2", "GRI 305"].map(t => (
             <span key={t} className="text-[10px] font-mono px-2.5 py-1 rounded-full border border-violet-500/30 bg-violet-500/5 text-violet-400">{t}</span>

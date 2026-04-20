@@ -595,15 +595,6 @@ function CarbonDepthPreview() {
 
   return (
     <div>
-      {/* Nav */}
-      <div className="bg-background/95 backdrop-blur border-b border-border/40">
-        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
-          <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-            ← Back to Portfolio
-          </Link>
-          <span className="text-xs font-mono text-violet-500">Preview</span>
-        </div>
-      </div>
 
       <div className="max-w-5xl mx-auto px-6 pt-5 pb-4 space-y-4">
         {/* Header */}

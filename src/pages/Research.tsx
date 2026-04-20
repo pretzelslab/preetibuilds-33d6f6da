@@ -164,15 +164,6 @@ const ComplianceAgentCard = () => (
 
 const ResearchPreview = () => (
   <div className="min-h-screen">
-    {/* Sticky nav — matches all other preview pages */}
-    <div className="sticky top-10 z-40 bg-background/95 backdrop-blur border-b border-border/40">
-      <div className="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between">
-        <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-          ← Back to Portfolio
-        </Link>
-        <span className="text-xs font-mono text-violet-600">Preview</span>
-      </div>
-    </div>
 
     <div className="max-w-4xl mx-auto px-6 py-12 space-y-8 pb-64">
       <div>

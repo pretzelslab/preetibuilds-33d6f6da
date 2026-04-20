@@ -51,9 +51,6 @@ const WorkbookPreview = () => (
     {/* Header — sticky below the PageGate banner (~40px) */}
     <div style={{ background: "#0f172a", color: "#fff", padding: "24px 32px", position: "sticky", top: 40, zIndex: 90 }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <Link to="/#projects" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 14, color: "#94a3b8", textDecoration: "none", marginBottom: 12, fontWeight: 400 }}>
-          ← Back to Portfolio
-        </Link>
         <div style={{ fontSize: 10, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.1em" }}>
           AI Governance · Client Engagement Tool
         </div>
