@@ -440,17 +440,9 @@ function PreviewRiskDashboard() {
   const r = SEED_RESULT;
   const c = LEVEL_COLORS[r.level];
   return (
-    <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif", padding: "32px 24px", maxWidth: 860, margin: "0 auto" }}>
-      <div style={{ marginBottom: 8 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-          Privacy Impact Auditor — Preview
-        </span>
-      </div>
-      <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4, color: "hsl(var(--foreground))" }}>
-        AI-Specific DPIA Tool
-      </h2>
-      <p style={{ fontSize: 13, color: "#64748b", marginBottom: 24 }}>
-        Sample: EU financial services hiring classifier — automated shortlist, no human review, 3 jurisdictions.
+    <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif" }}>
+      <p style={{ fontSize: 12, color: "#64748b", marginBottom: 20 }}>
+        Sample: EU financial services hiring classifier — automated shortlist, no human review, offices in EU + UK + NYC.
       </p>
 
       {/* Risk level badge */}
@@ -504,7 +496,7 @@ function PreviewRiskDashboard() {
   );
 }
 
-function PreviewPrivacyNutritionLabel() {
+function PreviewPrivacyNutritionLabel({ compact }: { compact?: boolean }) {
   const categories = [
     { label: "Data Collection", score: "red", icon: "🗂️" },
     { label: "Purpose Limitation", score: "amber", icon: "🎯" },
@@ -518,9 +510,9 @@ function PreviewPrivacyNutritionLabel() {
   const colors = { red: "#dc2626", amber: "#d97706", green: "#16a34a" };
   const bgs = { red: "#fef2f2", amber: "#fffbeb", green: "#f0fdf4" };
   return (
-    <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif", padding: "24px 24px 32px", maxWidth: 860, margin: "0 auto" }}>
+    <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif", marginTop: 28 }}>
       <div style={{ fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-        Privacy Nutrition Label
+        Privacy Nutrition Label — preview
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
         {categories.map(cat => (
@@ -538,7 +530,10 @@ function PreviewPrivacyNutritionLabel() {
 function PreviewDPChart() {
   const curve = buildDPCurve(0.82);
   return (
-    <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif", padding: "0 24px 32px", maxWidth: 860, margin: "0 auto" }}>
+    <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif" }}>
+      <p style={{ fontSize: 12, color: "#64748b", marginBottom: 16 }}>
+        Pre-loaded: credit scoring model (baseline accuracy 82%). Lower ε = stronger privacy guarantee but lower accuracy. Unlock to interact.
+      </p>
       <div style={{ fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.05em" }}>
         Differential Privacy Tradeoff — Credit Scoring Model (baseline 82%)
       </div>
@@ -561,14 +556,84 @@ function PreviewDPChart() {
   );
 }
 
-const previewContent = (
-  <div style={{ position: "relative" }}>
-    <DiagonalWatermark />
-    <PreviewRiskDashboard />
-    <PreviewPrivacyNutritionLabel />
-    <PreviewDPChart />
-  </div>
-);
+function PrivacyAuditorPreview() {
+  const [activeTab, setActiveTab] = useState<"dashboard" | "dpsim">("dashboard");
+
+  const PREVIEW_TABS = [
+    { id: "dashboard" as const, label: "Risk Dashboard" },
+    { id: "dpsim"     as const, label: "DP Simulator" },
+    { id: "report",             label: "DPIA Report",      locked: true },
+    { id: "checklist",          label: "Remediation",      locked: true },
+    { id: "nutrition",          label: "Nutrition Label",  locked: true },
+    { id: "modelcard",          label: "Model Card",       locked: true },
+    { id: "methodology",        label: "Methodology Eval", locked: true },
+  ];
+
+  return (
+    <div style={{ position: "relative", fontFamily: "'Inter','Segoe UI',sans-serif", minHeight: "100vh", background: "hsl(var(--background))" }}>
+      <DiagonalWatermark />
+
+      {/* Page header */}
+      <div style={{ borderBottom: "1px solid hsl(var(--border,#e2e8f0))", padding: "14px 24px" }}>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+          <div>
+            <h1 style={{ fontSize: 20, fontWeight: 900, margin: 0, color: "hsl(var(--foreground))" }}>Privacy Impact Auditor</h1>
+            <p style={{ fontSize: 11, color: "#64748b", margin: "3px 0 0" }}>
+              AI-specific DPIA · Dynamic combinatorial risk scoring · GDPR + EU AI Act + NYC LL144 + 10 more regulations
+            </p>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: LEVEL_COLORS.critical.badge }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: LEVEL_COLORS.critical.text, textTransform: "uppercase" }}>
+              Example · Critical — {SEED_RESULT.score}/100
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Tab bar */}
+      <div style={{ borderBottom: "1px solid hsl(var(--border,#e2e8f0))", padding: "0 24px", overflowX: "auto" }}>
+        <div style={{ display: "flex", gap: 0 }}>
+          {PREVIEW_TABS.map(t => (
+            <button
+              key={t.id}
+              onClick={() => !t.locked && setActiveTab(t.id as "dashboard" | "dpsim")}
+              style={{
+                padding: "9px 14px", fontSize: 11, fontWeight: 700, border: "none",
+                background: "transparent", cursor: t.locked ? "default" : "pointer", whiteSpace: "nowrap",
+                borderBottom: activeTab === t.id ? "2px solid #6366f1" : "2px solid transparent",
+                color: t.locked ? "#cbd5e1" : activeTab === t.id ? "#6366f1" : "#94a3b8",
+              }}
+            >
+              {t.label}
+              {t.locked && <span style={{ marginLeft: 4, fontSize: 9, color: "#cbd5e1" }}>🔒</span>}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Tab content */}
+      <div style={{ padding: "24px", maxWidth: 900, margin: "0 auto", paddingBottom: 80 }}>
+        {activeTab === "dashboard" && <PreviewRiskDashboard />}
+        {activeTab === "dpsim" && (
+          <>
+            <PreviewDPChart />
+            <PreviewPrivacyNutritionLabel />
+          </>
+        )}
+      </div>
+
+      {/* Gradient fade overlay */}
+      <div style={{
+        position: "absolute", bottom: 0, left: 0, right: 0, height: 140, pointerEvents: "none",
+        background: "linear-gradient(to bottom, transparent 0%, hsl(var(--background)) 100%)",
+        zIndex: 10,
+      }} />
+    </div>
+  );
+}
+
+const previewContent = <PrivacyAuditorPreview />;
 
 // ─── Intake Form ───────────────────────────────────────────────────────────────
 

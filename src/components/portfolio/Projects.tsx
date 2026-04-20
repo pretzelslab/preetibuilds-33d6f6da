@@ -5,6 +5,7 @@ type Project = {
   title: string;
   description: string;
   tags: string[];
+  industries?: string[];
   status?: "live" | "preview" | "building" | "upcoming";
   link?: string;
   externalLink?: string;
@@ -15,6 +16,7 @@ const RESPONSIBLE_AI: Project[] = [
     title: "Algorithmic Fairness Auditor",
     description: "Audits AI systems for hidden bias — from quantization-induced disparate impact to real-world criminal justice (COMPAS recidivism). Applies disparate impact ratio, Cohen's d, false positive/negative rate parity, and chi-square testing.",
     tags: ["Python", "NumPy", "SciPy", "Google Colab"],
+    industries: ["Financial Services", "Criminal Justice", "HR & Talent"],
     status: "preview",
     link: "/algorithmic-fairness",
   },
@@ -22,6 +24,7 @@ const RESPONSIBLE_AI: Project[] = [
     title: "AI Compliance Monitoring Agent",
     description: "LangGraph multi-node agent + Python data pipeline + GitHub Actions CI/CD. Computes fairness metrics (DIR, FPR, FNR) against EU AI Act and NIST thresholds, routes on severity, and auto-generates compliance reports and escalation memos — on a weekly schedule.",
     tags: ["LangGraph", "Python", "GitHub Actions", "Claude Haiku", "Pandas"],
+    industries: ["Financial Services", "Enterprise AI", "Regulated Sectors"],
     status: "preview",
     link: "/compliance-agent",
   },
@@ -29,6 +32,7 @@ const RESPONSIBLE_AI: Project[] = [
     title: "AI Ethics & Governance Tracker",
     description: "On-demand policy tracker — EU AI Act, NIST AI RMF, ISO 42001, FAIR, AAIA — with clause-level detail, four-pillar framework, and client risk workbook. Private.",
     tags: ["React", "TypeScript", "Supabase"],
+    industries: ["Enterprise", "Consulting", "All Sectors"],
     status: "preview",
     link: "/ai-governance",
   },
@@ -36,6 +40,7 @@ const RESPONSIBLE_AI: Project[] = [
     title: "AI Risk Assessment",
     description: "5-phase client engagement tool — Govern, Map, Measure, Report, Monitor — with risk register, compliance deadlines, audit fields, and backup/restore. Private.",
     tags: ["React", "TypeScript", "Supabase"],
+    industries: ["Enterprise", "Financial Services", "Consulting"],
     status: "preview",
     link: "/client-discovery",
   },
@@ -43,6 +48,7 @@ const RESPONSIBLE_AI: Project[] = [
     title: "AI Readiness Assessment",
     description: "25-question self-service diagnostic across Strategy, Data, Technology, People, and Governance — scored report with ROI signal and prioritised gaps.",
     tags: ["React", "TypeScript", "Recharts"],
+    industries: ["Enterprise", "SME", "Consulting"],
     status: "preview",
     link: "/ai-readiness",
   },
@@ -50,6 +56,7 @@ const RESPONSIBLE_AI: Project[] = [
     title: "Privacy Impact Auditor",
     description: "AI-specific DPIA tool with dynamic combinatorial risk scoring — risks multiply, not add. Maps 12-question profile to 13 regulations (GDPR, EU AI Act Annex III, NYC LL144, CCPA, Illinois BIPA, Colorado AI Act). Includes differential privacy cost curve and proxy discrimination detection.",
     tags: ["React", "TypeScript", "GDPR", "EU AI Act", "NYC LL144", "Recharts"],
+    industries: ["Financial Services", "Healthcare", "HR & Talent"],
     status: "preview",
     link: "/privacy-auditor",
   },
@@ -60,6 +67,7 @@ const SUSTAINABLE_AI: Project[] = [
     title: "AI Sustainability Disclosure Framework",
     description: "5-step practitioner framework for measuring, benchmarking, optimising, and disclosing the environmental footprint of AI systems. Maps to CSRD (2024), EU GPAI Art.53 (Aug 2025), and ISSB S2. Includes business case intake form with personalised obligation mapping and penalty exposure.",
     tags: ["Sustainable AI", "CSRD", "EU GPAI Art.53", "ISSB S2", "GRI 305", "TypeScript"],
+    industries: ["Financial Services", "Enterprise ESG", "Tech"],
     status: "preview",
     link: "/sustainability-framework",
   },
@@ -67,6 +75,7 @@ const SUSTAINABLE_AI: Project[] = [
     title: "AI Carbon Footprint Calculator",
     description: "Interactive calculator for AI training and inference energy, carbon, and water footprint. Compare two model configurations side by side with regulatory flags (EU GPAI, CSRD, GRI 305). Formulas validated against Strubell 2019, Patterson 2021, BLOOM 2022.",
     tags: ["Sustainable AI", "TypeScript", "Electricity Maps API", "CSRD", "EU GPAI"],
+    industries: ["Tech", "Enterprise ESG", "Data Centres"],
     status: "preview",
     link: "/carbon-depth",
   },
@@ -74,6 +83,7 @@ const SUSTAINABLE_AI: Project[] = [
     title: "Carbon-Fairness Efficiency Frontier",
     description: "The only tool that plots carbon cost against algorithmic fairness simultaneously. As you compress an AI model to save energy, minority groups are harmed more — this tool quantifies the tradeoff and recommends the optimal configuration under EU AI Act thresholds.",
     tags: ["Python", "Recharts", "Sustainable AI", "EU AI Act"],
+    industries: ["Financial Services", "Enterprise ESG", "Regulated AI"],
     status: "preview",
     link: "/carbon-fairness",
   },
@@ -81,6 +91,7 @@ const SUSTAINABLE_AI: Project[] = [
     title: "AI Sustainability Standards Tracker",
     description: "Live reference across 11 disclosure frameworks — CSRD/ESRS E1, EU AI Act GPAI, ISSB S2, GRI 305, TCFD, SEC Climate Rule, and more. Each framework: AI-specific obligations, enforcement status, penalty exposure, and jurisdiction scope. Includes tool directory and industry adoption map.",
     tags: ["Sustainable AI", "CSRD", "ISSB S2", "EU AI Act", "GRI 305", "TypeScript"],
+    industries: ["Enterprise ESG", "Financial Services", "Consulting"],
     status: "preview",
     link: "/sustainability-standards",
   },
@@ -159,6 +170,11 @@ const ProjectRow = ({ project, index }: { project: Project; index: number }) => 
                 {tag}
               </span>
             ))}
+            {project.industries?.map((ind) => (
+              <span key={ind} className="text-[10px] font-mono text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
+                {ind}
+              </span>
+            ))}
           </div>
         </div>
         {(project.link || project.externalLink) && (
@@ -179,29 +195,35 @@ const ProjectRow = ({ project, index }: { project: Project; index: number }) => 
   return inner;
 };
 
-const SectionHeader = ({ label }: { label: string }) => (
-  <div className="mb-1 pt-2">
+const SectionHeader = ({ label, subtitle }: { label: string; subtitle?: string }) => (
+  <div className="mb-2 pt-2">
     <span className="inline-block font-mono text-[10px] tracking-widest uppercase px-2.5 py-1 rounded bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/40 font-semibold">
       {label}
     </span>
+    {subtitle && (
+      <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed max-w-2xl">{subtitle}</p>
+    )}
   </div>
 );
 
 const Projects = () => (
   <section id="projects" className="py-6 px-6">
-    <div className="max-w-3xl mx-auto">
-      <SectionHeader label="Responsible AI" />
-      <div className="mb-8">
+    <div className="max-w-5xl mx-auto">
+      <SectionHeader
+        label="Responsible AI"
+        subtitle="Bias auditing, compliance monitoring, privacy impact assessment, and governance tooling — built for regulated industries applying EU AI Act, GDPR, and NIST AI RMF."
+      />
+      <div className="mb-10">
         {RESPONSIBLE_AI.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
 
-      <SectionHeader label="Sustainable AI" />
-      <div className="mb-8">
+      <SectionHeader label="Sustainable AI" subtitle="Carbon footprint measurement, disclosure frameworks, and the carbon-fairness tradeoff — mapped to CSRD, EU GPAI Art.53, and ISSB S2." />
+      <div className="mb-10">
         {SUSTAINABLE_AI.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
 
       <SectionHeader label="GTM & Product Ops" />
-      <div className="mb-8">
+      <div className="mb-10">
         {USE_CASES.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
 

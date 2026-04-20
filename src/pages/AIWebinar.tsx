@@ -2090,10 +2090,70 @@ Preeti · Responsible & Sustainable AI Practitioner`;
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
+const AGENDA_SECTIONS = [
+  { heading: "Setting the Scene",       items: ["Why AI carbon is now a board-level issue", "Regulatory timeline: CSRD, EU AI Act, ISSB S2"] },
+  { heading: "Measurement Methodology", items: ["Scope 1/2/3 for AI workloads", "Training vs inference carbon — worked example"] },
+  { heading: "Regulatory Obligations",  items: ["EU AI Act Art.53 (GPAI) requirements", "CSRD double materiality — what to disclose"] },
+  { heading: "5 Actionable Reductions", items: ["Model distillation · Green cloud regions", "Quantization · Batch scheduling · Hardware efficiency"] },
+  { heading: "ROI & Implementation",    items: ["3-year carbon + cost projection model", "90-day implementation Gantt with ownership"] },
+];
+
 const preview = (
-  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 12, opacity: 0.5 }}>
-    <span style={{ fontSize: 32 }}>📊</span>
-    <span style={{ fontSize: 13, fontFamily: "monospace", color: "hsl(var(--muted-foreground))" }}>AI Sustainability Webinar · Restricted</span>
+  <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif", background: "hsl(var(--background))", minHeight: "100vh" }}>
+    {/* Header */}
+    <div style={{ borderBottom: "1px solid hsl(var(--border,#e2e8f0))", padding: "14px 28px", display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+      <div>
+        <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#7c3aed", background: "#f5f3ff", padding: "2px 8px", borderRadius: 4 }}>Sustainable AI</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#059669", background: "#ecfdf5", padding: "2px 8px", borderRadius: 4 }}>17 slides · PPTX export</span>
+        </div>
+        <h1 style={{ fontSize: 20, fontWeight: 900, margin: 0, color: "hsl(var(--foreground))" }}>AI Sustainability Webinar</h1>
+        <p style={{ fontSize: 11, color: "#64748b", margin: "3px 0 0" }}>
+          45-min EU practitioners session — CSRD · EU AI Act Art.53 · ISSB S2 · GRI 305 · ROI calculator · Gantt timeline
+        </p>
+      </div>
+      <div style={{ display: "flex", gap: 6 }}>
+        {["CSRD 2024", "EU AI Act", "ISSB S2", "GRI 305"].map(t => (
+          <span key={t} style={{ fontSize: 10, color: "#64748b", background: "hsl(var(--muted,#f1f5f9))", padding: "3px 8px", borderRadius: 4 }}>{t}</span>
+        ))}
+      </div>
+    </div>
+
+    <div style={{ padding: "24px 28px", maxWidth: 860, margin: "0 auto" }}>
+      {/* Agenda */}
+      <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 16 }}>Session Agenda</div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 28 }}>
+        {AGENDA_SECTIONS.map((sec, i) => (
+          <div key={sec.heading} style={{ background: "hsl(var(--card,#f8fafc))", border: "1px solid hsl(var(--border,#e2e8f0))", borderRadius: 8, padding: "12px 14px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <span style={{ fontSize: 10, fontWeight: 800, color: "#7c3aed", background: "#f5f3ff", padding: "1px 6px", borderRadius: 3, minWidth: 18, textAlign: "center" }}>{i + 1}</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "hsl(var(--foreground))" }}>{sec.heading}</span>
+            </div>
+            {sec.items.map(item => (
+              <div key={item} style={{ fontSize: 11, color: "#64748b", paddingLeft: 26, marginBottom: 2 }}>· {item}</div>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      {/* What's included */}
+      <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>What's Included (full access)</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        {[
+          { icon: "📊", label: "17-slide deck (HTML slideshow)" },
+          { icon: "📥", label: "PPTX export (22 slides)" },
+          { icon: "💰", label: "3-year ROI calculator" },
+          { icon: "📅", label: "90-day Gantt timeline" },
+          { icon: "📈", label: "Conformance trajectory chart" },
+          { icon: "✉️", label: "Sample executive briefing email" },
+        ].map(f => (
+          <div key={f.label} style={{ display: "flex", alignItems: "center", gap: 6, background: "hsl(var(--card,#f8fafc))", border: "1px solid hsl(var(--border,#e2e8f0))", borderRadius: 6, padding: "6px 12px", fontSize: 12 }}>
+            <span>{f.icon}</span>
+            <span style={{ color: "#374151", fontWeight: 500 }}>{f.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
   </div>
 );
 

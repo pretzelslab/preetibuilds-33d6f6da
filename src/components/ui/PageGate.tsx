@@ -140,7 +140,14 @@ export function PageGate({
         justifyContent: "space-between", flexWrap: "wrap", gap: 10,
         fontFamily: "'Inter','Segoe UI',sans-serif",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <Link to="/#projects" style={{ fontSize: 11, color: "#64748b", textDecoration: "none", fontWeight: 600, letterSpacing: "0.03em" }}
+            onMouseEnter={e => (e.currentTarget.style.color = "#94a3b8")}
+            onMouseLeave={e => (e.currentTarget.style.color = "#64748b")}
+          >
+            ← Back to Portfolio
+          </Link>
+          <span style={{ color: "#1e293b" }}>|</span>
           <span style={{ fontSize: 14 }}>🔒</span>
           <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 400 }}>
             Preview · Enter code for full access
