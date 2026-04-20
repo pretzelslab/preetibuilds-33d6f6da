@@ -8,7 +8,7 @@ const CREDENTIALS = [
 
 const Hero = () => (
   <section className="flex items-start justify-center px-6 pt-20 pb-6">
-    <div className="max-w-3xl w-full">
+    <div className="max-w-5xl w-full">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

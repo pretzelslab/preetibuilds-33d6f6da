@@ -166,12 +166,12 @@ const ProjectRow = ({ project, index }: { project: Project; index: number }) => 
           </p>
           <div className="flex flex-wrap gap-1.5">
             {project.tags.map((tag) => (
-              <span key={tag} className="text-[10px] font-mono text-muted-foreground/60 bg-muted/40 px-2 py-0.5 rounded">
+              <span key={tag} className="text-[10px] font-mono text-slate-500 dark:text-slate-300 bg-slate-500/10 border border-slate-400/20 px-2 py-0.5 rounded">
                 {tag}
               </span>
             ))}
             {project.industries?.map((ind) => (
-              <span key={ind} className="text-[10px] font-mono text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
+              <span key={ind} className="text-[10px] font-mono text-amber-600/80 dark:text-amber-400/75 bg-amber-500/8 border border-amber-500/20 px-2 py-0.5 rounded">
                 {ind}
               </span>
             ))}
