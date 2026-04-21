@@ -453,15 +453,21 @@ export default function Admin() {
     return acc;
   }, {});
 
+  // Convert a UTC ISO string to a local YYYY-MM-DD key (fixes off-by-one for IST and other UTC+ zones)
+  const localDateKey = (iso: string) => {
+    const d = new Date(iso);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+
   // 14-day visits chart data
   const chartData = Array.from({ length: 14 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (13 - i));
-    const dateStr = d.toISOString().slice(0, 10);
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     const label = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
     return {
       date: label,
-      visits: visits.filter(v => v.visited_at.slice(0, 10) === dateStr).length,
+      visits: visits.filter(v => localDateKey(v.visited_at) === dateStr).length,
     };
   });
 
