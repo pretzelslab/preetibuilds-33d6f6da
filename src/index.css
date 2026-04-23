@@ -132,6 +132,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     background-clip: text;
   }
 
+  .dark .text-name-soft {
+    background: none;
+    -webkit-background-clip: unset;
+    -webkit-text-fill-color: hsl(210 15% 88%);
+    background-clip: unset;
+  }
+
   .bg-gradient-primary {
     background: var(--gradient-primary);
   }

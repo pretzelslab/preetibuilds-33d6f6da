@@ -18,7 +18,7 @@ const Hero = () => (
           Responsible AI · Product · GTM
         </p>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-4">
-          <span className="text-gradient">Preethi Raghuveeran</span>
+          <span className="text-gradient text-name-soft">Preethi Raghuveeran</span>
         </h1>
         <p className="text-base text-muted-foreground mb-5 leading-relaxed">
           Building end-to-end Responsible AI tools and governance frameworks — from audit to regulatory verdict to remediation.
