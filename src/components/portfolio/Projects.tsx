@@ -21,12 +21,28 @@ const RESPONSIBLE_AI: Project[] = [
     link: "/algorithmic-fairness",
   },
   {
+    title: "Privacy Impact Auditor",
+    description: "AI-specific DPIA tool with dynamic combinatorial risk scoring — risks multiply, not add. Maps 12-question profile to 13 regulations (GDPR, EU AI Act Annex III, NYC LL144, CCPA, Illinois BIPA, Colorado AI Act). Includes differential privacy cost curve and proxy discrimination detection.",
+    tags: ["React", "TypeScript", "GDPR", "EU AI Act", "NYC LL144", "Recharts"],
+    industries: ["Financial Services", "Healthcare", "HR & Talent"],
+    status: "preview",
+    link: "/privacy-auditor",
+  },
+  {
     title: "AI Compliance Monitoring Agent",
     description: "LangGraph multi-node agent + Python data pipeline + GitHub Actions CI/CD. Computes fairness metrics (DIR, FPR, FNR) against EU AI Act and NIST thresholds, routes on severity, and auto-generates compliance reports and escalation memos — on a weekly schedule.",
     tags: ["LangGraph", "Python", "GitHub Actions", "Claude Haiku", "Pandas"],
     industries: ["Financial Services", "Enterprise AI", "Regulated Sectors"],
     status: "preview",
     link: "/compliance-agent",
+  },
+  {
+    title: "AI Readiness Assessment",
+    description: "25-question self-service diagnostic across Strategy, Data, Technology, People, and Governance — scored report with ROI signal and prioritised gaps.",
+    tags: ["React", "TypeScript", "Recharts"],
+    industries: ["Enterprise", "SME", "Consulting"],
+    status: "preview",
+    link: "/ai-readiness",
   },
   {
     title: "AI Ethics & Governance Tracker",
@@ -43,22 +59,6 @@ const RESPONSIBLE_AI: Project[] = [
     industries: ["Enterprise", "Financial Services", "Consulting"],
     status: "preview",
     link: "/client-discovery",
-  },
-  {
-    title: "AI Readiness Assessment",
-    description: "25-question self-service diagnostic across Strategy, Data, Technology, People, and Governance — scored report with ROI signal and prioritised gaps.",
-    tags: ["React", "TypeScript", "Recharts"],
-    industries: ["Enterprise", "SME", "Consulting"],
-    status: "preview",
-    link: "/ai-readiness",
-  },
-  {
-    title: "Privacy Impact Auditor",
-    description: "AI-specific DPIA tool with dynamic combinatorial risk scoring — risks multiply, not add. Maps 12-question profile to 13 regulations (GDPR, EU AI Act Annex III, NYC LL144, CCPA, Illinois BIPA, Colorado AI Act). Includes differential privacy cost curve and proxy discrimination detection.",
-    tags: ["React", "TypeScript", "GDPR", "EU AI Act", "NYC LL144", "Recharts"],
-    industries: ["Financial Services", "Healthcare", "HR & Talent"],
-    status: "preview",
-    link: "/privacy-auditor",
   },
 ];
 
@@ -111,6 +111,17 @@ const USE_CASES: Project[] = [
     tags: ["Python", "Pandas", "Streamlit", "HubSpot"],
     status: "live",
     link: "/gtm-techstack",
+  },
+];
+
+const SAFETY_ENGINEERING: Project[] = [
+  {
+    title: "LLM Safety Eval Framework",
+    description: "Production-grade safety evaluation pipeline for LLMs in regulated financial services. 40 adversarial test cases across 5 risk categories — prompt injection, regulatory hallucination, suitability failures, data leakage, RAG poisoning. Claude-as-judge scoring with Streamlit compliance matrix, run comparison, and multi-model support. Built for pre-deployment assurance against FCA Consumer Duty, MiFID II, GDPR, and MITRE ATLAS.",
+    tags: ["Python", "Claude API", "Streamlit", "YAML", "FCA", "MiFID II", "GDPR", "MITRE ATLAS"],
+    industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
+    status: "live",
+    externalLink: "https://github.com/pretzelslab/se1-safety-eval",
   },
 ];
 
@@ -210,8 +221,16 @@ const Projects = () => (
   <section id="projects" className="py-6 px-6">
     <div className="max-w-5xl mx-auto">
       <SectionHeader
+        label="Safety Engineering"
+        subtitle="LLM red-teaming, adversarial evaluation, and pre-deployment safety assurance — 40-case test suite across prompt injection, regulatory hallucination, suitability failures, data leakage, and RAG poisoning."
+      />
+      <div className="mb-10">
+        {SAFETY_ENGINEERING.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+      </div>
+
+      <SectionHeader
         label="Responsible AI"
-        subtitle="Bias auditing, compliance monitoring, privacy impact assessment, and governance tooling — built for regulated industries applying EU AI Act, GDPR, and NIST AI RMF."
+        subtitle="Statistical fairness audits, privacy impact assessment, agentic compliance pipelines, and governance tooling — built for EU AI Act, GDPR, MiFID II, and NIST AI RMF enforcement."
       />
       <div className="mb-10">
         {RESPONSIBLE_AI.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
