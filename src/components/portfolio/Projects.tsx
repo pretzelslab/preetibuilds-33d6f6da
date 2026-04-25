@@ -118,10 +118,10 @@ const SAFETY_ENGINEERING: Project[] = [
   {
     title: "LLM Safety Eval Framework",
     description: "Production-grade safety evaluation pipeline for LLMs in regulated financial services. 40 adversarial test cases across 5 risk categories — prompt injection, regulatory hallucination, suitability failures, data leakage, RAG poisoning. Claude-as-judge scoring with Streamlit compliance matrix, run comparison, and multi-model support. Built for pre-deployment assurance against FCA Consumer Duty, MiFID II, GDPR, and MITRE ATLAS.",
-    tags: ["Python", "Claude API", "Streamlit", "YAML", "FCA", "MiFID II", "GDPR", "MITRE ATLAS"],
+    tags: ["Python", "Claude API", "Streamlit", "YAML", "GitHub Actions", "Cursor", "FCA", "MiFID II", "GDPR", "MITRE ATLAS"],
     industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
-    status: "live",
-    externalLink: "https://github.com/pretzelslab/se1-safety-eval",
+    status: "preview",
+    link: "/safety-eval",
   },
 ];
 

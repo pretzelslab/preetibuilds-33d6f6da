@@ -19,6 +19,7 @@ const PAGE_CODES: Record<string, string> = {
   "sustainability-framework":  "SFW2026",
   "ai-sustainability-webinar": "WBN2026",
   "privacy-auditor":           "PRI2026",
+  "safety-eval":               "SE1",
 };
 
 function pageKey(key: string): string { return `pl_access_${key}`; }
@@ -200,25 +201,11 @@ export function PageGate({
             color: "hsl(var(--foreground))",
             height: "calc(100vh - 41px)",
             overflow: "hidden",
-            position: "relative",
+            WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 60%, transparent 90%)",
+            maskImage:        "linear-gradient(to bottom, black 0%, black 60%, transparent 90%)",
           }}
         >
-          {/* Top zone — sharp */}
-          <div style={{
-            position: "absolute", inset: 0,
-            WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 55%, transparent 74%)",
-            maskImage:        "linear-gradient(to bottom, black 0%, black 55%, transparent 74%)",
-          }}>
-            {previewContent}
-          </div>
-          {/* Bottom peek — faded in from below */}
-          <div style={{
-            position: "absolute", inset: 0,
-            WebkitMaskImage: "linear-gradient(to top, black 0%, black 38%, transparent 62%)",
-            maskImage:        "linear-gradient(to top, black 0%, black 38%, transparent 62%)",
-          }}>
-            {previewContent}
-          </div>
+          {previewContent}
         </div>
       ) : (
         <div

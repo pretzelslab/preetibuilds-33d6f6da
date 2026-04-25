@@ -694,6 +694,7 @@ export default function Admin() {
                   { page: "Sustainability Fwk", code: "SFW2026" },
                   { page: "AI Webinar",         code: "WBN2026" },
                   { page: "Privacy Auditor",    code: "PRI2026" },
+                  { page: "LLM Safety Eval",    code: "SE1" },
                   { page: "Melodic",            code: "MEL2026" },
                   { page: "Admin",              code: "ADM2026" },
                 ].map(({ page, code, master }) => (
