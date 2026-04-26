@@ -20,6 +20,7 @@ const PAGE_CODES: Record<string, string> = {
   "ai-sustainability-webinar": "WBN2026",
   "privacy-auditor":           "PRI2026",
   "safety-eval":               "SE1",
+  "carbon-time-travel":        "CTT2026",
 };
 
 function pageKey(key: string): string { return `pl_access_${key}`; }

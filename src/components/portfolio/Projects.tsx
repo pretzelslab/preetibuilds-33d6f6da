@@ -80,6 +80,14 @@ const SUSTAINABLE_AI: Project[] = [
     link: "/carbon-depth",
   },
   {
+    title: "Carbon Time Travel",
+    description: "Training an AI model emits carbon once. Deploying it emits carbon every day. This animated tool shows the exact crossover point where cumulative inference carbon overtakes total training carbon — and how model size compounds that gap. BLOOM 176B at 1B tokens/day crosses on Day 108. Llama 2 70B emits 9× more per inference call than 7B, compounding daily.",
+    tags: ["Sustainable AI", "CSRD Scope 2", "EU GPAI Art.53", "Recharts", "React", "TypeScript"],
+    industries: ["Tech", "Enterprise ESG", "Data Centres"],
+    status: "preview",
+    link: "/carbon-time-travel",
+  },
+  {
     title: "Carbon-Fairness Efficiency Frontier",
     description: "The only tool that plots carbon cost against algorithmic fairness simultaneously. As you compress an AI model to save energy, minority groups are harmed more — this tool quantifies the tradeoff and recommends the optimal configuration under EU AI Act thresholds.",
     tags: ["Python", "Recharts", "Sustainable AI", "EU AI Act"],
@@ -219,7 +227,7 @@ const SectionHeader = ({ label, subtitle }: { label: string; subtitle?: string }
 
 const Projects = () => (
   <section id="projects" className="py-6 px-6">
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-7xl mx-auto">
       <SectionHeader
         label="Safety Engineering"
         subtitle="LLM red-teaming, adversarial evaluation, and pre-deployment safety assurance — 40-case test suite across prompt injection, regulatory hallucination, suitability failures, data leakage, and RAG poisoning."

@@ -25,6 +25,7 @@ import Admin from "./pages/Admin";
 import AIWebinar from "./pages/AIWebinar";
 import PrivacyAuditor from "./pages/PrivacyAuditor";
 import LLMSafetyEval from "./pages/LLMSafetyEval";
+import CarbonTimeTravel from "./pages/CarbonTimeTravel";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/ai-sustainability-webinar": "AI Sustainability Webinar | Preeti Builds",
   "/privacy-auditor":           "Privacy Impact Auditor | Preeti Builds",
   "/safety-eval":               "LLM Safety Eval Framework | Preeti Builds",
+  "/carbon-time-travel":        "Carbon Time Travel | Preeti Builds",
 };
 
 const RouteTitle = () => {
@@ -88,6 +90,7 @@ const App = () => (
             <Route path="/ai-sustainability-webinar" element={<AIWebinar />} />
             <Route path="/privacy-auditor" element={<PrivacyAuditor />} />
             <Route path="/safety-eval" element={<LLMSafetyEval />} />
+            <Route path="/carbon-time-travel" element={<CarbonTimeTravel />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

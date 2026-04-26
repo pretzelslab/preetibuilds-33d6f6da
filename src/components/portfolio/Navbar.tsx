@@ -3,7 +3,7 @@ import ThemeToggle from "./ThemeToggle";
 
 const Navbar = () => (
   <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-lg border-b">
-    <div className="max-w-5xl mx-auto flex items-center justify-between px-6 h-14">
+    <div className="max-w-7xl mx-auto flex items-center justify-between px-6 h-14">
       <a href="/" className="font-mono text-sm font-semibold tracking-tight text-foreground hover:text-primary transition-colors">
         preethi<span className="text-primary">.</span>builds
       </a>

@@ -3,7 +3,7 @@ import Comments from "./Comments";
 
 const Contact = () => (
   <section id="contact" className="py-16 px-6 border-t border-border/40">
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-7xl mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         {/* Left — contact info */}
         <motion.div
@@ -19,7 +19,7 @@ const Contact = () => (
           </p>
           <a
             href="mailto:chinmayipriti@gmail.com"
-            className="text-sm font-medium text-primary hover:opacity-75 transition-opacity"
+            className="inline-flex items-center gap-1.5 text-xs font-mono px-4 py-1.5 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
           >
             chinmayipriti@gmail.com →
           </a>
