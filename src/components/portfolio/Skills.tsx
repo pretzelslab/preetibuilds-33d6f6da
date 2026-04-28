@@ -11,7 +11,7 @@ const SKILL_GROUPS = [
   },
   {
     label: "AI & Dev",
-    items: ["Python & SQL", "Claude Code", "Lovable", "Supabase", "React / TypeScript"],
+    items: ["Python & SQL", "PyTorch", "scikit-learn", "pandas", "matplotlib", "Google Colab", "Claude Code", "Lovable", "Supabase", "React / TypeScript"],
   },
   {
     label: "Certifications",

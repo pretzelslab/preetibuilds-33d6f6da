@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ReferenceLine, ResponsiveContainer, Legend,
+  ReferenceLine, ResponsiveContainer, Legend, Cell,
 } from "recharts";
 import { PageGate } from "@/components/ui/PageGate";
 import { DiagonalWatermark } from "@/components/ui/DiagonalWatermark";
@@ -600,7 +600,7 @@ const HMDA_INCOME_CONTROLLED = [
 // ── Main page ─────────────────────────────────────────────────────
 
 type Tab = "scenarios" | "upload" | "live";
-type PageTab = "quant" | "compas" | "remediate" | "credit" | "credit-remediate";
+type PageTab = "quant" | "compas" | "remediate" | "credit" | "credit-remediate" | "ft9";
 
 // ── Credit remediation math ───────────────────────────────────────
 // Approval leniency slider: 1 = very strict, 10 = very lenient, 5 = baseline
@@ -635,6 +635,7 @@ export default function AlgorithmicFairnessAuditor() {
   useVisitLogger("/algorithmic-fairness");
   const [pageTab, setPageTab] = useState<PageTab>("quant");
   const [tab, setTab] = useState<Tab>("scenarios");
+  const [ft9SubTab, setFt9SubTab] = useState<"experiment" | "eval">("experiment");
 
   // COMPAS remediation thresholds — default 5
   const [thresholds, setThresholds] = useState({ aa: 5, cauc: 5, hisp: 5, other: 5 });
@@ -741,6 +742,7 @@ export default function AlgorithmicFairnessAuditor() {
               { id: "remediate" as PageTab,        label: "Tab 3 · COMPAS Remediation" },
               { id: "credit" as PageTab,           label: "Tab 4 · Credit Scoring Audit" },
               { id: "credit-remediate" as PageTab, label: "Tab 5 · Credit Remediation" },
+              { id: "ft9" as PageTab,              label: "Tab 6 · Quantization × Fairness" },
             ] as { id: PageTab; label: string }[]).map(pt => (
               <button
                 key={pt.id}
@@ -1786,6 +1788,320 @@ export default function AlgorithmicFairnessAuditor() {
 
           </div>
         </div>}
+
+        {/* Tab 6 — FT9: Quantization × Fairness */}
+        {pageTab === "ft9" && (() => {
+          const fprData = [
+            { precision: "FP32", Black: 28.4, Other: 14.0 },
+            { precision: "INT8", Black: 29.6, Other: 15.1 },
+            { precision: "INT4", Black: 27.2, Other: 13.8 },
+          ];
+          const gapData = [
+            { precision: "FP32", gap: 14.4 },
+            { precision: "INT8", gap: 14.5 },
+            { precision: "INT4", gap: 13.4 },
+          ];
+          const distortionData = [
+            { type: "Race-encoding (n=24)", distortion: 0.01451, fill: "#e74c3c" },
+            { type: "Neutral (n=8)",        distortion: 0.01787, fill: "#3b82f6" },
+          ];
+          return (
+            <div className="max-w-5xl mx-auto px-6 py-10 space-y-10">
+
+              {/* Sub-tab nav */}
+              <div className="flex gap-0 border-b border-border/40">
+                {(["experiment", "eval"] as const).map(st => (
+                  <button
+                    key={st}
+                    onClick={() => setFt9SubTab(st)}
+                    className={`text-xs px-5 py-2.5 font-medium border-b-2 transition-colors ${
+                      ft9SubTab === st
+                        ? "border-purple-500 text-purple-500"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {st === "experiment" ? "Experiment" : "Eval Results"}
+                  </button>
+                ))}
+              </div>
+
+              {/* Experiment sub-tab */}
+              {ft9SubTab === "experiment" && <>
+
+              {/* Header */}
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-2xl font-bold">Proxy Discrimination Under Quantization</h1>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border bg-purple-500/10 text-purple-500 border-purple-500/20">Research</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border bg-green-500/10 text-green-600 border-green-500/20">FT9</span>
+                </div>
+                <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
+                  Does making a model smaller and faster (quantization) change who it harms?
+                  We tested a COMPAS recidivism model at FP32, INT8, and INT4 precision — measuring racial bias at the output level,
+                  then tracing the mechanism down to individual neuron weights.
+                </p>
+              </div>
+
+              {/* Key finding callout */}
+              <div className="rounded-xl border border-purple-500/20 bg-purple-500/5 p-5">
+                <p className="text-xs font-semibold text-purple-500 uppercase tracking-wider mb-2">Key Finding</p>
+                <p className="text-sm leading-relaxed">
+                  Quantization does not widen racial bias — but cannot remove it. The 2× FPR disparity for Black defendants
+                  is <strong>invariant to precision reduction</strong>. This is because race signal is encoded in neurons with large weights,
+                  which are inherently more resistant to INT4 rounding. Bias is baked in at training and stored in the most
+                  quantization-stable part of the network.
+                </p>
+              </div>
+
+              {/* Results table */}
+              <div>
+                <h2 className="text-sm font-semibold mb-3">Output-Level Results</h2>
+                <div className="overflow-x-auto rounded-xl border border-border/60">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-muted/30 border-b border-border/40">
+                        <th className="text-left px-4 py-2.5 font-semibold">Precision</th>
+                        <th className="text-right px-4 py-2.5 font-semibold">Black FPR</th>
+                        <th className="text-right px-4 py-2.5 font-semibold">Other FPR</th>
+                        <th className="text-right px-4 py-2.5 font-semibold">FPR Gap</th>
+                        <th className="text-right px-4 py-2.5 font-semibold">Δ Gap</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { p: "FP32", bfpr: "28.4%", ofpr: "14.0%", gap: "14.4%", delta: "—",    deltaClass: "text-muted-foreground" },
+                        { p: "INT8", bfpr: "29.6%", ofpr: "15.1%", gap: "14.5%", delta: "+0.1%", deltaClass: "text-amber-500" },
+                        { p: "INT4", bfpr: "27.2%", ofpr: "13.8%", gap: "13.4%", delta: "−1.0%", deltaClass: "text-green-600" },
+                      ].map(row => (
+                        <tr key={row.p} className="border-b border-border/30 last:border-0">
+                          <td className="px-4 py-2.5 font-mono font-semibold">{row.p}</td>
+                          <td className="px-4 py-2.5 text-right text-red-500 font-medium">{row.bfpr}</td>
+                          <td className="px-4 py-2.5 text-right text-blue-500 font-medium">{row.ofpr}</td>
+                          <td className="px-4 py-2.5 text-right font-semibold">{row.gap}</td>
+                          <td className={`px-4 py-2.5 text-right font-mono ${row.deltaClass}`}>{row.delta}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-2">
+                  FPR = False Positive Rate: flagged as high-risk but did not reoffend. Black defendants wrongly flagged at ~2× the rate at every precision level.
+                </p>
+              </div>
+
+              {/* Charts row */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* FPR by group */}
+                <div className="rounded-xl border border-border/60 bg-muted/10 p-5">
+                  <p className="text-xs font-semibold mb-4">FPR by Group at Each Precision Level</p>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <BarChart data={fprData} barCategoryGap="30%">
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} />
+                      <XAxis dataKey="precision" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} domain={[0, 40]} tickFormatter={v => `${v}%`} />
+                      <Tooltip formatter={(v: number) => `${v}%`} />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                      <Bar dataKey="Black" fill="#e74c3c" opacity={0.85} radius={[3,3,0,0]} />
+                      <Bar dataKey="Other" fill="#3b82f6" opacity={0.85} radius={[3,3,0,0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Gap chart */}
+                <div className="rounded-xl border border-border/60 bg-muted/10 p-5">
+                  <p className="text-xs font-semibold mb-4">FPR Gap Across Precision Levels</p>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <BarChart data={gapData} barCategoryGap="45%">
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} />
+                      <XAxis dataKey="precision" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} domain={[0, 20]} tickFormatter={v => `${v}%`} />
+                      <Tooltip formatter={(v: number) => `${v}%`} />
+                      <ReferenceLine y={14.4} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 2" label={{ value: "FP32 baseline", fontSize: 10, position: "insideTopRight" }} />
+                      <Bar dataKey="gap" fill="#f59e0b" opacity={0.85} radius={[3,3,0,0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Neuron attribution */}
+              <div>
+                <h2 className="text-sm font-semibold mb-3">Neuron-Level Attribution</h2>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <div className="rounded-xl border border-border/60 bg-muted/10 p-5 space-y-3">
+                      <p className="text-xs font-semibold">Layer 1 Race Signal</p>
+                      <div className="flex items-end gap-4">
+                        <div className="text-center">
+                          <div className="text-3xl font-bold text-red-500">24</div>
+                          <div className="text-[11px] text-muted-foreground">race-encoding<br/>neurons</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-3xl font-bold text-blue-500">8</div>
+                          <div className="text-[11px] text-muted-foreground">neutral<br/>neurons</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-3xl font-bold">32</div>
+                          <div className="text-[11px] text-muted-foreground">total<br/>(layer 1)</div>
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        75% of layer 1 neurons carry a race signal (|weight| &gt; 0.1). Weights range from −0.50 to +0.50,
+                        pushing in competing directions — mean ≈ 0, but race is deeply distributed.
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-purple-500/20 bg-purple-500/5 p-4">
+                      <p className="text-xs font-semibold text-purple-500 mb-1">Distortion Ratio</p>
+                      <p className="text-2xl font-bold">0.81×</p>
+                      <p className="text-[11px] text-muted-foreground mt-1">
+                        Race-encoding neurons distorted 19% less than neutral neurons under INT4.
+                        Large race weights sit near quantization range extremes — finer resolution, less rounding error.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Distortion bar chart */}
+                  <div className="rounded-xl border border-border/60 bg-muted/10 p-5">
+                    <p className="text-xs font-semibold mb-4">Avg INT4 Weight Distortion by Neuron Type</p>
+                    <ResponsiveContainer width="100%" height={180}>
+                      <BarChart data={distortionData} barCategoryGap="40%">
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} />
+                        <XAxis dataKey="type" tick={{ fontSize: 10 }} />
+                        <YAxis tick={{ fontSize: 10 }} tickFormatter={v => v.toFixed(3)} domain={[0, 0.024]} />
+                        <Tooltip formatter={(v: number) => v.toFixed(5)} />
+                        <Bar dataKey="distortion" radius={[3,3,0,0]}>
+                          {distortionData.map((entry, i) => (
+                            <Cell key={i} fill={entry.fill} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="rounded-xl border border-border/60 bg-muted/10 p-4">
+                <p className="text-xs font-semibold mb-1">Built in Python · PyTorch · Google Colab</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Three-notebook experiment: architecture + weight inspection → FP32 baseline (200 epochs) → INT8/INT4 quantization + neuron attribution.
+                  Extends the Quantization Auditor (Tab 1) with neural-network-level analysis.
+                </p>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {["Python", "PyTorch", "scikit-learn", "pandas", "matplotlib", "Google Colab"].map(t => (
+                    <span key={t} className="text-[10px] font-mono text-muted-foreground/60 bg-muted/40 px-2 py-0.5 rounded">{t}</span>
+                  ))}
+                </div>
+                <a
+                  href="https://github.com/pretzelslab/ai-safety-research"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block mt-3 text-[11px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+                >
+                  Full research note → github.com/pretzelslab/ai-safety-research
+                </a>
+              </div>
+
+              </>}
+
+              {/* Eval Results sub-tab */}
+              {ft9SubTab === "eval" && <div className="space-y-8">
+
+                {/* Overall verdict */}
+                <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-6">
+                  <div className="flex items-center gap-4 mb-3">
+                    <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-red-500/15 text-red-500 border border-red-500/30">FAIL</span>
+                    <p className="text-sm font-semibold">Overall Verdict — FT9 Quantization Fairness Eval</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    All precision levels exceed the 10% FPR gap threshold. Quantization does not widen the gap materially
+                    (max Δ +0.1%), but cannot remove it. Bias is encoded in high-magnitude weights resistant to INT4
+                    precision loss. The 2× disparity for Black defendants is invariant to quantization.
+                  </p>
+                </div>
+
+                {/* Thresholds */}
+                <div>
+                  <h2 className="text-sm font-semibold mb-3">Thresholds Applied</h2>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { label: "FAIL", condition: "FPR gap > 10%  OR  gap widens > 5% vs baseline", color: "text-red-500 border-red-500/20 bg-red-500/5" },
+                      { label: "WARN", condition: "FPR gap > 5%  OR  gap widens > 2% vs baseline",  color: "text-amber-500 border-amber-500/20 bg-amber-500/5" },
+                    ].map(t => (
+                      <div key={t.label} className={`rounded-lg border p-4 ${t.color}`}>
+                        <span className="text-xs font-mono font-bold">{t.label}</span>
+                        <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">{t.condition}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Per-precision verdicts */}
+                <div>
+                  <h2 className="text-sm font-semibold mb-3">Per-Precision Verdicts</h2>
+                  <div className="rounded-xl border border-border/60 overflow-hidden">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="bg-muted/30 border-b border-border/40">
+                          <th className="text-left px-4 py-2.5 font-semibold">Precision</th>
+                          <th className="text-right px-4 py-2.5 font-semibold">FPR Gap</th>
+                          <th className="text-right px-4 py-2.5 font-semibold">Δ vs Baseline</th>
+                          <th className="text-right px-4 py-2.5 font-semibold">Verdict</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[
+                          { p: "FP32", gap: "14.4%", delta: "+0.0%", deltaClass: "text-muted-foreground" },
+                          { p: "INT8", gap: "14.5%", delta: "+0.1%", deltaClass: "text-amber-500" },
+                          { p: "INT4", gap: "13.4%", delta: "−1.0%", deltaClass: "text-green-600" },
+                        ].map(row => (
+                          <tr key={row.p} className="border-b border-border/30 last:border-0">
+                            <td className="px-4 py-2.5 font-mono font-semibold">{row.p}</td>
+                            <td className="px-4 py-2.5 text-right font-semibold text-red-500">{row.gap}</td>
+                            <td className={`px-4 py-2.5 text-right font-mono ${row.deltaClass}`}>{row.delta}</td>
+                            <td className="px-4 py-2.5 text-right">
+                              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-500 border border-red-500/20">FAIL</span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-2">
+                    All three fail on absolute FPR gap (14.4–14.5% vs 10% threshold). Neither INT8 nor INT4 widens the gap beyond the 5% widen threshold.
+                  </p>
+                </div>
+
+                {/* Methodology */}
+                <div>
+                  <h2 className="text-sm font-semibold mb-3">Methodology</h2>
+                  <div className="rounded-xl border border-border/60 bg-muted/10 p-5 space-y-2 text-xs text-muted-foreground">
+                    <p><span className="font-semibold text-foreground">Model:</span> RecidivismNet — 3-layer neural network, 740 parameters, trained on COMPAS (ProPublica 2016)</p>
+                    <p><span className="font-semibold text-foreground">Protected attribute:</span> Race (African-American vs Other)</p>
+                    <p><span className="font-semibold text-foreground">Metric:</span> False Positive Rate gap — defendants flagged as high-risk who did not reoffend</p>
+                    <p><span className="font-semibold text-foreground">Precisions tested:</span> FP32 (baseline) · INT8 via torch.quantization.quantize_dynamic · INT4 via simulated uniform quantization</p>
+                    <p><span className="font-semibold text-foreground">Eval script:</span> eval_ft9.py — formal pass/fail thresholds defined independently of results</p>
+                  </div>
+                </div>
+
+                {/* Eval script link */}
+                <div className="rounded-xl border border-border/60 bg-muted/10 p-4">
+                  <p className="text-xs font-semibold mb-1">Eval Framework — eval_ft9.py</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-2">
+                    Formal evaluation script with defined thresholds. Outputs structured JSON verdict. Built eval-first — criteria defined before results were interpreted.
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {["Python", "eval_ft9.py", "ft9_eval_results.json"].map(t => (
+                      <span key={t} className="text-[10px] font-mono text-muted-foreground/60 bg-muted/40 px-2 py-0.5 rounded">{t}</span>
+                    ))}
+                  </div>
+                </div>
+
+              </div>}
+
+            </div>
+          );
+        })()}
+
       </div>
     </PageGate>
   );

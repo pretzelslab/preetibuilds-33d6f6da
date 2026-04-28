@@ -11,8 +11,8 @@ const Contact = () => (
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-2xl font-bold mb-4">
-            <span className="text-gradient">Get in Touch</span>
+          <h2 className="text-2xl font-bold mb-4 text-foreground">
+            Get in Touch
           </h2>
           <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
             Open to conversations around product, GTM, AI governance, and building things.

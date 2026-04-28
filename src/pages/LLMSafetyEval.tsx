@@ -458,86 +458,122 @@ const UseCases = () => {
 
 // ─── Preview (shown to non-authenticated visitors) ───────────────────────────
 
-const preview = (
+const PREVIEW_TABS = ["Compliance Matrix", "Comparison Report", "Use Cases"] as const;
+
+const PreviewContent = () => {
+  const [activeTab, setActiveTab] = useState<number>(0);
+  return (
   <div style={{ padding: "32px 24px 0", fontFamily: "inherit" }}>
 
-    {/* Tab nav */}
+    {/* Clickable tab nav */}
     <div style={{ display: "flex", gap: 4, borderBottom: "1px solid rgba(100,116,139,0.2)", marginBottom: 24 }}>
-      {["Compliance Matrix", "Comparison Report", "Use Cases"].map((t, i) => (
-        <div key={t} style={{
+      {PREVIEW_TABS.map((t, i) => (
+        <button key={t} onClick={() => setActiveTab(i)} style={{
           padding: "8px 16px", fontSize: 12, fontWeight: 500,
-          borderBottom: i === 0 ? "2px solid #6366f1" : "2px solid transparent",
-          color: i === 0 ? "#f1f5f9" : "#64748b",
-          cursor: "default",
-        }}>{t}</div>
+          borderBottom: activeTab === i ? "2px solid #6366f1" : "2px solid transparent",
+          color: activeTab === i ? "#f1f5f9" : "#64748b",
+          background: "transparent", border: "none",
+          cursor: "pointer", transition: "color 0.15s",
+        }}>{t}</button>
       ))}
     </div>
 
-    {/* Tab 1 — Compliance Matrix */}
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 20 }}>
-      {[
-        { label: "Test Cases", value: "40",    color: "#f1f5f9" },
-        { label: "Pass Rate",  value: "77.5%", color: "#fbbf24" },
-        { label: "Failed",     value: "2",     color: "#f87171" },
-        { label: "Uncertain",  value: "7",     color: "#fbbf24" },
-      ].map(c => (
-        <div key={c.label} style={{ borderRadius: 8, border: "1px solid rgba(100,116,139,0.25)", background: "rgba(30,41,59,0.6)", padding: "12px", textAlign: "center" }}>
-          <div style={{ fontSize: 22, fontWeight: 700, color: c.color }}>{c.value}</div>
-          <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>{c.label}</div>
-        </div>
-      ))}
-    </div>
-    <div style={{ borderRadius: 8, border: "1px solid rgba(100,116,139,0.2)", background: "rgba(30,41,59,0.4)", padding: 16, marginBottom: 24 }}>
-      <p style={{ fontSize: 10, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Category Breakdown — Claude Haiku 4.5</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {CATEGORY_SUMMARY.map(c => (
-          <div key={c.short} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ fontSize: 10, fontFamily: "monospace", width: 36, flexShrink: 0, color: c.color }}>{c.short}</span>
-            <div style={{ flex: 1, height: 6, borderRadius: 99, background: "rgba(100,116,139,0.2)", overflow: "hidden" }}>
-              <div style={{ height: "100%", borderRadius: 99, background: "rgba(52,211,153,0.7)", width: `${(c.pass / 8) * 100}%` }} />
-            </div>
-            <span style={{ fontSize: 10, color: "#64748b", width: 36, textAlign: "right" }}>{Math.round((c.pass/8)*100)}%</span>
+    {/* Tab 0 — Compliance Matrix */}
+    {activeTab === 0 && <>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 20 }}>
+        {[
+          { label: "Test Cases", value: "40",    color: "#f1f5f9" },
+          { label: "Pass Rate",  value: "77.5%", color: "#fbbf24" },
+          { label: "Failed",     value: "2",     color: "#f87171" },
+          { label: "Uncertain",  value: "7",     color: "#fbbf24" },
+        ].map(c => (
+          <div key={c.label} style={{ borderRadius: 8, border: "1px solid rgba(100,116,139,0.25)", background: "rgba(30,41,59,0.6)", padding: "12px", textAlign: "center" }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: c.color }}>{c.value}</div>
+            <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>{c.label}</div>
           </div>
         ))}
       </div>
-    </div>
+      <div style={{ borderRadius: 8, border: "1px solid rgba(100,116,139,0.2)", background: "rgba(30,41,59,0.4)", padding: 16, marginBottom: 8 }}>
+        <p style={{ fontSize: 10, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Category Breakdown — Claude Haiku 4.5</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {CATEGORY_SUMMARY.map(c => (
+            <div key={c.short} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 10, fontFamily: "monospace", width: 36, flexShrink: 0, color: c.color }}>{c.short}</span>
+              <div style={{ flex: 1, height: 6, borderRadius: 99, background: "rgba(100,116,139,0.2)", overflow: "hidden" }}>
+                <div style={{ height: "100%", borderRadius: 99, background: "rgba(52,211,153,0.7)", width: `${(c.pass / 8) * 100}%` }} />
+              </div>
+              <span style={{ fontSize: 10, color: "#64748b", width: 36, textAlign: "right" }}>{Math.round((c.pass/8)*100)}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>}
 
-    {/* Tab 2 — Comparison Report */}
-    <div style={{ borderRadius: 8, border: "1px solid rgba(100,116,139,0.2)", background: "rgba(30,41,59,0.4)", padding: 16, marginBottom: 24 }}>
-      <p style={{ fontSize: 10, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Model Comparison</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+    {/* Tab 1 — Comparison Report */}
+    {activeTab === 1 && <div style={{ borderRadius: 8, border: "1px solid rgba(100,116,139,0.2)", background: "rgba(30,41,59,0.4)", padding: 16, marginBottom: 8 }}>
+      <p style={{ fontSize: 10, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Pass Rate by Category — Claude Haiku</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {[
-          { cat: "Prompt Injection",      haiku: 87.5 },
-          { cat: "Reg. Hallucination",    haiku: 50.0 },
-          { cat: "Suitability",           haiku: 75.0 },
-          { cat: "Data Leakage",          haiku: 100  },
-          { cat: "RAG Poisoning",         haiku: 75.0 },
+          { cat: "Prompt Injection",   haiku: 87.5, color: "#a78bfa" },
+          { cat: "Reg. Hallucination", haiku: 50.0, color: "#f87171" },
+          { cat: "Suitability",        haiku: 75.0, color: "#fb923c" },
+          { cat: "Data Leakage",       haiku: 100,  color: "#38bdf8" },
+          { cat: "RAG Poisoning",      haiku: 75.0, color: "#4ade80" },
         ].map(r => (
           <div key={r.cat} style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ fontSize: 10, color: "#94a3b8", width: 130, flexShrink: 0 }}>{r.cat}</span>
             <div style={{ flex: 1, height: 6, borderRadius: 99, background: "rgba(100,116,139,0.2)", overflow: "hidden" }}>
               <div style={{ height: "100%", borderRadius: 99, background: "rgba(99,102,241,0.7)", width: `${r.haiku}%` }} />
             </div>
-            <span style={{ fontSize: 10, color: "#64748b", width: 36, textAlign: "right" }}>{r.haiku}%</span>
+            <span style={{ fontSize: 10, color: r.color, width: 36, textAlign: "right", fontWeight: 600 }}>{r.haiku}%</span>
           </div>
         ))}
       </div>
-    </div>
+      <div style={{ marginTop: 12, padding: "10px 12px", borderRadius: 6, background: "rgba(245,158,11,0.05)", border: "1px solid rgba(245,158,11,0.15)" }}>
+        <span style={{ fontSize: 10, color: "#fbbf24", fontWeight: 600 }}>77.5% overall · </span>
+        <span style={{ fontSize: 10, color: "#94a3b8" }}>31 pass · 2 fail · 7 uncertain — Claude Haiku 4.5</span>
+      </div>
+    </div>}
 
-    {/* Tab 3 — Use Cases */}
-    <div style={{ borderRadius: 8, border: "1px solid rgba(100,116,139,0.2)", background: "rgba(30,41,59,0.4)", padding: 16, marginBottom: 8 }}>
+    {/* Tab 2 — Use Cases */}
+    {activeTab === 2 && <div style={{ borderRadius: 8, border: "1px solid rgba(100,116,139,0.2)", background: "rgba(30,41,59,0.4)", padding: 16, marginBottom: 8 }}>
       <p style={{ fontSize: 10, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Finance Deployment Scenarios</p>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
-        {["Mortgage Chatbot", "Investment Advice", "AML / KYC Automation", "AI Credit Scoring"].map(u => (
-          <div key={u} style={{ borderRadius: 6, border: "1px solid rgba(100,116,139,0.15)", background: "rgba(15,23,42,0.5)", padding: "10px 12px" }}>
-            <span style={{ fontSize: 11, fontWeight: 500, color: "#cbd5e1" }}>{u}</span>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {[
+          { title: "Mortgage Chatbot",        reg: "FCA Consumer Duty · MCOB",    sev: "critical" },
+          { title: "Investment Advice",        reg: "MiFID II Art.25 · COBS 9A",   sev: "critical" },
+          { title: "AML / KYC Automation",    reg: "POCA 2002 · FCA SYSC · GDPR", sev: "critical" },
+          { title: "AI Credit Scoring",        reg: "ECOA · FCA · EU AI Act Art.6",sev: "critical" },
+          { title: "Fraud Explanation Engine", reg: "GDPR Art.5 · FCA SYSC",       sev: "high"     },
+          { title: "Vulnerable Customer Ops",  reg: "FCA Consumer Duty · FG21/1",  sev: "high"     },
+        ].map(u => (
+          <div key={u.title} style={{
+            borderRadius: 6,
+            border: `1px solid ${u.sev === "critical" ? "rgba(239,68,68,0.2)" : "rgba(249,115,22,0.2)"}`,
+            background: u.sev === "critical" ? "rgba(239,68,68,0.04)" : "rgba(249,115,22,0.04)",
+            padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8,
+          }}>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 500, color: "#cbd5e1" }}>{u.title}</div>
+              <div style={{ fontSize: 10, color: "#60a5fa", marginTop: 2, fontFamily: "monospace" }}>{u.reg}</div>
+            </div>
+            <span style={{
+              fontSize: 9, fontFamily: "monospace", padding: "2px 8px", borderRadius: 99, flexShrink: 0,
+              textTransform: "uppercase" as const,
+              color: u.sev === "critical" ? "#f87171" : "#fb923c",
+              border: `1px solid ${u.sev === "critical" ? "rgba(239,68,68,0.3)" : "rgba(249,115,22,0.3)"}`,
+              background: u.sev === "critical" ? "rgba(239,68,68,0.08)" : "rgba(249,115,22,0.08)",
+            }}>{u.sev}</span>
           </div>
         ))}
       </div>
-    </div>
+    </div>}
 
   </div>
-);
+  );
+};
+
+const preview = <PreviewContent />;
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 

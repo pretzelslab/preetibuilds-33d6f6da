@@ -15,7 +15,7 @@ const RESPONSIBLE_AI: Project[] = [
   {
     title: "Algorithmic Fairness Auditor",
     description: "Audits AI systems for hidden bias — from quantization-induced disparate impact to real-world criminal justice (COMPAS recidivism). Applies disparate impact ratio, Cohen's d, false positive/negative rate parity, and chi-square testing.",
-    tags: ["Python", "NumPy", "SciPy", "Google Colab"],
+    tags: ["Python", "PyTorch", "scikit-learn", "pandas", "matplotlib", "Google Colab"],
     industries: ["Financial Services", "Criminal Justice", "HR & Talent"],
     status: "preview",
     link: "/algorithmic-fairness",
