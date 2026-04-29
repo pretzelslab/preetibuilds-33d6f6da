@@ -735,7 +735,7 @@ export default function AlgorithmicFairnessAuditor() {
 
         {/* Page-level tab switcher */}
         <div className="max-w-5xl mx-auto px-6 pt-6 pb-0">
-          <div className="flex gap-1 p-1 rounded-xl bg-muted/30 border border-border/40 w-fit">
+          <div className="flex flex-wrap gap-1 p-1 rounded-xl bg-muted/30 border border-border/40">
             {([
               { id: "quant" as PageTab,            label: "Tab 1 · Quantization Auditor" },
               { id: "compas" as PageTab,           label: "Tab 2 · COMPAS Recidivism" },

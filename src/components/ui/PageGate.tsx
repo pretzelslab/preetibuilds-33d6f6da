@@ -21,6 +21,7 @@ const PAGE_CODES: Record<string, string> = {
   "privacy-auditor":           "PRI2026",
   "safety-eval":               "SE1",
   "carbon-time-travel":        "CTT2026",
+  "agent-hijacking":           "AC42026",
 };
 
 function pageKey(key: string): string { return `pl_access_${key}`; }

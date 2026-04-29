@@ -124,6 +124,14 @@ const USE_CASES: Project[] = [
 
 const SAFETY_ENGINEERING: Project[] = [
   {
+    title: "Agent Goal Hijacking Demo",
+    description: "Live simulation of OWASP LLM Top 10 2025 #1 — Indirect Prompt Injection. A finance LLM agent is hijacked via a malicious PDF: its goal is silently overwritten, then it exfiltrates 10 customer records using only its own legitimate tools. Includes two-layer detection (rule-based + Claude Haiku judge), HITL approval flow, and blast radius risk model. EU AI Act Art.9 · DORA · GDPR Art.33.",
+    tags: ["LangGraph", "Claude Haiku", "Python", "React", "TypeScript", "OWASP", "EU AI Act", "DORA"],
+    industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
+    status: "preview",
+    link: "/agent-hijacking",
+  },
+  {
     title: "LLM Safety Eval Framework",
     description: "Production-grade safety evaluation pipeline for LLMs in regulated financial services. 40 adversarial test cases across 5 risk categories — prompt injection, regulatory hallucination, suitability failures, data leakage, RAG poisoning. Claude-as-judge scoring with Streamlit compliance matrix, run comparison, and multi-model support. Built for pre-deployment assurance against FCA Consumer Duty, MiFID II, GDPR, and MITRE ATLAS.",
     tags: ["Python", "Claude API", "Streamlit", "YAML", "GitHub Actions", "Cursor", "FCA", "MiFID II", "GDPR", "MITRE ATLAS"],
