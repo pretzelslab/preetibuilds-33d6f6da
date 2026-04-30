@@ -27,6 +27,8 @@ import PrivacyAuditor from "./pages/PrivacyAuditor";
 import LLMSafetyEval from "./pages/LLMSafetyEval";
 import CarbonTimeTravel from "./pages/CarbonTimeTravel";
 import AgentHijacking from "./pages/AgentHijacking";
+import AgentDrift from "./pages/AgentDrift";
+import CarbonRouter from "./pages/CarbonRouter";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +54,8 @@ const ROUTE_TITLES: Record<string, string> = {
   "/safety-eval":               "LLM Safety Eval Framework | Preeti Builds",
   "/carbon-time-travel":        "Carbon Time Travel | Preeti Builds",
   "/agent-hijacking":           "Agent Goal Hijacking Demo | Preeti Builds",
+  "/agent-drift":               "Rogue Agent & Goal Drift Detector | Preeti Builds",
+  "/carbon-router":             "Carbon-Aware LLM Inference Router | Preeti Builds",
 };
 
 const RouteTitle = () => {
@@ -94,6 +98,8 @@ const App = () => (
             <Route path="/safety-eval" element={<LLMSafetyEval />} />
             <Route path="/carbon-time-travel" element={<CarbonTimeTravel />} />
             <Route path="/agent-hijacking" element={<AgentHijacking />} />
+            <Route path="/agent-drift" element={<AgentDrift />} />
+            <Route path="/carbon-router" element={<CarbonRouter />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

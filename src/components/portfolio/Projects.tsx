@@ -96,6 +96,14 @@ const SUSTAINABLE_AI: Project[] = [
     link: "/carbon-fairness",
   },
   {
+    title: "Carbon-Aware LLM Inference Router",
+    description: "Routes each LLM prompt to the right model size based on task complexity, live grid carbon intensity, latency budget, and accuracy floor — simultaneously. Back-of-envelope: ~62% carbon reduction on a 1M prompt/day system by routing 65% of prompts to a 7B model. The only open tool combining per-prompt routing + real-time grid data + production serving integration. EU AI Act Art.53 · CSRD Scope 2.",
+    tags: ["Python", "FastAPI", "Electricity Maps API", "vLLM", "MLflow", "EU AI Act Art.53", "CSRD"],
+    industries: ["Tech", "Enterprise ESG", "Data Centres"],
+    status: "preview",
+    link: "/carbon-router",
+  },
+  {
     title: "AI Sustainability Standards Tracker",
     description: "Live reference across 11 disclosure frameworks — CSRD/ESRS E1, EU AI Act GPAI, ISSB S2, GRI 305, TCFD, SEC Climate Rule, and more. Each framework: AI-specific obligations, enforcement status, penalty exposure, and jurisdiction scope. Includes tool directory and industry adoption map.",
     tags: ["Sustainable AI", "CSRD", "ISSB S2", "EU AI Act", "GRI 305", "TypeScript"],
@@ -130,6 +138,14 @@ const SAFETY_ENGINEERING: Project[] = [
     industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
     status: "preview",
     link: "/agent-hijacking",
+  },
+  {
+    title: "Rogue Agent & Goal Drift Detector",
+    description: "Detects when a finance LLM agent silently drifts from its original goal. After each tool call, cosine similarity between the agent's current intent and original task embedding flags SAFE / DRIFTING / ROGUE. A KPI-pressure memo nudges the agent to omit loss-making product lines — drift is caught at Step 2 before the fabricated report is written. HITL gate + MLflow audit trail. EU AI Act Art.9 · GDPR Art.5 · DORA.",
+    tags: ["Python", "sentence-transformers", "MLflow", "LangGraph", "EU AI Act", "GDPR", "DORA"],
+    industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
+    status: "preview",
+    link: "/agent-drift",
   },
   {
     title: "LLM Safety Eval Framework",
