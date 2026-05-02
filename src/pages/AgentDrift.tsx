@@ -340,7 +340,7 @@ function AgentDriftContent() {
 
         <div className="pt-2 pb-8">
           <a
-            href="https://github.com/pretzelslab/ac1-agent-drift-detector"
+            href="https://github.com/pretzelslab/ai-safety-research/tree/main/ac1-agent-drift-detector"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-xs text-slate-400 hover:text-white transition-colors border border-slate-700 hover:border-slate-500 rounded-lg px-4 py-2"

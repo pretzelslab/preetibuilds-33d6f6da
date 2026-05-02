@@ -648,11 +648,21 @@ export default function AgentHijacking() {
           </div>
         </div>
 
-        {/* Footer tags */}
-        <div className="flex flex-wrap gap-2 pt-2 pb-8">
+        {/* Footer tags + GitHub link */}
+        <div className="flex flex-wrap gap-2 pt-2 pb-4">
           {["LangGraph", "Claude Haiku", "Python", "Indirect Prompt Injection", "HITL", "Agentic AI Safety", "Finance", "OWASP LLM Top 10"].map(t => (
             <span key={t} className="text-xs bg-slate-800/50 border border-slate-700/30 text-slate-400 rounded px-2 py-0.5">{t}</span>
           ))}
+        </div>
+        <div className="pb-8">
+          <a
+            href="https://github.com/pretzelslab/ai-safety-research/tree/main/ac4-agent-hijacking"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-xs text-slate-400 hover:text-white transition-colors border border-slate-700 hover:border-slate-500 rounded-lg px-4 py-2"
+          >
+            View on GitHub →
+          </a>
         </div>
       </div>
     </div>
