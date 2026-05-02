@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 
 const CREDENTIALS = [
-  "Responsible AI toolkit — full enforcement cycle across criminal justice (COMPAS recidivism) and financial services (HMDA mortgage lending): statistical fairness audits, safety evaluation runbooks, and remediation simulators. AI governance policy tracking (EU AI Act, NIST AI RMF, ISO 42001), readiness diagnostics, and client risk assessment.",
+  "Safety engineering across agentic LLM systems — adversarial evaluation (OWASP LLM Top 10, MITRE ATLAS), goal drift detection, and blast radius analysis. Empirical fairness research: 1.92× Disparate Impact Ratio on COMPAS recidivism, proxy discrimination under INT4 quantization. Carbon-aware inference routing: CAIR preprint published on Zenodo.",
   "18+ years across B2B SaaS — HR tech, CRM, BI, and AI-driven platforms",
   "Product management, GTM, and technical program delivery across enterprise systems and cloud",
 ];
@@ -36,7 +36,7 @@ const Hero = () => (
           transition={{ duration: 0.6 }}
         >
           <p className="font-mono text-xs text-muted-foreground mb-3 tracking-widest uppercase">
-            Responsible AI · Product · GTM
+            AI Safety · Responsible AI · Sustainable AI
           </p>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-4">
             <span className="text-gradient text-name-soft">Preethi Raghuveeran</span>
@@ -74,10 +74,11 @@ const Hero = () => (
           </div>
           <div className="pt-4 border-t border-border/40">
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground/70">
-              <span>18+ years B2B SaaS</span>
-              <span>40 safety test cases</span>
-              <span>18 regulations tracked</span>
-              <span>13 disclosure frameworks</span>
+              <span>18+ years product</span>
+              <span>adversarial eval</span>
+              <span>agentic safety</span>
+              <span>sustainability mechanisms</span>
+              <span>1 preprint</span>
             </div>
           </div>
         </motion.div>
