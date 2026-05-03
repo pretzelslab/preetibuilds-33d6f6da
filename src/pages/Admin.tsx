@@ -78,6 +78,154 @@ const PAGE_LABELS: Record<string, string> = {
 
 const LAST_SEEN_KEY = "admin_last_seen_count";
 
+// ── Backlog Data ──────────────────────────────────────────────────────────────
+
+type BacklogItem = {
+  id: string; name: string; domain: string;
+  priority: string; status: string;
+  stack: string[]; complexity: string;
+};
+
+const BACKLOG: BacklogItem[] = [
+  // AI Safety
+  { id:"SE1",  name:"LLM Safety Eval Framework",      domain:"AI Safety",      priority:"P1", status:"in-progress", stack:["Python","Claude API","Streamlit","React"],                  complexity:"Medium-High" },
+  { id:"AC1",  name:"Rogue Agent Drift Detector",      domain:"AI Safety",      priority:"P1", status:"done",        stack:["LangGraph","sentence-transformers","MLflow","React"],         complexity:"Medium" },
+  { id:"AC4",  name:"Agent Goal Hijacking Demo",       domain:"AI Safety",      priority:"P1", status:"done",        stack:["LangGraph","Claude Haiku","Python","React"],                  complexity:"Medium" },
+  { id:"AC2",  name:"Cascading Multi-Agent Sim.",      domain:"AI Safety",      priority:"P1", status:"backlog",     stack:["LangGraph","Python","Claude API","D3"],                        complexity:"High" },
+  { id:"AC3",  name:"Unmonitored Tool Auditor",        domain:"AI Safety",      priority:"P1", status:"backlog",     stack:["Python","FastAPI","Claude API","MCP SDK"],                    complexity:"High" },
+  { id:"AC5",  name:"Identity & Privilege Monitor",    domain:"AI Safety",      priority:"P1", status:"backlog",     stack:["Python","FastAPI","Postgres","Claude API"],                   complexity:"High" },
+  { id:"ST4",  name:"Agentic Blast Radius Calc.",      domain:"AI Safety",      priority:"P1", status:"backlog",     stack:["Python","Claude API","React","D3"],                           complexity:"Medium-High" },
+  { id:"ST1",  name:"RAG Poisoning Simulator",         domain:"AI Safety",      priority:"P1", status:"backlog",     stack:["LangChain","ChromaDB","Claude API","Streamlit"],              complexity:"High" },
+  { id:"ST2",  name:"Prompt Injection Detector",       domain:"AI Safety",      priority:"P1", status:"backlog",     stack:["FastAPI","Claude API","Redis","Postgres"],                    complexity:"High" },
+  { id:"ST5",  name:"Silent Failure Detector",         domain:"AI Safety",      priority:"P1", status:"backlog",     stack:["Python","Claude API","spaCy","RAGAS"],                        complexity:"Medium" },
+  { id:"ST6",  name:"MCP Tool Poisoning Detect.",      domain:"AI Safety",      priority:"P1", status:"backlog",     stack:["Python","MCP SDK","Claude API"],                              complexity:"Medium" },
+  { id:"ST7",  name:"Distress Signal Classifier",      domain:"AI Safety",      priority:"P1", status:"backlog",     stack:["Python","Claude API","HuggingFace","Streamlit"],              complexity:"Medium" },
+  { id:"RM1",  name:"Real-time AI Risk Monitor",       domain:"AI Safety",      priority:"P1", status:"backlog",     stack:["Python","FastAPI","Claude API","Azure Foundry"],              complexity:"High" },
+  { id:"BD1",  name:"Output Bias Detector",            domain:"AI Safety",      priority:"P1", status:"backlog",     stack:["Python","Claude API","React","Recharts"],                     complexity:"Medium" },
+  { id:"INC1", name:"AI Incident Postmortem",          domain:"AI Safety",      priority:"P1", status:"backlog",     stack:["Python","React","Claude API"],                               complexity:"Medium" },
+  { id:"FT10", name:"Agentic Fairness Drift/CI",       domain:"AI Safety",      priority:"P1", status:"backlog",     stack:["LangGraph","Python","Claude API","GH Actions"],               complexity:"High" },
+  // Responsible AI
+  { id:"FT9",  name:"Proxy Discrim. Under Quant.",     domain:"Responsible AI", priority:"P1", status:"done",        stack:["Python","PyTorch","pandas","sklearn","React"],                complexity:"High" },
+  { id:"P9",   name:"Privacy Impact Auditor",          domain:"Responsible AI", priority:"P3", status:"done",        stack:["React","TS","Recharts","Tailwind"],                           complexity:"Low" },
+  { id:"P1",   name:"AI Compliance Agent",             domain:"Responsible AI", priority:"P3", status:"done",        stack:["LangGraph","Python","Pandas","GH Actions"],                   complexity:"Medium" },
+  { id:"P4a",  name:"AI Ethics & Gov Tracker v2",      domain:"Responsible AI", priority:"P3", status:"done",        stack:["React","TS","Tailwind"],                                      complexity:"Low" },
+  { id:"P6a",  name:"AI Governance Audit Agent",       domain:"Responsible AI", priority:"P2", status:"backlog",     stack:["LangGraph","Voyage AI","Supabase","FastAPI"],                 complexity:"Very High" },
+  { id:"FA1",  name:"Fairness Audit API",              domain:"Responsible AI", priority:"P2", status:"backlog",     stack:["FastAPI","Docker","Python","PyTorch"],                         complexity:"High" },
+  { id:"FIN1", name:"Credit Scoring Covar. Shift",     domain:"Responsible AI", priority:"P1", status:"backlog",     stack:["Python","sklearn","pandas","Recharts"],                       complexity:"Medium" },
+  { id:"FIN3", name:"Cascading Risk in Agentic Fin.",  domain:"Responsible AI", priority:"P1", status:"backlog",     stack:["LangGraph","Python","Claude API","React"],                    complexity:"High" },
+  { id:"DLC1", name:"Dataset Lineage & Consent",       domain:"Responsible AI", priority:"P1", status:"backlog",     stack:["Python","DVC","SQLite","React"],                              complexity:"High" },
+  { id:"RF1",  name:"On-device Adversarial Robust.",   domain:"Responsible AI", priority:"P1", status:"backlog",     stack:["Python","PyTorch","HuggingFace","Jupyter"],                   complexity:"High" },
+  // Sustainability
+  { id:"SA1",  name:"Carbon-aware Inference Router",   domain:"Sustainability", priority:"P1", status:"in-progress", stack:["Python","FastAPI","Electricity Maps","Claude API"],           complexity:"Medium-High" },
+  { id:"P2",   name:"AI Carbon Footprint Calc.",       domain:"Sustainability", priority:"P3", status:"done",        stack:["React","TS","Recharts","Electricity Maps"],                   complexity:"Low" },
+  { id:"CTT",  name:"Carbon Time Travel",              domain:"Sustainability", priority:"P3", status:"done",        stack:["React","TS","Recharts","Framer Motion"],                      complexity:"Low" },
+  { id:"P3",   name:"AI Sustainability Disclosure",    domain:"Sustainability", priority:"P3", status:"done",        stack:["React","TS","pptxgenjs"],                                     complexity:"Low" },
+  { id:"P3c",  name:"AI Sustainability Webinar",       domain:"Sustainability", priority:"P3", status:"done",        stack:["React","TS","pptxgenjs","Recharts"],                          complexity:"Low" },
+  { id:"P4b",  name:"Sustainability Standards",        domain:"Sustainability", priority:"P3", status:"done",        stack:["React","TS","Tailwind"],                                      complexity:"Low" },
+  { id:"SA2",  name:"AI Lifecycle Emissions",          domain:"Sustainability", priority:"P2", status:"scoping",     stack:["Python","pipeline hooks","dashboard"],                        complexity:"High" },
+  { id:"SA3",  name:"Sustainable Agent Runtime",       domain:"Sustainability", priority:"P2", status:"scoping",     stack:["Python","LangGraph"],                                         complexity:"Medium" },
+  { id:"SA5",  name:"Rebound Effect Simulator",        domain:"Sustainability", priority:"P2", status:"scoping",     stack:["Python","React","simulation"],                               complexity:"Medium" },
+  { id:"SA4",  name:"Green RAG System",                domain:"Sustainability", priority:"P3", status:"scoping",     stack:["Python","LangChain","Redis"],                                 complexity:"High" },
+  // Portfolio
+  { id:"P8b",  name:"Landing Page Section Split",      domain:"Portfolio",      priority:"P2", status:"backlog",     stack:["React","TS","Tailwind"],                                      complexity:"Low" },
+  { id:"P8e",  name:"Hero Section Redesign",           domain:"Portfolio",      priority:"P3", status:"backlog",     stack:["React","TS","Tailwind","Framer Motion"],                      complexity:"Low" },
+  { id:"P5",   name:"Melodic — Arohan/Avrohan",        domain:"Portfolio",      priority:"P2", status:"backlog",     stack:["React","TS","Supabase","Claude API"],                         complexity:"Medium" },
+  { id:"P7",   name:"Job Opportunity Search Tool",     domain:"Portfolio",      priority:"P3", status:"backlog",     stack:["Python","Claude API"],                                       complexity:"Medium" },
+  { id:"IN1",  name:"India Pollution — Air",           domain:"Portfolio",      priority:"P3", status:"backlog",     stack:["Python","Pandas","Sentinel-5P","React"],                      complexity:"High" },
+  { id:"IN2",  name:"India Pollution — Water",         domain:"Portfolio",      priority:"P3", status:"backlog",     stack:["Python","Pandas","CPCB","React"],                             complexity:"High" },
+];
+
+const STATUS_META: Record<string, { label: string; cls: string }> = {
+  "done":        { label: "Done",        cls: "bg-emerald-500/10 text-emerald-500 border-emerald-500/30" },
+  "in-progress": { label: "Building",    cls: "bg-blue-500/10 text-blue-400 border-blue-500/30" },
+  "next":        { label: "Next",        cls: "bg-amber-500/10 text-amber-400 border-amber-500/30" },
+  "scoping":     { label: "Scoping",     cls: "bg-violet-500/10 text-violet-400 border-violet-500/30" },
+  "backlog":     { label: "Backlog",     cls: "bg-muted/30 text-muted-foreground border-border/40" },
+};
+
+const COMPLEXITY_META: Record<string, { cls: string }> = {
+  "Low":         { cls: "text-emerald-500 border-emerald-500/30" },
+  "Medium":      { cls: "text-sky-400 border-sky-500/30" },
+  "Medium-High": { cls: "text-amber-400 border-amber-500/30" },
+  "High":        { cls: "text-orange-400 border-orange-500/30" },
+  "Very High":   { cls: "text-rose-400 border-rose-500/30" },
+};
+
+const DOMAINS = ["All", "AI Safety", "Responsible AI", "Sustainability", "Portfolio"];
+
+function BacklogViewer() {
+  const [open, setOpen] = useState(false);
+  const [domain, setDomain] = useState("All");
+  const items = domain === "All" ? BACKLOG : BACKLOG.filter(b => b.domain === domain);
+  const done = items.filter(b => b.status === "done").length;
+
+  return (
+    <div className="mt-8 rounded-2xl border border-border/40 bg-card/50 overflow-hidden">
+      <button
+        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-muted/10 transition-colors"
+        onClick={() => setOpen(v => !v)}
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-bold">Project Backlog</span>
+          <span className="text-xs text-muted-foreground">{done} done · {BACKLOG.length - BACKLOG.filter(b => b.status === "done").length} remaining</span>
+        </div>
+        <span className="text-muted-foreground">{open ? "▾" : "▸"}</span>
+      </button>
+
+      {open && (
+        <div className="px-5 pb-6 space-y-4">
+          {/* Domain filter */}
+          <div className="flex flex-wrap gap-2">
+            {DOMAINS.map(d => (
+              <button
+                key={d}
+                onClick={() => setDomain(d)}
+                className={`text-[11px] px-3 py-1 rounded-full border transition-colors font-medium ${domain === d ? "border-primary/60 bg-primary/10 text-primary" : "border-border/40 text-muted-foreground hover:border-primary/40 hover:text-foreground"}`}
+              >
+                {d} {d !== "All" && `(${BACKLOG.filter(b => b.domain === d).length})`}
+              </button>
+            ))}
+          </div>
+
+          {/* Cards grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {items.map(item => {
+              const sm = STATUS_META[item.status] ?? STATUS_META["backlog"];
+              const cm = COMPLEXITY_META[item.complexity] ?? COMPLEXITY_META["Medium"];
+              return (
+                <div key={item.id} className={`rounded-xl border p-3 space-y-2 ${item.status === "done" ? "border-border/30 bg-muted/5 opacity-60" : item.status === "in-progress" ? "border-blue-500/30 bg-blue-500/5" : "border-border/40 bg-card/30"}`}>
+                  {/* Header row */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="font-mono text-[10px] text-muted-foreground/60 shrink-0">{item.id}</span>
+                      <span className="text-xs font-semibold text-foreground truncate">{item.name}</span>
+                    </div>
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border shrink-0 ${item.priority === "P1" ? "text-rose-400 border-rose-500/30 bg-rose-500/10" : item.priority === "P2" ? "text-amber-400 border-amber-500/30 bg-amber-500/10" : "text-muted-foreground border-border/40 bg-muted/20"}`}>
+                      {item.priority}
+                    </span>
+                  </div>
+                  {/* Status + complexity */}
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${sm.cls}`}>{sm.label}</span>
+                    <span className={`text-[10px] font-mono border rounded px-1.5 py-0.5 ${cm.cls}`}>{item.complexity}</span>
+                  </div>
+                  {/* Stack tags */}
+                  <div className="flex flex-wrap gap-1">
+                    {item.stack.map(t => (
+                      <span key={t} className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-muted/30 border border-border/30 text-muted-foreground/70">{t}</span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-[10px] text-muted-foreground/40 pt-1">Read-only · update via Claude Code</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Carbon Depth Data Manager ─────────────────────────────────────────────────
 function CarbonDataManager() {
   const [open, setOpen] = useState(false);
@@ -717,6 +865,9 @@ export default function Admin() {
 
         {/* ── Carbon Depth Data Manager ─────────────────────────────────── */}
         <CarbonDataManager />
+
+        {/* ── Project Backlog ───────────────────────────────────────────── */}
+        <BacklogViewer />
 
       </div>
     </div>
