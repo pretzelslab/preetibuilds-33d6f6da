@@ -23,8 +23,8 @@ const PHASES = [
   {
     phase: "Phase 1",
     label: "Working Router",
-    status: "Building",
-    items: ["complexity_scorer.py — rule-based prompt classifier", "carbon_feed.py — Electricity Maps API + fallback", "routing_engine.py — multi-objective optimisation", "model_registry.yaml — 3 model configs (7B · 13B · 70B)", "router_api.py — FastAPI POST /route endpoint", "eval_sa1.py — accuracy proxy evaluation"],
+    status: "Complete",
+    items: ["complexity_scorer.py — rule-based prompt classifier", "carbon_feed.py — Electricity Maps API + fallback", "routing_engine.py — multi-objective optimisation", "model_registry.yaml — 3 model configs (7B · 13B · 70B)", "logger.py — SQLite audit trail per request", "eval_sa1.py — 5-dimension eval harness (all pass)"],
   },
   {
     phase: "Phase 2",
@@ -46,7 +46,7 @@ const previewContent = (
   <div className="dark max-w-4xl mx-auto px-6 pt-10 pb-4 space-y-6 font-sans" style={{ background: '#0f172a', minHeight: '100%' }}>
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/30 rounded px-2 py-0.5">Building</span>
+        <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded px-2 py-0.5">Phase 1 Complete ✓</span>
         <span className="text-xs text-slate-500 bg-slate-800/50 border border-slate-700/50 rounded px-2 py-0.5">EU AI Act Art.53</span>
         <span className="text-xs text-slate-500 bg-slate-800/50 border border-slate-700/50 rounded px-2 py-0.5">CSRD Scope 2</span>
         <span className="text-xs text-slate-500 bg-slate-800/50 border border-slate-700/50 rounded px-2 py-0.5">FastAPI · Electricity Maps · vLLM</span>
@@ -113,7 +113,7 @@ function CarbonRouterContent() {
         {/* Header */}
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/30 rounded px-2 py-0.5">Building — Phase 1</span>
+            <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded px-2 py-0.5">Phase 1 Complete ✓</span>
             <span className="text-xs text-slate-500 bg-slate-800/50 border border-slate-700/50 rounded px-2 py-0.5">EU AI Act Art.53</span>
             <span className="text-xs text-slate-500 bg-slate-800/50 border border-slate-700/50 rounded px-2 py-0.5">CSRD Scope 2</span>
             <span className="text-xs text-slate-500 bg-slate-800/50 border border-slate-700/50 rounded px-2 py-0.5">FastAPI · Electricity Maps · vLLM · MLflow</span>
@@ -129,9 +129,9 @@ function CarbonRouterContent() {
         {/* Key numbers */}
         <div className="grid grid-cols-3 gap-4">
           {[
-            { label: "Estimated carbon reduction", value: "~62%", note: "On a 1M prompt/day system routing 65% to 7B" },
-            { label: "Routing overhead target", value: "<10ms p99", note: "Complexity scoring + carbon feed, locally cached" },
-            { label: "Routable prompt fraction", value: "~65%", note: "Simple/moderate tasks — no measurable accuracy loss" },
+            { label: "Carbon savings (Phase 1 eval)", value: "45.5%", note: "Across 20 prompts vs always-large baseline" },
+            { label: "Routing latency P95", value: "0.09ms", note: "Complexity scorer + cached carbon feed" },
+            { label: "Routing precision", value: "100% / 90% / 100%", note: "Simple · Moderate · Complex tiers" },
           ].map(m => (
             <div key={m.label} className="rounded-xl border border-slate-700/50 bg-slate-800/30 p-4 space-y-1">
               <p className="text-xs text-slate-500">{m.label}</p>
@@ -209,10 +209,10 @@ function CarbonRouterContent() {
           <h2 className="text-sm font-semibold text-white">Build Roadmap</h2>
           <div className="grid md:grid-cols-3 gap-4">
             {PHASES.map(p => (
-              <div key={p.phase} className={`rounded-xl border p-4 space-y-3 ${p.status === "Building" ? "border-blue-500/40 bg-blue-500/5" : "border-slate-700/50 bg-slate-800/20"}`}>
+              <div key={p.phase} className={`rounded-xl border p-4 space-y-3 ${p.status === "Complete" ? "border-emerald-500/40 bg-emerald-500/5" : p.status === "Building" ? "border-blue-500/40 bg-blue-500/5" : "border-slate-700/50 bg-slate-800/20"}`}>
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-mono text-slate-500">{p.phase}</p>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${p.status === "Building" ? "text-blue-400 bg-blue-500/10 border-blue-500/30" : "text-slate-500 bg-slate-800/50 border-slate-700/50"}`}>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${p.status === "Complete" ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/30" : p.status === "Building" ? "text-blue-400 bg-blue-500/10 border-blue-500/30" : "text-slate-500 bg-slate-800/50 border-slate-700/50"}`}>
                     {p.status}
                   </span>
                 </div>
@@ -220,7 +220,7 @@ function CarbonRouterContent() {
                 <ul className="space-y-1">
                   {p.items.map(item => (
                     <li key={item} className="text-[10px] text-slate-400 flex gap-2">
-                      <span className="text-slate-600 shrink-0">{p.status === "Building" ? "○" : "—"}</span>
+                      <span className={`shrink-0 ${p.status === "Complete" ? "text-emerald-500" : p.status === "Building" ? "text-slate-600" : "text-slate-700"}`}>{p.status === "Complete" ? "✓" : p.status === "Building" ? "○" : "—"}</span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -256,7 +256,7 @@ function CarbonRouterContent() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-xs text-slate-400 hover:text-white transition-colors border border-slate-700 hover:border-slate-500 rounded-lg px-4 py-2"
           >
-            View design doc on GitHub →
+            Phase 1 source on GitHub →
           </a>
         </div>
 
