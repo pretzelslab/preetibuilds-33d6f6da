@@ -25,26 +25,24 @@ const FOCUS_AREAS = [
 ];
 
 const Hero = () => (
-  <section className="flex items-start justify-center px-6 pt-20 pb-6">
+  <section className="flex items-start justify-center px-6 pt-20 pb-2">
     <div className="max-w-7xl w-full">
-      <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-12 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 items-stretch">
 
         {/* Left — name, tagline, credentials */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
+          className="flex flex-col"
         >
-          <p className="font-mono text-xs text-muted-foreground mb-3 tracking-widest uppercase">
-            AI Safety · Responsible AI · Sustainable AI
-          </p>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-4">
             <span className="text-gradient text-name-soft">Preethi Raghuveeran</span>
           </h1>
           <p className="text-base text-muted-foreground mb-5 leading-relaxed">
             Building end-to-end Responsible AI tools and governance frameworks — from audit to regulatory verdict to remediation.
           </p>
-          <ul className="space-y-2 mb-8">
+          <ul className="space-y-2 mb-5">
             {CREDENTIALS.map((c) => (
               <li key={c} className="flex gap-2.5 text-sm text-muted-foreground/80 leading-relaxed">
                 <span className="text-primary shrink-0 mt-0.5">✦</span>
@@ -52,6 +50,12 @@ const Hero = () => (
               </li>
             ))}
           </ul>
+          <div className="flex-1" />
+          <div className="pt-4 border-t border-border/30">
+            <p className="text-[11px] text-muted-foreground/50 leading-relaxed">
+              OWASP LLM · MITRE ATLAS · NIST AI RMF · EU AI Act · GDPR · ISO 42001 · CSRD · GRI 305
+            </p>
+          </div>
         </motion.div>
 
         {/* Right — portfolio focus panel */}
@@ -59,7 +63,6 @@ const Hero = () => (
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.15 }}
-          className="lg:pt-10"
         >
           <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-3">
             Portfolio Focus

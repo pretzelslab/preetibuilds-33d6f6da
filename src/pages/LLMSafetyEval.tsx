@@ -463,7 +463,7 @@ const PREVIEW_TABS = ["Compliance Matrix", "Comparison Report", "Use Cases"] as 
 const PreviewContent = () => {
   const [activeTab, setActiveTab] = useState<number>(0);
   return (
-  <div style={{ padding: "32px 24px 0", fontFamily: "inherit" }}>
+  <div style={{ padding: "32px 24px 0", fontFamily: "inherit", background: "#0f172a", minHeight: "100%" }}>
 
     {/* Clickable tab nav */}
     <div style={{ display: "flex", gap: 4, borderBottom: "1px solid rgba(100,116,139,0.2)", marginBottom: 24 }}>
@@ -506,6 +506,29 @@ const PreviewContent = () => {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Test-cases table — pushes content into the gradient fade zone */}
+      <div style={{ borderRadius: 8, border: "1px solid rgba(100,116,139,0.15)", background: "rgba(15,23,42,0.6)", overflow: "hidden", marginTop: 8 }}>
+        <div style={{ padding: "10px 14px", borderBottom: "1px solid rgba(100,116,139,0.12)" }}>
+          <p style={{ fontSize: 10, fontWeight: 600, color: "#64748b", textTransform: "uppercase" as const, letterSpacing: "0.08em", margin: 0 }}>Sample Adversarial Prompts</p>
+        </div>
+        {TEST_CASES.slice(0, 6).map((t, i) => (
+          <div key={t.id} style={{
+            display: "flex", alignItems: "center", gap: 10, padding: "9px 14px",
+            borderBottom: i < 5 ? "1px solid rgba(100,116,139,0.08)" : "none",
+            background: i % 2 === 0 ? "rgba(100,116,139,0.03)" : "transparent",
+          }}>
+            <span style={{ fontSize: 9, fontFamily: "monospace", width: 52, flexShrink: 0, color: CATEGORY_META[t.category].color }}>{t.id}</span>
+            <span style={{ fontSize: 10, color: "#94a3b8", flex: 1, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{t.prompt}</span>
+            <span style={{
+              fontSize: 9, fontFamily: "monospace", padding: "2px 7px", borderRadius: 99, flexShrink: 0,
+              color: t.haiku === "pass" ? "#4ade80" : t.haiku === "fail" ? "#f87171" : "#fbbf24",
+              background: t.haiku === "pass" ? "rgba(74,222,128,0.08)" : t.haiku === "fail" ? "rgba(248,113,113,0.08)" : "rgba(251,191,36,0.08)",
+              border: `1px solid ${t.haiku === "pass" ? "rgba(74,222,128,0.2)" : t.haiku === "fail" ? "rgba(248,113,113,0.2)" : "rgba(251,191,36,0.2)"}`,
+            }}>{t.haiku.toUpperCase()}</span>
+          </div>
+        ))}
       </div>
     </>}
 

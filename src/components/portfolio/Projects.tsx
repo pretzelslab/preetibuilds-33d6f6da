@@ -249,9 +249,46 @@ const SectionHeader = ({ label, subtitle }: { label: string; subtitle?: string }
   </div>
 );
 
+const DOMAIN_OVERVIEW = [
+  {
+    label: "Safety Engineering",
+    count: SAFETY_ENGINEERING.length,
+    desc: "Adversarial eval · red-teaming · pre-deployment assurance",
+    cls: "border-violet-500/30 bg-violet-500/5 text-violet-400",
+    anchor: "#safety-engineering",
+  },
+  {
+    label: "Responsible AI",
+    count: RESPONSIBLE_AI.length,
+    desc: "Fairness audits · privacy impact · governance tooling",
+    cls: "border-blue-500/30 bg-blue-500/5 text-blue-400",
+    anchor: "#responsible-ai",
+  },
+  {
+    label: "Sustainable AI",
+    count: SUSTAINABLE_AI.length,
+    desc: "Carbon accounting · disclosure frameworks · tradeoff analysis",
+    cls: "border-emerald-500/30 bg-emerald-500/5 text-emerald-400",
+    anchor: "#sustainable-ai",
+  },
+];
+
 const Projects = () => (
   <section id="projects" className="py-6 px-6">
     <div className="max-w-7xl mx-auto">
+
+      {/* Domain overview — scannable 3-column grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+        {DOMAIN_OVERVIEW.map(d => (
+          <a key={d.label} href={d.anchor} className={`rounded-xl border p-3 ${d.cls} block no-underline hover:opacity-90 transition-opacity`}>
+            <p className="text-[10px] font-mono font-semibold uppercase tracking-wider mb-1">{d.label}</p>
+            <p className="text-xl font-bold text-foreground leading-none">{d.count}</p>
+            <p className="text-[10px] text-muted-foreground mt-1.5 leading-relaxed">{d.desc}</p>
+          </a>
+        ))}
+      </div>
+
+      <div id="safety-engineering" className="scroll-mt-20" />
       <SectionHeader
         label="Safety Engineering"
         subtitle="LLM red-teaming, adversarial evaluation, and pre-deployment safety assurance — 40-case test suite across prompt injection, regulatory hallucination, suitability failures, data leakage, and RAG poisoning."
@@ -260,6 +297,7 @@ const Projects = () => (
         {SAFETY_ENGINEERING.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
 
+      <div id="responsible-ai" className="scroll-mt-20" />
       <SectionHeader
         label="Responsible AI"
         subtitle="Statistical fairness audits, privacy impact assessment, agentic compliance pipelines, and governance tooling — built for EU AI Act, GDPR, MiFID II, and NIST AI RMF enforcement."
@@ -268,6 +306,7 @@ const Projects = () => (
         {RESPONSIBLE_AI.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
 
+      <div id="sustainable-ai" className="scroll-mt-20" />
       <SectionHeader label="Sustainable AI" subtitle="Carbon footprint measurement, disclosure frameworks, and the carbon-fairness tradeoff — mapped to CSRD, EU GPAI Art.53, and ISSB S2." />
       <div className="mb-10">
         {SUSTAINABLE_AI.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}

@@ -9,7 +9,7 @@ const Navbar = () => (
       </a>
       <div className="flex items-center gap-4">
         <Link to="/research" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
-          Research
+          Research & Engineering
         </Link>
         <ThemeToggle />
         <a
