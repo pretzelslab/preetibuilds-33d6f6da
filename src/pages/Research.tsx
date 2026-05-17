@@ -227,15 +227,143 @@ const Research = () => {
           </Link>
         </div>
       </div>
-      <div className="max-w-4xl mx-auto px-6 py-16 space-y-12">
+      <div className="max-w-5xl mx-auto px-6 py-16 space-y-12">
+
+        {/* Page index */}
+        <div id="research-contents" className="flex flex-wrap gap-2">
+          {[
+            { label: "Publications",        href: "#publications" },
+            { label: "Eval Framework",      href: "#eval-philosophy" },
+            { label: "Research Datasets",   href: "#ncrb" },
+            { label: "Safety Runbooks",     href: "#compas-runbook" },
+            { label: "Carbon Validation",   href: "#carbon-validation" },
+          ].map(link => (
+            <a
+              key={link.label}
+              href={link.href}
+              className="text-[11px] font-mono px-3 py-1 rounded-full border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors"
+            >
+              {link.label}
+            </a>
+          ))}
+        </div>
+
+        {/* Publications */}
+        <div id="publications" className="space-y-5 scroll-mt-20">
+          <div>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/70 mb-1">Publications & Preprints</p>
+            <p className="text-xs text-muted-foreground/60">Two Zenodo preprints — CAIR (carbon-aware inference routing) and ZIDR (gendered adversarial robustness benchmark).</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            {/* CAIR */}
+            <div className="rounded-xl border border-border bg-card p-6 flex flex-col">
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-[11px] font-medium">
+                  Sustainable AI · Systems
+                </div>
+                <span className="text-[10px] font-mono text-muted-foreground/50 whitespace-nowrap">2026 · Zenodo</span>
+              </div>
+              <h2 className="text-base font-semibold tracking-tight text-foreground mb-1">
+                Carbon-Aware Inference Router for LLM Systems (CAIR)
+              </h2>
+              <p className="text-[11px] text-muted-foreground/60 italic mb-3 leading-relaxed">
+                AI teams have no visibility into inference carbon. CAIR routes each prompt to the lowest-carbon model that still meets the quality bar.
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed mb-4 flex-1">
+                Proposes a per-prompt routing architecture that selects model size based on task complexity,
+                live grid carbon intensity, latency budget, and accuracy floor simultaneously. Benchmarked
+                against CodeCarbon and AI Wattch baselines.
+              </p>
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {[
+                  { value: "45.5%", label: "carbon reduction" },
+                  { value: "0.09ms", label: "P95 routing overhead" },
+                  { value: "100%", label: "routing precision" },
+                ].map(m => (
+                  <div key={m.label} className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2">
+                    <p className="text-sm font-bold text-emerald-600">{m.value}</p>
+                    <p className="text-[9px] text-muted-foreground mt-0.5 leading-tight">{m.label}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-1.5 mb-4">
+                {["per-prompt routing", "live grid intensity", "task complexity", "latency budgeting", "accuracy floor"].map(t => (
+                  <span key={t} className="text-[10px] font-mono text-muted-foreground/60 bg-muted/40 border border-border/40 px-2 py-0.5 rounded">{t}</span>
+                ))}
+              </div>
+              <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-border/40">
+                <a href="https://zenodo.org/records/19934621" target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/60 bg-background text-xs font-medium text-foreground hover:border-foreground/40 transition-colors">
+                  View on Zenodo →
+                </a>
+                <span className="text-[10px] text-muted-foreground/50">DOI: 10.5281/zenodo.19934621</span>
+              </div>
+            </div>
+
+            {/* ZIDR */}
+            <div className="rounded-xl border border-border bg-card p-6 flex flex-col">
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-600 text-[11px] font-medium">
+                  AI Safety · Adversarial Robustness
+                </div>
+                <span className="text-[10px] font-mono text-muted-foreground/50 whitespace-nowrap">2026 · Zenodo</span>
+              </div>
+              <h2 className="text-base font-semibold tracking-tight text-foreground mb-1">
+                Gendered Adversarial Robustness in LLMs — ZIDR Benchmark
+              </h2>
+              <p className="text-[11px] text-muted-foreground/60 italic mb-3 leading-relaxed">
+                Safety benchmarks ignore the harm patterns most likely to target women — IPV, stalking, image-based abuse — that trigger with no explicit user prompt.
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed mb-4 flex-1">
+                Develops a benchmark taxonomy for gendered jailbreaks across 6 model families. Proposes
+                the Zero-Interaction Danger Rate (ZIDR) metric — measuring harm that activates without
+                explicit user instruction. Benchmark artifact under revision for arXiv.
+              </p>
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {[
+                  { value: "ZIDR", label: "new metric" },
+                  { value: "6", label: "LLM families" },
+                  { value: "3", label: "harm domains" },
+                ].map(m => (
+                  <div key={m.label} className="rounded-lg border border-rose-500/20 bg-rose-500/5 px-3 py-2">
+                    <p className="text-sm font-bold text-rose-600">{m.value}</p>
+                    <p className="text-[9px] text-muted-foreground mt-0.5 leading-tight">{m.label}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-1.5 mb-4">
+                {["zero-interaction probes", "role-play framing", "professional authority", "benchmark taxonomy", "IPV · stalking · image abuse"].map(t => (
+                  <span key={t} className="text-[10px] font-mono text-muted-foreground/60 bg-muted/40 border border-border/40 px-2 py-0.5 rounded">{t}</span>
+                ))}
+              </div>
+              <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-border/40">
+                <a href="https://zenodo.org/records/20208521" target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/60 bg-background text-xs font-medium text-foreground hover:border-foreground/40 transition-colors">
+                  View on Zenodo →
+                </a>
+                <span className="text-[10px] text-muted-foreground/50">DOI: 10.5281/zenodo.20208521</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div className="flex justify-end">
+          <a href="#research-contents" className="text-[11px] font-mono text-muted-foreground/40 hover:text-muted-foreground transition-colors">↑ Back to contents</a>
+        </div>
+
+        <div className="border-t border-border/40" />
 
         {/* Evaluation Philosophy */}
-        <div className="space-y-6">
+        <div id="eval-philosophy" className="space-y-6 scroll-mt-20">
           <div>
-            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50 mb-3">Evaluation Philosophy</p>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-4">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/70 mb-1">Evaluation Philosophy</p>
+            <p className="text-xs text-muted-foreground/60 mb-3">From metric to deployment decision — the four-stage cycle that makes fairness evaluation defensible.</p>
+            <h2 className="text-xl font-semibold tracking-tight text-foreground mb-4">
               How I think about AI safety evaluation
-            </h1>
+            </h2>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
               Most AI fairness work stops at measurement — compute a metric, compare to a threshold, move on.
               That misses the point. A number without a decision framework is not an evaluation. It is a statistic.
@@ -380,14 +508,21 @@ const Research = () => {
           </div>
         </div>
 
-        {/* Divider */}
+        <div className="flex justify-end">
+          <a href="#research-contents" className="text-[11px] font-mono text-muted-foreground/40 hover:text-muted-foreground transition-colors">↑ Back to contents</a>
+        </div>
+
         <div className="border-t border-border/40" />
 
-        {/* Header */}
+        <div id="ncrb" className="scroll-mt-20 mb-4">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/70 mb-1">Research Dataset</p>
+          <p className="text-xs text-muted-foreground/60">Primary NCRB data on rape case incidence and justice outcomes 2013–2022, cross-verified against CHRI independent analysis.</p>
+        </div>
+
         <div className="rounded-xl border border-border bg-card p-8 shadow-card">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">
             India Rape Statistics: NCRB Dataset 2013–2022
-          </h1>
+          </h2>
           <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
             Empirical research on rape case incidence and justice outcomes in India, built from primary NCRB annual{" "}
             <em>Crime in India</em> reports, cross-verified against CHRI independent analysis (October 2024).
@@ -411,49 +546,52 @@ const Research = () => {
           ))}
         </div>
 
-        {/* Chart 1 */}
-        <section ref={(el: HTMLDivElement | null) => { chartRefs.current["chart-trend"] = el; }} className="scroll-mt-8 space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">National Trend 2013–2022</h2>
-            <p className="text-sm text-muted-foreground">Reported rape cases per year across India.</p>
-          </div>
-          <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-            <ResponsiveContainer width="100%" height={320}>
-              <LineChart data={nationalTrend} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 15% 88%)" />
-                <XAxis dataKey="year" tick={{ fontSize: 12 }} stroke="hsl(220 10% 50%)" />
-                <YAxis tick={{ fontSize: 12 }} stroke="hsl(220 10% 50%)" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                <Tooltip formatter={(v: number) => [v.toLocaleString(), "Cases"]} />
-                <Line type="monotone" dataKey="cases" stroke="hsl(250 30% 40%)" strokeWidth={2} dot={{ r: 3 }} />
-              </LineChart>
-            </ResponsiveContainer>
-            <p className="mt-4 text-xs text-muted-foreground/70 leading-relaxed">
-              2017 drop reflects NCRB methodology change, not a real decline. 2020 drop coincides with COVID lockdowns.
-            </p>
-          </div>
-        </section>
+        {/* Charts 1 + 2 — side by side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* Chart 2 */}
-        <section ref={(el: HTMLDivElement | null) => { chartRefs.current["chart-backlog"] = el; }} className="scroll-mt-8 space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">Justice Pipeline: Trial Backlog Growth</h2>
-            <p className="text-sm text-muted-foreground">Cumulative pending rape trials at end of year.</p>
-          </div>
-          <div className="rounded-xl border border-border bg-card p-6 shadow-card">
-            <ResponsiveContainer width="100%" height={320}>
-              <BarChart data={backlogData} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 15% 88%)" />
-                <XAxis dataKey="year" tick={{ fontSize: 12 }} stroke="hsl(220 10% 50%)" />
-                <YAxis tick={{ fontSize: 12 }} stroke="hsl(220 10% 50%)" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                <Tooltip formatter={(v: number) => [v.toLocaleString(), "Pending"]} />
-                <Bar dataKey="pending" fill="hsl(250 30% 40%)" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-            <p className="mt-4 text-xs text-muted-foreground/70 leading-relaxed">
-              Trial completion rate never exceeded 13% in any year across this period.
-            </p>
-          </div>
-        </section>
+          <section ref={(el: HTMLDivElement | null) => { chartRefs.current["chart-trend"] = el; }} className="scroll-mt-8 space-y-3">
+            <div>
+              <h2 className="text-base font-semibold text-foreground">National Trend 2013–2022</h2>
+              <p className="text-xs text-muted-foreground">Reported rape cases per year across India.</p>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart data={nationalTrend} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 15% 88%)" />
+                  <XAxis dataKey="year" tick={{ fontSize: 11 }} stroke="hsl(220 10% 50%)" />
+                  <YAxis tick={{ fontSize: 11 }} stroke="hsl(220 10% 50%)" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip formatter={(v: number) => [v.toLocaleString(), "Cases"]} />
+                  <Line type="monotone" dataKey="cases" stroke="hsl(250 30% 40%)" strokeWidth={2} dot={{ r: 3 }} />
+                </LineChart>
+              </ResponsiveContainer>
+              <p className="mt-3 text-[11px] text-muted-foreground/70 leading-relaxed">
+                2017 drop reflects NCRB methodology change, not a real decline. 2020 drop coincides with COVID lockdowns.
+              </p>
+            </div>
+          </section>
+
+          <section ref={(el: HTMLDivElement | null) => { chartRefs.current["chart-backlog"] = el; }} className="scroll-mt-8 space-y-3">
+            <div>
+              <h2 className="text-base font-semibold text-foreground">Justice Pipeline: Trial Backlog Growth</h2>
+              <p className="text-xs text-muted-foreground">Cumulative pending rape trials at end of year.</p>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={backlogData} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 15% 88%)" />
+                  <XAxis dataKey="year" tick={{ fontSize: 11 }} stroke="hsl(220 10% 50%)" />
+                  <YAxis tick={{ fontSize: 11 }} stroke="hsl(220 10% 50%)" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip formatter={(v: number) => [v.toLocaleString(), "Pending"]} />
+                  <Bar dataKey="pending" fill="hsl(250 30% 40%)" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+              <p className="mt-3 text-[11px] text-muted-foreground/70 leading-relaxed">
+                Trial completion rate never exceeded 13% in any year across this period.
+              </p>
+            </div>
+          </section>
+
+        </div>
 
         {/* Chart 3 */}
         <section ref={(el: HTMLDivElement | null) => { chartRefs.current["chart-states"] = el; }} className="scroll-mt-8 space-y-4">
@@ -493,7 +631,17 @@ const Research = () => {
       </div>
 
       {/* COMPAS Safety Eval Runbook */}
-      <div className="max-w-4xl mx-auto px-6 pb-16 space-y-8">
+      <div className="max-w-5xl mx-auto px-6 pb-16 space-y-8">
+
+        <div className="flex justify-end pt-2 pb-6">
+          <a href="#research-contents" className="text-[11px] font-mono text-muted-foreground/40 hover:text-muted-foreground transition-colors">↑ Back to contents</a>
+        </div>
+
+        <div id="compas-runbook" className="scroll-mt-20 mb-4">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/70 mb-1">Safety Runbooks & Validation</p>
+          <p className="text-xs text-muted-foreground/60">Structured deployment evaluation frameworks — COMPAS recidivism, credit scoring, and agentic AI — mapped to EU AI Act, NIST AI RMF, ECOA, and GDPR thresholds.</p>
+        </div>
+
         <div className="rounded-xl border border-border bg-card p-8 shadow-card">
           <div className="flex items-start justify-between gap-4 mb-4">
             <div>
@@ -598,6 +746,10 @@ const Research = () => {
 
         <ComplianceAgentCard />
 
+        <div id="carbon-validation" className="scroll-mt-20 mb-4">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/70 mb-1">Carbon Validation</p>
+          <p className="text-xs text-muted-foreground/60">Independent formula validation against Strubell 2019, Patterson 2021, and Luccioni 2022 — mean deviation ±0.1% with correct grid inputs.</p>
+        </div>
         {/* Carbon Depth Formula Validation */}
         <div className="rounded-xl border border-border bg-card p-8 shadow-card">
           <div className="flex items-start justify-between gap-4 mb-4">
@@ -650,6 +802,10 @@ const Research = () => {
             </a>
             <span className="text-[10px] text-muted-foreground">GHG Protocol Scope 2 · Green Software Foundation SCI · Electricity Maps API</span>
           </div>
+        </div>
+
+        <div className="flex justify-end pt-4">
+          <a href="#research-contents" className="text-[11px] font-mono text-muted-foreground/40 hover:text-muted-foreground transition-colors">↑ Back to contents</a>
         </div>
 
       </div>

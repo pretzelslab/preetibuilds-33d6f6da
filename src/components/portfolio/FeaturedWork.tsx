@@ -1,51 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-
-const CARDS = [
-  {
-    domain: "AI Safety",
-    domainCls: "text-violet-400 bg-violet-500/10 border-violet-500/30",
-    title: "LLM Safety Eval Framework",
-    problem:
-      "5 LLMs evaluated on 40+ finance-sector jailbreaks across 5 adversarial dimensions.",
-    stats: [
-      { value: "100%", label: "Claude pass rate" },
-      { value: "75%", label: "Haiku — 25% is the risk surface" },
-      { value: "40+", label: "jailbreak prompts, 5 attack categories" },
-    ],
-    href: "/safety-eval",
-    cta: "View eval framework",
-  },
-  {
-    domain: "Responsible AI",
-    domainCls: "text-blue-400 bg-blue-500/10 border-blue-500/30",
-    title: "Proxy Discrimination Under Quantization",
-    problem:
-      "INT4 quantization widens race-based false positive gaps in recidivism scoring.",
-    stats: [
-      { value: "14.4%", label: "FPR gap at FP32 baseline" },
-      { value: "Widens", label: "under INT4 — not a model-neutral transform" },
-      { value: "6", label: "reproducible notebooks, public dataset" },
-    ],
-    href: "/algorithmic-fairness",
-    cta: "View research",
-  },
-  {
-    domain: "Sustainable AI",
-    domainCls: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30",
-    title: "Carbon-Aware Inference Router",
-    problem:
-      "LLM API traffic routed to the lowest-carbon model — zero accuracy sacrifice.",
-    stats: [
-      { value: "45.5%", label: "carbon savings vs single-model baseline" },
-      { value: "0.09ms", label: "P95 routing latency overhead" },
-      { value: "100%", label: "routing precision, 0% fallback failures" },
-    ],
-    href: "/carbon-router",
-    cta: "View preprint",
-  },
-] as const;
+import { FEATURED_CARDS } from "@/data/projects";
 
 const container = {
   hidden: {},
@@ -70,7 +26,7 @@ const FeaturedWork = () => (
         whileInView="show"
         viewport={{ once: true, margin: "-60px" }}
       >
-        {CARDS.map((card) => (
+        {FEATURED_CARDS.map((card) => (
           <motion.div
             key={card.domain}
             variants={item}

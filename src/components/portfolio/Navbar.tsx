@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Github, Linkedin } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 
 const Navbar = () => (
@@ -8,9 +9,30 @@ const Navbar = () => (
         preethi<span className="text-primary">.</span>builds
       </a>
       <div className="flex items-center gap-4">
-        <Link to="/research" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
-          Research & Engineering
+        <Link to="/research" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden md:block">
+          Research
         </Link>
+        <a href="#about" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden md:block">
+          About
+        </a>
+        <a
+          href="https://github.com/pretzelslab"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-muted-foreground hover:text-foreground transition-colors hidden sm:block"
+          aria-label="GitHub"
+        >
+          <Github className="w-4 h-4" />
+        </a>
+        <a
+          href="https://www.linkedin.com/in/preetiraghuveer/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-muted-foreground hover:text-foreground transition-colors hidden sm:block"
+          aria-label="LinkedIn"
+        >
+          <Linkedin className="w-4 h-4" />
+        </a>
         <ThemeToggle />
         <a
           href="mailto:chinmayipriti@gmail.com"

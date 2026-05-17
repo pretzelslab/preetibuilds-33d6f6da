@@ -921,7 +921,16 @@ export default function Admin() {
   const [visitLogOpen, setVisitLogOpen] = useState(false);
   const PAGE_SIZE = 10;
 
-  // Owner flag is set by PageGate on unlock — no auto-set here
+  // Admin page only renders when PageGate is unlocked — mark as owner to suppress self-visit logging
+  useEffect(() => {
+    try { localStorage.setItem("pl_session_access", "1"); } catch {}
+  }, []);
+
+  // Update browser tab title to show new visit count (like an unread badge)
+  useEffect(() => {
+    document.title = newCount > 0 ? `(${newCount}) Admin | Preeti Builds` : "Admin | Preeti Builds";
+    return () => { document.title = "Admin | Preeti Builds"; };
+  }, [newCount]);
 
   useEffect(() => {
     govDb

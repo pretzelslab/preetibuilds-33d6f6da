@@ -24,19 +24,19 @@ const PHASES = [
     phase: "Phase 1",
     label: "Working Router",
     status: "Complete",
-    items: ["complexity_scorer.py — rule-based prompt classifier", "carbon_feed.py — Electricity Maps API + fallback", "routing_engine.py — multi-objective optimisation", "model_registry.yaml — 3 model configs (7B · 13B · 70B)", "logger.py — SQLite audit trail per request", "eval_sa1.py — 5-dimension eval harness (all pass)"],
+    items: ["complexity_scorer.py — Claude Haiku + heuristic fallback scorer", "carbon_feed.py — Electricity Maps API + 5-min cache + static fallback", "routing_engine.py — 5-step multi-objective decision logic", "budget_ledger.py — daily/monthly carbon cap enforcement (4 states)", "model_registry.yaml — 3 Claude model configs with carbon profiles", "eval_sa1.py — 9-dimension eval harness (E1–E8, all pass)"],
   },
   {
     phase: "Phase 2",
-    label: "Evaluation",
-    status: "Upcoming",
-    items: ["50-prompt benchmark dataset (5 complexity tiers, 3 domains)", "Accuracy comparison: routed vs always-large baseline", "Carbon savings report: gCO2eq saved per 1,000 prompts", "Latency overhead measurement (routing layer p50/p95)"],
+    label: "Serving + Quality Eval",
+    status: "Complete",
+    items: ["router_api.py — FastAPI server (GET /health · POST /route · POST /route-and-call)", "E3 quality delta: Haiku vs Opus cosine similarity — mean 0.90 on SIMPLE tasks", "Budget enforcement evals: 4/4 state transitions · 0/200 ceiling violations · 92.5% savings in CRITICAL state", "Zenodo preprint published — DOI: 10.5281/zenodo.19934621"],
   },
   {
     phase: "Phase 3",
-    label: "Portfolio Page",
+    label: "Multi-provider Benchmark",
     status: "Upcoming",
-    items: ["Live routing demo (pre-recorded)", "Benchmark chart + carbon savings calculator", "Full preetibuilds page with interactive visuals"],
+    items: ["Add OpenAI models (GPT-3.5, GPT-4o) to model registry", "Side-by-side: Claude routing vs OpenAI routing vs always-large", "Publishable results: carbon savings%, quality delta, overhead ms", "preetibuilds visualisation: live routing decision explorer"],
   },
 ];
 
@@ -46,7 +46,7 @@ const previewContent = (
   <div className="dark max-w-4xl mx-auto px-6 pt-10 pb-4 space-y-6 font-sans" style={{ background: '#0f172a', minHeight: '100%' }}>
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded px-2 py-0.5">Phase 1 Complete ✓</span>
+        <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded px-2 py-0.5">Phase 2 Complete ✓</span>
         <span className="text-xs text-slate-500 bg-slate-800/50 border border-slate-700/50 rounded px-2 py-0.5">EU AI Act Art.53</span>
         <span className="text-xs text-slate-500 bg-slate-800/50 border border-slate-700/50 rounded px-2 py-0.5">CSRD Scope 2</span>
         <span className="text-xs text-slate-500 bg-slate-800/50 border border-slate-700/50 rounded px-2 py-0.5">FastAPI · Electricity Maps · vLLM</span>
@@ -113,10 +113,10 @@ function CarbonRouterContent() {
         {/* Header */}
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded px-2 py-0.5">Phase 1 Complete ✓</span>
+            <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded px-2 py-0.5">Phase 2 Complete ✓</span>
             <span className="text-xs text-slate-500 bg-slate-800/50 border border-slate-700/50 rounded px-2 py-0.5">EU AI Act Art.53</span>
             <span className="text-xs text-slate-500 bg-slate-800/50 border border-slate-700/50 rounded px-2 py-0.5">CSRD Scope 2</span>
-            <span className="text-xs text-slate-500 bg-slate-800/50 border border-slate-700/50 rounded px-2 py-0.5">FastAPI · Electricity Maps · vLLM · MLflow</span>
+            <span className="text-xs text-slate-500 bg-slate-800/50 border border-slate-700/50 rounded px-2 py-0.5">FastAPI · Electricity Maps · sentence-transformers · SQLite</span>
           </div>
           <h1 className="text-4xl font-bold text-white">Carbon-Aware LLM Inference Router</h1>
           <p className="text-slate-400 max-w-2xl text-base leading-relaxed">
@@ -129,9 +129,9 @@ function CarbonRouterContent() {
         {/* Key numbers */}
         <div className="grid grid-cols-3 gap-4">
           {[
-            { label: "Carbon savings (Phase 1 eval)", value: "45.5%", note: "Across 20 prompts vs always-large baseline" },
-            { label: "Routing latency P95", value: "0.09ms", note: "Complexity scorer + cached carbon feed" },
-            { label: "Routing precision", value: "100% / 90% / 100%", note: "Simple · Moderate · Complex tiers" },
+            { label: "Carbon savings vs always-large", value: "45.5%", note: "50-prompt eval · E2 · all 3 Claude model tiers" },
+            { label: "Quality delta (Haiku vs Opus)", value: "0.90", note: "Mean cosine similarity on SIMPLE tasks · E3 · target ≥ 0.85" },
+            { label: "Routing precision", value: "100% / 90% / 100%", note: "Simple · Medium · Complex · E1 · 50-task eval" },
           ].map(m => (
             <div key={m.label} className="rounded-xl border border-slate-700/50 bg-slate-800/30 p-4 space-y-1">
               <p className="text-xs text-slate-500">{m.label}</p>
@@ -256,7 +256,7 @@ function CarbonRouterContent() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-xs text-slate-400 hover:text-white transition-colors border border-slate-700 hover:border-slate-500 rounded-lg px-4 py-2"
           >
-            Phase 1 source on GitHub →
+            Phase 1 + 2 source on GitHub →
           </a>
         </div>
 
