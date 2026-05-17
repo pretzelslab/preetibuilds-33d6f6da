@@ -186,7 +186,7 @@ export const FEATURED_CARDS: FeaturedCard[] = [
       { value: "6",     label: "LLM families benchmarked" },
       { value: "3",     label: "harm domains: IPV · stalking · image abuse" },
     ],
-    href: "/research",
+    href: "/research#publications",
     cta: "View preprint",
   },
   {

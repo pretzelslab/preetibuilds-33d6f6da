@@ -164,46 +164,80 @@ const ComplianceAgentCard = () => (
 
 const ResearchPreview = () => (
   <div className="min-h-screen">
+    <div className="max-w-5xl mx-auto px-6 py-12 space-y-8 pb-64">
 
-    <div className="max-w-4xl mx-auto px-6 py-12 space-y-8 pb-64">
       <div>
         <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50 mb-2">Research · Preview</p>
-        <h1 className="text-xl font-semibold tracking-tight text-foreground mb-1">
-          AI Compliance Monitoring Agent
-        </h1>
+        <h1 className="text-xl font-semibold tracking-tight text-foreground mb-1">Publications & Preprints</h1>
         <p className="text-sm text-muted-foreground">
-          Unlock to access the full research page — evaluation framework, COMPAS safety runbook, credit scoring analysis, and NCRB dataset.
+          Unlock to access the full research page — evaluation methodology, safety runbooks, NCRB dataset, and carbon validation.
         </p>
       </div>
-      <ComplianceAgentCard />
-      {/* Blurred skeleton hints of locked content below */}
-      <div style={{ filter: "blur(5px)", opacity: 0.38, pointerEvents: "none", userSelect: "none" }}>
+
+      {/* ZIDR teaser — visible to locked visitors */}
+      <div className="rounded-xl border border-rose-500/20 bg-card p-6">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-600 text-[11px] font-medium">
+            AI Safety · Adversarial Robustness
+          </div>
+          <span className="text-[10px] font-mono text-muted-foreground/50">2026 · Zenodo</span>
+        </div>
+        <h2 className="text-base font-semibold tracking-tight text-foreground mb-1">
+          Gendered Adversarial Robustness in LLMs — ZIDR Benchmark
+        </h2>
+        <p className="text-[11px] text-muted-foreground/60 italic mb-3 leading-relaxed">
+          Safety benchmarks ignore the harm patterns most likely to target women — IPV, stalking, image-based abuse — that trigger with no explicit user prompt.
+        </p>
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          {[
+            { value: "ZIDR", label: "new metric" },
+            { value: "6", label: "LLM families" },
+            { value: "3", label: "harm domains" },
+          ].map(m => (
+            <div key={m.label} className="rounded-lg border border-rose-500/20 bg-rose-500/5 px-3 py-2">
+              <p className="text-sm font-bold text-rose-600">{m.value}</p>
+              <p className="text-[9px] text-muted-foreground mt-0.5">{m.label}</p>
+            </div>
+          ))}
+        </div>
+        <a
+          href="https://zenodo.org/records/20208521"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/60 bg-background text-xs font-medium text-foreground hover:border-foreground/40 transition-colors"
+        >
+          View preprint on Zenodo →
+        </a>
+      </div>
+
+      {/* Blurred skeleton of locked content */}
+      <div style={{ filter: "blur(5px)", opacity: 0.35, pointerEvents: "none", userSelect: "none" }}>
         <div className="space-y-6">
           <div className="rounded-xl border border-border bg-card p-8">
-            <div className="h-5 w-36 rounded-full bg-rose-500/20 mb-3" />
+            <div className="h-5 w-36 rounded-full bg-emerald-500/20 mb-3" />
             <div className="h-6 w-72 rounded bg-muted/60 mb-3" />
             <div className="space-y-2 mb-6">
               <div className="h-3 w-full rounded bg-muted/40" />
               <div className="h-3 w-5/6 rounded bg-muted/40" />
-              <div className="h-3 w-4/6 rounded bg-muted/40" />
             </div>
             <div className="grid grid-cols-4 gap-3">
-              {[0,1,2,3].map(i => <div key={i} className="h-16 rounded-lg border border-rose-500/20 bg-rose-500/5" />)}
+              {[0,1,2,3].map(i => <div key={i} className="h-16 rounded-lg border border-emerald-500/20 bg-emerald-500/5" />)}
             </div>
           </div>
           <div className="rounded-xl border border-border bg-card p-8">
-            <div className="h-5 w-44 rounded-full bg-blue-500/20 mb-3" />
+            <div className="h-5 w-44 rounded-full bg-violet-500/20 mb-3" />
             <div className="h-6 w-80 rounded bg-muted/60 mb-3" />
             <div className="space-y-2 mb-6">
               <div className="h-3 w-full rounded bg-muted/40" />
               <div className="h-3 w-4/6 rounded bg-muted/40" />
             </div>
             <div className="grid grid-cols-4 gap-3">
-              {[0,1,2,3].map(i => <div key={i} className="h-16 rounded-lg border border-rose-500/20 bg-rose-500/5" />)}
+              {[0,1,2,3].map(i => <div key={i} className="h-16 rounded-lg border border-violet-500/20 bg-violet-500/5" />)}
             </div>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 );
@@ -263,23 +297,30 @@ const Research = () => {
                 <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-[11px] font-medium">
                   Sustainable AI · Systems
                 </div>
-                <span className="text-[10px] font-mono text-muted-foreground/50 whitespace-nowrap">2026 · Zenodo</span>
+                <span className="text-[10px] font-mono text-muted-foreground/40 whitespace-nowrap">Preprint · Zenodo · 2026</span>
               </div>
-              <h2 className="text-base font-semibold tracking-tight text-foreground mb-1">
+              <h2 className="text-base font-semibold tracking-tight text-foreground mb-0.5">
                 Carbon-Aware Inference Router for LLM Systems (CAIR)
               </h2>
-              <p className="text-[11px] text-muted-foreground/60 italic mb-3 leading-relaxed">
-                AI teams have no visibility into inference carbon. CAIR routes each prompt to the lowest-carbon model that still meets the quality bar.
-              </p>
-              <p className="text-xs text-muted-foreground leading-relaxed mb-4 flex-1">
-                Proposes a per-prompt routing architecture that selects model size based on task complexity,
-                live grid carbon intensity, latency budget, and accuracy floor simultaneously. Benchmarked
-                against CodeCarbon and AI Wattch baselines.
-              </p>
+              <p className="text-[11px] text-muted-foreground/50 mb-4">Preethi Raghuveeran · 2026</p>
+
+              <div className="space-y-2 mb-4 text-xs">
+                {[
+                  { label: "Problem", body: "Production LLM deployments have no per-prompt carbon accountability. Static model selection wastes energy when simpler prompts could be served by smaller, less carbon-intensive models." },
+                  { label: "Approach", body: "Per-prompt routing across a 5-dimension decision surface — task complexity, live grid carbon intensity, latency SLA, accuracy floor, and daily budget enforcement." },
+                  { label: "Contribution", body: "First open architecture combining real-time grid carbon data with per-prompt routing and production serving integration. 45.5% carbon reduction at 1M prompts/day, zero accuracy degradation." },
+                ].map(s => (
+                  <div key={s.label} className="flex gap-2">
+                    <span className="font-semibold text-foreground/70 shrink-0 w-20">{s.label}</span>
+                    <span className="text-muted-foreground leading-relaxed">{s.body}</span>
+                  </div>
+                ))}
+              </div>
+
               <div className="grid grid-cols-3 gap-2 mb-4">
                 {[
                   { value: "45.5%", label: "carbon reduction" },
-                  { value: "0.09ms", label: "P95 routing overhead" },
+                  { value: "0.09ms", label: "P95 overhead" },
                   { value: "100%", label: "routing precision" },
                 ].map(m => (
                   <div key={m.label} className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2">
@@ -288,17 +329,26 @@ const Research = () => {
                   </div>
                 ))}
               </div>
+
               <div className="flex flex-wrap gap-1.5 mb-4">
-                {["per-prompt routing", "live grid intensity", "task complexity", "latency budgeting", "accuracy floor"].map(t => (
+                {["per-prompt routing", "live grid intensity", "latency budgeting", "accuracy floor", "budget enforcement"].map(t => (
                   <span key={t} className="text-[10px] font-mono text-muted-foreground/60 bg-muted/40 border border-border/40 px-2 py-0.5 rounded">{t}</span>
                 ))}
               </div>
+
+              <div className="rounded-lg bg-muted/20 border border-border/40 px-4 py-2.5 mb-4 flex-1">
+                <p className="text-[10px] font-mono text-muted-foreground/50 mb-1">Cite</p>
+                <p className="text-[10px] text-muted-foreground/70 leading-relaxed font-mono">
+                  Raghuveeran, P. (2026). <em>Carbon-Aware Inference Router for LLM Systems (CAIR)</em>. Zenodo. https://doi.org/10.5281/zenodo.19934621
+                </p>
+              </div>
+
               <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-border/40">
                 <a href="https://zenodo.org/records/19934621" target="_blank" rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/60 bg-background text-xs font-medium text-foreground hover:border-foreground/40 transition-colors">
                   View on Zenodo →
                 </a>
-                <span className="text-[10px] text-muted-foreground/50">DOI: 10.5281/zenodo.19934621</span>
+                <span className="text-[10px] text-muted-foreground/40">DOI: 10.5281/zenodo.19934621</span>
               </div>
             </div>
 
@@ -308,19 +358,26 @@ const Research = () => {
                 <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-600 text-[11px] font-medium">
                   AI Safety · Adversarial Robustness
                 </div>
-                <span className="text-[10px] font-mono text-muted-foreground/50 whitespace-nowrap">2026 · Zenodo</span>
+                <span className="text-[10px] font-mono text-muted-foreground/40 whitespace-nowrap">Preprint · Zenodo · 2026</span>
               </div>
-              <h2 className="text-base font-semibold tracking-tight text-foreground mb-1">
+              <h2 className="text-base font-semibold tracking-tight text-foreground mb-0.5">
                 Gendered Adversarial Robustness in LLMs — ZIDR Benchmark
               </h2>
-              <p className="text-[11px] text-muted-foreground/60 italic mb-3 leading-relaxed">
-                Safety benchmarks ignore the harm patterns most likely to target women — IPV, stalking, image-based abuse — that trigger with no explicit user prompt.
-              </p>
-              <p className="text-xs text-muted-foreground leading-relaxed mb-4 flex-1">
-                Develops a benchmark taxonomy for gendered jailbreaks across 6 model families. Proposes
-                the Zero-Interaction Danger Rate (ZIDR) metric — measuring harm that activates without
-                explicit user instruction. Benchmark artifact under revision for arXiv.
-              </p>
+              <p className="text-[11px] text-muted-foreground/50 mb-4">Preethi Raghuveeran · 2026</p>
+
+              <div className="space-y-2 mb-4 text-xs">
+                {[
+                  { label: "Problem", body: "Existing LLM safety benchmarks focus on general jailbreaks. Harm patterns targeting women — IPV, stalking, image-based abuse — are underrepresented and require a distinct evaluation methodology." },
+                  { label: "Approach", body: "Probe-based evaluation using zero-interaction test design across 6 LLM families, 3 harm domains, and attack vectors including role-play framing and professional authority escalation." },
+                  { label: "Contribution", body: "ZIDR (Zero-Interaction Danger Rate) — a new metric quantifying harm that activates without explicit user instruction. Benchmark taxonomy and probe library for gendered adversarial robustness evaluation." },
+                ].map(s => (
+                  <div key={s.label} className="flex gap-2">
+                    <span className="font-semibold text-foreground/70 shrink-0 w-20">{s.label}</span>
+                    <span className="text-muted-foreground leading-relaxed">{s.body}</span>
+                  </div>
+                ))}
+              </div>
+
               <div className="grid grid-cols-3 gap-2 mb-4">
                 {[
                   { value: "ZIDR", label: "new metric" },
@@ -333,17 +390,26 @@ const Research = () => {
                   </div>
                 ))}
               </div>
+
               <div className="flex flex-wrap gap-1.5 mb-4">
                 {["zero-interaction probes", "role-play framing", "professional authority", "benchmark taxonomy", "IPV · stalking · image abuse"].map(t => (
                   <span key={t} className="text-[10px] font-mono text-muted-foreground/60 bg-muted/40 border border-border/40 px-2 py-0.5 rounded">{t}</span>
                 ))}
               </div>
+
+              <div className="rounded-lg bg-muted/20 border border-border/40 px-4 py-2.5 mb-4 flex-1">
+                <p className="text-[10px] font-mono text-muted-foreground/50 mb-1">Cite</p>
+                <p className="text-[10px] text-muted-foreground/70 leading-relaxed font-mono">
+                  Raghuveeran, P. (2026). <em>Gendered Adversarial Robustness in LLMs — ZIDR Benchmark</em>. Zenodo. https://doi.org/10.5281/zenodo.20208521
+                </p>
+              </div>
+
               <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-border/40">
                 <a href="https://zenodo.org/records/20208521" target="_blank" rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/60 bg-background text-xs font-medium text-foreground hover:border-foreground/40 transition-colors">
                   View on Zenodo →
                 </a>
-                <span className="text-[10px] text-muted-foreground/50">DOI: 10.5281/zenodo.20208521</span>
+                <span className="text-[10px] text-muted-foreground/40">DOI: 10.5281/zenodo.20208521</span>
               </div>
             </div>
 
