@@ -38,7 +38,7 @@ const Writing = () => (
         <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
           Writing & Notes
         </h2>
-        <p className="text-xs text-muted-foreground/50 font-mono">Essays in progress</p>
+        <p className="text-xs text-muted-foreground/50 font-mono">Essays</p>
       </div>
       <motion.div
         className="grid grid-cols-1 md:grid-cols-3 gap-6"
@@ -51,15 +51,15 @@ const Writing = () => (
           <motion.div
             key={essay.domain + essay.title}
             variants={item}
-            className="flex flex-col rounded-xl border border-border/50 border-dashed bg-muted/20 p-6"
+            className="flex flex-col rounded-xl border border-border/50 bg-card/40 p-6"
           >
             <span className={`self-start text-xs font-medium px-2.5 py-0.5 rounded-full border mb-4 ${essay.domainCls}`}>
               {essay.domain}
             </span>
-            <h3 className="font-semibold text-base text-muted-foreground/50 leading-snug mb-3">
+            <h3 className="font-semibold text-base text-foreground leading-snug mb-3">
               {essay.title}
             </h3>
-            <p className="text-sm text-muted-foreground/40 leading-relaxed flex-1">
+            <p className="text-sm text-muted-foreground leading-relaxed flex-1">
               {essay.abstract}
             </p>
           </motion.div>

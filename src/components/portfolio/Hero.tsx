@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { SAFETY_ENGINEERING, RESPONSIBLE_AI, SUSTAINABLE_AI, USE_CASES } from "@/data/projects";
 
 const CREDENTIALS = [
   "6 agentic safety systems built — LLM jailbreak evaluation (40 cases, 5 dimensions), goal drift detection, adversarial goal hijacking, blast radius analysis. OWASP LLM Top 10 · MITRE ATLAS · NIST AI RMF.",
@@ -7,26 +8,34 @@ const CREDENTIALS = [
   "18+ years enterprise product — B2B SaaS, CRM, GTM, technical program delivery across regulated sectors",
 ];
 
-const FOCUS_AREAS = [
+const DOMAIN_INDEX = [
   {
     label: "Safety Engineering",
-    desc:  "Adversarial LLM evaluation, red-teaming, pre-deployment safety assurance, failure mode testing",
-    cls:   "text-violet-400 border-violet-500/30 bg-violet-500/8",
+    count: SAFETY_ENGINEERING.length,
+    anchor: "#safety-engineering",
+    desc: "Adversarial LLM evaluation, red-teaming, pre-deployment safety assurance, failure mode testing",
+    cls: "text-violet-400 border-violet-500/25 hover:bg-violet-500/5",
   },
   {
     label: "Responsible AI",
-    desc:  "Fairness audits, privacy impact assessments, governance workflows, compliance-by-design systems",
-    cls:   "text-blue-400 border-blue-500/30 bg-blue-500/8",
+    count: RESPONSIBLE_AI.length,
+    anchor: "#responsible-ai",
+    desc: "Fairness audits, privacy impact assessments, governance workflows, compliance-by-design systems",
+    cls: "text-blue-400 border-blue-500/25 hover:bg-blue-500/5",
   },
   {
     label: "Sustainable AI",
-    desc:  "Carbon accounting, disclosure frameworks, inference efficiency strategy, carbon–fairness tradeoff analysis",
-    cls:   "text-emerald-400 border-emerald-500/30 bg-emerald-500/8",
+    count: SUSTAINABLE_AI.length,
+    anchor: "#sustainable-ai",
+    desc: "Carbon accounting, disclosure frameworks, inference efficiency strategy, carbon–fairness tradeoff analysis",
+    cls: "text-emerald-400 border-emerald-500/25 hover:bg-emerald-500/5",
   },
   {
-    label: "Enterprise Systems & AI Operations",
-    desc:  "CRM architecture, GTM operating models, decision workflows, program leadership, AI governance implementation",
-    cls:   "text-amber-400 border-amber-500/30 bg-amber-500/8",
+    label: "GTM & Product",
+    count: USE_CASES.length,
+    anchor: "#gtm-product",
+    desc: "CRM architecture, GTM operating models, decision workflows, program leadership, AI governance implementation",
+    cls: "text-amber-400 border-amber-500/25 hover:bg-amber-500/5",
   },
 ];
 
@@ -70,26 +79,46 @@ const Hero = () => (
               href="#projects"
               className="text-xs font-mono px-4 py-1.5 rounded-full border border-border text-muted-foreground hover:text-foreground transition-colors"
             >
-              Browse Systems →
+              Browse Projects →
             </a>
           </div>
         </motion.div>
 
-        {/* Right — portfolio focus panel */}
+        {/* Right — domain index with hover descriptions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.15 }}
+          className="flex flex-col justify-center"
         >
           <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-3">
             Portfolio Focus
           </p>
-          <div className="space-y-3">
-            {FOCUS_AREAS.map(f => (
-              <div key={f.label} className={`rounded-lg border px-4 py-3 ${f.cls}`}>
-                <p className="text-sm font-semibold mb-0.5">{f.label}</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
-              </div>
+          <div className="space-y-2">
+            {DOMAIN_INDEX.map(d => (
+              <motion.a
+                key={d.label}
+                href={d.anchor}
+                initial="rest"
+                whileHover="hover"
+                animate="rest"
+                className={`block rounded-lg border px-3 py-2.5 no-underline transition-colors ${d.cls}`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold">{d.label}</span>
+                  <span className="text-[10px] font-mono text-muted-foreground tabular-nums">{d.count} →</span>
+                </div>
+                <motion.div
+                  variants={{
+                    rest: { height: 0, opacity: 0, marginTop: 0 },
+                    hover: { height: "auto", opacity: 1, marginTop: 4 },
+                  }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="overflow-hidden"
+                >
+                  <p className="text-xs text-muted-foreground leading-relaxed">{d.desc}</p>
+                </motion.div>
+              </motion.a>
             ))}
           </div>
         </motion.div>

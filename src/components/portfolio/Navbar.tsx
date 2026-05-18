@@ -9,9 +9,6 @@ const Navbar = () => (
         preethi<span className="text-primary">.</span>builds
       </a>
       <div className="flex items-center gap-4">
-        <Link to="/research" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden md:block">
-          Research
-        </Link>
         <a href="#about" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden md:block">
           About
         </a>
