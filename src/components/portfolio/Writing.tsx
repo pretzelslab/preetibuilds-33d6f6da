@@ -5,7 +5,7 @@ const PLACEHOLDER_ESSAYS = [
     domain: "AI Safety",
     domainCls: "text-violet-400 bg-violet-500/10 border-violet-500/30",
     title: "Why Safety Benchmarks Miss Women",
-    abstract: "Most LLM safety evals test general jailbreaks. Harm patterns targeting women — IPV enablement, stalking, image-based abuse — activate without explicit prompts and are absent from every major benchmark. This is not a gap. It is a design choice. The ZIDR metric is an attempt to name it.",
+    abstract: "Safety evaluation assumes an anonymous digital attacker. It does not model a colleague, an authority figure, or a stranger with local knowledge who is physically present. A proximity-based adversary can suppress AI threat detection before it fires — using no digital exploit. Five attack methods. Four target layers. No existing governance framework covers any of them.",
   },
   {
     domain: "Responsible AI",

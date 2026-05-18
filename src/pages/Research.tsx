@@ -186,13 +186,13 @@ const ResearchPreview = () => (
           Gendered Adversarial Robustness in LLMs — ZIDR Benchmark
         </h2>
         <p className="text-[11px] text-muted-foreground/60 italic mb-3 leading-relaxed">
-          Safety benchmarks ignore the harm patterns most likely to target women — IPV, stalking, image-based abuse — that trigger with no explicit user prompt.
+          Safety evaluation assumes anonymous digital attackers. A physically proximate adversary can suppress AI threat detection before it fires — and no governance framework addresses this.
         </p>
         <div className="grid grid-cols-3 gap-2 mb-4">
           {[
             { value: "ZIDR", label: "new metric" },
-            { value: "6", label: "LLM families" },
-            { value: "3", label: "harm domains" },
+            { value: "5", label: "attack methods" },
+            { value: "4", label: "target layers" },
           ].map(m => (
             <div key={m.label} className="rounded-lg border border-rose-500/20 bg-rose-500/5 px-3 py-2">
               <p className="text-sm font-bold text-rose-600">{m.value}</p>
@@ -370,9 +370,9 @@ const Research = () => {
 
               <div className="space-y-2 mb-4 text-xs">
                 {[
-                  { label: "Problem", body: "Existing LLM safety benchmarks focus on general jailbreaks. Harm patterns targeting women — IPV, stalking, image-based abuse — are underrepresented and require a distinct evaluation methodology." },
-                  { label: "Approach", body: "Probe-based evaluation using zero-interaction test design across 6 LLM families, 3 harm domains, and attack vectors including role-play framing and professional authority escalation." },
-                  { label: "Contribution", body: "ZIDR (Zero-Interaction Danger Rate) — a new metric quantifying harm that activates without explicit user instruction. Benchmark taxonomy and probe library for gendered adversarial robustness evaluation." },
+                  { label: "Problem", body: "Safety evaluation assumes anonymous digital attackers. A physically proximate adversary — colleague, authority figure, stranger with local knowledge — can suppress AI-based threat detection before a safety system fires, using no digital exploit." },
+                  { label: "Approach", body: "Threat taxonomy across 4 target layers (sensing · processing · communication · response) and 5 attack methods (suppression, corruption, spoofing, exhaustion, interception). Zero-interaction test design: harm activates before explicit trigger, not through jailbreak." },
+                  { label: "Contribution", body: "ZIDR (Zero-Interaction Danger Rate) — first metric quantifying pre-trigger harm activation in AI safety systems. Benchmark taxonomy covering physical-proximity attack surfaces absent from all existing safety evaluation frameworks." },
                 ].map(s => (
                   <div key={s.label} className="flex gap-2">
                     <span className="font-semibold text-foreground/70 shrink-0 w-20">{s.label}</span>
@@ -384,8 +384,8 @@ const Research = () => {
               <div className="grid grid-cols-3 gap-2 mb-4">
                 {[
                   { value: "ZIDR", label: "new metric" },
-                  { value: "6", label: "LLM families" },
-                  { value: "3", label: "harm domains" },
+                  { value: "5", label: "attack methods" },
+                  { value: "4", label: "target layers" },
                 ].map(m => (
                   <div key={m.label} className="rounded-lg border border-rose-500/20 bg-rose-500/5 px-3 py-2">
                     <p className="text-sm font-bold text-rose-600">{m.value}</p>
@@ -395,7 +395,7 @@ const Research = () => {
               </div>
 
               <div className="flex flex-wrap gap-1.5 mb-4">
-                {["zero-interaction probes", "role-play framing", "professional authority", "benchmark taxonomy", "IPV · stalking · image abuse"].map(t => (
+                {["proximity attacks", "pre-trigger harm", "sensor suppression", "benchmark taxonomy", "zero-interaction probes"].map(t => (
                   <span key={t} className="text-[10px] font-mono text-muted-foreground/60 bg-muted/40 border border-border/40 px-2 py-0.5 rounded">{t}</span>
                 ))}
               </div>
