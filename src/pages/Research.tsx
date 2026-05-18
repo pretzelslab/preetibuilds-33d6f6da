@@ -164,7 +164,7 @@ const ComplianceAgentCard = () => (
 
 const ResearchPreview = () => (
   <div className="min-h-screen">
-    <div className="max-w-5xl mx-auto px-6 py-12 space-y-8 pb-64">
+    <div className="max-w-7xl mx-auto px-6 py-12 space-y-8 pb-64">
 
       <div>
         <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50 mb-2">Research · Preview</p>
@@ -255,31 +255,34 @@ const Research = () => {
     <div className="min-h-screen bg-background text-foreground">
       {/* Sticky nav — shown in unlocked state */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border/40">
-        <div className="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
             ← Back to Portfolio
           </Link>
         </div>
       </div>
-      <div className="max-w-5xl mx-auto px-6 py-16 space-y-12">
+      <div className="max-w-7xl mx-auto px-6 py-16 space-y-12">
 
         {/* Page index */}
-        <div id="research-contents" className="flex flex-wrap gap-2">
-          {[
-            { label: "Publications",        href: "#publications" },
-            { label: "Eval Framework",      href: "#eval-philosophy" },
-            { label: "Research Datasets",   href: "#ncrb" },
-            { label: "Safety Runbooks",     href: "#compas-runbook" },
-            { label: "Carbon Validation",   href: "#carbon-validation" },
-          ].map(link => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="text-[11px] font-mono px-3 py-1 rounded-full border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors"
-            >
-              {link.label}
-            </a>
-          ))}
+        <div id="research-contents" className="scroll-mt-20">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50 mb-3">In this page</p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { label: "Publications",        href: "#publications" },
+              { label: "Eval Framework",      href: "#eval-philosophy" },
+              { label: "Research Datasets",   href: "#ncrb" },
+              { label: "Safety Runbooks",     href: "#compas-runbook" },
+              { label: "Carbon Validation",   href: "#carbon-validation" },
+            ].map(link => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="text-[11px] font-mono px-3 py-1 rounded-full border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
         </div>
 
         {/* Publications */}
@@ -697,7 +700,7 @@ const Research = () => {
       </div>
 
       {/* COMPAS Safety Eval Runbook */}
-      <div className="max-w-5xl mx-auto px-6 pb-16 space-y-8">
+      <div className="max-w-7xl mx-auto px-6 pb-16 space-y-8">
 
         <div className="flex justify-end pt-2 pb-6">
           <a href="#research-contents" className="text-[11px] font-mono text-muted-foreground/40 hover:text-muted-foreground transition-colors">↑ Back to contents</a>
@@ -708,7 +711,8 @@ const Research = () => {
           <p className="text-xs text-muted-foreground/60">Structured deployment evaluation frameworks — COMPAS recidivism, credit scoring, and agentic AI — mapped to EU AI Act, NIST AI RMF, ECOA, and GDPR thresholds.</p>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-8 shadow-card">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="rounded-xl border border-border bg-card p-8 shadow-card flex flex-col">
           <div className="flex items-start justify-between gap-4 mb-4">
             <div>
               <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-600 text-[11px] font-medium mb-3">
@@ -759,7 +763,7 @@ const Research = () => {
         </div>
 
         {/* Credit Scoring Safety Eval Runbook */}
-        <div className="rounded-xl border border-border bg-card p-8 shadow-card">
+        <div className="rounded-xl border border-border bg-card p-8 shadow-card flex flex-col">
           <div className="flex items-start justify-between gap-4 mb-4">
             <div>
               <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 text-[11px] font-medium mb-3">
@@ -809,6 +813,7 @@ const Research = () => {
             <span className="text-[10px] text-muted-foreground">EU AI Act Annex III · ECOA · Reg B · n=138,665 records</span>
           </div>
         </div>
+        </div>{/* end runbooks grid */}
 
         <ComplianceAgentCard />
 
