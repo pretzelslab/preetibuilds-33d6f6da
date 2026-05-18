@@ -39,7 +39,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/client-discovery":    "Client Discovery Workbook | Preeti Builds",
   "/gtm-techstack":       "GTM Tech Stack | Preeti Builds",
   "/product-intelligence":"Product Intelligence | Preeti Builds",
-  "/research":            "Research | Preeti Builds",
+  "/research":            "Applied Research & Engineering | Preeti Builds",
   "/melodic-framework":        "Melodic Framework (Raaga) | Preeti Builds",
   "/ai-readiness":             "AI Readiness Assessment | Preeti Builds",
   "/algorithmic-fairness":      "Algorithmic Fairness Auditor | Preeti Builds",
@@ -68,6 +68,23 @@ const RouteTitle = () => {
   return null;
 };
 
+const CopyProtection = () => {
+  useEffect(() => {
+    const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+    if (isLocal) return;
+    const prevent = (e: Event) => e.preventDefault();
+    document.addEventListener("copy", prevent);
+    document.addEventListener("cut", prevent);
+    document.body.classList.add("no-copy");
+    return () => {
+      document.removeEventListener("copy", prevent);
+      document.removeEventListener("cut", prevent);
+      document.body.classList.remove("no-copy");
+    };
+  }, []);
+  return null;
+};
+
 const App = () => (
   <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
     <QueryClientProvider client={queryClient}>
@@ -76,6 +93,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <RouteTitle />
+          <CopyProtection />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/medlog" element={<MedLog />} />

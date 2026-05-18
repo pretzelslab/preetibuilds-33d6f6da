@@ -177,7 +177,7 @@ export const PET_PROJECTS: Project[] = [
 
 export const FEATURED_CARDS: FeaturedCard[] = [
   {
-    domain: "AI Safety",
+    domain: "Adversarial Robustness",
     domainCls: "text-violet-400 bg-violet-500/10 border-violet-500/30",
     title: "Gendered Adversarial Robustness — ZIDR Benchmark",
     problem: "Standard safety benchmarks miss gendered harms — IPV, stalking, image-based abuse — that require no explicit user prompt to trigger.",

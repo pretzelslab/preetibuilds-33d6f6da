@@ -155,3 +155,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     box-shadow: var(--shadow-card);
   }
 }
+
+/* Copy protection — applied on non-localhost via CopyProtection component */
+body.no-copy {
+  user-select: none;
+  -webkit-user-select: none;
+}
+body.no-copy input,
+body.no-copy textarea,
+body.no-copy select,
+body.no-copy [contenteditable] {
+  user-select: auto;
+  -webkit-user-select: auto;
+}

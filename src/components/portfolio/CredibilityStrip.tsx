@@ -6,7 +6,7 @@ const PROOF_POINTS: { label: string; href: string; external?: boolean }[] = [
   { label: "18+ Yrs GTM · Product · Enterprise", href: "#about" },
   { label: "OWASP · MITRE ATLAS",            href: "#safety-engineering" },
   { label: "EU AI Act · CSRD · GDPR",        href: "#responsible-ai" },
-  { label: "6 Agentic Safety Systems",       href: "#safety-engineering" },
+  { label: "6 Agentic Eval Systems",          href: "#safety-engineering" },
 ];
 
 const CredibilityStrip = () => (
