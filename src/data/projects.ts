@@ -90,11 +90,12 @@ export const SUSTAINABLE_AI: Project[] = [
   },
   {
     title: "Carbon-Aware LLM Inference Router",
-    description: "Routes each LLM prompt to the right model size based on task complexity, live grid carbon intensity, latency budget, and accuracy floor — simultaneously. Back-of-envelope: ~62% carbon reduction on a 1M prompt/day system by routing 65% of prompts to a 7B model. The only open tool combining per-prompt routing + real-time grid data + production serving integration. EU AI Act Art.53 · CSRD Scope 2.",
+    description: "Routes each LLM prompt to the right model size based on task complexity, live grid carbon intensity, latency budget, and accuracy floor — simultaneously. Preliminary analysis: ~62% carbon reduction on a 1M prompt/day system by routing 65% of prompts to a 7B model. The only open tool combining per-prompt routing + real-time grid data + production serving integration. EU AI Act Art.53 · CSRD Scope 2.",
     tags: ["Python", "FastAPI", "Electricity Maps API", "vLLM", "MLflow", "EU AI Act Art.53", "CSRD"],
     industries: ["Tech", "Enterprise ESG", "Data Centres"],
     status: "preview",
     link: "/carbon-router",
+    externalLink: "https://doi.org/10.5281/zenodo.19934621",
   },
   {
     title: "AI Sustainability Standards Tracker",

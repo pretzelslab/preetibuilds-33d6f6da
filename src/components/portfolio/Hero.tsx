@@ -2,8 +2,8 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
 const CREDENTIALS = [
-  "Adversarial LLM evaluation — OWASP LLM Top 10, MITRE ATLAS, goal drift detection, blast radius analysis",
-  "Empirical fairness research — 1.92× Disparate Impact on COMPAS recidivism, proxy discrimination under INT4 quantization. CAIR · ZIDR preprints on Zenodo.",
+  "6 agentic safety systems built — LLM jailbreak evaluation (40 cases, 5 dimensions), goal drift detection, adversarial goal hijacking, blast radius analysis. OWASP LLM Top 10 · MITRE ATLAS · NIST AI RMF.",
+  "Empirical fairness research — 1.92× Disparate Impact on COMPAS recidivism, proxy discrimination under INT4 quantization. 2 preprints on Zenodo: CAIR · ZIDR.",
   "18+ years enterprise product — B2B SaaS, CRM, GTM, technical program delivery across regulated sectors",
 ];
 

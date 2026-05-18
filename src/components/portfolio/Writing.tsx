@@ -4,20 +4,20 @@ const PLACEHOLDER_ESSAYS = [
   {
     domain: "AI Safety",
     domainCls: "text-violet-400 bg-violet-500/10 border-violet-500/30",
-    title: "Essay title coming soon",
-    abstract: "Abstract coming soon — this card will hold a short-form essay or note on AI safety, adversarial robustness, or pre-deployment evaluation.",
+    title: "Why Safety Benchmarks Miss Women",
+    abstract: "Most LLM safety evals test general jailbreaks. Harm patterns targeting women — IPV enablement, stalking, image-based abuse — activate without explicit prompts and are absent from every major benchmark. This is not a gap. It is a design choice. The ZIDR metric is an attempt to name it.",
   },
   {
     domain: "Responsible AI",
     domainCls: "text-blue-400 bg-blue-500/10 border-blue-500/30",
-    title: "Essay title coming soon",
-    abstract: "Abstract coming soon — this card will hold a short-form essay or note on fairness, governance, or bias in production AI systems.",
+    title: "The Fairness Trade-off Nobody Tells You About",
+    abstract: "You cannot simultaneously equalise all fairness metrics when base rates differ. Every AI deployment in lending, justice, or hiring is implicitly choosing which group absorbs more false positives. Chouldechova's impossibility theorem proved this in 2017. Almost no production system documents the choice it made.",
   },
   {
     domain: "Sustainable AI",
     domainCls: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30",
-    title: "Essay title coming soon",
-    abstract: "Abstract coming soon — this card will hold a short-form essay or note on carbon accounting, disclosure, or the energy cost of AI inference.",
+    title: "Your Model's Carbon Bill Is in the Wrong Line Item",
+    abstract: "Teams obsess over training carbon — a one-time cost. BLOOM's training used 433 MWh. Running a 7B model at 1M prompts/day accumulates that footprint in under two months. Inference routing, not training efficiency, is the highest-leverage sustainability intervention available right now.",
   },
 ];
 
