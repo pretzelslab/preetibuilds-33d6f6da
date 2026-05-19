@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { govDb } from "@/lib/supabase-governance";
@@ -144,6 +145,22 @@ const BACKLOG: BacklogItem[] = [
   { id:"FT4",  name:"Shadow Model Provenance",         context:"Research note: distilled models inherit carbon and safety provenance from their teacher model — neither is currently tracked. Proposes a provenance standard for model distillation lineage.",                                            domain:"Research",       priority:"P3", status:"backlog",     stack:["Markdown","React"],                                      complexity:"Low" },
   { id:"FT5",  name:"Federated Learning + Fairness",   context:"Research note: local federated updates dilute underrepresented data in the global aggregation step, introducing systematic bias. Proposes mitigation via fairness-weighted aggregation.",                                               domain:"Research",       priority:"P3", status:"backlog",     stack:["Markdown","simulation"],                                 complexity:"Low" },
   { id:"MU1",  name:"Model Unlearning System",         context:"Implements machine unlearning at the model level — right to be forgotten without full retraining. Unsolved at scale. Needs collaborator or lab access — park until SA1 Phase 2 is complete.",                                           domain:"Research",       priority:"P3", status:"backlog",     stack:["Python","PyTorch","HuggingFace"],                        complexity:"Very High" },
+  // Agentic Governance — new strategic items (P1)
+  { id:"OTI1",  name:"Operational Trust Infrastructure", context:"Governance framework and tooling for autonomous AI agents across enterprises — tracks decision lineage, approval chains, agent interactions, rollback/recovery, and accountability. Answers 'why did the agent do this?' at enterprise scale.",               domain:"AI Safety",      priority:"P1", status:"backlog", stack:["Python","FastAPI","LangGraph","React","Postgres"],       complexity:"Very High" },
+  { id:"MAOD1", name:"Multi-Agent Org. Drift Simulator", context:"Models how individually optimized AI agents collectively degrade organizational behavior over time — eroding trust, fairness, customer experience, and human judgment. Targets enterprises running multiple specialized agents in parallel.",              domain:"AI Safety",      priority:"P1", status:"backlog", stack:["LangGraph","Python","Claude API","D3","React"],           complexity:"Very High" },
+  { id:"IAA1",  name:"AI Incentive Alignment Auditor",   context:"Detects unsafe or manipulative AI behavior emerging from business KPI optimization — flags sales AI exaggerating ROI, support AI hiding risk, or recruiting AI optimizing for biased efficiency. Surfaces the tension between revenue goals and ethics.",  domain:"Responsible AI", priority:"P1", status:"backlog", stack:["Python","Claude API","React","Recharts"],                complexity:"High" },
+  { id:"DPA1",  name:"Decision Provenance Architecture", context:"End-to-end lineage system for AI decisions — tracks models used, prompts, retrieved documents, policy versions, human approvals, and downstream actions. Designed for regulated industries that need a 'git history for AI decisions.'",                    domain:"Responsible AI", priority:"P1", status:"backlog", stack:["Python","FastAPI","Postgres","React"],                   complexity:"High" },
+  { id:"IGF1",  name:"Inference Governance Framework",   context:"Governance system for AI-inferred attributes — health risk, resignation risk, financial distress — rather than only explicitly collected data. Addresses the regulatory frontier of 'inference governance' beyond traditional data governance.",            domain:"Responsible AI", priority:"P1", status:"backlog", stack:["Python","FastAPI","Claude API","React"],                 complexity:"High" },
+  // High value / practicality (P2)
+  { id:"SRCT1", name:"Synthetic Reality Contam. Tracker",context:"Measures how AI-generated content recursively contaminates future model training — tracks synthetic data loops, hallucination amplification, and degraded truth confidence as synthetic content compounds across training cycles.",                         domain:"AI Safety",      priority:"P2", status:"backlog", stack:["Python","HuggingFace","React","Recharts"],               complexity:"High" },
+  { id:"TEM1",  name:"AI Trust Erosion Model",           context:"Measures how AI dependence erodes human judgment over time — tracking reduced challenge behavior, automation overreliance, expertise decay, and escalation reduction. Designed for organizations assessing hidden long-term AI adoption risks.",             domain:"Responsible AI", priority:"P2", status:"backlog", stack:["Python","Claude API","React","Recharts"],                complexity:"Medium" },
+  { id:"CLGPA1",name:"Cross-Language Gov. Parity Auditor",context:"Tests whether safety, fairness, moderation, and recommendation quality remain consistent across languages, dialects, and regions. Surfaces English-centric bias in AI governance systems deployed to multilingual populations.",                           domain:"Responsible AI", priority:"P2", status:"backlog", stack:["Python","Claude API","HuggingFace","React"],             complexity:"High" },
+  { id:"AFA1",  name:"Adversarial Fairness Auditor",     context:"Tests whether fairness guarantees collapse under operational pressure — urgency, emotional framing, revenue incentives, incomplete information. Moves fairness evaluation from static benchmarks to operational resilience testing. Companion to FT1.",      domain:"Responsible AI", priority:"P2", status:"backlog", stack:["Python","Claude API","React","Recharts"],                complexity:"Medium-High" },
+  { id:"RPPP1", name:"RAG Poisoning Persistence Probe",  context:"Measures how long poisoned knowledge persists in a RAG system after the source document is deleted, and whether vector embeddings retain influence post-removal. Targets governance gaps in enterprise RAG deployments. Companion to ST1.",                 domain:"AI Safety",      priority:"P2", status:"backlog", stack:["LangChain","ChromaDB","Python","React"],                  complexity:"Medium-High" },
+  // GTM intelligence tools (P3)
+  { id:"CRW1",  name:"Churn Risk Early Warning",         context:"Predicts customer churn 60–90 days early using product usage signals, support interactions, champion movement, and sentiment drift. Designed for B2B SaaS with long sales cycles where late churn detection is costly.",                                    domain:"GTM",            priority:"P3", status:"backlog", stack:["Python","Claude API","React","Recharts"],                complexity:"Medium" },
+  { id:"WLI1",  name:"Win/Loss Intelligence System",     context:"Extracts systemic win/loss patterns from deal outcomes beyond rep-level attribution — surfaces pricing friction, implementation concerns, competitive weakness, and legal bottlenecks as addressable structural signals.",                                   domain:"GTM",            priority:"P3", status:"backlog", stack:["Python","Claude API","React"],                           complexity:"Medium" },
+  { id:"CIM1",  name:"Competitive Intelligence Monitor", context:"Continuously monitors competitor changes across pricing, messaging, hiring patterns, and roadmap signals. Aggregates weak signals into a weekly digest for GTM teams. Valuable but entering commoditization as AI tooling matures.",                         domain:"GTM",            priority:"P3", status:"backlog", stack:["Python","Claude API","React"],                           complexity:"Medium" },
 ];
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
@@ -162,10 +179,11 @@ const COMPLEXITY_META: Record<string, { cls: string }> = {
   "Very High":   { cls: "text-rose-600 dark:text-rose-300 border-rose-500/30" },
 };
 
-const DOMAINS = ["All", "AI Safety", "Responsible AI", "Sustainability", "Research", "Portfolio"];
+const DOMAINS = ["All", "AI Safety", "Responsible AI", "Sustainability", "Research", "Portfolio", "GTM"];
 
-// ── Backlog metadata (tags, regulation, phases) ───────────────────────────────
-const ITEM_META: Record<string, { tag?: string[]; regulation?: string[]; phases?: number[] }> = {
+// ── Backlog metadata (tags, regulation, phases, rich hover detail) ────────────
+type ItemMeta = { tag?: string[]; regulation?: string[]; phases?: number[]; category?: string; why?: string; demand?: string };
+const ITEM_META: Record<string, ItemMeta> = {
   SE1:  { tag:["Tool","Evals"],        regulation:["OWASP LLM","MITRE ATLAS","NIST AI RMF"], phases:[1,2] },
   AC1:  { tag:["Agent"],               regulation:["OWASP LLM","MITRE ATLAS"],               phases:[1] },
   AC4:  { tag:["Agent","Demo"],        regulation:["OWASP LLM","MITRE ATLAS"],               phases:[1,2,3] },
@@ -217,7 +235,59 @@ const ITEM_META: Record<string, { tag?: string[]; regulation?: string[]; phases?
   FT3:  { tag:["Research","Tool"],     regulation:["OWASP LLM"] },
   FT4:  { tag:["Research"] },
   FT5:  { tag:["Research"] },
-  MU1:  { tag:["Research"],            regulation:["EU AI Act","GDPR"] },
+  MU1:   { tag:["Research"],            regulation:["EU AI Act","GDPR"] },
+  OTI1:  { tag:["Framework","Agent"],  regulation:["EU AI Act","NIST AI RMF","ISO 42001"],
+    category: "AI Governance · Agentic Systems · Enterprise Architecture",
+    why: "Almost nobody owns this end to end today. Future enterprises will need to answer 'why did the agent do this?' — making this the intersection of observability and governance for AI operations.",
+    demand: "Extremely high over next 5–10 years" },
+  MAOD1: { tag:["Agent","Research"],   regulation:["EU AI Act","NIST AI RMF"],
+    category: "AI Safety · Systems Thinking · Enterprise Ops",
+    why: "Genuinely frontier. Not 'does the model fail?' but 'how do organizations fail because of interacting AI systems?' Very few people think this way yet.",
+    demand: "Massive long-term relevance" },
+  IAA1:  { tag:["Tool","Evals"],       regulation:["EU AI Act","NIST AI RMF"],
+    category: "Responsible AI · GTM · Behavioral Systems",
+    why: "Very underexplored and extremely real-world. Huge future regulatory relevance. Uniquely positioned for someone with GTM and AI governance background.",
+    demand: "Very high as enterprise AI scales" },
+  DPA1:  { tag:["Tool","Framework"],   regulation:["EU AI Act","ISO 42001","GDPR"],
+    category: "AI Auditability · Enterprise Governance",
+    why: "Will become mandatory in regulated industries — healthcare, finance, HR, insurance, enterprise SaaS. Think of it as 'git history for AI decisions.'",
+    demand: "Very high" },
+  IGF1:  { tag:["Framework"],          regulation:["EU AI Act","GDPR","DPDP Act"],
+    category: "Privacy · Responsible AI · Governance",
+    why: "This is where privacy regulation is heading — from governing data collected to governing attributes inferred. Ahead of current regulatory language.",
+    demand: "Huge emerging governance category" },
+  SRCT1: { tag:["Research","Tool"],    regulation:["EU AI Act"],
+    category: "AI Safety · Data Governance",
+    why: "As AI-generated content floods training pipelines, recursive contamination becomes an internet-scale problem. Very few people are measuring this systematically.",
+    demand: "Growing fast over the next 3–5 years" },
+  TEM1:  { tag:["Research","Tool"],    regulation:["EU AI Act","NIST AI RMF"],
+    category: "Human-AI Interaction · Organizational Psychology",
+    why: "Likely one of the biggest hidden enterprise AI risks — AI dependence quietly erodes the human judgment that organizations depend on for oversight.",
+    demand: "High, especially for enterprise risk and compliance teams" },
+  CLGPA1:{ tag:["Tool","Evals"],       regulation:["EU AI Act","NIST AI RMF"],
+    category: "Responsible AI · Global AI Governance",
+    why: "Most AI systems are still English-centric. Tests whether safety, fairness, moderation, and recommendations remain consistent across languages, dialects, and regions.",
+    demand: "High as global AI deployment scales" },
+  AFA1:  { tag:["Research","Evals"],   regulation:["EU AI Act"],
+    category: "Responsible AI · AI Safety",
+    why: "Moves fairness from a static benchmark to an operational resilience test — does fairness hold under urgency, emotional pressure, revenue incentives, or incomplete information?",
+    demand: "High" },
+  RPPP1: { tag:["Tool","Evals"],       regulation:["OWASP LLM","NIST AI RMF"],
+    category: "AI Security · Retrieval Systems",
+    why: "RAG adoption is exploding but governance is immature. Measures whether deleted poisoned content still influences outputs — a gap that current RAG audits miss entirely.",
+    demand: "High as enterprise RAG deployments scale" },
+  CRW1:  { tag:["Tool"],
+    category: "AI for GTM / RevOps",
+    why: "Strong enterprise value for B2B SaaS with long sales cycles. 60–90 day early warning allows intervention before churn is inevitable.",
+    demand: "Medium — many vendors entering this space" },
+  WLI1:  { tag:["Tool"],
+    category: "AI for Sales Intelligence",
+    why: "Goes beyond rep-level attribution to surface systemic deal patterns — pricing friction, legal bottlenecks, competitive weakness. Strong fit with GTM background.",
+    demand: "Medium — partially crowded but depth differentiates" },
+  CIM1:  { tag:["Tool"],
+    category: "AI for GTM Ops",
+    why: "Operationally valuable for fast-moving competitive environments. Weekly digest format makes it practical. Entering commoditization as AI tooling matures.",
+    demand: "Medium — increasingly commoditized" },
 };
 
 type ColDef = { key: string; label: string; defaultVisible: boolean; sortable: boolean; width?: string };
@@ -286,6 +356,7 @@ function BacklogViewer() {
     return new Set(COLUMN_DEFS.filter(c => c.defaultVisible).map(c => c.key));
   });
   const [showColMenu, setShowColMenu] = useState(false);
+  const [tipState, setTipState] = useState<{ id: string; x: number; y: number } | null>(null);
   const dragColRef = useRef<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<string | null>(null);
   const colMenuRef = useRef<HTMLDivElement>(null);
@@ -498,7 +569,13 @@ function BacklogViewer() {
                         return (
                           <td key="name" className="px-3 py-1.5 font-medium text-foreground cursor-pointer whitespace-nowrap"
                             onClick={() => { setEditingComment(isEditingThis ? null : item.id); setCommentDraft(comments[item.id] ?? ""); }}
-                            title="Click to add/edit note">
+                            onMouseEnter={e => {
+                              const r = e.currentTarget.getBoundingClientRect();
+                              const x = r.right + 10;
+                              const y = Math.min(r.top, window.innerHeight - 320);
+                              setTipState({ id: item.id, x, y });
+                            }}
+                            onMouseLeave={() => setTipState(null)}>
                             <span className="flex items-center gap-1.5">
                               {item.name}
                               {hasComment && <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400/70 flex-none shrink-0" />}
@@ -507,7 +584,7 @@ function BacklogViewer() {
                         );
                       case "context":
                         return (
-                          <td key="context" className="px-3 py-1.5 w-48" title={item.context}>
+                          <td key="context" className="px-3 py-1.5 w-48">
                             <span className="block max-w-[192px] truncate text-[10px] text-foreground/55 dark:text-slate-400">{item.context}</span>
                           </td>
                         );
@@ -606,6 +683,38 @@ function BacklogViewer() {
           <p className="text-[10px] text-muted-foreground/40">Drag column headers to reorder · ⚙ Columns to show/hide · click Name to add a note</p>
         </div>
       )}
+    {tipState && (() => {
+      const ti = BACKLOG.find(b => b.id === tipState.id);
+      if (!ti) return null;
+      const tm: ItemMeta = ITEM_META[ti.id] ?? {};
+      return createPortal(
+        <div
+          style={{ position: "fixed", left: tipState.x, top: tipState.y, zIndex: 9999 }}
+          className="w-80 rounded-xl border border-border/60 bg-card shadow-2xl pointer-events-none overflow-hidden"
+        >
+          <div className="p-3 space-y-2.5">
+            {tm.category && (
+              <p className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground/60 leading-relaxed">{tm.category}</p>
+            )}
+            <p className="text-[11px] font-semibold text-foreground leading-snug">{ti.name}</p>
+            <p className="text-[11px] text-foreground/80 leading-relaxed">{ti.context}</p>
+            {tm.why && (
+              <div className="border-t border-border/40 pt-2 space-y-1">
+                <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/50">Why it stands out</p>
+                <p className="text-[11px] text-foreground/75 leading-relaxed">{tm.why}</p>
+              </div>
+            )}
+            {tm.demand && (
+              <div className="flex items-baseline gap-2 border-t border-border/40 pt-2">
+                <span className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground/50 shrink-0">Demand</span>
+                <span className="text-[10px] text-foreground/70">{tm.demand}</span>
+              </div>
+            )}
+          </div>
+        </div>,
+        document.body
+      );
+    })()}
     </div>
   );
 }
