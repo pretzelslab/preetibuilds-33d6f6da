@@ -140,6 +140,14 @@ export const SAFETY_ENGINEERING: Project[] = [
 
 export const USE_CASES: Project[] = [
   {
+    title: "Win/Loss Intelligence",
+    description: "AI system for organizational revenue intelligence — surfaces systemic deal outcome patterns across legal delays, implementation friction, champion instability, and competitive displacement. Live Claude Sonnet root cause analysis per deal: grounded evidence chain, inference risk flags, data lineage panel, and human evaluation loop. 25 synthetic deals · 5-dimension filter bar.",
+    tags: ["React", "TypeScript", "Claude API", "Recharts"],
+    industries: ["GTM", "RevOps", "Sales Intelligence"],
+    status: "preview",
+    link: "/win-loss-intelligence",
+  },
+  {
     title: "Product Intelligence Pipeline",
     description: "AI-powered pipeline integrating Salesforce Cases with Claude to surface product insights at scale. Fintech and Healthtech verticals.",
     tags: ["Python", "Claude API", "Salesforce", "React"],
