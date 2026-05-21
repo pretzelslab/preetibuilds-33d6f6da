@@ -6,6 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ReferenceLine, ResponsiveContainer, Legend, Cell,
 } from "recharts";
+import { QuantizationExplainer } from "@/components/QuantizationExplainer";
 import { PageGate } from "@/components/ui/PageGate";
 import { DiagonalWatermark } from "@/components/ui/DiagonalWatermark";
 
@@ -635,7 +636,7 @@ export default function AlgorithmicFairnessAuditor() {
   useVisitLogger("/algorithmic-fairness");
   const [pageTab, setPageTab] = useState<PageTab>("quant");
   const [tab, setTab] = useState<Tab>("scenarios");
-  const [ft9SubTab, setFt9SubTab] = useState<"experiment" | "eval">("experiment");
+  const [ft9SubTab, setFt9SubTab] = useState<"experiment" | "eval" | "explainer">("experiment");
 
   // COMPAS remediation thresholds — default 5
   const [thresholds, setThresholds] = useState({ aa: 5, cauc: 5, hisp: 5, other: 5 });
@@ -1810,7 +1811,7 @@ export default function AlgorithmicFairnessAuditor() {
 
               {/* Sub-tab nav */}
               <div className="flex gap-0 border-b border-border/40">
-                {(["experiment", "eval"] as const).map(st => (
+                {(["experiment", "eval", "explainer"] as const).map(st => (
                   <button
                     key={st}
                     onClick={() => setFt9SubTab(st)}
@@ -1820,7 +1821,7 @@ export default function AlgorithmicFairnessAuditor() {
                         : "border-transparent text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {st === "experiment" ? "Experiment" : "Eval Results"}
+                    {st === "experiment" ? "Experiment" : st === "eval" ? "Eval Results" : "Visual Explainer"}
                   </button>
                 ))}
               </div>
@@ -2097,6 +2098,9 @@ export default function AlgorithmicFairnessAuditor() {
                 </div>
 
               </div>}
+
+              {/* Visual Explainer sub-tab */}
+              {ft9SubTab === "explainer" && <QuantizationExplainer />}
 
             </div>
           );
