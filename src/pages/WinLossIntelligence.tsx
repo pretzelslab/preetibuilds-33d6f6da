@@ -4,8 +4,6 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
 } from "recharts";
-import { PageGate } from "@/components/ui/PageGate";
-import { DiagonalWatermark } from "@/components/ui/DiagonalWatermark";
 import { useVisitLogger } from "@/hooks/useVisitLogger";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -276,28 +274,30 @@ function FilterBar({
   }
 
   return (
-    <div style={{
-      padding: "10px 24px", borderBottom: "1px solid hsl(var(--border,#e2e8f0))",
-      display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
-      background: "#0a0f1a",
-    }}>
-      <span style={{ fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", marginRight: 4 }}>Filter</span>
-      {sel("segment",     ["Emerging", "Commercial", "Majors", "Enterprise"],              "Segment")}
-      {sel("region",      ["North America", "EMEA", "APAC"],                               "Region")}
-      {sel("outcome",     ["won", "lost", "stalled"],                                      "Outcome")}
-      {sel("eeCountBand", ["1–100", "101–500", "501–2K", "2K–10K", "10K+"],               "EE Count")}
-      {sel("dealType",    ["Net New", "Add-on", "Expansion"],                              "Deal Type")}
-      {isFiltered && (
-        <button
-          onClick={() => setFilterState(DEFAULT_FILTERS)}
-          style={{ padding: "5px 12px", borderRadius: 8, border: "1px solid #ef444440", background: "transparent", color: "#ef4444", fontSize: 11, cursor: "pointer" }}
-        >
-          Clear
-        </button>
-      )}
-      <span style={{ marginLeft: "auto", fontSize: 11, color: isFiltered ? "#a5b4fc" : "#64748b", fontWeight: isFiltered ? 700 : 400 }}>
-        {filteredCount}/{totalCount} deals
-      </span>
+    <div style={{ borderBottom: "1px solid hsl(var(--border,#e2e8f0))", background: "#0a0f1a" }}>
+      <div style={{
+        maxWidth: 1160, margin: "0 auto",
+        padding: "10px 24px",
+        display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
+      }}>
+        <span style={{ fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", marginRight: 4 }}>Filter</span>
+        {sel("segment",     ["Emerging", "Commercial", "Majors", "Enterprise"],              "Segment")}
+        {sel("region",      ["North America", "EMEA", "APAC"],                               "Region")}
+        {sel("outcome",     ["won", "lost", "stalled"],                                      "Outcome")}
+        {sel("eeCountBand", ["1–100", "101–500", "501–2K", "2K–10K", "10K+"],               "EE Count")}
+        {sel("dealType",    ["Net New", "Add-on", "Expansion"],                              "Deal Type")}
+        {isFiltered && (
+          <button
+            onClick={() => setFilterState(DEFAULT_FILTERS)}
+            style={{ padding: "5px 12px", borderRadius: 8, border: "1px solid #ef444440", background: "transparent", color: "#ef4444", fontSize: 11, cursor: "pointer" }}
+          >
+            Clear
+          </button>
+        )}
+        <span style={{ marginLeft: "auto", fontSize: 11, color: isFiltered ? "#a5b4fc" : "#64748b", fontWeight: isFiltered ? 700 : 400 }}>
+          {filteredCount}/{totalCount} deals
+        </span>
+      </div>
     </div>
   );
 }
@@ -1000,53 +1000,6 @@ function Tab4Governance() {
   );
 }
 
-// ─── Preview ──────────────────────────────────────────────────────────────────
-
-function WLIPreview() {
-  const won = DEALS.filter(d => d.outcome === "won").length;
-  const lost = DEALS.filter(d => d.outcome === "lost").length;
-  const stalled = DEALS.filter(d => d.outcome === "stalled").length;
-
-  return (
-    <div style={{ position: "relative", fontFamily: "'Inter','Segoe UI',sans-serif", minHeight: "100vh", background: "hsl(var(--background))" }}>
-      <DiagonalWatermark />
-      <div style={{ borderBottom: "1px solid hsl(var(--border,#e2e8f0))", padding: "14px 24px" }}>
-        <div style={{ fontSize: 20, fontWeight: 700, color: "hsl(var(--foreground))", marginBottom: 2 }}>Win/Loss Intelligence</div>
-        <div style={{ fontSize: 12, color: "#64748b" }}>AI system for organizational revenue intelligence — systemic deal outcome analysis</div>
-      </div>
-      <div style={{ padding: "24px", maxWidth: 860, display: "flex", flexDirection: "column", gap: 20 }}>
-        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-          {[
-            { label: "Total Deals", value: "25", color: "#6366f1" },
-            { label: "Win Rate", value: "36%", color: "#10b981" },
-            { label: "Avg Cycle", value: "80d", color: "#6366f1" },
-            { label: "Won / Lost / Stalled", value: `${won} / ${lost} / ${stalled}`, color: "#94a3b8" },
-          ].map(k => (
-            <div key={k.label} style={{ flex: 1, minWidth: 130, background: "hsl(var(--card,#1e293b))", border: "1px solid hsl(var(--border,#e2e8f0))", borderRadius: 12, padding: "14px 18px" }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>{k.label}</div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: k.color }}>{k.value}</div>
-            </div>
-          ))}
-        </div>
-        <div style={{ background: "hsl(var(--card,#1e293b))", border: "1px solid hsl(var(--border,#e2e8f0))", borderRadius: 12, padding: "16px 20px" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 14 }}>Top Systemic Patterns</div>
-          {PATTERNS.slice(0, 3).map(p => (
-            <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 16, padding: "10px 0", borderBottom: "1px solid hsl(var(--border,#e2e8f0))" }}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: BLOCKER_COLORS[p.id], flexShrink: 0 }} />
-              <div style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "hsl(var(--foreground))" }}>{p.label}</div>
-              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", color: "#fff", background: SEVERITY_COLORS[p.severity], padding: "2px 8px", borderRadius: 10 }}>{p.severity}</span>
-              <div style={{ textAlign: "right" }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: BLOCKER_COLORS[p.id] }}>{p.pctDeals}%</span>
-                <span style={{ fontSize: 11, color: "#64748b" }}> · +{p.avgCycleImpactDays}d</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const TABS = [
@@ -1070,11 +1023,11 @@ export default function WinLossIntelligence() {
   );
 
   return (
-    <PageGate pageId="win-loss" previewContent={<WLIPreview />}>
-      <div style={{ position: "relative", fontFamily: "'Inter','Segoe UI',sans-serif", minHeight: "100vh", background: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>
-        <DiagonalWatermark />
+    <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif", minHeight: "100vh", background: "hsl(var(--background))", color: "hsl(var(--foreground))" }}>
 
-        <div style={{ borderBottom: "1px solid hsl(var(--border,#e2e8f0))", padding: "14px 24px" }}>
+      {/* Sticky header */}
+      <div style={{ position: "sticky", top: 0, zIndex: 50, borderBottom: "1px solid hsl(var(--border,#e2e8f0))", background: "hsl(var(--background))", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto", padding: "14px 24px" }}>
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
             <div>
               <Link to="/#projects" style={{ fontSize: 11, color: "#64748b", textDecoration: "none", fontWeight: 600, letterSpacing: "0.03em", display: "block", marginBottom: 6 }}>← Back to Portfolio</Link>
@@ -1088,8 +1041,11 @@ export default function WinLossIntelligence() {
             </div>
           </div>
         </div>
+      </div>
 
-        <div style={{ borderBottom: "1px solid hsl(var(--border,#e2e8f0))", padding: "0 24px", display: "flex", gap: 0 }}>
+      {/* Tab bar */}
+      <div style={{ borderBottom: "1px solid hsl(var(--border,#e2e8f0))" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px", display: "flex", gap: 0 }}>
           {TABS.map(tab => (
             <button
               key={tab.id}
@@ -1105,23 +1061,23 @@ export default function WinLossIntelligence() {
             </button>
           ))}
         </div>
-
-        {activeTab !== "governance" && (
-          <FilterBar
-            filterState={filterState}
-            setFilterState={setFilterState}
-            filteredCount={filteredDeals.length}
-            totalCount={DEALS.length}
-          />
-        )}
-
-        <div style={{ padding: "28px 24px", maxWidth: 1100, margin: "0 auto" }}>
-          {activeTab === "overview"    && <Tab1Overview deals={filteredDeals} />}
-          {activeTab === "patterns"   && <Tab2Patterns deals={filteredDeals} />}
-          {activeTab === "evidence"   && <Tab3Evidence deals={filteredDeals} />}
-          {activeTab === "governance" && <Tab4Governance />}
-        </div>
       </div>
-    </PageGate>
+
+      {activeTab !== "governance" && (
+        <FilterBar
+          filterState={filterState}
+          setFilterState={setFilterState}
+          filteredCount={filteredDeals.length}
+          totalCount={DEALS.length}
+        />
+      )}
+
+      <div style={{ maxWidth: 1160, margin: "0 auto", padding: "28px 24px" }}>
+        {activeTab === "overview"    && <Tab1Overview deals={filteredDeals} />}
+        {activeTab === "patterns"   && <Tab2Patterns deals={filteredDeals} />}
+        {activeTab === "evidence"   && <Tab3Evidence deals={filteredDeals} />}
+        {activeTab === "governance" && <Tab4Governance />}
+      </div>
+    </div>
   );
 }
