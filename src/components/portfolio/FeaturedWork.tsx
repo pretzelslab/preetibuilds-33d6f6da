@@ -16,9 +16,11 @@ const item = {
 const FeaturedWork = () => (
   <section className="px-6 py-14">
     <div className="max-w-7xl mx-auto">
-      <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-8">
-        Applied Research & Engineering
-      </h2>
+      <div className="mb-6">
+        <span className="inline-block font-mono text-[10px] tracking-widest uppercase px-2.5 py-1 rounded bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/40 font-semibold">
+          Applied Research & Engineering
+        </span>
+      </div>
       <motion.div
         className="grid grid-cols-1 md:grid-cols-3 gap-6"
         variants={container}
@@ -34,25 +36,25 @@ const FeaturedWork = () => (
           >
             {/* Domain pill */}
             <span
-              className={`self-start text-xs font-medium px-2.5 py-0.5 rounded-full border mb-4 ${card.domainCls}`}
+              className={`self-start text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full border mb-3 ${card.domainCls}`}
             >
               {card.domain}
             </span>
 
             {/* Title */}
-            <h3 className="font-semibold text-base leading-snug mb-2">
+            <h3 className="font-semibold text-sm leading-snug mb-1.5">
               {card.title}
             </h3>
 
             {/* Problem sentence */}
-            <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
+            <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
               {card.problem}
             </p>
 
             {/* Stats */}
-            <ul className="space-y-2 mb-6 flex-1">
+            <ul className="space-y-1.5 mb-5 flex-1">
               {card.stats.map((s) => (
-                <li key={s.value + s.label} className="flex items-baseline gap-2 text-sm">
+                <li key={s.value + s.label} className="flex items-baseline gap-1.5 text-xs">
                   <span className="font-bold text-foreground whitespace-nowrap">
                     {s.value}
                   </span>
@@ -64,10 +66,10 @@ const FeaturedWork = () => (
             {/* CTA */}
             <Link
               to={card.href}
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground/80 hover:text-foreground transition-colors group"
+              className="inline-flex items-center gap-1 text-xs font-medium text-foreground/80 hover:text-foreground transition-colors group"
             >
               {card.cta}
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </motion.div>
         ))}
