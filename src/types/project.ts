@@ -8,6 +8,7 @@ export type Project = {
   status?: ProjectStatus;
   link?: string;
   externalLink?: string;
+  locked?: boolean;
 };
 
 export type FeaturedStat = {

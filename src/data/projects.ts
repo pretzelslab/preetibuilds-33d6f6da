@@ -9,6 +9,7 @@ export const RESPONSIBLE_AI: Project[] = [
     tags: ["Python", "PyTorch", "scikit-learn", "pandas", "matplotlib", "Google Colab"],
     industries: ["Financial Services", "Criminal Justice", "HR & Talent"],
     status: "live",
+    locked: true,
     link: "/algorithmic-fairness",
   },
   {
@@ -17,6 +18,7 @@ export const RESPONSIBLE_AI: Project[] = [
     tags: ["React", "TypeScript", "GDPR", "EU AI Act", "NYC LL144", "Recharts"],
     industries: ["Financial Services", "Healthcare", "HR & Talent"],
     status: "live",
+    locked: true,
     link: "/privacy-auditor",
   },
   {
@@ -25,6 +27,7 @@ export const RESPONSIBLE_AI: Project[] = [
     tags: ["LangGraph", "Python", "GitHub Actions", "Claude Haiku", "Pandas"],
     industries: ["Financial Services", "Enterprise AI", "Regulated Sectors"],
     status: "live",
+    locked: true,
     link: "/compliance-agent",
   },
   {
@@ -33,6 +36,7 @@ export const RESPONSIBLE_AI: Project[] = [
     tags: ["React", "TypeScript", "Recharts"],
     industries: ["Enterprise", "SME", "Consulting"],
     status: "live",
+    locked: true,
     link: "/ai-readiness",
   },
   {
@@ -41,6 +45,7 @@ export const RESPONSIBLE_AI: Project[] = [
     tags: ["React", "TypeScript", "Supabase"],
     industries: ["Enterprise", "Consulting", "All Sectors"],
     status: "live",
+    locked: true,
     link: "/ai-governance",
   },
   {
@@ -49,6 +54,7 @@ export const RESPONSIBLE_AI: Project[] = [
     tags: ["React", "TypeScript", "Supabase"],
     industries: ["Enterprise", "Financial Services", "Consulting"],
     status: "live",
+    locked: true,
     link: "/client-discovery",
   },
 ];
@@ -62,6 +68,7 @@ export const SUSTAINABLE_AI: Project[] = [
     tags: ["Sustainable AI", "CSRD", "EU GPAI Art.53", "ISSB S2", "GRI 305", "TypeScript"],
     industries: ["Financial Services", "Enterprise ESG", "Tech"],
     status: "live",
+    locked: true,
     link: "/sustainability-framework",
   },
   {
@@ -70,6 +77,7 @@ export const SUSTAINABLE_AI: Project[] = [
     tags: ["Sustainable AI", "TypeScript", "Electricity Maps API", "CSRD", "EU GPAI"],
     industries: ["Tech", "Enterprise ESG", "Data Centres"],
     status: "live",
+    locked: true,
     link: "/carbon-depth",
   },
   {
@@ -78,6 +86,7 @@ export const SUSTAINABLE_AI: Project[] = [
     tags: ["Sustainable AI", "CSRD Scope 2", "EU GPAI Art.53", "Recharts", "React", "TypeScript"],
     industries: ["Tech", "Enterprise ESG", "Data Centres"],
     status: "live",
+    locked: true,
     link: "/carbon-time-travel",
   },
   {
@@ -86,6 +95,7 @@ export const SUSTAINABLE_AI: Project[] = [
     tags: ["Python", "Recharts", "Sustainable AI", "EU AI Act"],
     industries: ["Financial Services", "Enterprise ESG", "Regulated AI"],
     status: "live",
+    locked: true,
     link: "/carbon-fairness",
   },
   {
@@ -94,6 +104,7 @@ export const SUSTAINABLE_AI: Project[] = [
     tags: ["Python", "FastAPI", "Electricity Maps API", "vLLM", "MLflow", "EU AI Act Art.53", "CSRD"],
     industries: ["Tech", "Enterprise ESG", "Data Centres"],
     status: "live",
+    locked: true,
     link: "/carbon-router",
     externalLink: "https://doi.org/10.5281/zenodo.19934621",
   },
@@ -103,6 +114,7 @@ export const SUSTAINABLE_AI: Project[] = [
     tags: ["Sustainable AI", "CSRD", "ISSB S2", "EU AI Act", "GRI 305", "TypeScript"],
     industries: ["Enterprise ESG", "Financial Services", "Consulting"],
     status: "live",
+    locked: true,
     link: "/sustainability-standards",
   },
 ];
@@ -116,6 +128,7 @@ export const SAFETY_ENGINEERING: Project[] = [
     tags: ["LangGraph", "Claude Haiku", "Python", "React", "TypeScript", "OWASP", "EU AI Act", "DORA"],
     industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
     status: "live",
+    locked: true,
     link: "/agent-hijacking",
   },
   {
@@ -124,6 +137,7 @@ export const SAFETY_ENGINEERING: Project[] = [
     tags: ["Python", "sentence-transformers", "MLflow", "LangGraph", "EU AI Act", "GDPR", "DORA"],
     industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
     status: "live",
+    locked: true,
     link: "/agent-drift",
   },
   {
@@ -132,6 +146,7 @@ export const SAFETY_ENGINEERING: Project[] = [
     tags: ["Python", "Claude API", "Streamlit", "YAML", "GitHub Actions", "Cursor", "FCA", "MiFID II", "GDPR", "MITRE ATLAS"],
     industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
     status: "live",
+    locked: true,
     link: "/safety-eval",
   },
 ];
@@ -170,7 +185,7 @@ export const PET_PROJECTS: Project[] = [
     title: "MedLog",
     description: "Family health journal — per-member profiles, medical events, symptom tracking, yearly analysis, and cloud sync via Supabase. Private.",
     tags: ["Vanilla JS", "Supabase", "Chart.js"],
-    status: "preview",
+    status: "live",
     link: "/medlog",
   },
   {

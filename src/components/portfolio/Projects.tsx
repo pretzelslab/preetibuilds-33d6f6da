@@ -57,7 +57,7 @@ const ProjectRow = ({ project, index }: { project: Project; index: number }) => 
         </div>
         {(project.link || project.externalLink) && (
           <span className="text-xs font-medium text-muted-foreground group-hover:text-primary transition-colors shrink-0 mt-0.5">
-            {project.status === "preview" ? "Preview →" : "View →"}
+            {project.locked ? "Preview →" : "View →"}
           </span>
         )}
       </div>
