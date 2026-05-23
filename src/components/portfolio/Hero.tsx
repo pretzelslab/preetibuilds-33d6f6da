@@ -13,6 +13,7 @@ const DOMAIN_INDEX = [
     count: SAFETY_ENGINEERING.length,
     anchor: "#safety-engineering",
     desc: "Adversarial LLM evaluation, red-teaming, pre-deployment safety assurance, failure mode testing",
+    bullets: ["6 agentic safety systems", "OWASP LLM Top 10 mapping", "MITRE ATLAS threat analysis", "NIST AI RMF alignment"],
     cls: "text-violet-400 border-violet-500/25 hover:bg-violet-500/5",
   },
   {
@@ -20,6 +21,7 @@ const DOMAIN_INDEX = [
     count: RESPONSIBLE_AI.length,
     anchor: "#responsible-ai",
     desc: "Fairness audits, privacy impact assessments, governance workflows, compliance-by-design systems",
+    bullets: ["1.92× disparate impact finding", "INT4 quantization bias study", "CAIR preprint", "ZIDR preprint"],
     cls: "text-blue-400 border-blue-500/25 hover:bg-blue-500/5",
   },
   {
@@ -104,6 +106,16 @@ const Hero = () => (
                   className="overflow-hidden"
                 >
                   <p className="text-xs text-muted-foreground leading-relaxed">{d.desc}</p>
+                  {"bullets" in d && d.bullets && (
+                    <ul className="mt-2 space-y-0.5">
+                      {d.bullets.map(b => (
+                        <li key={b} className="flex items-center gap-1.5 text-[10px] text-muted-foreground/70 font-mono">
+                          <span className="opacity-40">·</span>
+                          <span>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </motion.div>
               </motion.a>
             ))}

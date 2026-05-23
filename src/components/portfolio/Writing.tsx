@@ -35,10 +35,10 @@ const Writing = () => (
   <section className="px-6 py-14 border-t border-border/40">
     <div className="max-w-7xl mx-auto">
       <div className="flex items-end justify-between mb-8">
-        <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+        <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
           Writing & Notes
-        </h2>
-        <p className="text-xs text-muted-foreground/50 font-mono">Essays</p>
+        </p>
+        <p className="text-[10px] text-muted-foreground/50 font-mono">Essays</p>
       </div>
       <motion.div
         className="grid grid-cols-1 md:grid-cols-3 gap-6"
@@ -53,13 +53,13 @@ const Writing = () => (
             variants={item}
             className="flex flex-col rounded-xl border border-border/50 bg-card/40 p-6"
           >
-            <span className={`self-start text-xs font-medium px-2.5 py-0.5 rounded-full border mb-4 ${essay.domainCls}`}>
+            <span className={`self-start text-[10px] font-medium px-2.5 py-0.5 rounded-full border mb-4 ${essay.domainCls}`}>
               {essay.domain}
             </span>
-            <h3 className="font-semibold text-base text-foreground leading-snug mb-3">
+            <h3 className="font-semibold text-sm text-foreground leading-snug mb-3">
               {essay.title}
             </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+            <p className="text-xs text-muted-foreground leading-relaxed flex-1">
               {essay.abstract}
             </p>
           </motion.div>

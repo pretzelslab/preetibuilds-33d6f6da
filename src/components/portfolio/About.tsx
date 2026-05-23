@@ -20,13 +20,13 @@ const About = () => (
           <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-4">
             About
           </p>
-          <p className="text-sm text-foreground/80 leading-relaxed mb-3">
+          <p className="text-xs text-foreground/80 leading-relaxed mb-3">
             Works at the intersection of AI governance, product systems, and enterprise decisioning.
             Builds empirical AI safety tools — adversarial evaluation frameworks, fairness audits,
             carbon-aware routing infrastructure — and the governance pipelines that make responsible
             AI actionable at scale.
           </p>
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className="text-xs text-muted-foreground leading-relaxed">
             Eighteen years designing operating models across B2B SaaS, GTM, CRM, and regulatory
             compliance environments. Currently focused on pre-deployment safety assurance, governance
             tooling for regulated sectors, and the carbon-fairness tradeoff in production AI systems.
@@ -44,7 +44,7 @@ const About = () => (
           </p>
           <ul className="space-y-2.5">
             {FOCUS_ITEMS.map((item) => (
-              <li key={item} className="flex gap-2.5 text-sm text-muted-foreground/80 leading-relaxed">
+              <li key={item} className="flex gap-2.5 text-xs text-muted-foreground/80 leading-relaxed">
                 <span className="text-primary/50 shrink-0 mt-0.5">✦</span>
                 <span>{item}</span>
               </li>
