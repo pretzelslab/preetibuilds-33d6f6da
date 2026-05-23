@@ -8,7 +8,7 @@ export const RESPONSIBLE_AI: Project[] = [
     description: "Audits AI systems for hidden bias — from quantization-induced disparate impact to real-world criminal justice (COMPAS recidivism). Applies disparate impact ratio, Cohen's d, false positive/negative rate parity, and chi-square testing.",
     tags: ["Python", "PyTorch", "scikit-learn", "pandas", "matplotlib", "Google Colab"],
     industries: ["Financial Services", "Criminal Justice", "HR & Talent"],
-    status: "preview",
+    status: "live",
     link: "/algorithmic-fairness",
   },
   {
@@ -16,7 +16,7 @@ export const RESPONSIBLE_AI: Project[] = [
     description: "AI-specific DPIA tool with dynamic combinatorial risk scoring — risks multiply, not add. Maps 12-question profile to 13 regulations (GDPR, EU AI Act Annex III, NYC LL144, CCPA, Illinois BIPA, Colorado AI Act). Includes differential privacy cost curve and proxy discrimination detection.",
     tags: ["React", "TypeScript", "GDPR", "EU AI Act", "NYC LL144", "Recharts"],
     industries: ["Financial Services", "Healthcare", "HR & Talent"],
-    status: "preview",
+    status: "live",
     link: "/privacy-auditor",
   },
   {
@@ -24,7 +24,7 @@ export const RESPONSIBLE_AI: Project[] = [
     description: "LangGraph multi-node agent + Python data pipeline + GitHub Actions CI/CD. Computes fairness metrics (DIR, FPR, FNR) against EU AI Act and NIST thresholds, routes on severity, and auto-generates compliance reports and escalation memos — on a weekly schedule.",
     tags: ["LangGraph", "Python", "GitHub Actions", "Claude Haiku", "Pandas"],
     industries: ["Financial Services", "Enterprise AI", "Regulated Sectors"],
-    status: "preview",
+    status: "live",
     link: "/compliance-agent",
   },
   {
@@ -32,7 +32,7 @@ export const RESPONSIBLE_AI: Project[] = [
     description: "25-question self-service diagnostic across Strategy, Data, Technology, People, and Governance — scored report with ROI signal and prioritised gaps.",
     tags: ["React", "TypeScript", "Recharts"],
     industries: ["Enterprise", "SME", "Consulting"],
-    status: "preview",
+    status: "live",
     link: "/ai-readiness",
   },
   {
@@ -40,7 +40,7 @@ export const RESPONSIBLE_AI: Project[] = [
     description: "On-demand policy tracker — EU AI Act, NIST AI RMF, ISO 42001, FAIR, AAIA — with clause-level detail, four-pillar framework, and client risk workbook. Private.",
     tags: ["React", "TypeScript", "Supabase"],
     industries: ["Enterprise", "Consulting", "All Sectors"],
-    status: "preview",
+    status: "live",
     link: "/ai-governance",
   },
   {
@@ -48,7 +48,7 @@ export const RESPONSIBLE_AI: Project[] = [
     description: "5-phase client engagement tool — Govern, Map, Measure, Report, Monitor — with risk register, compliance deadlines, audit fields, and backup/restore. Private.",
     tags: ["React", "TypeScript", "Supabase"],
     industries: ["Enterprise", "Financial Services", "Consulting"],
-    status: "preview",
+    status: "live",
     link: "/client-discovery",
   },
 ];
@@ -61,7 +61,7 @@ export const SUSTAINABLE_AI: Project[] = [
     description: "5-step practitioner framework for measuring, benchmarking, optimising, and disclosing the environmental footprint of AI systems. Maps to CSRD (2024), EU GPAI Art.53 (Aug 2025), and ISSB S2. Includes business case intake form with personalised obligation mapping and penalty exposure.",
     tags: ["Sustainable AI", "CSRD", "EU GPAI Art.53", "ISSB S2", "GRI 305", "TypeScript"],
     industries: ["Financial Services", "Enterprise ESG", "Tech"],
-    status: "preview",
+    status: "live",
     link: "/sustainability-framework",
   },
   {
@@ -69,7 +69,7 @@ export const SUSTAINABLE_AI: Project[] = [
     description: "Interactive calculator for AI training and inference energy, carbon, and water footprint. Compare two model configurations side by side with regulatory flags (EU GPAI, CSRD, GRI 305). Formulas validated against Strubell 2019, Patterson 2021, BLOOM 2022.",
     tags: ["Sustainable AI", "TypeScript", "Electricity Maps API", "CSRD", "EU GPAI"],
     industries: ["Tech", "Enterprise ESG", "Data Centres"],
-    status: "preview",
+    status: "live",
     link: "/carbon-depth",
   },
   {
@@ -77,7 +77,7 @@ export const SUSTAINABLE_AI: Project[] = [
     description: "Training an AI model emits carbon once. Deploying it emits carbon every day. This animated tool shows the exact crossover point where cumulative inference carbon overtakes total training carbon — and how model size compounds that gap. BLOOM 176B at 1B tokens/day crosses on Day 108. Llama 2 70B emits 9× more per inference call than 7B, compounding daily.",
     tags: ["Sustainable AI", "CSRD Scope 2", "EU GPAI Art.53", "Recharts", "React", "TypeScript"],
     industries: ["Tech", "Enterprise ESG", "Data Centres"],
-    status: "preview",
+    status: "live",
     link: "/carbon-time-travel",
   },
   {
@@ -85,7 +85,7 @@ export const SUSTAINABLE_AI: Project[] = [
     description: "The only tool that plots carbon cost against algorithmic fairness simultaneously. As you compress an AI model to save energy, minority groups are harmed more — this tool quantifies the tradeoff and recommends the optimal configuration under EU AI Act thresholds.",
     tags: ["Python", "Recharts", "Sustainable AI", "EU AI Act"],
     industries: ["Financial Services", "Enterprise ESG", "Regulated AI"],
-    status: "preview",
+    status: "live",
     link: "/carbon-fairness",
   },
   {
@@ -93,7 +93,7 @@ export const SUSTAINABLE_AI: Project[] = [
     description: "Routes each LLM prompt to the right model size based on task complexity, live grid carbon intensity, latency budget, and accuracy floor — simultaneously. Preliminary analysis: ~62% carbon reduction on a 1M prompt/day system by routing 65% of prompts to a 7B model. The only open tool combining per-prompt routing + real-time grid data + production serving integration. EU AI Act Art.53 · CSRD Scope 2.",
     tags: ["Python", "FastAPI", "Electricity Maps API", "vLLM", "MLflow", "EU AI Act Art.53", "CSRD"],
     industries: ["Tech", "Enterprise ESG", "Data Centres"],
-    status: "preview",
+    status: "live",
     link: "/carbon-router",
     externalLink: "https://doi.org/10.5281/zenodo.19934621",
   },
@@ -102,7 +102,7 @@ export const SUSTAINABLE_AI: Project[] = [
     description: "Live reference across 11 disclosure frameworks — CSRD/ESRS E1, EU AI Act GPAI, ISSB S2, GRI 305, TCFD, SEC Climate Rule, and more. Each framework: AI-specific obligations, enforcement status, penalty exposure, and jurisdiction scope. Includes tool directory and industry adoption map.",
     tags: ["Sustainable AI", "CSRD", "ISSB S2", "EU AI Act", "GRI 305", "TypeScript"],
     industries: ["Enterprise ESG", "Financial Services", "Consulting"],
-    status: "preview",
+    status: "live",
     link: "/sustainability-standards",
   },
 ];
@@ -115,7 +115,7 @@ export const SAFETY_ENGINEERING: Project[] = [
     description: "Live simulation of OWASP LLM Top 10 2025 #1 — Indirect Prompt Injection. A finance LLM agent is hijacked via a malicious PDF: its goal is silently overwritten, then it exfiltrates 10 customer records using only its own legitimate tools. Includes two-layer detection (rule-based + Claude Haiku judge), HITL approval flow, and blast radius risk model. EU AI Act Art.9 · DORA · GDPR Art.33.",
     tags: ["LangGraph", "Claude Haiku", "Python", "React", "TypeScript", "OWASP", "EU AI Act", "DORA"],
     industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
-    status: "preview",
+    status: "live",
     link: "/agent-hijacking",
   },
   {
@@ -123,7 +123,7 @@ export const SAFETY_ENGINEERING: Project[] = [
     description: "Detects when a finance LLM agent silently drifts from its original goal. After each tool call, cosine similarity between the agent's current intent and original task embedding flags SAFE / DRIFTING / ROGUE. A KPI-pressure memo nudges the agent to omit loss-making product lines — drift is caught at Step 2 before the fabricated report is written. HITL gate + MLflow audit trail. EU AI Act Art.9 · GDPR Art.5 · DORA.",
     tags: ["Python", "sentence-transformers", "MLflow", "LangGraph", "EU AI Act", "GDPR", "DORA"],
     industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
-    status: "preview",
+    status: "live",
     link: "/agent-drift",
   },
   {
@@ -131,7 +131,7 @@ export const SAFETY_ENGINEERING: Project[] = [
     description: "Production-grade safety evaluation pipeline for LLMs in regulated financial services. 40 adversarial test cases across 5 risk categories — prompt injection, regulatory hallucination, suitability failures, data leakage, RAG poisoning. Claude-as-judge scoring with Streamlit compliance matrix, run comparison, and multi-model support. Built for pre-deployment assurance against FCA Consumer Duty, MiFID II, GDPR, and MITRE ATLAS.",
     tags: ["Python", "Claude API", "Streamlit", "YAML", "GitHub Actions", "Cursor", "FCA", "MiFID II", "GDPR", "MITRE ATLAS"],
     industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
-    status: "preview",
+    status: "live",
     link: "/safety-eval",
   },
 ];
@@ -144,7 +144,7 @@ export const USE_CASES: Project[] = [
     description: "AI system for organizational revenue intelligence — surfaces systemic deal outcome patterns across legal delays, implementation friction, champion instability, and competitive displacement. Live Claude Sonnet root cause analysis per deal: grounded evidence chain, inference risk flags, data lineage panel, and human evaluation loop. 25 synthetic deals · 5-dimension filter bar.",
     tags: ["React", "TypeScript", "Claude API", "Recharts"],
     industries: ["GTM", "RevOps", "Sales Intelligence"],
-    status: "preview",
+    status: "live",
     link: "/win-loss-intelligence",
   },
   {

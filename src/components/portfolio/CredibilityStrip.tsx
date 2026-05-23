@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 const PROOF_POINTS: { label: string; href: string; external?: boolean }[] = [
   { label: "2 Preprints · Zenodo",           href: "/research" },
   { label: "ACM FAccT Target",               href: "/research" },
-  { label: "18+ Yrs GTM · Product · Enterprise", href: "#about" },
+  { label: "Product · Program · GTM", href: "#about" },
   { label: "OWASP · MITRE ATLAS",            href: "#safety-engineering" },
   { label: "EU AI Act · CSRD · GDPR",        href: "#responsible-ai" },
   { label: "6 Agentic Eval Systems",          href: "#safety-engineering" },
