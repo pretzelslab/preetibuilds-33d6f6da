@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { SAFETY_ENGINEERING, RESPONSIBLE_SUSTAINABLE_FLAGSHIP, PRODUCT_SYSTEMS } from "@/data/projects";
+import { SAFETY_ENGINEERING, APPLIED_RESEARCH, PRODUCT_SYSTEMS } from "@/data/projects";
 
 const CREDENTIALS = [
   "Built 6 AI safety prototypes exploring jailbreak resistance, goal drift, adversarial misuse, and risk containment.",
@@ -9,27 +9,28 @@ const CREDENTIALS = [
 
 const DOMAIN_INDEX = [
   {
+    label: "Product & GTM Systems",
+    count: PRODUCT_SYSTEMS.length,
+    anchor: "#product-gtm",
+    desc: "Founder-led product development, revenue intelligence, GTM automation, and operating systems",
+    bullets: ["Larkline — agency OS, customer discovery", "Win/Loss Intelligence — live Claude analysis", "GTM Tech Stack — CRM + pipeline automation"],
+    cls: "text-amber-400 border-amber-500/25 hover:bg-amber-500/5",
+  },
+  {
+    label: "Applied Research & Engineering",
+    count: APPLIED_RESEARCH.length,
+    anchor: "#applied-research",
+    desc: "Original research and production systems — adversarial robustness, fairness audits, carbon routing",
+    bullets: ["ZIDR preprint — physical-proximity attack taxonomy", "CAIR preprint — 45.5% carbon reduction", "1.92× disparate impact finding, COMPAS"],
+    cls: "text-blue-400 border-blue-500/25 hover:bg-blue-500/5",
+  },
+  {
     label: "Safety Engineering",
     count: SAFETY_ENGINEERING.length,
     anchor: "#safety-engineering",
     desc: "Adversarial LLM evaluation, red-teaming, pre-deployment safety assurance, failure mode testing",
-    bullets: ["6 agentic safety systems", "OWASP LLM Top 10 mapping", "MITRE ATLAS threat analysis", "NIST AI RMF alignment"],
+    bullets: ["OWASP LLM Top 10 — indirect prompt injection", "Goal drift detection — SAFE/DRIFTING/ROGUE", "40-case safety eval suite, 5 risk categories"],
     cls: "text-violet-400 border-violet-500/25 hover:bg-violet-500/5",
-  },
-  {
-    label: "Responsible & Sustainable AI",
-    count: RESPONSIBLE_SUSTAINABLE_FLAGSHIP.length,
-    anchor: "#responsible-sustainable",
-    desc: "Fairness audits, adversarial robustness benchmarks, and carbon-aware inference systems",
-    bullets: ["1.92× disparate impact finding", "ZIDR preprint — physical-proximity attacks", "CAIR preprint — 45.5% carbon reduction", "EU AI Act · GDPR · CSRD compliance"],
-    cls: "text-blue-400 border-blue-500/25 hover:bg-blue-500/5",
-  },
-  {
-    label: "Product Systems",
-    count: PRODUCT_SYSTEMS.length,
-    anchor: "#product-systems",
-    desc: "Revenue intelligence, GTM automation, and a founder-led agency operating system",
-    cls: "text-amber-400 border-amber-500/25 hover:bg-amber-500/5",
   },
 ];
 

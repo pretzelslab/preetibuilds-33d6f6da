@@ -3,8 +3,9 @@ import { Link } from "react-router-dom";
 import type { Project } from "@/types/project";
 import {
   SAFETY_ENGINEERING,
-  RESPONSIBLE_SUSTAINABLE_FLAGSHIP,
+  APPLIED_RESEARCH,
   PRODUCT_SYSTEMS,
+  RESPONSIBLE_AI_GOVERNANCE,
 } from "@/data/projects";
 
 const STATUS_BADGE: Record<string, { label: string; classes: string }> = {
@@ -149,6 +150,26 @@ const Projects = () => (
   <section id="projects" className="py-6 px-6 scroll-mt-20">
     <div className="max-w-7xl mx-auto">
 
+      <div id="product-gtm" className="scroll-mt-20" />
+      <SectionHeader
+        label="Product & GTM Systems"
+        subtitle="Founder-led product development, revenue intelligence, and GTM automation — built from 18+ years operating B2B SaaS, GTM, and CRM stacks."
+      />
+      <div className="mb-10">
+        {PRODUCT_SYSTEMS.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+      </div>
+
+      <div id="applied-research" className="scroll-mt-20" />
+      <SectionHeader
+        label="Applied Research & Engineering"
+        subtitle="Original research and production systems — adversarial robustness benchmarks, statistical fairness audits, and carbon-aware inference routing. Two Zenodo preprints."
+      />
+      <div className="mb-10">
+        {APPLIED_RESEARCH.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+      </div>
+
+      <PublicationsSection />
+
       <div id="safety-engineering" className="scroll-mt-20" />
       <SectionHeader
         label="Safety Engineering"
@@ -158,25 +179,14 @@ const Projects = () => (
         {SAFETY_ENGINEERING.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
 
-      <div id="responsible-sustainable" className="scroll-mt-20" />
+      <div id="responsible-ai" className="scroll-mt-20" />
       <SectionHeader
-        label="Responsible & Sustainable AI"
-        subtitle="Statistical fairness audits, adversarial robustness benchmarks, and carbon-aware inference systems — built for EU AI Act, GDPR, ECOA, and CSRD compliance."
+        label="Responsible AI & Governance"
+        subtitle="Privacy impact assessment, agentic compliance pipelines, and policy governance tooling — built for EU AI Act, GDPR, NIST AI RMF, and ISO 42001 enforcement."
       />
       <div className="mb-10">
-        {RESPONSIBLE_SUSTAINABLE_FLAGSHIP.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+        {RESPONSIBLE_AI_GOVERNANCE.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
-
-      <div id="product-systems" className="scroll-mt-20" />
-      <SectionHeader
-        label="Product Systems"
-        subtitle="Revenue intelligence, GTM automation, and a founder-led agency OS — built from 18+ years operating B2B SaaS, GTM, and CRM stacks."
-      />
-      <div className="mb-10">
-        {PRODUCT_SYSTEMS.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
-      </div>
-
-      <PublicationsSection />
 
       {/* Research Lab link */}
       <div className="border border-border/50 rounded-xl px-5 py-4 bg-muted/30 mb-6">
@@ -186,7 +196,7 @@ const Projects = () => (
               More Work
             </p>
             <p className="text-xs text-foreground/70">
-              13 additional tools — responsible AI auditors, carbon calculators, sustainability frameworks, and more.
+              10 additional tools — carbon calculators, sustainability frameworks, readiness assessments, and more.
             </p>
           </div>
           <Link

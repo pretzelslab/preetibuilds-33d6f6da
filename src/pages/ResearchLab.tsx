@@ -106,13 +106,13 @@ const ResearchLab = () => {
           </p>
           <h1 className="text-xl font-semibold tracking-tight text-foreground mb-2">Research Lab</h1>
           <p className="text-sm text-muted-foreground max-w-2xl">
-            The full body of work beyond the nine flagship projects — auditors, calculators, dashboards, disclosure frameworks, and personal tools. All live and accessible.
+            The full body of work beyond the twelve flagship projects — carbon calculators, sustainability frameworks, readiness assessments, and personal tools. All live and accessible.
           </p>
         </div>
 
         <SectionHeader
           label="Responsible AI"
-          subtitle="Privacy impact, compliance automation, readiness diagnostics, and governance tooling — built for EU AI Act, GDPR, NIST AI RMF, and ISO 42001."
+          subtitle="Readiness diagnostics and risk assessment tooling."
         />
         <div className="mb-10">
           {RESEARCH_LAB_RESPONSIBLE_AI.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}

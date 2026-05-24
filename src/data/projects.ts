@@ -32,9 +32,9 @@ export const SAFETY_ENGINEERING: Project[] = [
   },
 ];
 
-// ── Responsible & Sustainable AI — Homepage flagship (3) ─────────────────────
+// ── Applied Research & Engineering — Homepage flagship (3) ───────────────────
 
-export const RESPONSIBLE_SUSTAINABLE_FLAGSHIP: Project[] = [
+export const APPLIED_RESEARCH: Project[] = [
   {
     title: "Gendered Adversarial Robustness — ZIDR Benchmark",
     description: "First benchmark taxonomy for physical-proximity attacks on AI safety systems. A physically proximate adversary — colleague, authority figure, stranger with local knowledge — can suppress AI-based threat detection before a safety system fires, using no digital exploit. ZIDR (Zero-Interaction Danger Rate) quantifies pre-trigger harm activation absent from all existing safety eval frameworks. 5 attack methods · 4 target layers · zero-interaction probe design.",
@@ -64,9 +64,17 @@ export const RESPONSIBLE_SUSTAINABLE_FLAGSHIP: Project[] = [
   },
 ];
 
-// ── Product Systems — Homepage flagship (3) ───────────────────────────────────
+// ── Product & GTM Systems — Homepage flagship (3) ────────────────────────────
 
 export const PRODUCT_SYSTEMS: Project[] = [
+  {
+    title: "Larkline",
+    description: "Building an operating system for creator and talent agencies. Conducting customer discovery, validating operational workflows, and designing AI-assisted revenue operations infrastructure covering intake, talent matching, pipeline management, and follow-up automation.",
+    tags: ["Founder", "AI Systems Design", "Product Strategy", "Customer Discovery", "Next.js", "TypeScript", "Supabase", "Claude API"],
+    industries: ["Creator Economy", "Agency Ops", "SaaS"],
+    status: "discovery",
+    externalLink: "https://larkline.app",
+  },
   {
     title: "Win/Loss Intelligence",
     description: "AI system for organizational revenue intelligence — surfaces systemic deal outcome patterns across legal delays, implementation friction, champion instability, and competitive displacement. Live Claude Sonnet root cause analysis per deal: grounded evidence chain, inference risk flags, data lineage panel, and human evaluation loop. 25 synthetic deals · 5-dimension filter bar.",
@@ -82,19 +90,11 @@ export const PRODUCT_SYSTEMS: Project[] = [
     status: "live",
     link: "/gtm-techstack",
   },
-  {
-    title: "Larkline",
-    description: "Building an operating system for creator and talent agencies. Conducting customer discovery, validating operational workflows, and designing AI-assisted revenue operations infrastructure covering intake, talent matching, pipeline management, and follow-up automation.",
-    tags: ["Founder", "AI Systems Design", "Product Strategy", "Customer Discovery", "Next.js", "TypeScript", "Supabase", "Claude API"],
-    industries: ["Creator Economy", "Agency Ops", "SaaS"],
-    status: "discovery",
-    externalLink: "https://larkline.app",
-  },
 ];
 
-// ── Research Lab — Responsible AI (5) ────────────────────────────────────────
+// ── Responsible AI & Governance — Homepage flagship (3) ──────────────────────
 
-export const RESEARCH_LAB_RESPONSIBLE_AI: Project[] = [
+export const RESPONSIBLE_AI_GOVERNANCE: Project[] = [
   {
     title: "Privacy Impact Auditor",
     description: "AI-specific DPIA tool with dynamic combinatorial risk scoring — risks multiply, not add. Maps 12-question profile to 13 regulations (GDPR, EU AI Act Annex III, NYC LL144, CCPA, Illinois BIPA, Colorado AI Act). Includes differential privacy cost curve and proxy discrimination detection.",
@@ -114,15 +114,6 @@ export const RESEARCH_LAB_RESPONSIBLE_AI: Project[] = [
     link: "/compliance-agent",
   },
   {
-    title: "AI Readiness Assessment",
-    description: "25-question self-service diagnostic across Strategy, Data, Technology, People, and Governance — scored report with ROI signal and prioritised gaps.",
-    tags: ["React", "TypeScript", "Recharts"],
-    industries: ["Enterprise", "SME", "Consulting"],
-    status: "live",
-    locked: true,
-    link: "/ai-readiness",
-  },
-  {
     title: "AI Ethics & Governance Tracker",
     description: "On-demand policy tracker — EU AI Act, NIST AI RMF, ISO 42001, FAIR, AAIA — with clause-level detail, four-pillar framework, and client risk workbook. Private.",
     tags: ["React", "TypeScript", "Supabase"],
@@ -130,6 +121,20 @@ export const RESEARCH_LAB_RESPONSIBLE_AI: Project[] = [
     status: "live",
     locked: true,
     link: "/ai-governance",
+  },
+];
+
+// ── Research Lab — Responsible AI (2) ────────────────────────────────────────
+
+export const RESEARCH_LAB_RESPONSIBLE_AI: Project[] = [
+  {
+    title: "AI Readiness Assessment",
+    description: "25-question self-service diagnostic across Strategy, Data, Technology, People, and Governance — scored report with ROI signal and prioritised gaps.",
+    tags: ["React", "TypeScript", "Recharts"],
+    industries: ["Enterprise", "SME", "Consulting"],
+    status: "live",
+    locked: true,
+    link: "/ai-readiness",
   },
   {
     title: "AI Risk Assessment",
