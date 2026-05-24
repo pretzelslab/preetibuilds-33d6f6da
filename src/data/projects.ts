@@ -178,17 +178,22 @@ export const USE_CASES: Project[] = [
   },
 ];
 
+// ── Founder Project ───────────────────────────────────────────────────────────
+
+export const FOUNDER_PROJECTS: Project[] = [
+  {
+    title: "Larkline",
+    description: "Building an operating system for creator and talent agencies. Conducting customer discovery, validating operational workflows, and designing AI-assisted revenue operations infrastructure covering intake, talent matching, pipeline management, and follow-up automation.",
+    tags: ["Founder", "AI Systems Design", "Product Strategy", "Customer Discovery", "Next.js", "TypeScript", "Supabase", "Claude API"],
+    industries: ["Creator Economy", "Agency Ops", "SaaS"],
+    status: "discovery",
+    externalLink: "https://larkline.app",
+  },
+];
+
 // ── Pet Projects ──────────────────────────────────────────────────────────────
 
 export const PET_PROJECTS: Project[] = [
-  {
-    title: "Larkline",
-    description: "Agency Back-Office OS — AI-powered intake triage, roster matching, pipeline tracking, and revenue ops for creator management, speaker bureaus, PR, and modeling agencies. Multi-tenant SaaS: email arrives → classified in seconds → best-fit talent matched → card on pipeline → deal tracked to payment.",
-    tags: ["Next.js", "TypeScript", "Supabase", "Claude API", "Cloudflare Workers"],
-    industries: ["SaaS", "Agency Ops", "Creator Economy"],
-    status: "building",
-    externalLink: "https://larkline.app",
-  },
   {
     title: "MedLog",
     description: "Family health journal — per-member profiles, medical events, symptom tracking, yearly analysis, and cloud sync via Supabase. Private.",

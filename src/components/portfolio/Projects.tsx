@@ -6,14 +6,16 @@ import {
   SUSTAINABLE_AI,
   USE_CASES,
   SAFETY_ENGINEERING,
+  FOUNDER_PROJECTS,
   PET_PROJECTS,
 } from "@/data/projects";
 
 const STATUS_BADGE: Record<string, { label: string; classes: string }> = {
-  live:     { label: "Live",     classes: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
-  preview:  { label: "Preview",  classes: "bg-amber-500/10  text-amber-600  dark:text-amber-400  border-amber-500/20"  },
-  building: { label: "Building", classes: "bg-blue-500/10   text-blue-600   dark:text-blue-400   border-blue-500/20"   },
-  upcoming: { label: "Upcoming", classes: "bg-muted text-muted-foreground border-border"                                },
+  live:      { label: "Live",      classes: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
+  preview:   { label: "Preview",   classes: "bg-amber-500/10  text-amber-600  dark:text-amber-400  border-amber-500/20"  },
+  building:  { label: "Building",  classes: "bg-blue-500/10   text-blue-600   dark:text-blue-400   border-blue-500/20"   },
+  upcoming:  { label: "Upcoming",  classes: "bg-muted text-muted-foreground border-border"                                },
+  discovery: { label: "Discovery", classes: "bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20" },
 };
 
 const ProjectRow = ({ project, index }: { project: Project; index: number }) => {
@@ -119,9 +121,37 @@ const Projects = () => (
         {USE_CASES.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
 
+      <div id="founder" className="scroll-mt-20" />
+      <SectionHeader
+        label="Founder & Product Development"
+        subtitle="Identifying operational problems in niche markets, conducting customer discovery, and building products."
+      />
+      <div className="mb-10">
+        {FOUNDER_PROJECTS.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+      </div>
+
       <SectionHeader label="Pet Projects" />
-      <div>
+      <div className="mb-10">
         {PET_PROJECTS.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+      </div>
+
+      {/* Building Now */}
+      <div className="border border-border/50 rounded-xl px-5 py-4 bg-muted/30">
+        <p className="text-[10px] font-mono tracking-widest uppercase text-muted-foreground mb-3">
+          Building Now
+        </p>
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          {[
+            "Larkline — agency revenue operations",
+            "Agentic AI systems",
+            "AI safety evaluation frameworks",
+          ].map((item) => (
+            <span key={item} className="flex items-center gap-1.5 text-xs text-foreground/70">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
+              {item}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   </section>

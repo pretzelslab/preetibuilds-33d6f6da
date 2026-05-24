@@ -1,4 +1,4 @@
-export type ProjectStatus = "live" | "preview" | "building" | "upcoming";
+export type ProjectStatus = "live" | "preview" | "building" | "upcoming" | "discovery";
 
 export type Project = {
   title: string;
