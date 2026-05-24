@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Github, Linkedin } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 
-const CONTACT_EMAIL = "preeti.raghuveer@gmail.com";
+const CONTACT_EMAIL = "chinmayipriti@gmail.com";
 
 const Navbar = () => (
   <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-lg border-b">

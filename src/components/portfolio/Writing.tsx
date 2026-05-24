@@ -21,50 +21,39 @@ const PLACEHOLDER_ESSAYS = [
   },
 ];
 
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.1 } },
-};
-
-const item = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
-};
-
 const Writing = () => (
   <section className="px-6 py-14 border-t border-border/40">
     <div className="max-w-7xl mx-auto">
-      <div className="flex items-end justify-between mb-8">
+      <div className="flex items-end justify-between mb-6">
         <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
           Writing & Notes
         </p>
         <p className="text-[10px] text-muted-foreground/50 font-mono">Essays</p>
       </div>
-      <motion.div
-        className="grid grid-cols-1 md:grid-cols-3 gap-6"
-        variants={container}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, margin: "-60px" }}
-      >
-        {PLACEHOLDER_ESSAYS.map((essay) => (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {PLACEHOLDER_ESSAYS.map((essay, i) => (
           <motion.div
             key={essay.domain + essay.title}
-            variants={item}
-            className="flex flex-col rounded-xl border border-border/50 bg-card/40 p-6"
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.08, duration: 0.4, ease: "easeOut" }}
+            className="group flex flex-col rounded-xl border border-border/50 bg-card/40 px-4 py-3 cursor-default hover:border-border/80 transition-colors"
           >
-            <span className={`self-start text-[10px] font-medium px-2.5 py-0.5 rounded-full border mb-4 ${essay.domainCls}`}>
+            <span className={`self-start text-[10px] font-medium px-2.5 py-0.5 rounded-full border mb-3 ${essay.domainCls}`}>
               {essay.domain}
             </span>
-            <h3 className="font-semibold text-sm text-foreground leading-snug mb-3">
+            <h3 className="font-semibold text-sm text-foreground leading-snug">
               {essay.title}
             </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed flex-1">
-              {essay.abstract}
-            </p>
+            <div className="overflow-hidden max-h-0 group-hover:max-h-48 transition-all duration-300 ease-out">
+              <p className="text-xs text-muted-foreground leading-relaxed mt-3">
+                {essay.abstract}
+              </p>
+            </div>
           </motion.div>
         ))}
-      </motion.div>
+      </div>
     </div>
   </section>
 );
