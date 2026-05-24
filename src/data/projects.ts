@@ -32,9 +32,9 @@ export const SAFETY_ENGINEERING: Project[] = [
   },
 ];
 
-// ── Applied Research & Engineering — Homepage flagship (3) ───────────────────
+// ── Research & Governance — Homepage flagship (3) ────────────────────────────
 
-export const APPLIED_RESEARCH: Project[] = [
+export const RESEARCH_GOVERNANCE: Project[] = [
   {
     title: "Gendered Adversarial Robustness — ZIDR Benchmark",
     description: "First benchmark taxonomy for physical-proximity attacks on AI safety systems. A physically proximate adversary — colleague, authority figure, stranger with local knowledge — can suppress AI-based threat detection before a safety system fires, using no digital exploit. ZIDR (Zero-Interaction Danger Rate) quantifies pre-trigger harm activation absent from all existing safety eval frameworks. 5 attack methods · 4 target layers · zero-interaction probe design.",
@@ -69,8 +69,8 @@ export const APPLIED_RESEARCH: Project[] = [
 export const PRODUCT_SYSTEMS: Project[] = [
   {
     title: "Larkline",
-    description: "Building an operating system for creator and talent agencies. Conducting customer discovery, validating operational workflows, and designing AI-assisted revenue operations infrastructure covering intake, talent matching, pipeline management, and follow-up automation.",
-    tags: ["Founder", "AI Systems Design", "Product Strategy", "Customer Discovery", "Next.js", "TypeScript", "Supabase", "Claude API"],
+    description: "Building an operating system for creator and talent agencies. Conducting customer discovery, validating operational workflows, and designing AI-assisted revenue operations infrastructure — production-grade with multi-tenant auth, role-based access, real-time workflows, and security controls — covering intake, talent matching, pipeline management, and follow-up automation.",
+    tags: ["AI Systems Design", "Product Strategy", "Customer Discovery", "Next.js", "TypeScript", "Supabase", "Claude API"],
     industries: ["Creator Economy", "Agency Ops", "SaaS"],
     status: "discovery",
     externalLink: "https://larkline.app",
@@ -92,9 +92,9 @@ export const PRODUCT_SYSTEMS: Project[] = [
   },
 ];
 
-// ── Responsible AI & Governance — Homepage flagship (3) ──────────────────────
+// ── Research Lab — Responsible AI (5) ────────────────────────────────────────
 
-export const RESPONSIBLE_AI_GOVERNANCE: Project[] = [
+export const RESEARCH_LAB_RESPONSIBLE_AI: Project[] = [
   {
     title: "Privacy Impact Auditor",
     description: "AI-specific DPIA tool with dynamic combinatorial risk scoring — risks multiply, not add. Maps 12-question profile to 13 regulations (GDPR, EU AI Act Annex III, NYC LL144, CCPA, Illinois BIPA, Colorado AI Act). Includes differential privacy cost curve and proxy discrimination detection.",
@@ -122,11 +122,6 @@ export const RESPONSIBLE_AI_GOVERNANCE: Project[] = [
     locked: true,
     link: "/ai-governance",
   },
-];
-
-// ── Research Lab — Responsible AI (2) ────────────────────────────────────────
-
-export const RESEARCH_LAB_RESPONSIBLE_AI: Project[] = [
   {
     title: "AI Readiness Assessment",
     description: "25-question self-service diagnostic across Strategy, Data, Technology, People, and Governance — scored report with ROI signal and prioritised gaps.",

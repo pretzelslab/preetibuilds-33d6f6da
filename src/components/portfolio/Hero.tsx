@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { SAFETY_ENGINEERING, APPLIED_RESEARCH, PRODUCT_SYSTEMS } from "@/data/projects";
+import { SAFETY_ENGINEERING, RESEARCH_GOVERNANCE, PRODUCT_SYSTEMS } from "@/data/projects";
 
 const CREDENTIALS = [
   "Built 6 AI safety prototypes exploring jailbreak resistance, goal drift, adversarial misuse, and risk containment.",
@@ -17,20 +17,20 @@ const DOMAIN_INDEX = [
     cls: "text-amber-400 border-amber-500/25 hover:bg-amber-500/5",
   },
   {
-    label: "Applied Research & Engineering",
-    count: APPLIED_RESEARCH.length,
-    anchor: "#applied-research",
-    desc: "Original research and production systems — adversarial robustness, fairness audits, carbon routing",
-    bullets: ["ZIDR preprint — physical-proximity attack taxonomy", "CAIR preprint — 45.5% carbon reduction", "1.92× disparate impact finding, COMPAS"],
-    cls: "text-blue-400 border-blue-500/25 hover:bg-blue-500/5",
-  },
-  {
     label: "Safety Engineering",
     count: SAFETY_ENGINEERING.length,
     anchor: "#safety-engineering",
     desc: "Adversarial LLM evaluation, red-teaming, pre-deployment safety assurance, failure mode testing",
     bullets: ["OWASP LLM Top 10 — indirect prompt injection", "Goal drift detection — SAFE/DRIFTING/ROGUE", "40-case safety eval suite, 5 risk categories"],
     cls: "text-violet-400 border-violet-500/25 hover:bg-violet-500/5",
+  },
+  {
+    label: "Research & Governance",
+    count: RESEARCH_GOVERNANCE.length,
+    anchor: "#research-governance",
+    desc: "Original research and production systems — adversarial robustness, fairness audits, carbon routing",
+    bullets: ["ZIDR preprint — physical-proximity attack taxonomy", "CAIR preprint — 45.5% carbon reduction", "1.92× disparate impact finding, COMPAS"],
+    cls: "text-blue-400 border-blue-500/25 hover:bg-blue-500/5",
   },
 ];
 

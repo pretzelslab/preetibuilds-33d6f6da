@@ -3,9 +3,8 @@ import { Link } from "react-router-dom";
 import type { Project } from "@/types/project";
 import {
   SAFETY_ENGINEERING,
-  APPLIED_RESEARCH,
+  RESEARCH_GOVERNANCE,
   PRODUCT_SYSTEMS,
-  RESPONSIBLE_AI_GOVERNANCE,
 } from "@/data/projects";
 
 const STATUS_BADGE: Record<string, { label: string; classes: string }> = {
@@ -79,7 +78,7 @@ const SectionHeader = ({ label, subtitle }: { label: string; subtitle?: string }
       {label}
     </span>
     {subtitle && (
-      <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed max-w-2xl">{subtitle}</p>
+      <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">{subtitle}</p>
     )}
   </div>
 );
@@ -159,17 +158,6 @@ const Projects = () => (
         {PRODUCT_SYSTEMS.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
 
-      <div id="applied-research" className="scroll-mt-20" />
-      <SectionHeader
-        label="Applied Research & Engineering"
-        subtitle="Original research and production systems — adversarial robustness benchmarks, statistical fairness audits, and carbon-aware inference routing. Two Zenodo preprints."
-      />
-      <div className="mb-10">
-        {APPLIED_RESEARCH.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
-      </div>
-
-      <PublicationsSection />
-
       <div id="safety-engineering" className="scroll-mt-20" />
       <SectionHeader
         label="Safety Engineering"
@@ -179,14 +167,16 @@ const Projects = () => (
         {SAFETY_ENGINEERING.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
 
-      <div id="responsible-ai" className="scroll-mt-20" />
+      <div id="research-governance" className="scroll-mt-20" />
       <SectionHeader
-        label="Responsible AI & Governance"
-        subtitle="Privacy impact assessment, agentic compliance pipelines, and policy governance tooling — built for EU AI Act, GDPR, NIST AI RMF, and ISO 42001 enforcement."
+        label="Research & Governance"
+        subtitle="Original research and production systems — adversarial robustness benchmarks, statistical fairness audits, and carbon-aware inference routing. Two Zenodo preprints."
       />
       <div className="mb-10">
-        {RESPONSIBLE_AI_GOVERNANCE.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+        {RESEARCH_GOVERNANCE.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
+
+      <PublicationsSection />
 
       {/* Research Lab link */}
       <div className="border border-border/50 rounded-xl px-5 py-4 bg-muted/30 mb-6">
