@@ -70,8 +70,8 @@ export const PRODUCT_SYSTEMS: Project[] = [
   {
     title: "Larkline",
     description: "End-to-end agency operating system — architected from schema design to product surface. Multi-tenant data isolation with row-level security policies, role-based access control, and scoped auth flows. Edge-deployed API routing, real-time event-driven pipelines, async job queues, transactional email delivery, and full audit logging on every write path. Observability instrumented throughout; stateless API layer built for horizontal scale. Covers intake, talent matching, pipeline management, follow-up automation, and revenue reporting.",
-    tags: ["Founder", "System Architecture", "Full Stack Development", "AI Systems Design", "Next.js", "TypeScript", "Supabase", "Claude API", "Revenue Operations", "Agency Ops"],
-    industries: ["Creator Economy", "Agency Ops", "SaaS"],
+    tags: ["Founder", "System Architecture", "Full Stack Development", "AI Systems Design", "Next.js", "TypeScript", "Supabase", "Claude API"],
+    industries: ["Rev Ops", "Agency Ops", "Creator Economy", "SaaS"],
     status: "discovery",
     externalLink: "https://larkline.app",
   },

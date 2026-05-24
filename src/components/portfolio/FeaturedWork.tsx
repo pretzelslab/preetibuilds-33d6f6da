@@ -14,7 +14,7 @@ const item = {
 };
 
 const FeaturedWork = () => (
-  <section className="px-6 py-14">
+  <section className="px-6 py-6">
     <div className="max-w-7xl mx-auto">
       <div className="mb-6">
         <span className="inline-block font-mono text-[10px] tracking-widest uppercase px-2.5 py-1 rounded bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/40 font-semibold">

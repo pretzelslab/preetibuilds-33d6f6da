@@ -8,7 +8,7 @@ const FOCUS_ITEMS = [
 ];
 
 const About = () => (
-  <section id="about" className="py-12 px-6 border-t border-border/40">
+  <section id="about" className="py-8 px-6 border-t border-border/40">
     <div className="max-w-7xl mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 

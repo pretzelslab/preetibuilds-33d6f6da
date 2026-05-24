@@ -22,7 +22,7 @@ const PLACEHOLDER_ESSAYS = [
 ];
 
 const Writing = () => (
-  <section className="px-6 py-14 border-t border-border/40">
+  <section className="px-6 py-8 border-t border-border/40">
     <div className="max-w-7xl mx-auto">
       <div className="flex items-end justify-between mb-6">
         <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
