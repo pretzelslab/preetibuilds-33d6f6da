@@ -112,7 +112,7 @@ const ResearchLab = () => {
 
         <SectionHeader
           label="Responsible AI"
-          subtitle="Readiness diagnostics and risk assessment tooling."
+          subtitle="Adversarial robustness benchmarks, fairness audits, readiness diagnostics, and risk assessment tooling."
         />
         <div className="mb-10">
           {RESEARCH_LAB_RESPONSIBLE_AI.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
@@ -120,7 +120,7 @@ const ResearchLab = () => {
 
         <SectionHeader
           label="Sustainable AI"
-          subtitle="Carbon measurement, disclosure frameworks, and the carbon-fairness efficiency tradeoff — mapped to CSRD, EU GPAI Art.53, and ISSB S2."
+          subtitle="Carbon-aware inference routing, measurement tools, disclosure frameworks, and the carbon-fairness efficiency tradeoff — mapped to CSRD, EU GPAI Art.53, and ISSB S2."
         />
         <div className="mb-10">
           {RESEARCH_LAB_SUSTAINABLE_AI.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}

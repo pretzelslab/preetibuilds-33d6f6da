@@ -32,69 +32,9 @@ export const SAFETY_ENGINEERING: Project[] = [
   },
 ];
 
-// ── Research & Governance — Homepage flagship (3) ────────────────────────────
+// ── Responsible AI & Governance — Homepage flagship (3) ──────────────────────
 
-export const RESEARCH_GOVERNANCE: Project[] = [
-  {
-    title: "Gendered Adversarial Robustness — ZIDR Benchmark",
-    description: "First benchmark taxonomy for physical-proximity attacks on AI safety systems. A physically proximate adversary — colleague, authority figure, stranger with local knowledge — can suppress AI-based threat detection before a safety system fires, using no digital exploit. ZIDR (Zero-Interaction Danger Rate) quantifies pre-trigger harm activation absent from all existing safety eval frameworks. 5 attack methods · 4 target layers · zero-interaction probe design.",
-    tags: ["AI Safety", "Adversarial Robustness", "Benchmark Taxonomy", "Python", "Zenodo Preprint"],
-    industries: ["AI Safety Research", "Women's Safety", "Safety Engineering"],
-    status: "live",
-    externalLink: "https://zenodo.org/records/20208521",
-  },
-  {
-    title: "Algorithmic Fairness Auditor",
-    description: "Audits AI systems for hidden bias — from quantization-induced disparate impact to real-world criminal justice (COMPAS recidivism). Applies disparate impact ratio, Cohen's d, false positive/negative rate parity, and chi-square testing.",
-    tags: ["Python", "PyTorch", "scikit-learn", "pandas", "matplotlib", "Google Colab"],
-    industries: ["Financial Services", "Criminal Justice", "HR & Talent"],
-    status: "live",
-    locked: true,
-    link: "/algorithmic-fairness",
-  },
-  {
-    title: "Carbon-Aware LLM Inference Router",
-    description: "Routes each LLM prompt to the right model size based on task complexity, live grid carbon intensity, latency budget, and accuracy floor — simultaneously. Preliminary analysis: ~62% carbon reduction on a 1M prompt/day system by routing 65% of prompts to a 7B model. The only open tool combining per-prompt routing + real-time grid data + production serving integration. EU AI Act Art.53 · CSRD Scope 2.",
-    tags: ["Python", "FastAPI", "Electricity Maps API", "vLLM", "MLflow", "EU AI Act Art.53", "CSRD"],
-    industries: ["Tech", "Enterprise ESG", "Data Centres"],
-    status: "live",
-    locked: true,
-    link: "/carbon-router",
-    externalLink: "https://doi.org/10.5281/zenodo.19934621",
-  },
-];
-
-// ── Product & GTM Systems — Homepage flagship (3) ────────────────────────────
-
-export const PRODUCT_SYSTEMS: Project[] = [
-  {
-    title: "Larkline",
-    description: "Building an operating system for creator and talent agencies. Conducting customer discovery, validating operational workflows, and designing AI-assisted revenue operations infrastructure — production-grade with multi-tenant auth, role-based access, real-time workflows, and security controls — covering intake, talent matching, pipeline management, and follow-up automation.",
-    tags: ["AI Systems Design", "Product Strategy", "Customer Discovery", "Next.js", "TypeScript", "Supabase", "Claude API"],
-    industries: ["Creator Economy", "Agency Ops", "SaaS"],
-    status: "discovery",
-    externalLink: "https://larkline.app",
-  },
-  {
-    title: "Win/Loss Intelligence",
-    description: "AI system for organizational revenue intelligence — surfaces systemic deal outcome patterns across legal delays, implementation friction, champion instability, and competitive displacement. Live Claude Sonnet root cause analysis per deal: grounded evidence chain, inference risk flags, data lineage panel, and human evaluation loop. 25 synthetic deals · 5-dimension filter bar.",
-    tags: ["React", "TypeScript", "Claude API", "Recharts"],
-    industries: ["GTM", "RevOps", "Sales Intelligence"],
-    status: "live",
-    link: "/win-loss-intelligence",
-  },
-  {
-    title: "GTM Tech Stack",
-    description: "Lean Python-powered GTM system replacing expensive enterprise tooling — lead capture, enrichment, scoring, nurture, CRM sync, and reporting.",
-    tags: ["Python", "Pandas", "Streamlit", "HubSpot"],
-    status: "live",
-    link: "/gtm-techstack",
-  },
-];
-
-// ── Research Lab — Responsible AI (5) ────────────────────────────────────────
-
-export const RESEARCH_LAB_RESPONSIBLE_AI: Project[] = [
+export const RESPONSIBLE_AI_GOVERNANCE: Project[] = [
   {
     title: "Privacy Impact Auditor",
     description: "AI-specific DPIA tool with dynamic combinatorial risk scoring — risks multiply, not add. Maps 12-question profile to 13 regulations (GDPR, EU AI Act Annex III, NYC LL144, CCPA, Illinois BIPA, Colorado AI Act). Includes differential privacy cost curve and proxy discrimination detection.",
@@ -121,6 +61,56 @@ export const RESEARCH_LAB_RESPONSIBLE_AI: Project[] = [
     status: "live",
     locked: true,
     link: "/ai-governance",
+  },
+];
+
+// ── Product & GTM Systems — Homepage flagship (3) ────────────────────────────
+
+export const PRODUCT_SYSTEMS: Project[] = [
+  {
+    title: "Larkline",
+    description: "Agency operating system built from customer discovery through to production. Covers the full operational stack — intake, talent matching, pipeline management, follow-up automation, and revenue reporting — on production-grade infrastructure: multi-tenant data isolation, row-level security, role-based access control, real-time event-driven workflows, edge-deployed API layer, transactional email, end-to-end audit logging, and scoped observability. Designed for horizontal scale.",
+    tags: ["AI Systems Design", "Product Strategy", "Customer Discovery", "Next.js", "TypeScript", "Supabase", "Claude API"],
+    industries: ["Creator Economy", "Agency Ops", "SaaS"],
+    status: "discovery",
+    externalLink: "https://larkline.app",
+  },
+  {
+    title: "Win/Loss Intelligence",
+    description: "AI system for organizational revenue intelligence — surfaces systemic deal outcome patterns across legal delays, implementation friction, champion instability, and competitive displacement. Live Claude Sonnet root cause analysis per deal: grounded evidence chain, inference risk flags, data lineage panel, and human evaluation loop. 25 synthetic deals · 5-dimension filter bar.",
+    tags: ["React", "TypeScript", "Claude API", "Recharts"],
+    industries: ["GTM", "RevOps", "Sales Intelligence"],
+    status: "live",
+    link: "/win-loss-intelligence",
+  },
+  {
+    title: "GTM Tech Stack",
+    description: "Lean Python-powered GTM system replacing expensive enterprise tooling — lead capture, enrichment, scoring, nurture, CRM sync, and reporting.",
+    tags: ["Python", "Pandas", "Streamlit", "HubSpot"],
+    status: "live",
+    link: "/gtm-techstack",
+  },
+];
+
+// ── Research Lab — Responsible AI (4) ────────────────────────────────────────
+
+export const RESEARCH_LAB_RESPONSIBLE_AI: Project[] = [
+  {
+    title: "Gendered Adversarial Robustness — ZIDR Benchmark",
+    description: "First benchmark taxonomy for physical-proximity attacks on AI safety systems. A physically proximate adversary — colleague, authority figure, stranger with local knowledge — can suppress AI-based threat detection before a safety system fires, using no digital exploit. ZIDR (Zero-Interaction Danger Rate) quantifies pre-trigger harm activation absent from all existing safety eval frameworks. 5 attack methods · 4 target layers · zero-interaction probe design.",
+    tags: ["AI Safety", "Adversarial Robustness", "Benchmark Taxonomy", "Python", "Zenodo Preprint"],
+    industries: ["AI Safety Research", "Women's Safety", "Safety Engineering"],
+    status: "live",
+    externalLink: "https://zenodo.org/records/20208521",
+  },
+  {
+    title: "Algorithmic Fairness Auditor",
+    description: "Audits AI systems for hidden bias — from quantization-induced disparate impact to real-world criminal justice (COMPAS recidivism). Applies disparate impact ratio, Cohen's d, false positive/negative rate parity, and chi-square testing.",
+    tags: ["Python", "PyTorch", "scikit-learn", "pandas", "matplotlib", "Google Colab"],
+    industries: ["Financial Services", "Criminal Justice", "HR & Talent"],
+    status: "live",
+    locked: true,
+    link: "/algorithmic-fairness",
   },
   {
     title: "AI Readiness Assessment",
@@ -189,6 +179,16 @@ export const RESEARCH_LAB_SUSTAINABLE_AI: Project[] = [
     status: "live",
     locked: true,
     link: "/sustainability-standards",
+  },
+  {
+    title: "Carbon-Aware LLM Inference Router",
+    description: "Routes each LLM prompt to the right model size based on task complexity, live grid carbon intensity, latency budget, and accuracy floor — simultaneously. Preliminary analysis: ~62% carbon reduction on a 1M prompt/day system by routing 65% of prompts to a 7B model. The only open tool combining per-prompt routing + real-time grid data + production serving integration. EU AI Act Art.53 · CSRD Scope 2.",
+    tags: ["Python", "FastAPI", "Electricity Maps API", "vLLM", "MLflow", "EU AI Act Art.53", "CSRD"],
+    industries: ["Tech", "Enterprise ESG", "Data Centres"],
+    status: "live",
+    locked: true,
+    link: "/carbon-router",
+    externalLink: "https://doi.org/10.5281/zenodo.19934621",
   },
 ];
 

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import type { Project } from "@/types/project";
 import {
   SAFETY_ENGINEERING,
-  RESEARCH_GOVERNANCE,
+  RESPONSIBLE_AI_GOVERNANCE,
   PRODUCT_SYSTEMS,
 } from "@/data/projects";
 
@@ -167,13 +167,13 @@ const Projects = () => (
         {SAFETY_ENGINEERING.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
 
-      <div id="research-governance" className="scroll-mt-20" />
+      <div id="responsible-ai-governance" className="scroll-mt-20" />
       <SectionHeader
-        label="Research & Governance"
-        subtitle="Original research and production systems — adversarial robustness benchmarks, statistical fairness audits, and carbon-aware inference routing. Two Zenodo preprints."
+        label="Responsible AI & Governance"
+        subtitle="Privacy impact assessment, agentic compliance pipelines, and policy governance tooling — built for EU AI Act, GDPR, NIST AI RMF, and ISO 42001 enforcement."
       />
       <div className="mb-10">
-        {RESEARCH_GOVERNANCE.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+        {RESPONSIBLE_AI_GOVERNANCE.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
 
       <PublicationsSection />
