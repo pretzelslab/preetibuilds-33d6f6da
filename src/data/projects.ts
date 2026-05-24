@@ -69,7 +69,7 @@ export const RESPONSIBLE_AI_GOVERNANCE: Project[] = [
 export const PRODUCT_SYSTEMS: Project[] = [
   {
     title: "Larkline",
-    description: "Agency operating system built from customer discovery through to production. Covers the full operational stack — intake, talent matching, pipeline management, follow-up automation, and revenue reporting — on production-grade infrastructure: multi-tenant data isolation, row-level security, role-based access control, real-time event-driven workflows, edge-deployed API layer, transactional email, end-to-end audit logging, and scoped observability. Designed for horizontal scale.",
+    description: "End-to-end agency operating system — architected from schema design to product surface. Multi-tenant data isolation with row-level security policies, role-based access control, and scoped auth flows. Edge-deployed API routing, real-time event-driven pipelines, async job queues, transactional email delivery, and full audit logging on every write path. Observability instrumented throughout; stateless API layer built for horizontal scale. Covers intake, talent matching, pipeline management, follow-up automation, and revenue reporting.",
     tags: ["AI Systems Design", "Product Strategy", "Customer Discovery", "Next.js", "TypeScript", "Supabase", "Claude API"],
     industries: ["Creator Economy", "Agency Ops", "SaaS"],
     status: "discovery",
