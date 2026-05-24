@@ -15,6 +15,9 @@ const Navbar = () => (
         <Link to="/research" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden md:block">
           Research
         </Link>
+        <Link to="/research-lab" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden md:block">
+          Lab
+        </Link>
         <a
           href="https://github.com/pretzelslab"
           target="_blank"

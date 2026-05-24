@@ -30,6 +30,7 @@ import AgentHijacking from "./pages/AgentHijacking";
 import AgentDrift from "./pages/AgentDrift";
 import CarbonRouter from "./pages/CarbonRouter";
 import WinLossIntelligence from "./pages/WinLossIntelligence";
+import ResearchLab from "./pages/ResearchLab";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/agent-drift":               "Rogue Agent & Goal Drift Detector | Preeti Builds",
   "/carbon-router":             "Carbon-Aware LLM Inference Router | Preeti Builds",
   "/win-loss-intelligence":    "Win/Loss Intelligence | Preeti Builds",
+  "/research-lab":             "Research Lab | Preeti Builds",
 };
 
 const RouteTitle = () => {
@@ -121,6 +123,7 @@ const App = () => (
             <Route path="/agent-drift" element={<AgentDrift />} />
             <Route path="/carbon-router" element={<CarbonRouter />} />
             <Route path="/win-loss-intelligence" element={<WinLossIntelligence />} />
+            <Route path="/research-lab" element={<ResearchLab />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

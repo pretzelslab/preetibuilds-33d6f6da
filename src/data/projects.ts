@@ -1,8 +1,48 @@
 import type { Project, FeaturedCard } from "@/types/project";
 
-// ── Responsible AI ────────────────────────────────────────────────────────────
+// ── Safety Engineering — Homepage flagship (3) ────────────────────────────────
 
-export const RESPONSIBLE_AI: Project[] = [
+export const SAFETY_ENGINEERING: Project[] = [
+  {
+    title: "Agent Goal Hijacking Demo",
+    description: "Live simulation of OWASP LLM Top 10 2025 #1 — Indirect Prompt Injection. A finance LLM agent is hijacked via a malicious PDF: its goal is silently overwritten, then it exfiltrates 10 customer records using only its own legitimate tools. Includes two-layer detection (rule-based + Claude Haiku judge), HITL approval flow, and blast radius risk model. EU AI Act Art.9 · DORA · GDPR Art.33.",
+    tags: ["LangGraph", "Claude Haiku", "Python", "React", "TypeScript", "OWASP", "EU AI Act", "DORA"],
+    industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
+    status: "live",
+    locked: true,
+    link: "/agent-hijacking",
+  },
+  {
+    title: "Rogue Agent & Goal Drift Detector",
+    description: "Detects when a finance LLM agent silently drifts from its original goal. After each tool call, cosine similarity between the agent's current intent and original task embedding flags SAFE / DRIFTING / ROGUE. A KPI-pressure memo nudges the agent to omit loss-making product lines — drift is caught at Step 2 before the fabricated report is written. HITL gate + MLflow audit trail. EU AI Act Art.9 · GDPR Art.5 · DORA.",
+    tags: ["Python", "sentence-transformers", "MLflow", "LangGraph", "EU AI Act", "GDPR", "DORA"],
+    industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
+    status: "live",
+    locked: true,
+    link: "/agent-drift",
+  },
+  {
+    title: "LLM Safety Eval Framework",
+    description: "Production-grade safety evaluation pipeline for LLMs in regulated financial services. 40 adversarial test cases across 5 risk categories — prompt injection, regulatory hallucination, suitability failures, data leakage, RAG poisoning. Claude-as-judge scoring with Streamlit compliance matrix, run comparison, and multi-model support. Built for pre-deployment assurance against FCA Consumer Duty, MiFID II, GDPR, and MITRE ATLAS.",
+    tags: ["Python", "Claude API", "Streamlit", "YAML", "GitHub Actions", "Cursor", "FCA", "MiFID II", "GDPR", "MITRE ATLAS"],
+    industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
+    status: "live",
+    locked: true,
+    link: "/safety-eval",
+  },
+];
+
+// ── Responsible & Sustainable AI — Homepage flagship (3) ─────────────────────
+
+export const RESPONSIBLE_SUSTAINABLE_FLAGSHIP: Project[] = [
+  {
+    title: "Gendered Adversarial Robustness — ZIDR Benchmark",
+    description: "First benchmark taxonomy for physical-proximity attacks on AI safety systems. A physically proximate adversary — colleague, authority figure, stranger with local knowledge — can suppress AI-based threat detection before a safety system fires, using no digital exploit. ZIDR (Zero-Interaction Danger Rate) quantifies pre-trigger harm activation absent from all existing safety eval frameworks. 5 attack methods · 4 target layers · zero-interaction probe design.",
+    tags: ["AI Safety", "Adversarial Robustness", "Benchmark Taxonomy", "Python", "Zenodo Preprint"],
+    industries: ["AI Safety Research", "Women's Safety", "Safety Engineering"],
+    status: "live",
+    externalLink: "https://zenodo.org/records/20208521",
+  },
   {
     title: "Algorithmic Fairness Auditor",
     description: "Audits AI systems for hidden bias — from quantization-induced disparate impact to real-world criminal justice (COMPAS recidivism). Applies disparate impact ratio, Cohen's d, false positive/negative rate parity, and chi-square testing.",
@@ -12,6 +52,49 @@ export const RESPONSIBLE_AI: Project[] = [
     locked: true,
     link: "/algorithmic-fairness",
   },
+  {
+    title: "Carbon-Aware LLM Inference Router",
+    description: "Routes each LLM prompt to the right model size based on task complexity, live grid carbon intensity, latency budget, and accuracy floor — simultaneously. Preliminary analysis: ~62% carbon reduction on a 1M prompt/day system by routing 65% of prompts to a 7B model. The only open tool combining per-prompt routing + real-time grid data + production serving integration. EU AI Act Art.53 · CSRD Scope 2.",
+    tags: ["Python", "FastAPI", "Electricity Maps API", "vLLM", "MLflow", "EU AI Act Art.53", "CSRD"],
+    industries: ["Tech", "Enterprise ESG", "Data Centres"],
+    status: "live",
+    locked: true,
+    link: "/carbon-router",
+    externalLink: "https://doi.org/10.5281/zenodo.19934621",
+  },
+];
+
+// ── Product Systems — Homepage flagship (3) ───────────────────────────────────
+
+export const PRODUCT_SYSTEMS: Project[] = [
+  {
+    title: "Win/Loss Intelligence",
+    description: "AI system for organizational revenue intelligence — surfaces systemic deal outcome patterns across legal delays, implementation friction, champion instability, and competitive displacement. Live Claude Sonnet root cause analysis per deal: grounded evidence chain, inference risk flags, data lineage panel, and human evaluation loop. 25 synthetic deals · 5-dimension filter bar.",
+    tags: ["React", "TypeScript", "Claude API", "Recharts"],
+    industries: ["GTM", "RevOps", "Sales Intelligence"],
+    status: "live",
+    link: "/win-loss-intelligence",
+  },
+  {
+    title: "GTM Tech Stack",
+    description: "Lean Python-powered GTM system replacing expensive enterprise tooling — lead capture, enrichment, scoring, nurture, CRM sync, and reporting.",
+    tags: ["Python", "Pandas", "Streamlit", "HubSpot"],
+    status: "live",
+    link: "/gtm-techstack",
+  },
+  {
+    title: "Larkline",
+    description: "Building an operating system for creator and talent agencies. Conducting customer discovery, validating operational workflows, and designing AI-assisted revenue operations infrastructure covering intake, talent matching, pipeline management, and follow-up automation.",
+    tags: ["Founder", "AI Systems Design", "Product Strategy", "Customer Discovery", "Next.js", "TypeScript", "Supabase", "Claude API"],
+    industries: ["Creator Economy", "Agency Ops", "SaaS"],
+    status: "discovery",
+    externalLink: "https://larkline.app",
+  },
+];
+
+// ── Research Lab — Responsible AI (5) ────────────────────────────────────────
+
+export const RESEARCH_LAB_RESPONSIBLE_AI: Project[] = [
   {
     title: "Privacy Impact Auditor",
     description: "AI-specific DPIA tool with dynamic combinatorial risk scoring — risks multiply, not add. Maps 12-question profile to 13 regulations (GDPR, EU AI Act Annex III, NYC LL144, CCPA, Illinois BIPA, Colorado AI Act). Includes differential privacy cost curve and proxy discrimination detection.",
@@ -59,9 +142,9 @@ export const RESPONSIBLE_AI: Project[] = [
   },
 ];
 
-// ── Sustainable AI ────────────────────────────────────────────────────────────
+// ── Research Lab — Sustainable AI (5) ────────────────────────────────────────
 
-export const SUSTAINABLE_AI: Project[] = [
+export const RESEARCH_LAB_SUSTAINABLE_AI: Project[] = [
   {
     title: "AI Sustainability Disclosure Framework",
     description: "5-step practitioner framework for measuring, benchmarking, optimising, and disclosing the environmental footprint of AI systems. Maps to CSRD (2024), EU GPAI Art.53 (Aug 2025), and ISSB S2. Includes business case intake form with personalised obligation mapping and penalty exposure.",
@@ -99,16 +182,6 @@ export const SUSTAINABLE_AI: Project[] = [
     link: "/carbon-fairness",
   },
   {
-    title: "Carbon-Aware LLM Inference Router",
-    description: "Routes each LLM prompt to the right model size based on task complexity, live grid carbon intensity, latency budget, and accuracy floor — simultaneously. Preliminary analysis: ~62% carbon reduction on a 1M prompt/day system by routing 65% of prompts to a 7B model. The only open tool combining per-prompt routing + real-time grid data + production serving integration. EU AI Act Art.53 · CSRD Scope 2.",
-    tags: ["Python", "FastAPI", "Electricity Maps API", "vLLM", "MLflow", "EU AI Act Art.53", "CSRD"],
-    industries: ["Tech", "Enterprise ESG", "Data Centres"],
-    status: "live",
-    locked: true,
-    link: "/carbon-router",
-    externalLink: "https://doi.org/10.5281/zenodo.19934621",
-  },
-  {
     title: "AI Sustainability Standards Tracker",
     description: "Live reference across 11 disclosure frameworks — CSRD/ESRS E1, EU AI Act GPAI, ISSB S2, GRI 305, TCFD, SEC Climate Rule, and more. Each framework: AI-specific obligations, enforcement status, penalty exposure, and jurisdiction scope. Includes tool directory and industry adoption map.",
     tags: ["Sustainable AI", "CSRD", "ISSB S2", "EU AI Act", "GRI 305", "TypeScript"],
@@ -119,49 +192,9 @@ export const SUSTAINABLE_AI: Project[] = [
   },
 ];
 
-// ── Safety Engineering ────────────────────────────────────────────────────────
+// ── Research Lab — Product & GTM (1) ─────────────────────────────────────────
 
-export const SAFETY_ENGINEERING: Project[] = [
-  {
-    title: "Agent Goal Hijacking Demo",
-    description: "Live simulation of OWASP LLM Top 10 2025 #1 — Indirect Prompt Injection. A finance LLM agent is hijacked via a malicious PDF: its goal is silently overwritten, then it exfiltrates 10 customer records using only its own legitimate tools. Includes two-layer detection (rule-based + Claude Haiku judge), HITL approval flow, and blast radius risk model. EU AI Act Art.9 · DORA · GDPR Art.33.",
-    tags: ["LangGraph", "Claude Haiku", "Python", "React", "TypeScript", "OWASP", "EU AI Act", "DORA"],
-    industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
-    status: "live",
-    locked: true,
-    link: "/agent-hijacking",
-  },
-  {
-    title: "Rogue Agent & Goal Drift Detector",
-    description: "Detects when a finance LLM agent silently drifts from its original goal. After each tool call, cosine similarity between the agent's current intent and original task embedding flags SAFE / DRIFTING / ROGUE. A KPI-pressure memo nudges the agent to omit loss-making product lines — drift is caught at Step 2 before the fabricated report is written. HITL gate + MLflow audit trail. EU AI Act Art.9 · GDPR Art.5 · DORA.",
-    tags: ["Python", "sentence-transformers", "MLflow", "LangGraph", "EU AI Act", "GDPR", "DORA"],
-    industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
-    status: "live",
-    locked: true,
-    link: "/agent-drift",
-  },
-  {
-    title: "LLM Safety Eval Framework",
-    description: "Production-grade safety evaluation pipeline for LLMs in regulated financial services. 40 adversarial test cases across 5 risk categories — prompt injection, regulatory hallucination, suitability failures, data leakage, RAG poisoning. Claude-as-judge scoring with Streamlit compliance matrix, run comparison, and multi-model support. Built for pre-deployment assurance against FCA Consumer Duty, MiFID II, GDPR, and MITRE ATLAS.",
-    tags: ["Python", "Claude API", "Streamlit", "YAML", "GitHub Actions", "Cursor", "FCA", "MiFID II", "GDPR", "MITRE ATLAS"],
-    industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
-    status: "live",
-    locked: true,
-    link: "/safety-eval",
-  },
-];
-
-// ── GTM & Product Ops ─────────────────────────────────────────────────────────
-
-export const USE_CASES: Project[] = [
-  {
-    title: "Win/Loss Intelligence",
-    description: "AI system for organizational revenue intelligence — surfaces systemic deal outcome patterns across legal delays, implementation friction, champion instability, and competitive displacement. Live Claude Sonnet root cause analysis per deal: grounded evidence chain, inference risk flags, data lineage panel, and human evaluation loop. 25 synthetic deals · 5-dimension filter bar.",
-    tags: ["React", "TypeScript", "Claude API", "Recharts"],
-    industries: ["GTM", "RevOps", "Sales Intelligence"],
-    status: "live",
-    link: "/win-loss-intelligence",
-  },
+export const RESEARCH_LAB_PRODUCT: Project[] = [
   {
     title: "Product Intelligence Pipeline",
     description: "AI-powered pipeline integrating Salesforce Cases with Claude to surface product insights at scale. Fintech and Healthtech verticals.",
@@ -169,31 +202,11 @@ export const USE_CASES: Project[] = [
     status: "live",
     link: "/product-intelligence",
   },
-  {
-    title: "GTM Tech Stack",
-    description: "Lean Python-powered GTM system replacing expensive enterprise tooling — lead capture, enrichment, scoring, nurture, CRM sync, and reporting.",
-    tags: ["Python", "Pandas", "Streamlit", "HubSpot"],
-    status: "live",
-    link: "/gtm-techstack",
-  },
 ];
 
-// ── Founder Project ───────────────────────────────────────────────────────────
+// ── Research Lab — Personal (2) ───────────────────────────────────────────────
 
-export const FOUNDER_PROJECTS: Project[] = [
-  {
-    title: "Larkline",
-    description: "Building an operating system for creator and talent agencies. Conducting customer discovery, validating operational workflows, and designing AI-assisted revenue operations infrastructure covering intake, talent matching, pipeline management, and follow-up automation.",
-    tags: ["Founder", "AI Systems Design", "Product Strategy", "Customer Discovery", "Next.js", "TypeScript", "Supabase", "Claude API"],
-    industries: ["Creator Economy", "Agency Ops", "SaaS"],
-    status: "discovery",
-    externalLink: "https://larkline.app",
-  },
-];
-
-// ── Pet Projects ──────────────────────────────────────────────────────────────
-
-export const PET_PROJECTS: Project[] = [
+export const RESEARCH_LAB_PERSONAL: Project[] = [
   {
     title: "MedLog",
     description: "Family health journal — per-member profiles, medical events, symptom tracking, yearly analysis, and cloud sync via Supabase. Private.",

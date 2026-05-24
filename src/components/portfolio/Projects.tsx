@@ -2,12 +2,9 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import type { Project } from "@/types/project";
 import {
-  RESPONSIBLE_AI,
-  SUSTAINABLE_AI,
-  USE_CASES,
   SAFETY_ENGINEERING,
-  FOUNDER_PROJECTS,
-  PET_PROJECTS,
+  RESPONSIBLE_SUSTAINABLE_FLAGSHIP,
+  PRODUCT_SYSTEMS,
 } from "@/data/projects";
 
 const STATUS_BADGE: Record<string, { label: string; classes: string }> = {
@@ -86,6 +83,67 @@ const SectionHeader = ({ label, subtitle }: { label: string; subtitle?: string }
   </div>
 );
 
+const publications = [
+  {
+    domain: "Sustainable AI · Systems",
+    domainCls: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+    title: "Carbon-Aware Inference Router for LLM Systems (CAIR)",
+    authors: "Raghuveeran, P.",
+    year: "2026",
+    doi: "10.5281/zenodo.19934621",
+    href: "https://zenodo.org/records/19934621",
+  },
+  {
+    domain: "AI Safety · Adversarial Robustness",
+    domainCls: "text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/20",
+    title: "Gendered Adversarial Robustness in LLMs — ZIDR Benchmark",
+    authors: "Raghuveeran, P.",
+    year: "2026",
+    doi: "10.5281/zenodo.20208521",
+    href: "https://zenodo.org/records/20208521",
+  },
+];
+
+const PublicationsSection = () => (
+  <>
+    <div id="publications" className="scroll-mt-20" />
+    <SectionHeader label="Publications & Preprints" subtitle="Two Zenodo preprints — peer-review pending. DOIs citable." />
+    <div className="mb-10">
+      {publications.map((pub, i) => (
+        <motion.a
+          key={pub.doi}
+          href={pub.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          initial={{ opacity: 0, y: 8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: i * 0.06 }}
+          className="group block py-4 border-b border-border/50 last:border-0 no-underline"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2.5 mb-1">
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${pub.domainCls}`}>
+                  {pub.domain}
+                </span>
+              </div>
+              <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors block mb-0.5">
+                {pub.title}
+              </span>
+              <p className="text-xs text-muted-foreground font-mono">
+                {pub.authors} · Zenodo {pub.year} · DOI: {pub.doi}
+              </p>
+            </div>
+            <span className="text-xs font-medium text-muted-foreground group-hover:text-primary transition-colors shrink-0 mt-0.5">
+              View →
+            </span>
+          </div>
+        </motion.a>
+      ))}
+    </div>
+  </>
+);
 
 const Projects = () => (
   <section id="projects" className="py-6 px-6 scroll-mt-20">
@@ -100,39 +158,44 @@ const Projects = () => (
         {SAFETY_ENGINEERING.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
 
-      <div id="responsible-ai" className="scroll-mt-20" />
+      <div id="responsible-sustainable" className="scroll-mt-20" />
       <SectionHeader
-        label="Responsible AI"
-        subtitle="Statistical fairness audits, privacy impact assessment, agentic compliance pipelines, and governance tooling — built for EU AI Act, GDPR, MiFID II, and NIST AI RMF enforcement."
+        label="Responsible & Sustainable AI"
+        subtitle="Statistical fairness audits, adversarial robustness benchmarks, and carbon-aware inference systems — built for EU AI Act, GDPR, ECOA, and CSRD compliance."
       />
       <div className="mb-10">
-        {RESPONSIBLE_AI.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+        {RESPONSIBLE_SUSTAINABLE_FLAGSHIP.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
 
-      <div id="sustainable-ai" className="scroll-mt-20" />
-      <SectionHeader label="Sustainable AI" subtitle="Carbon footprint measurement, disclosure frameworks, and the carbon-fairness tradeoff — mapped to CSRD, EU GPAI Art.53, and ISSB S2." />
-      <div className="mb-10">
-        {SUSTAINABLE_AI.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
-      </div>
-
-      <div id="gtm-product" className="scroll-mt-20" />
-      <SectionHeader label="GTM & Product Ops" subtitle="AI-powered systems built from 18+ years operating B2B SaaS, GTM, and CRM stacks — replacing expensive enterprise tooling with lean, instrumented pipelines." />
-      <div className="mb-10">
-        {USE_CASES.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
-      </div>
-
-      <div id="founder" className="scroll-mt-20" />
+      <div id="product-systems" className="scroll-mt-20" />
       <SectionHeader
-        label="Founder & Product Development"
-        subtitle="Identifying operational problems in niche markets, conducting customer discovery, and building products."
+        label="Product Systems"
+        subtitle="Revenue intelligence, GTM automation, and a founder-led agency OS — built from 18+ years operating B2B SaaS, GTM, and CRM stacks."
       />
       <div className="mb-10">
-        {FOUNDER_PROJECTS.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+        {PRODUCT_SYSTEMS.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
       </div>
 
-      <SectionHeader label="Pet Projects" />
-      <div className="mb-10">
-        {PET_PROJECTS.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+      <PublicationsSection />
+
+      {/* Research Lab link */}
+      <div className="border border-border/50 rounded-xl px-5 py-4 bg-muted/30 mb-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-mono tracking-widest uppercase text-muted-foreground mb-1">
+              More Work
+            </p>
+            <p className="text-xs text-foreground/70">
+              13 additional tools — responsible AI auditors, carbon calculators, sustainability frameworks, and more.
+            </p>
+          </div>
+          <Link
+            to="/research-lab"
+            className="shrink-0 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+          >
+            Research Lab →
+          </Link>
+        </div>
       </div>
 
       {/* Building Now */}

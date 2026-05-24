@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { SAFETY_ENGINEERING, RESPONSIBLE_AI, SUSTAINABLE_AI, USE_CASES } from "@/data/projects";
+import { SAFETY_ENGINEERING, RESPONSIBLE_SUSTAINABLE_FLAGSHIP, PRODUCT_SYSTEMS } from "@/data/projects";
 
 const CREDENTIALS = [
   "Built 6 AI safety prototypes exploring jailbreak resistance, goal drift, adversarial misuse, and risk containment.",
@@ -17,25 +17,18 @@ const DOMAIN_INDEX = [
     cls: "text-violet-400 border-violet-500/25 hover:bg-violet-500/5",
   },
   {
-    label: "Responsible AI",
-    count: RESPONSIBLE_AI.length,
-    anchor: "#responsible-ai",
-    desc: "Fairness audits, privacy impact assessments, governance workflows, compliance-by-design systems",
-    bullets: ["1.92× disparate impact finding", "INT4 quantization bias study", "CAIR preprint", "ZIDR preprint"],
+    label: "Responsible & Sustainable AI",
+    count: RESPONSIBLE_SUSTAINABLE_FLAGSHIP.length,
+    anchor: "#responsible-sustainable",
+    desc: "Fairness audits, adversarial robustness benchmarks, and carbon-aware inference systems",
+    bullets: ["1.92× disparate impact finding", "ZIDR preprint — physical-proximity attacks", "CAIR preprint — 45.5% carbon reduction", "EU AI Act · GDPR · CSRD compliance"],
     cls: "text-blue-400 border-blue-500/25 hover:bg-blue-500/5",
   },
   {
-    label: "Sustainable AI",
-    count: SUSTAINABLE_AI.length,
-    anchor: "#sustainable-ai",
-    desc: "Carbon accounting, disclosure frameworks, inference efficiency strategy, carbon–fairness tradeoff analysis",
-    cls: "text-emerald-400 border-emerald-500/25 hover:bg-emerald-500/5",
-  },
-  {
-    label: "GTM & Product",
-    count: USE_CASES.length,
-    anchor: "#gtm-product",
-    desc: "CRM architecture, GTM operating models, decision workflows, program leadership, AI governance implementation",
+    label: "Product Systems",
+    count: PRODUCT_SYSTEMS.length,
+    anchor: "#product-systems",
+    desc: "Revenue intelligence, GTM automation, and a founder-led agency operating system",
     cls: "text-amber-400 border-amber-500/25 hover:bg-amber-500/5",
   },
 ];
