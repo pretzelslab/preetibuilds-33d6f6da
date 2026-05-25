@@ -111,7 +111,15 @@ const ResearchLab = () => {
         </div>
 
         <SectionHeader
-          label="Responsible AI"
+          label="Product & GTM"
+          subtitle="AI-powered product intelligence and GTM automation pipelines."
+        />
+        <div className="mb-10">
+          {RESEARCH_LAB_PRODUCT.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+        </div>
+
+        <SectionHeader
+          label="Responsible AI & Governance"
           subtitle="Adversarial robustness benchmarks, fairness audits, readiness diagnostics, and risk assessment tooling."
         />
         <div className="mb-10">
@@ -124,14 +132,6 @@ const ResearchLab = () => {
         />
         <div className="mb-10">
           {RESEARCH_LAB_SUSTAINABLE_AI.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
-        </div>
-
-        <SectionHeader
-          label="GTM & Product"
-          subtitle="AI-powered product intelligence pipeline."
-        />
-        <div className="mb-10">
-          {RESEARCH_LAB_PRODUCT.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
         </div>
 
         <SectionHeader

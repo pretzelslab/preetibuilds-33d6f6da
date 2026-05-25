@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 
 const FOCUS_ITEMS = [
@@ -29,8 +29,6 @@ const Tile = ({
   children: React.ReactNode;
 }) => (
   <motion.div
-    initial="rest"
-    whileHover="open"
     animate={open ? "open" : "rest"}
     onClick={onToggle}
     className={`rounded-xl border px-4 py-3 cursor-pointer select-none transition-all duration-500 ${
@@ -63,6 +61,7 @@ const About = () => {
   const [aboutOpen, setAboutOpen]           = useState(false);
   const [aboutHighlight, setAboutHighlight] = useState(false);
   const [exploringOpen, setExploringOpen]   = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
 
   const openAbout = useCallback(() => {
     setAboutOpen(true);
@@ -71,8 +70,19 @@ const About = () => {
     return () => clearTimeout(t);
   }, []);
 
+  // Collapse About when section scrolls fully out of view
   useEffect(() => {
-    // Handle direct load with #about hash
+    const el = sectionRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (!entry.isIntersecting) setAboutOpen(false); },
+      { threshold: 0 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  useEffect(() => {
     if (window.location.hash === "#about") openAbout();
 
     const onHash = () => {
@@ -83,7 +93,7 @@ const About = () => {
   }, [openAbout]);
 
   return (
-    <section id="about" className="py-8 px-6 border-t border-border/40">
+    <section ref={sectionRef} id="about" className="py-8 px-6 border-t border-border/40">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 

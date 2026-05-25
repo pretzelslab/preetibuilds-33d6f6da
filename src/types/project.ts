@@ -22,6 +22,7 @@ export type FeaturedCard = {
   title: string;
   problem: string;
   stats: FeaturedStat[];
+  techStack?: string[];
   href: string;
   cta: string;
 };

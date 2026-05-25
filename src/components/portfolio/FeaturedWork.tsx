@@ -63,6 +63,17 @@ const FeaturedWork = () => (
               ))}
             </ul>
 
+            {/* Tech stack chips */}
+            {card.techStack && (
+              <div className="flex flex-wrap gap-1 mb-4">
+                {card.techStack.map((t) => (
+                  <span key={t} className="text-[10px] font-mono text-slate-500 dark:text-blue-300/60 bg-slate-500/8 dark:bg-blue-500/8 border border-slate-400/15 dark:border-blue-400/20 px-2 py-0.5 rounded">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            )}
+
             {/* CTA */}
             <Link
               to={card.href}
