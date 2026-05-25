@@ -198,16 +198,16 @@ const Projects = () => (
         </div>
       </div>
 
-      {/* Building Now */}
+      {/* Current Focus */}
       <div className="border border-border/50 rounded-xl px-5 py-4 bg-muted/30">
         <p className="text-[10px] font-mono tracking-widest uppercase text-muted-foreground mb-3">
-          Building Now
+          Current Focus
         </p>
         <div className="flex flex-wrap gap-x-6 gap-y-2">
           {[
-            "Larkline — agency revenue operations",
-            "Agentic AI systems",
-            "AI safety evaluation frameworks",
+            "AI Safety Engineering",
+            "Responsible AI Governance",
+            "Revenue Operations Systems",
           ].map((item) => (
             <span key={item} className="flex items-center gap-1.5 text-xs text-foreground/70">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
