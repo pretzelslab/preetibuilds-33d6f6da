@@ -69,7 +69,7 @@ export const RESPONSIBLE_AI_GOVERNANCE: Project[] = [
 export const PRODUCT_SYSTEMS: Project[] = [
   {
     title: "Larkline",
-    description: "Recruiting agency operating system for managing lead intake, client relationships, talent pipelines, placements, workflow automation, and revenue reporting. Architected with multi-tenant data isolation, role-based access controls, real-time workflows, audit logging, and scalable cloud infrastructure.",
+    description: "Decision intelligence and agency operations platform. Surfaces opportunity signals, recommends next-best actions, orchestrates deal execution, and provides end-to-end revenue visibility. Built with multi-tenant architecture, role-based permissions, audit logging, and scalable cloud infrastructure.",
     tags: ["Founder", "System Architecture", "Full Stack Development", "AI Systems Design"],
     industries: ["Rev Ops", "Agency Ops", "Creator Economy", "SaaS"],
     status: "discovery",
