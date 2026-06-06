@@ -70,6 +70,7 @@ export function PageGate({
   previewContent?: ReactNode;
   pageId?: string;
 }) {
+  const isLocal = import.meta.env.DEV;
   const [unlocked, setUnlocked] = useState(() => isUnlocked(pageId));
   const [code, setCode]         = useState("");
   const [error, setError]       = useState(false);
@@ -197,9 +198,9 @@ export function PageGate({
       {/* Content: preview (masked) or blurred children */}
       {previewContent ? (
         <div
-          onContextMenu={e => e.preventDefault()}
+          onContextMenu={isLocal ? undefined : e => e.preventDefault()}
           style={{
-            userSelect: "none",
+            userSelect: isLocal ? undefined : "none",
             background: "hsl(var(--background))",
             color: "hsl(var(--foreground))",
             height: "calc(100vh - 41px)",
@@ -212,11 +213,11 @@ export function PageGate({
         </div>
       ) : (
         <div
-          onContextMenu={e => e.preventDefault()}
+          onContextMenu={isLocal ? undefined : e => e.preventDefault()}
           style={{
             filter: "blur(2px) brightness(0.9)",
             pointerEvents: "none",
-            userSelect: "none",
+            userSelect: isLocal ? undefined : "none",
             transition: "filter 0.3s ease",
           }}
         >

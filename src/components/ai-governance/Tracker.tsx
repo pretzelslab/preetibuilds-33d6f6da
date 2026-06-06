@@ -3198,6 +3198,7 @@ function RegulatoryRadarTab({ policies, onSelectPolicy }: { policies: any[]; onS
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function AIGovernanceTracker() {
+  const isLocal = import.meta.env.DEV;
   const [unlocked, setUnlocked] = useState(() => {
     try { return localStorage.getItem("pl_session_access") === "1"; } catch { return false; }
   });
@@ -3354,9 +3355,9 @@ export default function AIGovernanceTracker() {
 
   return (
     <div
-      onContextMenu={!unlocked ? e => e.preventDefault() : undefined}
+      onContextMenu={!unlocked && !isLocal ? e => e.preventDefault() : undefined}
       style={{ minHeight: "100vh", background: "#f8fafc", fontFamily: "'Inter','Segoe UI',sans-serif",
-        userSelect: !unlocked ? "none" : undefined,
+        userSelect: !unlocked && !isLocal ? "none" : undefined,
       }}>
 
       {/* Preview mode banner */}

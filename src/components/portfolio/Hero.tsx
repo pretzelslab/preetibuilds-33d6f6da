@@ -2,9 +2,10 @@ import { motion } from "framer-motion";
 import { SAFETY_ENGINEERING, PRODUCT_SYSTEMS, RESPONSIBLE_AI_GOVERNANCE } from "@/data/projects";
 
 const CREDENTIALS = [
-  "Built 6 AI safety prototypes exploring jailbreak resistance, goal drift, adversarial misuse, and risk containment.",
-  "Empirical fairness research identifying measurable bias in recidivism prediction and compressed AI models. Published 2 research preprints.",
-  "18+ years delivering enterprise products, CRM platforms, GTM initiatives, and large-scale programs across regulated industries.",
+  "Enterprise products, platforms, and transformation programs operating at the intersection of strategy, execution, and scale.",
+  "Commercialization, portfolio governance, customer adoption, and cross-functional alignment as core drivers of successful product outcomes.",
+  "AI safety, governance, and evaluation approaches addressing adversarial behavior, model reliability, risk management, and responsible deployment.",
+  "Research-informed perspectives on fairness, accountability, and trustworthy AI, grounded in both experimentation and enterprise realities.",
 ];
 
 const DOMAIN_INDEX = [
@@ -51,11 +52,11 @@ const Hero = () => (
           </h1>
 
           <p className="text-sm text-foreground/60 mb-4 tracking-tight">
-            AI Safety · Governance · Product · Program Leadership
+            Product Strategy · Program Leadership · GTM · AI Governance
           </p>
 
           <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-            Designing responsible AI systems and governance capabilities through safety evaluation, fairness research, and enterprise product delivery.
+            Building the systems, governance, and operating models required to move emerging technologies from experimentation to enterprise adoption.
           </p>
           <ul className="space-y-2 mb-5">
             {CREDENTIALS.map((c) => (

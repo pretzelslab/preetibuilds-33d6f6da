@@ -34,8 +34,21 @@ const BackToTop = () => {
   );
 };
 
+const MASTER_CODE = "PRL2026";
+const OWNER_KEY = "pl_session_access";
+
 const Index = () => {
   useVisitLogger("/");
+
+  // Owner re-activation: visiting /#PRL2026 re-sets the owner key in case localStorage was cleared
+  useEffect(() => {
+    const hash = window.location.hash.replace("#", "").toUpperCase().trim();
+    if (hash === MASTER_CODE) {
+      try { localStorage.setItem(OWNER_KEY, "1"); } catch {}
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+  }, []);
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <Navbar />

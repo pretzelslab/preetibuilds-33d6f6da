@@ -168,3 +168,9 @@ body.no-copy [contenteditable] {
   user-select: auto;
   -webkit-user-select: auto;
 }
+
+/* Dev mode — npm run dev only. Overrides all select-none / userSelect:"none" site-wide. */
+body.dev-mode * {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}

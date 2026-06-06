@@ -18,7 +18,7 @@ const STATUS_BADGE: Record<string, { label: string; classes: string }> = {
 const ProjectRow = ({ project, index }: { project: Project; index: number }) => {
   const badge = project.status ? STATUS_BADGE[project.status] : null;
 
-  const inner = (
+  return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -54,22 +54,27 @@ const ProjectRow = ({ project, index }: { project: Project; index: number }) => 
             ))}
           </div>
         </div>
-        {(project.link || project.externalLink) && (
-          <span className="text-xs font-medium text-muted-foreground group-hover:text-primary transition-colors shrink-0 mt-0.5">
+        {project.link && (
+          <Link
+            to={project.link}
+            className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors shrink-0 mt-0.5 no-underline"
+          >
             {project.locked ? "Preview →" : "View →"}
-          </span>
+          </Link>
+        )}
+        {project.externalLink && (
+          <a
+            href={project.externalLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors shrink-0 mt-0.5 no-underline"
+          >
+            View →
+          </a>
         )}
       </div>
     </motion.div>
   );
-
-  if (project.link) {
-    return <Link to={project.link} className="block no-underline">{inner}</Link>;
-  }
-  if (project.externalLink) {
-    return <a href={project.externalLink} target="_blank" rel="noopener noreferrer" className="block no-underline">{inner}</a>;
-  }
-  return inner;
 };
 
 const SectionHeader = ({ label, subtitle }: { label: string; subtitle?: string }) => (

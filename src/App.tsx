@@ -74,8 +74,10 @@ const RouteTitle = () => {
 
 const CopyProtection = () => {
   useEffect(() => {
-    const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
-    if (isLocal) return;
+    if (import.meta.env.DEV) {
+      document.body.classList.add("dev-mode");
+      return () => document.body.classList.remove("dev-mode");
+    }
     const prevent = (e: Event) => e.preventDefault();
     document.addEventListener("copy", prevent);
     document.addEventListener("cut", prevent);
