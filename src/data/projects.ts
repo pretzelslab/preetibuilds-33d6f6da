@@ -68,14 +68,6 @@ export const RESPONSIBLE_AI_GOVERNANCE: Project[] = [
 
 export const PRODUCT_SYSTEMS: Project[] = [
   {
-    title: "Larkline",
-    description: "Revenue intelligence and decision support platform that identifies opportunity signals across customer, commercial, operational, and market activity, explains why opportunities emerge, and helps teams prioritize actions with greater confidence. Built around signal detection, evidence-based recommendations, and continuous organisational learning.",
-    tags: ["Founder", "System Architecture", "Full Stack Development", "AI Systems Design"],
-    industries: ["Rev Ops", "Agency Ops", "Creator Economy", "SaaS"],
-    status: "discovery",
-    externalLink: "https://larkline.app",
-  },
-  {
     title: "Win/Loss Intelligence",
     description: "AI system for organizational revenue intelligence — surfaces systemic deal outcome patterns across legal delays, implementation friction, champion instability, and competitive displacement. Live Claude Sonnet root cause analysis per deal: grounded evidence chain, inference risk flags, data lineage panel, and human evaluation loop. 25 synthetic deals · 5-dimension filter bar.",
     tags: ["React", "TypeScript", "Claude API", "Recharts"],
@@ -84,12 +76,20 @@ export const PRODUCT_SYSTEMS: Project[] = [
     link: "/win-loss-intelligence",
   },
   {
-    title: "GTM Tech Stack",
+    title: "GTM Intelligence Pipeline",
     description: "Lean Python-powered GTM system replacing expensive enterprise tooling — lead capture, enrichment, scoring, nurture, CRM sync, and reporting.",
     tags: ["Python", "Pandas", "Streamlit", "HubSpot"],
     industries: ["B2B SaaS", "RevOps", "Sales & Marketing"],
     status: "live",
     link: "/gtm-techstack",
+  },
+  {
+    title: "Larkline",
+    description: "Product strategy and decision support platform exploring how AI can identify customer, commercial, operational, and market opportunity signals.",
+    tags: ["System Architecture", "Full Stack Development", "AI Systems Design"],
+    industries: ["Rev Ops", "Agency Ops", "Creator Economy", "SaaS"],
+    status: "discovery",
+    externalLink: "https://larkline.app",
   },
 ];
 

@@ -3,9 +3,9 @@ import { SAFETY_ENGINEERING, PRODUCT_SYSTEMS, RESPONSIBLE_AI_GOVERNANCE } from "
 
 const CREDENTIALS = [
   "Enterprise products, platforms, and transformation programs operating at the intersection of strategy, execution, and scale.",
-  "Commercialization, portfolio governance, customer adoption, and cross-functional alignment as core drivers of successful product outcomes.",
-  "AI safety, governance, and evaluation approaches addressing adversarial behavior, model reliability, risk management, and responsible deployment.",
-  "Research-informed perspectives on fairness, accountability, and trustworthy AI, grounded in both experimentation and enterprise realities.",
+  "Commercialization, portfolio governance, customer adoption, and cross-functional alignment as drivers of successful product outcomes.",
+  "AI governance, safety, and evaluation approaches addressing model reliability, risk management, and responsible deployment.",
+  "Research-informed perspectives on fairness, accountability, and trustworthy AI.",
 ];
 
 const DOMAIN_INDEX = [
@@ -14,14 +14,14 @@ const DOMAIN_INDEX = [
     count: PRODUCT_SYSTEMS.length,
     anchor: "#product-gtm",
     desc: "Founder-led product development, revenue intelligence, GTM automation, and operating systems",
-    bullets: ["Larkline — end-to-end agency OS, production infra", "Win/Loss Intelligence — live Claude root-cause analysis", "GTM Tech Stack — CRM + pipeline automation"],
+    bullets: ["Win/Loss Intelligence — live Claude root-cause analysis", "GTM Intelligence Pipeline — CRM + pipeline automation", "Larkline — decision intelligence and agency operations"],
     cls: "text-amber-400 border-amber-500/25 hover:bg-amber-500/5",
   },
   {
-    label: "Safety Engineering",
+    label: "AI Safety & Evaluation",
     count: SAFETY_ENGINEERING.length,
-    anchor: "#safety-engineering",
-    desc: "Adversarial LLM evaluation, red-teaming, pre-deployment safety assurance, failure mode testing",
+    anchor: "#ai-safety-evaluation",
+    desc: "Adversarial testing, red-teaming, agent evaluation, and pre-deployment safety assurance",
     bullets: ["OWASP LLM Top 10 — indirect prompt injection", "Goal drift detection — SAFE/DRIFTING/ROGUE", "40-case safety eval suite, 5 risk categories"],
     cls: "text-violet-400 border-violet-500/25 hover:bg-violet-500/5",
   },
@@ -56,7 +56,7 @@ const Hero = () => (
           </p>
 
           <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-            Building the systems, governance, and operating models required to move emerging technologies from experimentation to enterprise adoption.
+            Building systems, governance capabilities, and operating models that help organisations adopt emerging technologies responsibly and at scale.
           </p>
           <ul className="space-y-2 mb-5">
             {CREDENTIALS.map((c) => (

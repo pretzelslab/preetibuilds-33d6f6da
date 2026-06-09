@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 
 const PROOF_POINTS: { label: string; href: string; external?: boolean }[] = [
-  { label: "2 Preprints · Zenodo",           href: "/research" },
-  { label: "ACM FAccT Target",               href: "/research" },
-  { label: "Product · Program · GTM", href: "#about" },
-  { label: "OWASP · MITRE ATLAS",            href: "#safety-engineering" },
-  { label: "EU AI Act · CSRD · GDPR",        href: "#responsible-ai" },
-  { label: "6 Agentic Eval Systems",          href: "#safety-engineering" },
+  { label: "Product · Program · GTM",          href: "#about" },
+  { label: "Enterprise Platforms · CRM · RevOps", href: "#product-gtm" },
+  { label: "AI Governance · Responsible AI",   href: "#responsible-ai-governance" },
+  { label: "EU AI Act · GDPR · CSRD",          href: "#responsible-ai-governance" },
+  { label: "OWASP · MITRE ATLAS",              href: "#ai-safety-evaluation" },
+  { label: "Research & Publications",          href: "#publications" },
 ];
 
 const CredibilityStrip = () => (

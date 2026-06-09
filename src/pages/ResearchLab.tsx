@@ -8,6 +8,7 @@ import {
   RESEARCH_LAB_PRODUCT,
   RESEARCH_LAB_PERSONAL,
 } from "@/data/projects";
+import CredibilityStrip from "@/components/portfolio/CredibilityStrip";
 
 const STATUS_BADGE: Record<string, { label: string; classes: string }> = {
   live:      { label: "Live",      classes: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
@@ -90,6 +91,18 @@ const SectionHeader = ({ label, subtitle }: { label: string; subtitle?: string }
   </div>
 );
 
+const StripDivider = () => (
+  <div className="relative">
+    <CredibilityStrip />
+    <button
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+    >
+      ↑ top
+    </button>
+  </div>
+);
+
 const ResearchLab = () => {
   useVisitLogger("/research-lab");
 
@@ -100,48 +113,63 @@ const ResearchLab = () => {
           <Link to="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
             ← Back to Portfolio
           </Link>
-          <span className="text-[10px] font-mono tracking-widest uppercase text-muted-foreground/50">research lab</span>
+          <span className="text-[10px] font-mono tracking-widest uppercase text-muted-foreground/50">systems lab</span>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="mb-10">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50 mb-2">
-            All Tools & Experiments
-          </p>
-          <h1 className="text-xl font-semibold tracking-tight text-foreground mb-2">Research Lab</h1>
-          <p className="text-sm text-muted-foreground max-w-2xl">
-            The full body of work beyond the twelve flagship projects — carbon calculators, sustainability frameworks, readiness assessments, and personal tools. All live and accessible.
-          </p>
-        </div>
+      {/* Page header */}
+      <div className="max-w-7xl mx-auto px-6 pt-12 pb-8">
+        <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50 mb-2">
+          All Tools & Experiments
+        </p>
+        <h1 className="text-xl font-semibold tracking-tight text-foreground mb-2">Systems Lab</h1>
+        <p className="text-sm text-muted-foreground">
+          Additional prototypes, frameworks, and decision support tools spanning product strategy, AI governance, sustainability, and enterprise transformation.
+        </p>
+      </div>
 
+      {/* Product & GTM */}
+      <div className="max-w-7xl mx-auto px-6">
         <SectionHeader
           label="Product & GTM"
           subtitle="AI-powered product intelligence and GTM automation pipelines."
         />
-        <div className="mb-10">
+        <div className="mb-4">
           {RESEARCH_LAB_PRODUCT.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
         </div>
+      </div>
 
+      <StripDivider />
+
+      {/* Responsible AI & Governance */}
+      <div className="max-w-7xl mx-auto px-6 pt-4">
         <SectionHeader
           label="Responsible AI & Governance"
           subtitle="Adversarial robustness benchmarks, fairness audits, readiness diagnostics, and risk assessment tooling."
         />
-        <div className="mb-10">
+        <div className="mb-4">
           {RESEARCH_LAB_RESPONSIBLE_AI.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
         </div>
+      </div>
 
+      <StripDivider />
+
+      {/* Sustainable AI */}
+      <div className="max-w-7xl mx-auto px-6 pt-4">
         <SectionHeader
           label="Sustainable AI"
           subtitle="Carbon-aware inference routing, measurement tools, disclosure frameworks, and the carbon-fairness efficiency tradeoff — mapped to CSRD, EU GPAI Art.53, and ISSB S2."
         />
-        <div className="mb-10">
+        <div className="mb-4">
           {RESEARCH_LAB_SUSTAINABLE_AI.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
         </div>
+      </div>
 
-        <SectionHeader
-          label="Personal Projects"
-        />
+      <StripDivider />
+
+      {/* Personal Projects */}
+      <div className="max-w-7xl mx-auto px-6 pt-4 pb-12">
+        <SectionHeader label="Personal Projects" />
         <div className="mb-10">
           {RESEARCH_LAB_PERSONAL.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
         </div>

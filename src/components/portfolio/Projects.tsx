@@ -6,6 +6,7 @@ import {
   RESPONSIBLE_AI_GOVERNANCE,
   PRODUCT_SYSTEMS,
 } from "@/data/projects";
+import CredibilityStrip from "@/components/portfolio/CredibilityStrip";
 
 const STATUS_BADGE: Record<string, { label: string; classes: string }> = {
   live:      { label: "Live",      classes: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
@@ -88,6 +89,18 @@ const SectionHeader = ({ label, subtitle }: { label: string; subtitle?: string }
   </div>
 );
 
+const StripDivider = () => (
+  <div className="relative">
+    <CredibilityStrip />
+    <button
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+    >
+      ↑ top
+    </button>
+  </div>
+);
+
 const publications = [
   {
     domain: "Sustainable AI · Systems",
@@ -151,60 +164,80 @@ const PublicationsSection = () => (
 );
 
 const Projects = () => (
-  <section id="projects" className="py-6 px-6 scroll-mt-20">
-    <div className="max-w-7xl mx-auto">
+  <div id="projects" className="scroll-mt-20">
 
-      <div id="product-gtm" className="scroll-mt-20" />
-      <SectionHeader
-        label="Product & GTM Systems"
-        subtitle="Founder-led product development, revenue intelligence, and GTM automation — built from 18+ years operating B2B SaaS, GTM, and CRM stacks."
-      />
-      <div className="mb-10">
-        {PRODUCT_SYSTEMS.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
-      </div>
-
-      <div id="safety-engineering" className="scroll-mt-20" />
-      <SectionHeader
-        label="Safety Engineering"
-        subtitle="LLM red-teaming, adversarial evaluation, and pre-deployment safety assurance — 40-case test suite across prompt injection, regulatory hallucination, suitability failures, data leakage, and RAG poisoning."
-      />
-      <div className="mb-10">
-        {SAFETY_ENGINEERING.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
-      </div>
-
-      <div id="responsible-ai-governance" className="scroll-mt-20" />
-      <SectionHeader
-        label="Responsible AI & Governance"
-        subtitle="Privacy impact assessment, agentic compliance pipelines, and policy governance tooling — built for EU AI Act, GDPR, NIST AI RMF, and ISO 42001 enforcement."
-      />
-      <div className="mb-10">
-        {RESPONSIBLE_AI_GOVERNANCE.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
-      </div>
-
-      <PublicationsSection />
-
-      {/* Research Lab link */}
-      <div className="border border-border/50 rounded-xl px-5 py-4 bg-muted/30 mb-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-[10px] font-mono tracking-widest uppercase text-muted-foreground mb-1">
-              More Work
-            </p>
-            <p className="text-xs text-foreground/70">
-              10 additional tools — carbon calculators, sustainability frameworks, readiness assessments, and more.
-            </p>
-          </div>
-          <Link
-            to="/research-lab"
-            className="shrink-0 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
-          >
-            Research Lab →
-          </Link>
+    {/* ── Product & GTM Systems ── */}
+    <div className="px-6 pt-6">
+      <div className="max-w-7xl mx-auto">
+        <div id="product-gtm" className="scroll-mt-20" />
+        <SectionHeader
+          label="Product & GTM Systems"
+          subtitle="Revenue intelligence, GTM automation, and operating systems — built from 18+ years operating B2B SaaS, GTM, and CRM stacks."
+        />
+        <div className="mb-4">
+          {PRODUCT_SYSTEMS.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
         </div>
       </div>
-
     </div>
-  </section>
+
+    <StripDivider />
+
+    {/* ── AI Safety & Evaluation ── */}
+    <div className="px-6 pt-4">
+      <div className="max-w-7xl mx-auto">
+        <div id="ai-safety-evaluation" className="scroll-mt-20" />
+        <SectionHeader
+          label="AI Safety & Evaluation"
+          subtitle="LLM red-teaming, adversarial evaluation, and pre-deployment safety assurance — 40-case test suite across prompt injection, regulatory hallucination, suitability failures, data leakage, and RAG poisoning."
+        />
+        <div className="mb-4">
+          {SAFETY_ENGINEERING.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+        </div>
+      </div>
+    </div>
+
+    <StripDivider />
+
+    {/* ── Responsible AI & Governance ── */}
+    <div className="px-6 pt-4">
+      <div className="max-w-7xl mx-auto">
+        <div id="responsible-ai-governance" className="scroll-mt-20" />
+        <SectionHeader
+          label="Responsible AI & Governance"
+          subtitle="Privacy impact assessment, agentic compliance pipelines, and policy governance tooling — built for EU AI Act, GDPR, NIST AI RMF, and ISO 42001 enforcement."
+        />
+        <div className="mb-4">
+          {RESPONSIBLE_AI_GOVERNANCE.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+        </div>
+      </div>
+    </div>
+
+    {/* ── Publications + Research Lab link ── */}
+    <div className="px-6 pb-6">
+      <div className="max-w-7xl mx-auto">
+        <PublicationsSection />
+        <div className="border border-border/50 rounded-xl px-5 py-4 bg-muted/30 mb-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-mono tracking-widest uppercase text-muted-foreground mb-1">
+                Systems Lab
+              </p>
+              <p className="text-xs text-foreground/70">
+                Additional prototypes, assessments, and decision support tools spanning AI governance, sustainability, enterprise readiness, and operational intelligence.
+              </p>
+            </div>
+            <Link
+              to="/research-lab"
+              className="shrink-0 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+            >
+              Systems Lab →
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 );
 
 export default Projects;
