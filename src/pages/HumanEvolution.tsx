@@ -11,6 +11,7 @@ import type { Confidence, DomainId } from "@/data/humanEvolution";
 import { ScenarioProvider, ScenarioToggle } from "@/components/human-evolution/ScenarioContext";
 import { ShortAnswer } from "@/components/human-evolution/ShortAnswer";
 import { FiveAreas } from "@/components/human-evolution/FiveAreas";
+import { ThoughtProcess } from "@/components/human-evolution/ThoughtProcess";
 import { VizLegend } from "@/components/human-evolution/Legends";
 import { SourceFooter } from "@/components/human-evolution/SourceFooter";
 import { ImpactsViz } from "@/components/human-evolution/ImpactsViz";
@@ -154,6 +155,9 @@ export default function HumanEvolution() {
 
           {/* The simple version first (S9): five life areas, one card each */}
           <FiveAreas onOpenArea={openArea} />
+
+          {/* The thought process (S9b): succinct writeup + one-slider time travel, no neutrality */}
+          <ThoughtProcess />
 
           {/* One home for the legend: futures, why-B, evidence labels */}
           <ReadingGuide />
