@@ -622,6 +622,96 @@ export const MASTER_VARIABLES: MasterVariable[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Policy matrix — S10 (Preeti, 2026-06-12). The levers addressed to lawmakers,
+// regulators and geo-governments: who holds each lever today, the instruments
+// that could move it, and where the trajectory goes if it is never pulled.
+// M1–M4 are outcome VARIABLES; the instruments column is the actual controls.
+// ---------------------------------------------------------------------------
+
+export interface PolicyMatrixRow {
+  id: MasterVariable["id"];
+  lever: string;
+  /** Who actually holds this lever today — honest, not aspirational */
+  holder: string;
+  /** Policy instruments that could move it */
+  instruments: string;
+  /** Where the trajectory goes by 2046 if the lever is never pulled */
+  unpulled: string;
+  /** Earliest publicly visible sign (links to the L-indicators below) */
+  earliestSign: string;
+}
+
+export const POLICY_MATRIX: PolicyMatrixRow[] = [
+  {
+    id: "M1",
+    lever: "Default design objective",
+    holder: "Product companies' growth incentives — in practice, no one accountable",
+    instruments: "Design codes (age-appropriate design rules), product liability, public procurement that only buys outcome-mode products",
+    unpulled: "Engagement-optimized defaults win every mass-market category; tutor, treat and diversify modes stay niche",
+    earliestSign: "L3 · tutor-mode vs answer-mode growth · 2028",
+  },
+  {
+    id: "M2",
+    lever: "Incentive asymmetry",
+    holder: "Unowned — no budget line for the defensive side exists anywhere today",
+    instruments: "Public funding mandates, insurance reimbursement for AI therapy, platform levies that pay for verification and inoculation",
+    unpulled: "Countermeasures stay as pilots and papers while the attack side compounds on market revenue alone",
+    earliestSign: "L8 / L9 / L11 · provenance, inoculation curricula, reimbursement · 2029–30",
+  },
+  {
+    id: "M3",
+    lever: "Institutional adaptation speed",
+    holder: "Education ministries, regulators, professional bodies — each on its own clock",
+    instruments: "Curriculum mandates, assessment reform (unassisted-reasoning exams), professional licensure updates",
+    unpulled: "The 13–25 cohort finishes forming before protection arrives — the window closes around the mid-2030s",
+    earliestSign: "L1 · unassisted-reasoning assessment adoption · 2029",
+  },
+  {
+    id: "M4",
+    lever: "Where capability formation moves",
+    holder: "Diffuse: employers cutting junior roles, professions setting entry rules, education systems — no single owner",
+    instruments: "Apprenticeship mandates and subsidies, AI-direction certifications, hiring incentives that keep the junior rung",
+    unpulled: "The 2030s run short of the judgment that only learning-by-doing builds",
+    earliestSign: "L7 / L15 / L16 · junior hiring + verification job titles · 2028–29",
+  },
+];
+
+export const POLICY_MATRIX_NOTE =
+  "Are these the only controls? M1–M4 are the four outcome variables this research says decide which future wins — they are what the controls act on, not the controls themselves. The instruments column is the actual toolbox: liability law, design codes, procurement, provenance mandates, curriculum and assessment reform, apprenticeship policy. Each instrument moves at least one lever; no lever moves by itself.";
+
+// ---------------------------------------------------------------------------
+// Call to action — S10. Plain words, no hype, no overclaim. Every line restates
+// findings already evidence-tiered elsewhere in this file.
+// ---------------------------------------------------------------------------
+
+export interface CallToActionItem {
+  audience: string;
+  ask: string;
+}
+
+export const CALL_TO_ACTION: CallToActionItem[] = [
+  {
+    audience: "Lawmakers & regulators",
+    ask: "Regulate the design objective, not the technology. Fund the defensive side — verification, inoculation, treatment, training — the way the market already funds the attacking side.",
+  },
+  {
+    audience: "Builders",
+    ask: "Default to tutor, treat, diversify. A retention metric is not a neutral choice — it is the single variable this research says matters most.",
+  },
+  {
+    audience: "Educators & employers",
+    ask: "Keep unassisted thinking on the exam, and keep the junior rung on the ladder. Judgment is built by doing — nothing in the evidence says it forms any other way.",
+  },
+  {
+    audience: "Each of us",
+    ask: "Capabilities that go unused fade — that is established for the body and increasingly documented for thinking. Use AI as a sparring partner, not a substitute: keep moving, and keep reasoning without it some of the time.",
+  },
+];
+
+export const CALL_TO_ACTION_LEAD =
+  "None of this is destiny. Four levers decide it, all four are pullable today, and the evidence of whether we pulled them arrives by 2029 — not 2046.";
+
+// ---------------------------------------------------------------------------
 // Scenarios — 07_scenarios.md §3–§5 (Tier 3 by definition; drivers cite Tier 1/2)
 // ---------------------------------------------------------------------------
 
@@ -722,7 +812,7 @@ export const SCENARIO_LOGIC_ONE_LINE =
 // ---------------------------------------------------------------------------
 
 export interface Indicator {
-  id: string; // L1–L18
+  id: string; // L1–L19
   indicator: string;
   domains: DomainId[];
   watch: string; // who/what to watch
@@ -751,6 +841,10 @@ export const INDICATORS: Indicator[] = [
   { id: "L16", indicator: "Paid 'verification / AI-output ownership' job titles & certification markets", domains: ["labor"], watch: "Job-posting data", by: 2029, signal: "Emerging = A (M4 forming)", cluster: "A" },
   { id: "L17", indicator: "TFP growth vs the ~0.5–0.7%/decade floor (Acemoglu)", domains: ["labor"], watch: "National statistics", by: 2031, signal: "Well above floor = A's economic engine", cluster: "context" },
   { id: "L18", indicator: "BPO/IT-services export growth in India/Philippines", domains: ["labor"], watch: "Trade statistics", by: 2029, signal: "Contraction = ladder foreclosure", cluster: "context" },
+  // L19 added 2026-06-12 on Preeti's observation (S10). Evidence tier is honest:
+  // screen-time ↔ sedentary-behaviour link is established; a direct AI-use link
+  // is plausible but not yet directly measured anywhere.
+  { id: "L19", indicator: "Physical-activity and sedentary-time trends alongside rising daily AI hours (screen-time → less movement is established science; the AI-specific link is plausible but not yet directly measured)", domains: ["mentalHealth"], watch: "WHO physical-activity surveillance, national health surveys", by: 2029, signal: "Activity falling as AI hours rise = C · low confidence until directly measured", cluster: "C" },
 ];
 
 export const DASHBOARD_READING_RULE =

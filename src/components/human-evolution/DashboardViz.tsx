@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
-  DOMAINS, INDICATORS, MASTER_VARIABLES, DASHBOARD_READING_RULE, SCENARIOS,
+  CALL_TO_ACTION, CALL_TO_ACTION_LEAD, DOMAINS, INDICATORS, MASTER_VARIABLES,
+  DASHBOARD_READING_RULE, POLICY_MATRIX, POLICY_MATRIX_NOTE, SCENARIOS,
 } from "@/data/humanEvolution";
 import type { DomainId, Indicator } from "@/data/humanEvolution";
 import { DOMAIN_TITLES } from "./shared";
@@ -9,7 +10,7 @@ import { useScenario } from "./ScenarioContext";
 
 /**
  * Viz 5 — Human Capability Dashboard ("How We'll Know"). The falsifiability
- * layer: 18 observable indicators, grouped by life area in an accordion
+ * layer: 19 observable indicators, grouped by life area in an accordion
  * (Preeti's §9.1 decision — grouped read beats pagination). Layman-first:
  * plain-words answer leads, the indicator table sits underneath. The active
  * scenario from the global toggle highlights its confirming cluster rows.
@@ -81,7 +82,7 @@ export function DashboardViz() {
         <h2 className="font-semibold text-sm mb-1">How we'll know</h2>
         <p className="text-xs text-muted-foreground leading-relaxed">
           How to read this: we don't have to wait twenty years to find out which future we're in.
-          The 18 signs below are all publicly measurable, and most show movement by 2028–2029. This
+          The 19 signs below are all publicly measurable, and most show movement by 2028–2029. This
           tab is the report's promise to be provably wrong — if the signs move against us, the
           forecast fails in the open.
         </p>
@@ -132,6 +133,46 @@ export function DashboardViz() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Policy matrix — the levers addressed to lawmakers & regulators (S10) */}
+      <div className="rounded-xl border border-border/60 bg-muted/5 p-5">
+        <p className="text-xs font-semibold mb-1">The policy matrix — who can actually pull each lever</p>
+        <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
+          The four levers above are addressed to lawmakers, regulators and governments. This is the
+          honest state of each one: who holds it today, what could move it, and where the trajectory
+          goes if it is never pulled — that no-controls path is drawn in The Futures tab.
+        </p>
+        <div className="overflow-x-auto -mx-1 px-1">
+          <table className="w-full text-[11px] min-w-[760px]">
+            <thead>
+              <tr className="text-left text-[10px] uppercase tracking-widest text-muted-foreground border-b border-border/60">
+                <th className="py-2 pr-3 font-medium">Lever</th>
+                <th className="py-2 pr-3 font-medium">Who holds it today</th>
+                <th className="py-2 pr-3 font-medium">What could move it</th>
+                <th className="py-2 pr-3 font-medium">If never pulled, by 2046…</th>
+                <th className="py-2 font-medium">Earliest sign</th>
+              </tr>
+            </thead>
+            <tbody>
+              {POLICY_MATRIX.map(row => (
+                <tr key={row.id} className="border-b border-border/30 last:border-0 align-top">
+                  <td className="py-2.5 pr-3 font-semibold whitespace-nowrap">
+                    <span className="font-mono text-muted-foreground mr-1.5">{row.id}</span>
+                    {row.lever}
+                  </td>
+                  <td className="py-2.5 pr-3 text-muted-foreground leading-relaxed">{row.holder}</td>
+                  <td className="py-2.5 pr-3 text-muted-foreground leading-relaxed">{row.instruments}</td>
+                  <td className="py-2.5 pr-3 text-muted-foreground leading-relaxed">{row.unpulled}</td>
+                  <td className="py-2.5 text-muted-foreground leading-relaxed whitespace-nowrap font-mono text-[10px]">{row.earliestSign}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-[11px] text-muted-foreground leading-relaxed mt-3 pt-3 border-t border-border/40">
+          {POLICY_MATRIX_NOTE}
+        </p>
       </div>
 
       {/* Cluster reading rule — scenario-aware */}
@@ -222,6 +263,20 @@ export function DashboardViz() {
         reports. ★ L2 (variance, not average, of reasoning scores) is the single most direct test of
         the Great Split thesis.
       </p>
+
+      {/* The call to action — plain words, no hype (S10) */}
+      <div className="rounded-xl border border-foreground/15 bg-muted/10 p-6">
+        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">The honest call to action</p>
+        <p className="text-sm font-semibold leading-relaxed mb-4">{CALL_TO_ACTION_LEAD}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {CALL_TO_ACTION.map(item => (
+            <div key={item.audience} className="border-l-2 border-border/60 pl-3">
+              <p className="text-xs font-semibold mb-1">{item.audience}</p>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">{item.ask}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

@@ -14,7 +14,7 @@ export const DOMAIN_TITLES: Record<DomainId, string> = {
   cognition: "Cognition & Learning",
   creativity: "Creativity & Culture",
   discernment: "Discernment",
-  mentalHealth: "Mental Health & Social Behaviour",
+  mentalHealth: "Mental Health & Wellbeing",
   labor: "Work & Livelihoods",
 };
 

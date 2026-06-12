@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   ReferenceLine, ResponsiveContainer, Tooltip,
 } from "recharts";
 import { ChevronDown, ChevronUp, Pause, Play, RotateCcw } from "lucide-react";
-import { COHORTS, DOMAINS, SCENARIOS, TRAJECTORIES, TRAJECTORY_DISCLAIMER } from "@/data/humanEvolution";
+import { COHORTS, DOMAINS, SCENARIOS, TRAJECTORIES } from "@/data/humanEvolution";
 import type { CohortId, DomainId, ScenarioId } from "@/data/humanEvolution";
 import { useScenario } from "./ScenarioContext";
 import { COHORT_COLORS, DOMAIN_TITLES, agesAt, indexAt, pathValueAt, usePrefersReducedMotion } from "./shared";
@@ -262,8 +262,8 @@ function DomainColumn({ domainId, year }: { domainId: DomainId; year: number }) 
   );
 }
 
-// ── Tooltip (research chart) ──────────────────────────────────────────────────
-const TrajectoryTooltip = ({ active, payload, label }: {
+// ── Tooltip (no-controls trajectory chart) ───────────────────────────────────
+const NoControlsTooltip = ({ active, payload, label }: {
   active?: boolean;
   label?: number;
   payload?: Array<{ dataKey: string; value: number; stroke: string }>;
@@ -274,15 +274,15 @@ const TrajectoryTooltip = ({ active, payload, label }: {
       <p className="font-bold mb-2">{label}</p>
       <div className="space-y-1.5">
         {payload.map(entry => {
-          const cohort = COHORTS.find(c => c.id === entry.dataKey);
-          if (!cohort) return null;
+          const domain = DOMAINS.find(d => d.id === entry.dataKey);
+          if (!domain) return null;
           return (
             <div key={entry.dataKey} className="flex items-center justify-between gap-3">
               <span className="flex items-center gap-1.5 text-muted-foreground">
                 <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: entry.stroke }} />
-                {GENERATION_DISPLAY[cohort.id]} <span className="text-muted-foreground/60">(ages {agesAt(cohort, Number(label))})</span>
+                {DOMAIN_TITLES[domain.id]}
               </span>
-              <span className="font-semibold">{entry.value}</span>
+              <span className="font-semibold">{Math.round(entry.value)}</span>
             </div>
           );
         })}
@@ -294,19 +294,68 @@ const TrajectoryTooltip = ({ active, payload, label }: {
   );
 };
 
+// ── The no-controls chart itself — shared by the page view and the square
+//    recording view (compact drops the axis label and long annotations) ───────
+function NoControlsChart({ rows, compact, visible, hovered }: {
+  rows: Record<string, number>[];
+  compact?: boolean;
+  visible: Record<DomainId, boolean>;
+  hovered: DomainId | null;
+}) {
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={rows} margin={compact ? { top: 8, right: 12, bottom: 0, left: -16 } : { top: 16, right: 24, bottom: 8, left: 8 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.12)" />
+        <XAxis
+          dataKey="year" type="number"
+          domain={[2026, 2046]} ticks={YEARS}
+          tick={{ fontSize: 10, fill: "rgba(148,163,184,0.7)" }}
+        />
+        <YAxis
+          domain={[25, 55]}
+          tick={{ fontSize: 10, fill: "rgba(148,163,184,0.7)" }}
+          label={compact ? undefined : { value: "Illustrative capability index", angle: -90, position: "insideLeft", offset: 12, style: { fontSize: 10, fill: "rgba(148,163,184,0.6)" } }}
+        />
+        <ReferenceLine
+          y={50} stroke="rgba(148,163,184,0.4)" strokeDasharray="4 2"
+          label={{ value: "2026 baseline", position: "insideTopRight", fill: "rgba(148,163,184,0.6)", fontSize: 9 }}
+        />
+        <ReferenceLine
+          x={2036} stroke="rgba(148,163,184,0.35)" strokeDasharray="6 3"
+          label={compact ? undefined : { value: "after 2036 forecasts get less certain", position: "insideTopLeft", fill: "rgba(148,163,184,0.6)", fontSize: 9 }}
+        />
+        {DOMAINS.map(d => (
+          <Line
+            key={d.id}
+            dataKey={d.id}
+            type="monotone"
+            stroke={d.color}
+            strokeWidth={2.5}
+            strokeOpacity={hovered && hovered !== d.id ? 0.25 : 1}
+            dot={false}
+            activeDot={{ r: 5 }}
+            hide={!visible[d.id]}
+            isAnimationActive={false}
+          />
+        ))}
+        <Tooltip content={<NoControlsTooltip />} />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
 // ── Viz 1 — Time travel movie: auto-plays 2026→2046 across the five life areas ─
 export function TimeTravelViz() {
   const { scenario } = useScenario();
   const reducedMotion = usePrefersReducedMotion();
-  const firstRender = useRef(true);
   const [year, setYear] = useState(START_YEAR);
   const [playing, setPlaying] = useState(true);
-  const [chartOpen, setChartOpen] = useState(false);
   const [storiesOpen, setStoriesOpen] = useState(false);
-  const [visible, setVisible] = useState<Record<CohortId, boolean>>({
-    adolescents: true, emergingAdults: true, primeWorkforce: true, experiencedWorkforce: true,
+  const [squareView, setSquareView] = useState(false);
+  const [visible, setVisible] = useState<Record<DomainId, boolean>>({
+    cognition: true, creativity: true, discernment: true, mentalHealth: true, labor: true,
   });
-  const [hovered, setHovered] = useState<CohortId | null>(null);
+  const [hovered, setHovered] = useState<DomainId | null>(null);
 
   // Reduced motion: no animation — hold the full 2046 picture, scrub by hand.
   useEffect(() => {
@@ -331,16 +380,19 @@ export function TimeTravelViz() {
     [scenario],
   );
 
-  const rows = useMemo(() => YEARS.map(yr => {
-    const row: Record<string, number> = { year: yr };
-    for (const t of scenarioTrajectories) {
-      row[t.cohort] = t.points.find(p => p.year === yr)!.index;
+  // The no-controls trajectory: one row per elapsed year, so the five curves
+  // draw themselves left → right as the movie runs. Values extrapolate today's
+  // measured direction on the assumption that none of the four levers (How
+  // We'll Know tab) get pulled — by definition the all-levers-unpulled path.
+  const noControlsRows = useMemo(() => {
+    const rows: Record<string, number>[] = [];
+    for (let yr = START_YEAR; yr <= year; yr++) {
+      const row: Record<string, number> = { year: yr };
+      for (const d of DOMAINS) row[d.id] = pathValueAt(d.id, "C", yr);
+      rows.push(row);
     }
-    return row;
-  }), [scenarioTrajectories]);
-
-  const animationDuration = firstRender.current ? 800 : 300;
-  if (firstRender.current) firstRender.current = false;
+    return rows;
+  }, [year]);
 
   return (
     <div className="space-y-5">
@@ -434,6 +486,92 @@ export function TimeTravelViz() {
         The Impacts tab; the futures themselves are explained in the guide above.
       </p>
 
+      {/* The no-controls trajectory — all five life areas on one chart (S10) */}
+      <div className="rounded-xl border border-border/60 bg-muted/5 p-5">
+        <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 mb-1">
+          <p className="text-sm font-semibold">All five parts of life, one chart — the path if no controls deploy</p>
+          <button
+            onClick={() => setSquareView(s => !s)}
+            className="inline-flex items-center gap-1.5 rounded-full border border-border/60 px-3 py-1 text-[10px] hover:border-foreground/40 transition-colors flex-shrink-0"
+            aria-pressed={squareView}
+          >
+            {squareView ? "Exit square view" : "Square view · for recording"}
+          </button>
+        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+          Each curve is one part of life, drawn as the years run — today's direction extrapolated
+          if none of the four levers get pulled. 50 = the 2026 baseline; higher means more human
+          capability.
+        </p>
+
+        {squareView ? (
+          <>
+            {/* 1:1 card sized for LinkedIn screen recording */}
+            <div className="mx-auto w-full max-w-[560px]">
+              <div className="aspect-square rounded-2xl border border-border/60 bg-background p-5 flex flex-col">
+                <div className="flex items-start justify-between gap-3 mb-1">
+                  <div>
+                    <p className="text-xs font-semibold leading-tight">If no controls deploy</p>
+                    <p className="text-[10px] text-muted-foreground">five parts of human life · 2026–2046</p>
+                  </div>
+                  <span className="text-3xl font-bold tabular-nums leading-none">{year}</span>
+                </div>
+                <div className="flex-1 min-h-0">
+                  <NoControlsChart rows={noControlsRows} compact visible={visible} hovered={hovered} />
+                </div>
+                <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+                  {DOMAINS.map(d => (
+                    <span key={d.id} className="inline-flex items-center gap-1 text-[9px] text-muted-foreground">
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: d.color }} />
+                      {d.shortLabel}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-[9px] text-muted-foreground/70 mt-1.5">
+                  50 = 2026 baseline · illustrative — the direction is the claim, not the numbers · preetibuilds
+                </p>
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-3 text-center">
+              Press Restart at the top, then screen-record just the square — one full loop is ≈ 15 seconds.
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="h-[280px] sm:h-[340px]">
+              <NoControlsChart rows={noControlsRows} visible={visible} hovered={hovered} />
+            </div>
+
+            <div className="flex flex-wrap gap-2 mt-3">
+              {DOMAINS.map(d => (
+                <button
+                  key={d.id}
+                  onClick={() => setVisible(v => ({ ...v, [d.id]: !v[d.id] }))}
+                  onMouseEnter={() => setHovered(d.id)}
+                  onMouseLeave={() => setHovered(null)}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] transition-all ${
+                    visible[d.id]
+                      ? "border-border/60 text-foreground"
+                      : "border-border/40 text-muted-foreground/50 line-through"
+                  }`}
+                  aria-pressed={visible[d.id]}
+                >
+                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: d.color, opacity: visible[d.id] ? 1 : 0.4 }} />
+                  {DOMAIN_TITLES[d.id]}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        <p className="text-[11px] text-muted-foreground/70 leading-relaxed mt-4 pt-3 border-t border-border/40">
+          ⚪ Illustrative (Tier 3 — What We Imagine). These curves extrapolate today's measured
+          directions assuming the levers stay unpulled; 2026 = 50 by construction. No study produces
+          a composite human-capability index — treat shape and direction as the claim, never the
+          numbers. The matrix of who can pull each lever is in the How We'll Know tab.
+        </p>
+      </div>
+
       {/* The generation stories — secondary layer, auto-advances with the movie */}
       <div className="rounded-xl border border-border/60 bg-muted/5">
         <button
@@ -482,93 +620,6 @@ export function TimeTravelViz() {
         )}
       </div>
 
-      {/* The research chart — there for those who want it */}
-      <div className="rounded-xl border border-border/60 bg-muted/5">
-        <button
-          onClick={() => setChartOpen(o => !o)}
-          className="w-full flex items-center gap-2 px-5 py-3 text-sm font-semibold"
-          aria-expanded={chartOpen}
-        >
-          The research chart — four generations, one line each
-          {chartOpen ? <ChevronUp className="w-4 h-4 ml-auto text-muted-foreground" /> : <ChevronDown className="w-4 h-4 ml-auto text-muted-foreground" />}
-        </button>
-        {chartOpen && (
-          <div className="px-5 pb-5">
-            <p className="text-xs text-muted-foreground mb-4">
-              How to read this: each line is one generation alive today, shown for the future selected
-              at the top of the page. Higher means more overall human capability than the 2026 baseline
-              (the dashed line at 50). The vertical cursor follows the movie's year. Click a generation
-              chip to hide or show its line.
-            </p>
-            <div className="h-[280px] sm:h-[340px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={rows} margin={{ top: 16, right: 24, bottom: 8, left: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.12)" />
-                  <XAxis
-                    dataKey="year" type="number"
-                    domain={[2026, 2046]} ticks={YEARS}
-                    tick={{ fontSize: 10, fill: "rgba(148,163,184,0.7)" }}
-                  />
-                  <YAxis
-                    domain={[30, 80]}
-                    tick={{ fontSize: 10, fill: "rgba(148,163,184,0.7)" }}
-                    label={{ value: "Illustrative capability index", angle: -90, position: "insideLeft", offset: 12, style: { fontSize: 10, fill: "rgba(148,163,184,0.6)" } }}
-                  />
-                  <ReferenceLine
-                    y={50} stroke="rgba(148,163,184,0.4)" strokeDasharray="4 2"
-                    label={{ value: "2026 baseline", position: "insideBottomRight", fill: "rgba(148,163,184,0.6)", fontSize: 9 }}
-                  />
-                  <ReferenceLine
-                    x={2036} stroke="rgba(148,163,184,0.35)" strokeDasharray="6 3"
-                    label={{ value: "after 2036 forecasts get less certain", position: "insideTopLeft", fill: "rgba(148,163,184,0.6)", fontSize: 9 }}
-                  />
-                  <ReferenceLine x={year} stroke="#64748b" strokeWidth={1.5} />
-                  {COHORTS.map(c => (
-                    <Line
-                      key={c.id}
-                      dataKey={c.id}
-                      type="monotone"
-                      stroke={COHORT_COLORS[c.id]}
-                      strokeWidth={2.5}
-                      strokeOpacity={hovered && hovered !== c.id ? 0.25 : 1}
-                      dot={{ r: 3, fill: COHORT_COLORS[c.id], strokeWidth: 0 }}
-                      activeDot={{ r: 5 }}
-                      hide={!visible[c.id]}
-                      isAnimationActive={!reducedMotion}
-                      animationDuration={animationDuration}
-                    />
-                  ))}
-                  <Tooltip content={<TrajectoryTooltip />} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="flex flex-wrap gap-2 mt-3">
-              {COHORTS.map(c => (
-                <button
-                  key={c.id}
-                  onClick={() => setVisible(v => ({ ...v, [c.id]: !v[c.id] }))}
-                  onMouseEnter={() => setHovered(c.id)}
-                  onMouseLeave={() => setHovered(null)}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] transition-all ${
-                    visible[c.id]
-                      ? "border-border/60 text-foreground"
-                      : "border-border/40 text-muted-foreground/50 line-through"
-                  }`}
-                  aria-pressed={visible[c.id]}
-                >
-                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: COHORT_COLORS[c.id], opacity: visible[c.id] ? 1 : 0.4 }} />
-                  {GENERATION_DISPLAY[c.id]} <span className="text-muted-foreground/60">({c.ages2026} in 2026)</span>
-                </button>
-              ))}
-            </div>
-
-            <p className="text-[11px] text-muted-foreground/70 leading-relaxed mt-4 pt-3 border-t border-border/40">
-              {TRAJECTORY_DISCLAIMER}
-            </p>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
