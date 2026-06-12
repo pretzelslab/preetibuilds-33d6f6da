@@ -104,15 +104,14 @@ const About = () => {
             highlight={aboutHighlight}
           >
             <p className="text-xs text-foreground/80 leading-relaxed mb-2">
-              Works at the intersection of AI governance, product systems, and enterprise decisioning.
-              Builds empirical AI safety tools — adversarial evaluation frameworks, fairness audits,
-              carbon-aware routing infrastructure — and the governance pipelines that make responsible
-              AI actionable at scale.
+              Eighteen years building enterprise products, platforms, and transformation programs
+              across B2B SaaS, CRM, GTM, and regulated environments — now applying that operating
+              discipline to AI.
             </p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Eighteen years designing operating models across B2B SaaS, GTM, CRM, and regulatory
-              compliance environments. Currently focused on pre-deployment safety assurance, governance
-              tooling for regulated sectors, and AI-native product architecture.
+              Current focus: AI-native revenue systems, pre-deployment safety assurance, and the
+              governance pipelines that make responsible AI actionable at scale — adversarial
+              evaluation frameworks, fairness audits, carbon-aware infrastructure.
             </p>
           </Tile>
 

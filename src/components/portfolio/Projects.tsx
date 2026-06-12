@@ -223,7 +223,7 @@ const Projects = () => (
                 Systems Lab
               </p>
               <p className="text-xs text-foreground/70">
-                Additional prototypes, assessments, and decision support tools spanning AI governance, sustainability, enterprise readiness, and operational intelligence.
+                Additional prototypes, assessments, and decision support tools spanning AI governance, sustainability, enterprise readiness, operational intelligence, and AI-and-society foresight.
               </p>
             </div>
             <Link

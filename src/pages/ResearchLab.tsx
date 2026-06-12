@@ -125,7 +125,7 @@ const ResearchLab = () => {
         </p>
         <h1 className="text-xl font-semibold tracking-tight text-foreground mb-2">Systems Lab</h1>
         <p className="text-sm text-muted-foreground">
-          Additional prototypes, frameworks, and decision support tools spanning product strategy, AI governance, sustainability, and enterprise transformation.
+          Additional prototypes, frameworks, and decision support tools spanning product strategy, AI governance, sustainability, foresight, and enterprise transformation.
         </p>
       </div>
 
