@@ -23,6 +23,7 @@ const PAGE_CODES: Record<string, string> = {
   "carbon-time-travel":        "CTT2026",
   "agent-hijacking":           "AC42026",
   "win-loss":                  "WLI2026",
+  "human-evolution":           "HEV2026",
 };
 
 function pageKey(key: string): string { return `pl_access_${key}`; }
