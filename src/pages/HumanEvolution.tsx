@@ -7,9 +7,12 @@ import { PageGate } from "@/components/ui/PageGate";
 import { DiagonalWatermark } from "@/components/ui/DiagonalWatermark";
 import { useVisitLogger } from "@/hooks/useVisitLogger";
 import { CONFIDENCE_META, EVIDENCE_NOTE, SCENARIOS } from "@/data/humanEvolution";
-import type { Confidence } from "@/data/humanEvolution";
+import type { Confidence, DomainId } from "@/data/humanEvolution";
 import { ScenarioProvider, ScenarioToggle } from "@/components/human-evolution/ScenarioContext";
 import { ShortAnswer } from "@/components/human-evolution/ShortAnswer";
+import { FiveAreas } from "@/components/human-evolution/FiveAreas";
+import { VizLegend } from "@/components/human-evolution/Legends";
+import { SourceFooter } from "@/components/human-evolution/SourceFooter";
 import { ImpactsViz } from "@/components/human-evolution/ImpactsViz";
 import { TimeTravelViz } from "@/components/human-evolution/TimeTravelViz";
 import { PersonasViz } from "@/components/human-evolution/PersonasViz";
@@ -75,8 +78,19 @@ function ReadingGuide() {
   );
 }
 
+const ALL_DOMAINS: DomainId[] = ["cognition", "creativity", "discernment", "mentalHealth", "labor"];
+
 export default function HumanEvolution() {
   useVisitLogger("/human-evolution");
+  const [tab, setTab] = useState("plain");
+
+  // 5-area card click → open The Impacts tab at that area's evidence row.
+  const openArea = (domain: DomainId) => {
+    setTab("impacts");
+    setTimeout(() => {
+      document.getElementById(`impact-${domain}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 250);
+  };
 
   return (
     <PageGate pageId="human-evolution" backTo="/#projects" previewContent={<HumanEvolutionPreview />}>
@@ -138,12 +152,15 @@ export default function HumanEvolution() {
             </div>
           </div>
 
+          {/* The simple version first (S9): five life areas, one card each */}
+          <FiveAreas onOpenArea={openArea} />
+
           {/* One home for the legend: futures, why-B, evidence labels */}
           <ReadingGuide />
 
           {/* Tabs in narrative order, with the single scenario toggle pinned below the tab bar */}
           <ScenarioProvider>
-            <Tabs defaultValue="plain">
+            <Tabs value={tab} onValueChange={setTab}>
               <TabsList className="flex flex-wrap h-auto justify-start gap-1">
                 <TabsTrigger value="plain" className="text-xs"><BookOpen className="w-3 h-3 mr-1.5" />The Short Answer</TabsTrigger>
                 <TabsTrigger value="impacts" className="text-xs"><Users className="w-3 h-3 mr-1.5" />The Impacts</TabsTrigger>
@@ -156,13 +173,40 @@ export default function HumanEvolution() {
 
               <ScenarioToggle />
 
-              <TabsContent value="plain"><ShortAnswer /></TabsContent>
-              <TabsContent value="impacts"><ImpactsViz /></TabsContent>
-              <TabsContent value="futures"><TimeTravelViz /></TabsContent>
-              <TabsContent value="people"><PersonasViz /></TabsContent>
-              <TabsContent value="pareto"><ParetoViz /></TabsContent>
-              <TabsContent value="heatmap"><HeatmapViz /></TabsContent>
-              <TabsContent value="dashboard"><DashboardViz /></TabsContent>
+              <TabsContent value="plain">
+                <ShortAnswer />
+                <SourceFooter domains={ALL_DOMAINS} />
+              </TabsContent>
+              <TabsContent value="impacts">
+                <VizLegend blocks={["domains", "scenarios", "confidence"]} />
+                <ImpactsViz />
+                <SourceFooter domains={ALL_DOMAINS} />
+              </TabsContent>
+              <TabsContent value="futures">
+                <VizLegend blocks={["domains", "scenarios"]} />
+                <TimeTravelViz />
+                <SourceFooter domains={ALL_DOMAINS} synthesis />
+              </TabsContent>
+              <TabsContent value="people">
+                <VizLegend blocks={["scenarios", "confidence"]} />
+                <PersonasViz />
+                <SourceFooter domains={ALL_DOMAINS} synthesis />
+              </TabsContent>
+              <TabsContent value="pareto">
+                <VizLegend blocks={["domains", "confidence"]} />
+                <ParetoViz />
+                <SourceFooter domains={ALL_DOMAINS} />
+              </TabsContent>
+              <TabsContent value="heatmap">
+                <VizLegend blocks={["domains", "confidence"]} />
+                <HeatmapViz />
+                <SourceFooter domains={ALL_DOMAINS} synthesis />
+              </TabsContent>
+              <TabsContent value="dashboard">
+                <VizLegend blocks={["scenarios", "confidence"]} />
+                <DashboardViz />
+                <SourceFooter domains={ALL_DOMAINS} synthesis />
+              </TabsContent>
             </Tabs>
           </ScenarioProvider>
 

@@ -935,3 +935,245 @@ export const THESIS = {
 
 export const EVIDENCE_NOTE =
   "Compiled from a 10-document research corpus (2026-06-11) with 30 live-verified Tier-1 source sets across 5 domains. The corpus markdown (Human-Evolution-AI/research/) always takes precedence over any cell, score, or curve in this file.";
+
+// ---------------------------------------------------------------------------
+// Sources — the 30 live-verified anchor sets behind the corpus, grouped by
+// domain. `finding` is what this page takes from the source (incl. caveats —
+// retraction, preprint status, contested literatures stay visible). Rendered
+// as per-tab source footers; the corpus docs remain the source of truth.
+// ---------------------------------------------------------------------------
+
+export interface SourceEntry {
+  id: string;
+  citation: string; // authors, year, venue
+  finding: string; // what the corpus takes from it, caveats included
+  url: string;
+  confidence: Confidence;
+}
+
+export const SOURCES: Record<DomainId, SourceEntry[]> = {
+  cognition: [
+    {
+      id: "pew2025",
+      citation: "Pew Research Center (2025)",
+      finding: "Google users click a source link in 8% of visits when an AI summary appears vs 15% without — self-directed inquiry roughly halves.",
+      url: "https://www.pewresearch.org/short-reads/2025/07/22/google-users-are-less-likely-to-click-on-links-when-an-ai-summary-appears-in-the-results/",
+      confidence: "high",
+    },
+    {
+      id: "kestin2025",
+      citation: "Kestin et al. (2025), Scientific Reports",
+      finding: "RCT: a well-designed AI tutor outperformed in-class active learning in a Harvard physics course — the tutor/scaffold mode upside.",
+      url: "https://www.nature.com/articles/s41598-025-97652-6",
+      confidence: "high",
+    },
+    {
+      id: "lee2025",
+      citation: "Lee, Sarkar et al. (CHI 2025), Microsoft Research",
+      finding: "Knowledge workers who trust GenAI more report doing less critical thinking on the task — verification effort shifts, and can atrophy.",
+      url: "https://dl.acm.org/doi/full/10.1145/3706598.3713778",
+      confidence: "high",
+    },
+    {
+      id: "gerlich2025",
+      citation: "Gerlich (2025), Societies",
+      finding: "Heavier AI-tool use correlates with more cognitive offloading and lower critical-thinking scores, strongest in younger users. Correlational — direction unproven.",
+      url: "https://www.mdpi.com/2075-4698/15/1/6",
+      confidence: "medium",
+    },
+    {
+      id: "dahmani2020",
+      citation: "Dahmani & Bohbot (2020), Scientific Reports",
+      finding: "Habitual GPS use predicts poorer hippocampus-dependent spatial memory — the established offloading precedent.",
+      url: "https://www.nature.com/articles/s41598-020-62877-0",
+      confidence: "high",
+    },
+    {
+      id: "sparrow2011",
+      citation: "Sparrow, Liu & Wegner (2011), Science",
+      finding: "The original \"Google effect\" on memory (we remember where to find facts, not the facts). Kept with its mixed replication record stated.",
+      url: "https://www.science.org/doi/10.1126/science.1207745",
+      confidence: "medium",
+    },
+    {
+      id: "mit2025brain",
+      citation: "MIT Media Lab (2025) — unreviewed preprint",
+      finding: "\"Your Brain on ChatGPT\": lower EEG engagement and weaker recall in essay writing with LLM assistance. Preprint — cited as a signal, not a finding.",
+      url: "https://www.media.mit.edu/publications/your-brain-on-chatgpt/",
+      confidence: "low",
+    },
+    {
+      id: "wangfan2025",
+      citation: "Wang & Fan (2025), Humanities & Social Sciences Communications — RETRACTED",
+      finding: "A widely-cited ChatGPT learning meta-analysis, retracted in 2025. Listed as a caution: this page does not lean on it; sounder syntheses (Liu 2025; Deng 2024) replace it.",
+      url: "https://www.nature.com/articles/s41599-025-04787-y",
+      confidence: "low",
+    },
+  ],
+  creativity: [
+    {
+      id: "doshi2024",
+      citation: "Doshi & Hauser (2024), Science Advances",
+      finding: "GenAI raises individual story-writing creativity (most for the least creative) while reducing collective diversity — the democratize-and-homogenize finding.",
+      url: "https://www.science.org/doi/10.1126/sciadv.adn5290",
+      confidence: "high",
+    },
+    {
+      id: "meincke2025",
+      citation: "Meincke, Nave & Terwiesch (2025), Nature Human Behaviour",
+      finding: "ChatGPT-assisted brainstorming decreases idea diversity; divergence-targeted prompting recovers much of it — the harm is a default, not a destiny.",
+      url: "https://mackinstitute.wharton.upenn.edu/2025/new-in-nature-chatgpt-decreases-idea-diversity-in-brainstorming/",
+      confidence: "high",
+    },
+    {
+      id: "guzik2023",
+      citation: "Guzik, Byrge & Gilde (2023), Journal of Creativity",
+      finding: "GPT-4 scores in the top 1% on the Torrance Tests of creative thinking — generation is no longer the scarce human step.",
+      url: "https://www.sciencedirect.com/science/article/pii/S2713374523000249",
+      confidence: "medium",
+    },
+    {
+      id: "hui2024",
+      citation: "Hui, Reshef & Zhou (2024), Organization Science",
+      finding: "Freelancer earnings fell ~5.2% after GenAI arrived, with top performers hit hardest — quality was no shield in exposed creative markets.",
+      url: "https://pubsonline.informs.org/doi/abs/10.1287/orsc.2023.18441",
+      confidence: "high",
+    },
+  ],
+  discernment: [
+    {
+      id: "diel2024",
+      citation: "Diel et al. (2024), Computers in Human Behavior Reports — meta-analysis",
+      finding: "Across 56 papers (n≈86k), humans detect deepfakes at 55.5% — chance level. Unaided human perception has already lost.",
+      url: "https://www.sciencedirect.com/science/article/pii/S2451958824001714",
+      confidence: "high",
+    },
+    {
+      id: "spitale2023",
+      citation: "Spitale, Germani & Biller-Andorno (2023), Science Advances",
+      finding: "GPT-3 disinformation tweets were rated MORE believable than human-written ones; its accurate information was also clearer.",
+      url: "https://www.science.org/doi/10.1126/sciadv.adh1850",
+      confidence: "high",
+    },
+    {
+      id: "salvi2025",
+      citation: "Salvi et al. (2025), Nature Human Behaviour",
+      finding: "GPT-4 with basic personal data on its opponent won online debates 64.4% of the time — cheap personalized persuasion at scale.",
+      url: "https://www.nature.com/articles/s41562-025-02194-6",
+      confidence: "high",
+    },
+    {
+      id: "costello2024",
+      citation: "Costello, Pennycook & Rand (2024), Science",
+      finding: "\"DebunkBot\": three rounds of personalized AI dialogue durably cut conspiracy belief ~20%, lasting 2 months — the same persuasion power runs in reverse.",
+      url: "https://www.science.org/doi/10.1126/science.adq1814",
+      confidence: "high",
+    },
+    {
+      id: "roozenbeek2022",
+      citation: "Roozenbeek, van der Linden et al. (2022), Science Advances",
+      finding: "Psychological inoculation against manipulation techniques works at field scale — 5.4M users, ~$0.05 per view. Discernment is teachable for pennies.",
+      url: "https://www.science.org/doi/10.1126/sciadv.abo6254",
+      confidence: "high",
+    },
+    {
+      id: "piaac2023",
+      citation: "OECD PIAAC Survey of Adult Skills (2023)",
+      finding: "Adult literacy declined or stagnated in 29 of 31 countries over the decade — the discernment baseline is falling as the synthetic-media wave arrives.",
+      url: "https://www.oecd.org/en/about/programmes/piaac.html",
+      confidence: "high",
+    },
+  ],
+  mentalHealth: [
+    {
+      id: "heinz2025",
+      citation: "Heinz et al. (2025), NEJM AI — Therabot RCT",
+      finding: "First RCT of a generative-AI therapy bot (n=210): clinically meaningful symptom reductions; working alliance rated near outpatient-therapy levels. Waitlist-control caveat and published critiques stand.",
+      url: "https://ai.nejm.org/doi/full/10.1056/AIoa2400802",
+      confidence: "high",
+    },
+    {
+      id: "npjmeta",
+      citation: "npj Digital Medicine meta-analyses (2023–2026)",
+      finding: "Across up to 48 RCTs (n=28,071), chatbot interventions show modest but real depression/anxiety effects (g≈0.27–0.64) — small per person, large at the scale of the untreated majority.",
+      url: "https://www.nature.com/articles/s41746-026-02820-1",
+      confidence: "high",
+    },
+    {
+      id: "openaimit2025",
+      citation: "OpenAI & MIT Media Lab (2025)",
+      finding: "Heavy emotional use of ChatGPT correlates with higher loneliness and dependence markers. Causality unresolved — heavy users may differ to begin with.",
+      url: "https://openai.com/index/affective-use-study/",
+      confidence: "medium",
+    },
+    {
+      id: "maples2024",
+      citation: "Maples, Cerit, Vishwanath & Pea (2024), npj Mental Health Research",
+      finding: "Replika users (n=1,006): lonelier than average yet feeling supported — 3% said the companion halted suicidal ideation. The duality, with its published critique, kept intact.",
+      url: "https://www.nature.com/articles/s44184-023-00047-6",
+      confidence: "medium",
+    },
+    {
+      id: "commonsense2025",
+      citation: "Common Sense Media / NORC (2025)",
+      finding: "72% of US teens have used AI companions; 31% find AI conversation as satisfying or more than human conversation. Zero longitudinal data exists on what this does.",
+      url: "https://www.commonsensemedia.org/research/talk-trust-and-trade-offs-how-and-why-teens-use-ai-companions",
+      confidence: "high",
+    },
+    {
+      id: "socialmediaprecedent",
+      citation: "Social-media precedent — contested literature (Haidt/Twenge vs Odgers/Orben)",
+      finding: "The teen social-media harm debate is unresolved after 15 years. Cited as a warning about how long harm-detection takes, not as settled evidence either way.",
+      url: "https://www.platformer.news/anxious-generation-jonathan-haidt-debate-critique/",
+      confidence: "low",
+    },
+  ],
+  labor: [
+    {
+      id: "brynjolfsson2025qje",
+      citation: "Brynjolfsson, Li & Raymond (2025), Quarterly Journal of Economics",
+      finding: "Customer-support AI raised productivity +15% on average and +34% for novices — it broadcasts top-performer tacit knowledge to beginners.",
+      url: "https://www.nber.org/papers/w31161",
+      confidence: "high",
+    },
+    {
+      id: "noyzhang2023",
+      citation: "Noy & Zhang (2023), Science",
+      finding: "Professional writing tasks: −40% time, +18% quality with ChatGPT; the skill gap between writers compressed.",
+      url: "https://www.science.org/doi/10.1126/science.adh2586",
+      confidence: "high",
+    },
+    {
+      id: "dellacqua2026",
+      citation: "Dell'Acqua et al. (2023 HBS; 2026 Organization Science)",
+      finding: "The \"jagged frontier\": consultants +12–25% inside AI's capability boundary, −19pp accuracy outside it — miscalibrated trust is measured and costly.",
+      url: "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4573321",
+      confidence: "high",
+    },
+    {
+      id: "canaries2025",
+      citation: "Brynjolfsson, Chandar & Chen (2025), Stanford Digital Economy Lab — working paper",
+      finding: "ADP payroll data: 22–25-year-olds in AI-exposed occupations −13% relative employment since late 2022. Working paper — rate-cycle confounds possible; watch, don't bank.",
+      url: "https://digitaleconomy.stanford.edu/publication/canaries-in-the-coal-mine-six-facts-about-the-recent-employment-effects-of-artificial-intelligence/",
+      confidence: "medium",
+    },
+    {
+      id: "acemoglu2024",
+      citation: "Acemoglu (2024), NBER / Economic Policy",
+      finding: "Macro discipline: task-based accounting puts AI's TFP contribution at ~0.5–0.7% over a decade — the revolution is real at task level, modest at GDP level.",
+      url: "https://www.nber.org/papers/w32487",
+      confidence: "medium",
+    },
+    {
+      id: "imf2024",
+      citation: "Cazzaniga et al. (2024), IMF Staff Discussion Note 2024/001",
+      finding: "~40% of global employment (≈60% in advanced economies) is AI-exposed, split between complement and substitute exposure — the distribution question made official.",
+      url: "https://www.imf.org/-/media/files/publications/sdn/2024/english/sdnea2024001.pdf",
+      confidence: "high",
+    },
+  ],
+};
+
+/** One line shown above synthesis-tab footers (Futures/People/Heatmap/Dashboard render corpus syntheses, not single studies). */
+export const SYNTHESIS_SOURCE_NOTE =
+  "This tab renders the corpus synthesis (cohort/region analysis and scenario construction, docs 06–08) — an interpretation built on the verified sources below, not a separate measurement.";

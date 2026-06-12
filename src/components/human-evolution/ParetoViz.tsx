@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
 import {
   ComposedChart, Bar, Line, Cell, XAxis, YAxis,
   ResponsiveContainer, Tooltip, CartesianGrid,
@@ -38,6 +39,68 @@ function truncate(text: string, max = 48) {
 interface ParetoRow extends ParetoImpact {
   shortLabel: string;
   cumulative: number; // running share of total weight, % of the visible set
+}
+
+/**
+ * "How to read this chart" (S9, Preeti's request): a plain-words walkthrough
+ * so a reader can verify their own inference — what a bar is, what the weight
+ * does and does NOT mean, what the dotted line says, plus a worked example.
+ * Collapsible, open by default.
+ */
+function HowToRead({ topFiveShare }: { topFiveShare: number }) {
+  const [open, setOpen] = useState(true);
+  return (
+    <div className="rounded-xl border border-border/60 bg-muted/10">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center gap-2 px-5 py-3 text-sm font-semibold"
+        aria-expanded={open}
+      >
+        <HelpCircle className="w-4 h-4 text-muted-foreground" />
+        How to read this chart
+        {open ? <ChevronUp className="w-4 h-4 ml-auto text-muted-foreground" /> : <ChevronDown className="w-4 h-4 ml-auto text-muted-foreground" />}
+      </button>
+      {open && (
+        <div className="px-5 pb-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 text-xs text-muted-foreground leading-relaxed">
+          <div>
+            <p className="font-semibold text-foreground mb-1">What each bar is</p>
+            <p>
+              One of the 15 biggest ways AI could change human life — risks and opportunities mixed
+              together, sorted so the longest bar is at the top. The bar's color tells you which life
+              area it belongs to; solid bars rest on strong evidence, faded bars on weaker evidence.
+            </p>
+          </div>
+          <div>
+            <p className="font-semibold text-foreground mb-1">What the weight means — and doesn't</p>
+            <p>
+              The length is a 0–100 score <em>we</em> assigned, combining how strong the evidence is
+              and how many people it touches. It is <strong className="text-foreground/80">not</strong> a
+              probability, not a measurement, not money or lives. A 92 isn't meaningfully "more" than
+              an 88 — the claim is the <em>order</em>, never the gap between numbers.
+            </p>
+          </div>
+          <div>
+            <p className="font-semibold text-foreground mb-1">What the dotted line tells you</p>
+            <p>
+              It's a running total. At any bar, it shows what share of all the weight the bars above
+              it (plus itself) already carry. It climbs steeply, then flattens — that shape is the
+              finding: the top 5 impacts alone carry about {topFiveShare}% of the total. A few things
+              matter far more than everything else combined.
+            </p>
+          </div>
+          <div>
+            <p className="font-semibold text-foreground mb-1">A worked example</p>
+            <p>
+              The top bar — young people (13–25) defaulting to letting AI think for them — is longest
+              because it hits a huge group during the exact years thinking skills form, and that harm
+              is the hardest to undo. Notice it's also <em>faded</em>: the direct evidence is still
+              thin. Biggest stakes, weakest data — the chart lets both be true at once.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 const ParetoTooltip = ({ active, payload }: {
@@ -145,6 +208,9 @@ export function ParetoViz() {
           </p>
         </div>
       </div>
+
+      {/* How to read this chart (S9) — between the plain answer and the research layer */}
+      <HowToRead topFiveShare={topFiveShare} />
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
