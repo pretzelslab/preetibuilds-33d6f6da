@@ -86,7 +86,7 @@ export const PRODUCT_SYSTEMS: Project[] = [
   {
     title: "Larkline",
     description: "Revenue intelligence and execution platform for agencies — detects buying signals before outreach, scores and prioritizes opportunities, and runs the pipeline from signal to revenue. Founder-led multi-tenant SaaS: onboarding, signal feeds, opportunity workspaces, relationship intelligence, and revenue reporting.",
-    tags: ["Next.js", "TypeScript", "Supabase", "Cloudflare Workers", "Claude API"],
+    tags: ["Systems Architecture", "Full Stack Development", "AI Systems Design"],
     industries: ["Rev Ops", "Agency Ops", "Creator Economy", "SaaS"],
     status: "building",
     externalLink: "https://larkline.app",
