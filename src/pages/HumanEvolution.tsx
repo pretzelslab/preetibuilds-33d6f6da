@@ -13,6 +13,9 @@ import { ShortAnswer } from "@/components/human-evolution/ShortAnswer";
 import { ImpactsViz } from "@/components/human-evolution/ImpactsViz";
 import { TimeTravelViz } from "@/components/human-evolution/TimeTravelViz";
 import { PersonasViz } from "@/components/human-evolution/PersonasViz";
+import { ParetoViz } from "@/components/human-evolution/ParetoViz";
+import { HeatmapViz } from "@/components/human-evolution/HeatmapViz";
+import { DashboardViz } from "@/components/human-evolution/DashboardViz";
 import { HumanEvolutionPreview } from "@/components/human-evolution/HumanEvolutionPreview";
 import { TierBadge } from "@/components/human-evolution/TierBadge";
 import { ConfidenceChip } from "@/components/human-evolution/ConfidenceChip";
@@ -68,15 +71,6 @@ function ReadingGuide() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function ComingSoon({ title }: { title: string }) {
-  return (
-    <div className="rounded-xl border border-dashed border-border/60 bg-muted/5 p-10 text-center">
-      <p className="text-sm font-semibold mb-1">{title}</p>
-      <p className="text-xs text-muted-foreground">In build — arriving in the next session.</p>
     </div>
   );
 }
@@ -166,9 +160,9 @@ export default function HumanEvolution() {
               <TabsContent value="impacts"><ImpactsViz /></TabsContent>
               <TabsContent value="futures"><TimeTravelViz /></TabsContent>
               <TabsContent value="people"><PersonasViz /></TabsContent>
-              <TabsContent value="pareto"><ComingSoon title="What Matters Most — AI Impact Pareto" /></TabsContent>
-              <TabsContent value="heatmap"><ComingSoon title="Where It Lands — Global Risk Heatmap" /></TabsContent>
-              <TabsContent value="dashboard"><ComingSoon title="How We'll Know — Human Capability Dashboard" /></TabsContent>
+              <TabsContent value="pareto"><ParetoViz /></TabsContent>
+              <TabsContent value="heatmap"><HeatmapViz /></TabsContent>
+              <TabsContent value="dashboard"><DashboardViz /></TabsContent>
             </Tabs>
           </ScenarioProvider>
 
