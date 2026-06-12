@@ -172,7 +172,7 @@ const Projects = () => (
         <div id="product-gtm" className="scroll-mt-20" />
         <SectionHeader
           label="Product & GTM Systems"
-          subtitle="Revenue intelligence, GTM automation, and operating systems — built from 18+ years operating B2B SaaS, GTM, and CRM stacks."
+          subtitle="AI-native revenue systems — win/loss intelligence, signal-based GTM automation, and decision intelligence platforms, built from 18+ years operating B2B SaaS, CRM, and RevOps stacks."
         />
         <div className="mb-4">
           {PRODUCT_SYSTEMS.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}

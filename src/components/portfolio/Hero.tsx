@@ -2,10 +2,10 @@ import { motion } from "framer-motion";
 import { SAFETY_ENGINEERING, PRODUCT_SYSTEMS, RESPONSIBLE_AI_GOVERNANCE } from "@/data/projects";
 
 const CREDENTIALS = [
-  "Enterprise products, platforms, and transformation programs operating at the intersection of strategy, execution, and scale.",
-  "Commercialization, portfolio governance, customer adoption, and cross-functional alignment as drivers of successful product outcomes.",
-  "AI governance, safety, and evaluation approaches addressing model reliability, risk management, and responsible deployment.",
-  "Research-informed perspectives on fairness, accountability, and trustworthy AI.",
+  "Enterprise products, platforms, and transformation programs — 18+ years across B2B SaaS, CRM, and RevOps stacks.",
+  "AI-native revenue systems: win/loss intelligence, signal-based GTM automation, and decision intelligence platforms.",
+  "AI safety & evaluation: 40-case adversarial test suite, agent drift detection — OWASP LLM Top 10 and MITRE ATLAS aligned.",
+  "Published research: 2 citable Zenodo preprints — adversarial robustness (ZIDR) and carbon-aware inference (CAIR).",
 ];
 
 const DOMAIN_INDEX = [
@@ -56,7 +56,9 @@ const Hero = () => (
           </p>
 
           <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-            Building systems, governance capabilities, and operating models that help organisations adopt emerging technologies responsibly and at scale.
+            18+ years building enterprise products, programs, and CRM/GTM systems — now applying
+            that operating discipline to AI: governance, safety, and evaluation. One trajectory,
+            not two careers.
           </p>
           <ul className="space-y-2 mb-5">
             {CREDENTIALS.map((c) => (

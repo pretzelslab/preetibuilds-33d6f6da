@@ -6,6 +6,7 @@ import {
   RESEARCH_LAB_RESPONSIBLE_AI,
   RESEARCH_LAB_SUSTAINABLE_AI,
   RESEARCH_LAB_PRODUCT,
+  RESEARCH_LAB_FORESIGHT,
   RESEARCH_LAB_PERSONAL,
 } from "@/data/projects";
 import CredibilityStrip from "@/components/portfolio/CredibilityStrip";
@@ -162,6 +163,19 @@ const ResearchLab = () => {
         />
         <div className="mb-4">
           {RESEARCH_LAB_SUSTAINABLE_AI.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+        </div>
+      </div>
+
+      <StripDivider />
+
+      {/* Foresight & Society */}
+      <div className="max-w-7xl mx-auto px-6 pt-4">
+        <SectionHeader
+          label="Foresight & Society"
+          subtitle="Evidence-tiered forecasting on how AI reshapes human capability — built to be provably wrong, with falsifiable indicators and policy levers."
+        />
+        <div className="mb-4">
+          {RESEARCH_LAB_FORESIGHT.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
         </div>
       </div>
 

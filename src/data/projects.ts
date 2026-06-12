@@ -93,6 +93,20 @@ export const PRODUCT_SYSTEMS: Project[] = [
   },
 ];
 
+// ── Research Lab — Foresight & Society (1) ──────────────────────────────────
+
+export const RESEARCH_LAB_FORESIGHT: Project[] = [
+  {
+    title: "Human Evolution in the Age of AI",
+    description: "A 20-year, evidence-tiered forecast of how AI dependence reshapes five parts of human life — cognition, creativity, discernment, mental health & wellbeing, and work. Three research futures, 19 falsifiable indicators, a policy lever matrix for regulators, and an animated no-controls trajectory. Every claim labeled by evidence tier — what we know, suspect, and imagine.",
+    tags: ["React", "TypeScript", "Recharts", "Forecasting", "Research Synthesis"],
+    industries: ["Policy & Regulation", "Education", "Future of Work"],
+    status: "live",
+    locked: true,
+    link: "/human-evolution",
+  },
+];
+
 // ── Research Lab — Responsible AI (4) ────────────────────────────────────────
 
 export const RESEARCH_LAB_RESPONSIBLE_AI: Project[] = [
