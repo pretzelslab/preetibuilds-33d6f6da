@@ -39,7 +39,7 @@ function yearAt(ms: number): number {
 }
 
 const SCENE_LABELS: Record<SceneId, string> = {
-  1: "The five parts of life",
+  1: "Five capabilities",
   2: "The trajectory",
   3: "The cause",
   4: "The levers",
@@ -144,7 +144,7 @@ export function StoryVideo() {
           <div className="flex items-start justify-between gap-3 mb-1">
             <div>
               <p className="text-xs font-semibold leading-tight">If no controls deploy</p>
-              <p className="text-[10px] text-muted-foreground">five parts of human life · 2026–2046</p>
+              <p className="text-[10px] text-muted-foreground">five dimensions of human capability · 2026–2046</p>
             </div>
             <span className="text-3xl font-bold tabular-nums leading-none">{yearDisplay}</span>
           </div>
@@ -158,7 +158,7 @@ export function StoryVideo() {
             {scene === 1 && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center animate-in fade-in duration-1000 px-6">
-                  <p className="text-xl font-bold leading-snug">Five parts of human life.</p>
+                  <p className="text-xl font-bold leading-snug">Five dimensions of human capability.</p>
                   <p className="text-xl font-bold leading-snug text-muted-foreground">One trajectory.</p>
                 </div>
               </div>
@@ -205,8 +205,8 @@ export function StoryVideo() {
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center animate-in fade-in duration-1000 px-6">
                   <p className="text-xl font-bold leading-snug">The future is not predetermined.</p>
-                  <p className="text-2xl font-bold leading-snug mt-1">We'll know by 2029.</p>
-                  <p className="text-[10px] text-muted-foreground mt-3">Four levers. One test already underway.</p>
+                  <p className="text-2xl font-bold leading-snug mt-1">We won't have to wait until 2046.</p>
+                  <p className="text-[10px] text-muted-foreground mt-3">The early signals will be visible long before then. Four levers — one test already underway.</p>
                 </div>
               </div>
             )}
