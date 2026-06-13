@@ -2,57 +2,86 @@ import { useEffect, useMemo, useState } from "react";
 import { Pause, Play, RotateCcw } from "lucide-react";
 import { DOMAINS } from "@/data/humanEvolution";
 import type { DomainId } from "@/data/humanEvolution";
-import { DOMAIN_TITLES, pathValueAt, usePrefersReducedMotion } from "./shared";
+import { pathValueAt, usePrefersReducedMotion } from "./shared";
 import { NoControlsChart } from "./NoControlsChart";
 
 /**
- * The story cut (S11): a second square recording video that keeps the original
- * 15-second loop untouched and adds the "so what?" — Problem → Cause → Levers
- * → Urgency in five scripted scenes over ~44 seconds, then stops by itself.
- * Presentation only — every line restates claims already on this page.
+ * The story cut (S11 v4): a second square recording video that keeps the
+ * original 15-second loop untouched and tells the research story —
+ * signals → scenario → levers → choice — in seven scripted scenes over
+ * ~50 seconds, then stops by itself. Framed as a scenario exploration,
+ * not a prediction. Presentation only — every line restates claims
+ * already in the research corpus.
  */
 
-const TOTAL_MS = 44_000;
+const TOTAL_MS = 50_000;
 const TICK_MS = 100;
 
-// Scene boundaries (ms): title · curves draw to 2034 · pause on the cause ·
-// levers reveal while curves finish · end screen.
-const S2 = 5_000, S3 = 15_000, S4 = 25_000, S5 = 35_000;
-const PAUSE_YEAR = 2034;
+// Scene boundaries (ms): framing · five dimensions · early signals ·
+// scenario draw · levers · geopolitical layer · closing.
+const B2 = 5_000, B3 = 12_000, B4 = 20_000, B5 = 28_000, B6 = 40_000, B7 = 45_000;
 
-type SceneId = 1 | 2 | 3 | 4 | 5;
+type SceneId = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 function sceneAt(ms: number): SceneId {
-  if (ms < S2) return 1;
-  if (ms < S3) return 2;
-  if (ms < S4) return 3;
-  if (ms < S5) return 4;
-  return 5;
+  if (ms < B2) return 1;
+  if (ms < B3) return 2;
+  if (ms < B4) return 3;
+  if (ms < B5) return 4;
+  if (ms < B6) return 5;
+  if (ms < B7) return 6;
+  return 7;
 }
 
+// The years: hold 2026 through framing + dimensions, creep to 2029 while the
+// early signals land, draw the scenario to 2040, finish to 2046 early in the
+// levers scene, then hold.
 function yearAt(ms: number): number {
-  if (ms < S2) return 2026;
-  if (ms < S3) return 2026 + ((ms - S2) / (S3 - S2)) * (PAUSE_YEAR - 2026);
-  if (ms < S4) return PAUSE_YEAR;
-  if (ms < S5) return PAUSE_YEAR + ((ms - S4) / (S5 - S4)) * (2046 - PAUSE_YEAR);
+  if (ms < B3) return 2026;
+  if (ms < B4) return 2026 + ((ms - B3) / (B4 - B3)) * 3;
+  if (ms < B5) return 2029 + ((ms - B4) / (B5 - B4)) * 11;
+  if (ms < 32_000) return 2040 + ((ms - B5) / 4_000) * 6;
   return 2046;
 }
 
 const SCENE_LABELS: Record<SceneId, string> = {
-  1: "Five capabilities",
-  2: "The trajectory",
-  3: "The cause",
-  4: "The levers",
-  5: "The test",
+  1: "Framing",
+  2: "Five dimensions",
+  3: "Early signals",
+  4: "The scenario",
+  5: "The levers",
+  6: "The geopolitical layer",
+  7: "The choice",
 };
 
-// The four levers — same M1–M4 framing as the How We'll Know tab, video-short.
-const LEVERS: { name: string; sub: string }[] = [
-  { name: "Product objectives", sub: "regulate what AI is optimized for" },
-  { name: "Defensive investment", sub: "fund detection, literacy, transition" },
-  { name: "Education", sub: "keep unassisted thinking in school" },
-  { name: "Workforce development", sub: "preserve the entry-level rung" },
+// Video-short names for the five dimensions, in DOMAINS order.
+const VIDEO_NAMES: Record<DomainId, string> = {
+  cognition: "Thinking",
+  creativity: "Creativity",
+  discernment: "Trust & Discernment",
+  mentalHealth: "Mental Wellbeing",
+  labor: "Work",
+};
+
+// Scene 3 — signals already visible today (each restates a sourced page claim).
+const SIGNALS: { up: boolean; text: string }[] = [
+  { up: false, text: "Junior opportunities" },
+  { up: false, text: "Verification behavior" },
+  { up: true, text: "AI companionship" },
+  { up: true, text: "Screen engagement" },
 ];
+
+// Scene 5 — the five levers. 1–4 are the page's M1–M4; the fifth is a
+// candidate lever (video-first; page framework integration backlogged).
+const LEVERS: { name: string; sub: string }[] = [
+  { name: "Product objectives", sub: "outcomes over engagement" },
+  { name: "Defensive investment", sub: "verification · literacy · support" },
+  { name: "Education", sub: "preserve independent thinking" },
+  { name: "Workforce development", sub: "protect pathways to expertise" },
+  { name: "Democratization & access", sub: "broad participation, not concentrated power" },
+];
+
+const GEO_WORDS = ["Power", "Governance", "Inclusion", "Sovereignty", "Speed"];
 
 const ALL_VISIBLE: Record<DomainId, boolean> = {
   cognition: true, creativity: true, discernment: true, mentalHealth: true, labor: true,
@@ -86,12 +115,17 @@ export function StoryVideo() {
   const yearFloat = yearAt(elapsed);
   const yearDisplay = Math.floor(yearFloat + 1e-6);
   const done = elapsed >= TOTAL_MS;
+  const dimmed = scene >= 6;
 
-  // Scene 2: one life-area name every 2 seconds. Scene 4: one lever every 2.5s.
+  // Staggered reveals: dimension names (scene 2), signals (scene 3), levers (scene 5).
   const namesShown = scene < 2 ? 0 : scene > 2 ? DOMAINS.length
-    : Math.min(DOMAINS.length, Math.floor((elapsed - S2) / 2000) + 1);
-  const leversShown = scene < 4 ? 0 : scene > 4 ? LEVERS.length
-    : Math.min(LEVERS.length, Math.floor((elapsed - S4) / 2500) + 1);
+    : Math.min(DOMAINS.length, Math.floor((elapsed - B2) / 1200) + 1);
+  const taglineShown = scene === 2 && elapsed >= B2 + 6_000;
+  const signalsShown = scene < 3 ? 0 : scene > 3 ? SIGNALS.length
+    : Math.min(SIGNALS.length, Math.floor((elapsed - B3) / 1500) + 1);
+  const signalsLineShown = scene === 3 && elapsed >= B3 + 6_000;
+  const leversShown = scene < 5 ? 0 : scene > 5 ? LEVERS.length
+    : Math.min(LEVERS.length, Math.floor((elapsed - B5) / 2400) + 1);
 
   const rows = useMemo(() => {
     const out: Record<string, number>[] = [];
@@ -111,7 +145,7 @@ export function StoryVideo() {
   return (
     <div className="rounded-xl border border-border/60 bg-muted/5 p-5">
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 mb-1">
-        <p className="text-sm font-semibold">The story cut — a 44-second video with the "so what?"</p>
+        <p className="text-sm font-semibold">The story cut — a 50-second video with the "so what?"</p>
         {!reducedMotion && (
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
@@ -134,8 +168,9 @@ export function StoryVideo() {
         )}
       </div>
       <p className="text-xs text-muted-foreground leading-relaxed mb-4">
-        The 15-second loop above shows the problem; this one adds the cause, the levers and the
-        test — five scenes, then it stops by itself. Problem → cause → levers → urgency.
+        The 15-second loop above shows the problem; this one tells the research story —
+        signals → scenario → levers → choice. Seven scenes framed as a scenario exploration,
+        not a prediction, and it stops by itself.
       </p>
 
       {/* 1:1 card sized for LinkedIn screen recording */}
@@ -143,52 +178,82 @@ export function StoryVideo() {
         <div className="aspect-square rounded-2xl border border-border/60 bg-background p-5 flex flex-col">
           <div className="flex items-start justify-between gap-3 mb-1">
             <div>
-              <p className="text-xs font-semibold leading-tight">If no controls deploy</p>
-              <p className="text-[10px] text-muted-foreground">five dimensions of human capability · 2026–2046</p>
+              <p className="text-xs font-semibold leading-tight">AI & Human Capability</p>
+              <p className="text-[10px] text-muted-foreground">a scenario exploration · 2026–2046</p>
             </div>
             <span className="text-3xl font-bold tabular-nums leading-none">{yearDisplay}</span>
           </div>
 
           <div className="flex-1 min-h-0 relative">
-            <div className={`absolute inset-0 transition-opacity duration-1000 ${scene === 5 ? "opacity-20" : "opacity-100"}`}>
+            <div className={`absolute inset-0 transition-opacity duration-1000 ${dimmed ? "opacity-20" : "opacity-100"}`}>
               <NoControlsChart rows={rows} compact visible={ALL_VISIBLE} hovered={null} />
             </div>
 
-            {/* Scene 1 — the hook */}
+            {/* Scene 1 — research framing */}
             {scene === 1 && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center animate-in fade-in duration-1000 px-6">
-                  <p className="text-xl font-bold leading-snug">Five dimensions of human capability.</p>
-                  <p className="text-xl font-bold leading-snug text-muted-foreground">One trajectory.</p>
+                  <p className="text-xl font-bold leading-snug">AI & Human Capability</p>
+                  <p className="text-sm text-muted-foreground mt-1">A scenario exploration</p>
+                  <p className="text-[10px] text-muted-foreground mt-3">Not a prediction. A framework for discussion.</p>
                 </div>
               </div>
             )}
 
-            {/* Scene 2 — the five names, one at a time, in the still-empty right half */}
+            {/* Scene 2 — the five dimensions, revealed individually */}
             {scene === 2 && (
-              <div className="absolute right-2 bottom-10 space-y-1.5 text-right">
-                {DOMAINS.slice(0, namesShown).map(d => (
-                  <p key={d.id} className="text-xs font-semibold animate-in fade-in duration-700 flex items-center justify-end gap-1.5">
-                    {DOMAIN_TITLES[d.id]}
-                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: d.color }} />
-                  </p>
-                ))}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center px-6">
+                  <div className="space-y-1">
+                    {DOMAINS.slice(0, namesShown).map(d => (
+                      <p key={d.id} className="text-base font-bold animate-in fade-in duration-500 flex items-center justify-center gap-2">
+                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: d.color }} />
+                        {VIDEO_NAMES[d.id]}
+                      </p>
+                    ))}
+                  </div>
+                  {taglineShown && (
+                    <p className="text-xs text-muted-foreground mt-3 animate-in fade-in duration-700">
+                      Five dimensions of human capability. One shared trajectory.
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
-            {/* Scene 3 — the cause, while the chart holds at 2034 */}
+            {/* Scene 3 — early signals, before any curve drops */}
             {scene === 3 && (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center animate-in fade-in duration-1000 rounded-xl border border-border/60 bg-background/90 px-5 py-4 mx-6">
-                  <p className="text-base font-bold leading-snug">The risk isn't smarter AI.</p>
-                  <p className="text-base font-bold leading-snug text-amber-500">The risk is unaligned incentives.</p>
+                <div className="text-center px-6">
+                  <div className="space-y-1.5">
+                    {SIGNALS.slice(0, signalsShown).map(s => (
+                      <p key={s.text} className="text-sm font-semibold animate-in fade-in duration-500">
+                        <span className={`mr-1.5 ${s.up ? "text-amber-500" : "text-red-500"}`}>{s.up ? "↑" : "↓"}</span>
+                        {s.text}
+                      </p>
+                    ))}
+                  </div>
+                  {signalsLineShown && (
+                    <p className="text-xs text-muted-foreground mt-3 animate-in fade-in duration-700">
+                      Early signals are already emerging.
+                    </p>
+                  )}
                 </div>
               </div>
             )}
 
-            {/* Scene 4 — the levers, one at a time, as the curves finish */}
+            {/* Scene 4 — the scenario draws */}
             {scene === 4 && (
-              <div className="absolute right-2 bottom-10 space-y-1.5">
+              <div className="absolute inset-x-0 top-1 flex justify-center">
+                <p className="animate-in fade-in duration-1000 rounded-full border border-border/50 bg-background/90 px-3 py-1 text-[11px] font-semibold">
+                  If current incentives remain unchanged…
+                </p>
+              </div>
+            )}
+
+            {/* Scene 5 — the five levers, one at a time, in the emptying upper right */}
+            {scene === 5 && (
+              <div className="absolute right-2 top-2 space-y-1.5">
                 {LEVERS.slice(0, leversShown).map((l, i) => (
                   <div key={l.name} className="animate-in fade-in duration-700 rounded-lg border border-border/50 bg-background/90 px-2.5 py-1.5 text-right">
                     <p className="text-[11px] font-semibold leading-tight">
@@ -200,13 +265,27 @@ export function StoryVideo() {
               </div>
             )}
 
-            {/* Scene 5 — the end screen */}
-            {scene === 5 && (
+            {/* Scene 6 — the geopolitical layer */}
+            {scene === 6 && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center animate-in fade-in duration-1000 px-6">
+                  <p className="text-base font-bold leading-snug">Different regions.</p>
+                  <p className="text-base font-bold leading-snug">Different objectives.</p>
+                  <p className="text-base font-bold leading-snug">Different outcomes.</p>
+                  <p className="text-[10px] text-muted-foreground mt-3 tracking-wide">
+                    {GEO_WORDS.join(" · ")}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Scene 7 — the closing */}
+            {scene === 7 && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center animate-in fade-in duration-1000 px-6">
                   <p className="text-xl font-bold leading-snug">The future is not predetermined.</p>
-                  <p className="text-2xl font-bold leading-snug mt-1">We won't have to wait until 2046.</p>
-                  <p className="text-[10px] text-muted-foreground mt-3">The early signals will be visible long before then. Four levers — one test already underway.</p>
+                  <p className="text-xl font-bold leading-snug mt-1">The question is which levers we choose to pull.</p>
+                  <p className="text-[10px] text-muted-foreground mt-3">The evidence will emerge long before 2046.</p>
                 </div>
               </div>
             )}
@@ -235,7 +314,7 @@ export function StoryVideo() {
               />
             </div>
             <p className="text-[10px] text-muted-foreground mt-1.5 text-center">
-              Scene {scene} of 5 · {SCENE_LABELS[scene]}
+              Scene {scene} of 7 · {SCENE_LABELS[scene]}
             </p>
           </>
         )}
@@ -244,7 +323,7 @@ export function StoryVideo() {
       <p className="text-[10px] text-muted-foreground mt-3 text-center">
         {reducedMotion
           ? "Animation is off because your device prefers reduced motion — this shows the final frame."
-          : "Press Restart, then screen-record just the square — it stops by itself after ~44 seconds."}
+          : "Press Restart, then screen-record just the square — it stops by itself after ~50 seconds."}
       </p>
     </div>
   );

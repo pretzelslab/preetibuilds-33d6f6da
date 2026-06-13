@@ -31,11 +31,27 @@ export const PATH_END: Record<DomainId, Record<ScenarioId, number>> = {
   labor: { A: 67, B: 49, C: 36 },
 };
 
-/** Smoothstep-eased path value for a domain × future at any year (change compounds mid-window). */
+/**
+ * Per-domain pace of change (S11): identical easing on every curve reads as
+ * false certainty — a scenario model should show different velocities. These
+ * shapes render relative-pace claims from the research: discernment moves
+ * fastest (deepfake/verification findings), cognition slowest (erosion lags
+ * adoption), creativity flattens then drops, mental health drifts steadily,
+ * work sits in the middle. Monotonic 0→1; endpoints (PATH_END) unchanged.
+ * ⚪ Same Tier 3 standard — the shape is the claim, never the numbers.
+ */
+const DOMAIN_PACE: Record<DomainId, (t: number) => number> = {
+  discernment: t => 1 - (1 - t) * (1 - t),
+  labor: t => t * t * (3 - 2 * t),
+  mentalHealth: t => t,
+  creativity: t => t * t * t,
+  cognition: t => t * t,
+};
+
+/** Pace-eased path value for a domain × future at any year. */
 export function pathValueAt(domainId: DomainId, scenarioId: ScenarioId, year: number): number {
   const t = Math.min(Math.max((year - 2026) / 20, 0), 1);
-  const eased = t * t * (3 - 2 * t);
-  return 50 + (PATH_END[domainId][scenarioId] - 50) * eased;
+  return 50 + (PATH_END[domainId][scenarioId] - 50) * DOMAIN_PACE[domainId](t);
 }
 
 /** Age range of a cohort at any year, offset from its 2026 baseline (en-dash format, e.g. "13–18"). */
