@@ -15,8 +15,11 @@ const Navbar = () => (
           About
         </a>
         <Link to="/research-lab" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden md:block">
-          Work
+          Research & Ventures
         </Link>
+        <a href="#contact" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden md:block">
+          Contact
+        </a>
         <a
           href="https://github.com/pretzelslab"
           target="_blank"

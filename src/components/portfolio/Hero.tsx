@@ -1,37 +1,44 @@
 import { motion } from "framer-motion";
-import { SAFETY_ENGINEERING, PRODUCT_SYSTEMS, RESPONSIBLE_AI_GOVERNANCE } from "@/data/projects";
 
 const CREDENTIALS = [
   "Enterprise products, platforms, and transformation programs — 18+ years across B2B SaaS, CRM, and RevOps stacks.",
-  "AI-native revenue systems: win/loss intelligence, signal-based GTM automation, and decision intelligence platforms.",
+  "AI-native revenue systems: product intelligence, win/loss analysis, and GTM automation built on enterprise operating experience.",
+  "AI governance and compliance: EU AI Act, GDPR, NIST AI RMF, ISO 42001 — governance tooling, compliance agents, and privacy impact assessment.",
   "AI safety & evaluation: 40-case adversarial test suite, agent drift detection — OWASP LLM Top 10 and MITRE ATLAS aligned.",
-  "Published research: 2 citable Zenodo preprints — adversarial robustness (ZIDR) and carbon-aware inference (CAIR).",
 ];
 
 const DOMAIN_INDEX = [
   {
-    label: "Product & GTM Systems",
-    count: PRODUCT_SYSTEMS.length,
-    anchor: "#product-gtm",
-    desc: "Founder-led product development, revenue intelligence, GTM automation, and operating systems",
-    bullets: ["Win/Loss Intelligence — live Claude root-cause analysis", "GTM Intelligence Pipeline — CRM + pipeline automation", "Larkline — decision intelligence and agency operations"],
+    label: "Product & Intelligence Systems",
+    count: 3,
+    anchor: "#product-intelligence",
+    desc: "AI-native revenue systems — product intelligence, win/loss, and GTM automation built from 18+ years of enterprise product and RevOps operating experience",
+    bullets: ["Product Intelligence Pipeline — Salesforce + Claude at scale", "Win/Loss Intelligence — live root-cause analysis", "GTM Intelligence Pipeline — CRM + pipeline automation"],
     cls: "text-amber-400 border-amber-500/25 hover:bg-amber-500/5",
   },
   {
-    label: "AI Safety & Evaluation",
-    count: SAFETY_ENGINEERING.length,
-    anchor: "#ai-safety-evaluation",
-    desc: "Adversarial testing, red-teaming, agent evaluation, and pre-deployment safety assurance",
-    bullets: ["OWASP LLM Top 10 — indirect prompt injection", "Goal drift detection — SAFE/DRIFTING/ROGUE", "40-case safety eval suite, 5 risk categories"],
-    cls: "text-violet-400 border-violet-500/25 hover:bg-violet-500/5",
+    label: "Enterprise Assessment & Decision Systems",
+    count: 3,
+    anchor: "#enterprise-assessment",
+    desc: "Organizational readiness diagnostics, risk management frameworks, and bias evaluation tools for enterprise AI transformation",
+    bullets: ["AI Readiness Assessment — 25-question diagnostic", "AI Risk Assessment — 5-phase governance engagement", "Algorithmic Fairness Auditor — disparate impact + parity testing"],
+    cls: "text-emerald-400 border-emerald-500/25 hover:bg-emerald-500/5",
   },
   {
-    label: "Responsible AI & Governance",
-    count: RESPONSIBLE_AI_GOVERNANCE.length,
-    anchor: "#responsible-ai-governance",
-    desc: "Privacy impact assessment, agentic compliance pipelines, and policy governance tooling",
-    bullets: ["Privacy Impact Auditor — DPIA + 13 regulations", "Compliance Monitoring Agent — weekly LangGraph pipeline", "Ethics & Governance Tracker — EU AI Act · NIST · ISO 42001"],
+    label: "Governance & Compliance",
+    count: 3,
+    anchor: "#governance-compliance",
+    desc: "Policy governance, privacy impact assessment, and agentic compliance pipelines — built for EU AI Act, GDPR, NIST AI RMF, and ISO 42001",
+    bullets: ["AI Ethics & Governance Tracker — EU AI Act · NIST · ISO 42001", "AI Compliance Monitoring Agent — weekly LangGraph pipeline", "Privacy Impact Auditor — DPIA + 13 regulations"],
     cls: "text-blue-400 border-blue-500/25 hover:bg-blue-500/5",
+  },
+  {
+    label: "Safety & Evaluation",
+    count: 3,
+    anchor: "#safety-evaluation",
+    desc: "Adversarial testing, red-teaming, agent evaluation, and pre-deployment safety assurance for regulated AI systems",
+    bullets: ["LLM Safety Eval — 40 cases, 5 risk categories", "Goal drift detection — SAFE/DRIFTING/ROGUE", "OWASP LLM Top 10 — indirect prompt injection"],
+    cls: "text-violet-400 border-violet-500/25 hover:bg-violet-500/5",
   },
 ];
 
@@ -56,9 +63,9 @@ const Hero = () => (
           </p>
 
           <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-            18+ years building enterprise products, programs, and CRM/GTM systems — now applying
-            that operating discipline to AI: governance, safety, and evaluation. One trajectory,
-            not two careers.
+            18+ years building enterprise products, transformation programs, CRM ecosystems, and
+            revenue operations platforms. Now focused on AI governance, safety evaluation,
+            product intelligence, and decision intelligence systems.
           </p>
           <ul className="space-y-2 mb-5">
             {CREDENTIALS.map((c) => (

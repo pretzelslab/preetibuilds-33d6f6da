@@ -55,9 +55,9 @@ const Index = () => {
       <Hero />
       <CredibilityStrip />
       <Projects />
-      <FeaturedWork />
       <About />
       <Contact />
+      <FeaturedWork />
       <Footer />
       <BackToTop />
     </main>

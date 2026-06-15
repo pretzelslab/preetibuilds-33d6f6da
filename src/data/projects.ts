@@ -1,72 +1,16 @@
 import type { Project, FeaturedCard } from "@/types/project";
 
-// ── Safety Engineering — Homepage flagship (3) ────────────────────────────────
+// ── Homepage: Product & Intelligence Systems (Section 1) ─────────────────────
 
-export const SAFETY_ENGINEERING: Project[] = [
+export const PRODUCT_INTELLIGENCE_SYSTEMS: Project[] = [
   {
-    title: "Agent Goal Hijacking Demo",
-    description: "Live simulation of OWASP LLM Top 10 2025 #1 — Indirect Prompt Injection. A finance LLM agent is hijacked via a malicious PDF: its goal is silently overwritten, then it exfiltrates 10 customer records using only its own legitimate tools. Includes two-layer detection (rule-based + Claude Haiku judge), HITL approval flow, and blast radius risk model. EU AI Act Art.9 · DORA · GDPR Art.33.",
-    tags: ["LangGraph", "Claude Haiku", "Python", "React", "TypeScript", "OWASP", "EU AI Act", "DORA"],
-    industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
+    title: "Product Intelligence Pipeline",
+    description: "AI-powered platform integrating Salesforce Cases with Claude to surface product signals, customer pain points, feature demand trends, escalation patterns, and strategic opportunities across enterprise environments — Fintech and Healthtech verticals.",
+    tags: ["Python", "Claude API", "Salesforce", "React"],
+    industries: ["Fintech", "Healthtech", "Product Management"],
     status: "live",
-    locked: true,
-    link: "/agent-hijacking",
+    link: "/product-intelligence",
   },
-  {
-    title: "Rogue Agent & Goal Drift Detector",
-    description: "Detects when a finance LLM agent silently drifts from its original goal. After each tool call, cosine similarity between the agent's current intent and original task embedding flags SAFE / DRIFTING / ROGUE. A KPI-pressure memo nudges the agent to omit loss-making product lines — drift is caught at Step 2 before the fabricated report is written. HITL gate + MLflow audit trail. EU AI Act Art.9 · GDPR Art.5 · DORA.",
-    tags: ["Python", "sentence-transformers", "MLflow", "LangGraph", "EU AI Act", "GDPR", "DORA"],
-    industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
-    status: "live",
-    locked: true,
-    link: "/agent-drift",
-  },
-  {
-    title: "LLM Safety Eval Framework",
-    description: "Production-grade safety evaluation pipeline for LLMs in regulated financial services. 40 adversarial test cases across 5 risk categories — prompt injection, regulatory hallucination, suitability failures, data leakage, RAG poisoning. Claude-as-judge scoring with Streamlit compliance matrix, run comparison, and multi-model support. Built for pre-deployment assurance against FCA Consumer Duty, MiFID II, GDPR, and MITRE ATLAS.",
-    tags: ["Python", "Claude API", "Streamlit", "YAML", "GitHub Actions", "Cursor", "FCA", "MiFID II", "GDPR", "MITRE ATLAS"],
-    industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
-    status: "live",
-    locked: true,
-    link: "/safety-eval",
-  },
-];
-
-// ── Responsible AI & Governance — Homepage flagship (3) ──────────────────────
-
-export const RESPONSIBLE_AI_GOVERNANCE: Project[] = [
-  {
-    title: "Privacy Impact Auditor",
-    description: "AI-specific DPIA tool with dynamic combinatorial risk scoring — risks multiply, not add. Maps 12-question profile to 13 regulations (GDPR, EU AI Act Annex III, NYC LL144, CCPA, Illinois BIPA, Colorado AI Act). Includes differential privacy cost curve and proxy discrimination detection.",
-    tags: ["React", "TypeScript", "GDPR", "EU AI Act", "NYC LL144", "Recharts"],
-    industries: ["Financial Services", "Healthcare", "HR & Talent"],
-    status: "live",
-    locked: true,
-    link: "/privacy-auditor",
-  },
-  {
-    title: "AI Compliance Monitoring Agent",
-    description: "LangGraph multi-node agent + Python data pipeline + GitHub Actions CI/CD. Computes fairness metrics (DIR, FPR, FNR) against EU AI Act and NIST thresholds, routes on severity, and auto-generates compliance reports and escalation memos — on a weekly schedule.",
-    tags: ["LangGraph", "Python", "GitHub Actions", "Claude Haiku", "Pandas"],
-    industries: ["Financial Services", "Enterprise AI", "Regulated Sectors"],
-    status: "live",
-    locked: true,
-    link: "/compliance-agent",
-  },
-  {
-    title: "AI Ethics & Governance Tracker",
-    description: "On-demand policy tracker — EU AI Act, NIST AI RMF, ISO 42001, FAIR, AAIA — with clause-level detail, four-pillar framework, and client risk workbook. Private.",
-    tags: ["React", "TypeScript", "Supabase"],
-    industries: ["Enterprise", "Consulting", "All Sectors"],
-    status: "live",
-    locked: true,
-    link: "/ai-governance",
-  },
-];
-
-// ── Product & GTM Systems — Homepage flagship (3) ────────────────────────────
-
-export const PRODUCT_SYSTEMS: Project[] = [
   {
     title: "Win/Loss Intelligence",
     description: "AI system for organizational revenue intelligence — surfaces systemic deal outcome patterns across legal delays, implementation friction, champion instability, and competitive displacement. Live Claude Sonnet root cause analysis per deal: grounded evidence chain, inference risk flags, data lineage panel, and human evaluation loop. 25 synthetic deals · 5-dimension filter bar.",
@@ -83,50 +27,11 @@ export const PRODUCT_SYSTEMS: Project[] = [
     status: "live",
     link: "/gtm-techstack",
   },
-  {
-    title: "Larkline",
-    description: "Revenue intelligence and execution platform for agencies — detects buying signals before outreach, scores and prioritizes opportunities, and runs the pipeline from signal to revenue. Founder-led multi-tenant SaaS: onboarding, signal feeds, opportunity workspaces, relationship intelligence, and revenue reporting.",
-    tags: ["Systems Architecture", "Full Stack Development", "AI Systems Design"],
-    industries: ["Rev Ops", "Agency Ops", "Creator Economy", "SaaS"],
-    status: "building",
-    externalLink: "https://larkline.app",
-  },
 ];
 
-// ── Research Lab — Foresight & Society (1) ──────────────────────────────────
+// ── Homepage: Enterprise Assessment & Decision Systems (Section 2) ────────────
 
-export const RESEARCH_LAB_FORESIGHT: Project[] = [
-  {
-    title: "Human Evolution in the Age of AI",
-    description: "A 20-year, evidence-tiered forecast of how AI dependence reshapes five parts of human life — cognition, creativity, discernment, mental health & wellbeing, and work. Three research futures, 19 falsifiable indicators, a policy lever matrix for regulators, and an animated no-controls trajectory. Every claim labeled by evidence tier — what we know, suspect, and imagine.",
-    tags: ["React", "TypeScript", "Recharts", "Forecasting", "Research Synthesis"],
-    industries: ["Policy & Regulation", "Education", "Future of Work"],
-    status: "live",
-    locked: true,
-    link: "/human-evolution",
-  },
-];
-
-// ── Research Lab — Responsible AI (4) ────────────────────────────────────────
-
-export const RESEARCH_LAB_RESPONSIBLE_AI: Project[] = [
-  {
-    title: "Gendered Adversarial Robustness — ZIDR Benchmark",
-    description: "First benchmark taxonomy for physical-proximity attacks on AI safety systems. A physically proximate adversary — colleague, authority figure, stranger with local knowledge — can suppress AI-based threat detection before a safety system fires, using no digital exploit. ZIDR (Zero-Interaction Danger Rate) quantifies pre-trigger harm activation absent from all existing safety eval frameworks. 5 attack methods · 4 target layers · zero-interaction probe design.",
-    tags: ["AI Safety", "Adversarial Robustness", "Benchmark Taxonomy", "Python", "Zenodo Preprint"],
-    industries: ["AI Safety Research", "Women's Safety", "Safety Engineering"],
-    status: "live",
-    externalLink: "https://zenodo.org/records/20208521",
-  },
-  {
-    title: "Algorithmic Fairness Auditor",
-    description: "Audits AI systems for hidden bias — from quantization-induced disparate impact to real-world criminal justice (COMPAS recidivism). Applies disparate impact ratio, Cohen's d, false positive/negative rate parity, and chi-square testing.",
-    tags: ["Python", "PyTorch", "scikit-learn", "pandas", "matplotlib", "Google Colab"],
-    industries: ["Financial Services", "Criminal Justice", "HR & Talent"],
-    status: "live",
-    locked: true,
-    link: "/algorithmic-fairness",
-  },
+export const ENTERPRISE_ASSESSMENT: Project[] = [
   {
     title: "AI Readiness Assessment",
     description: "25-question self-service diagnostic across Strategy, Data, Technology, People, and Governance — scored report with ROI signal and prioritised gaps.",
@@ -145,6 +50,150 @@ export const RESEARCH_LAB_RESPONSIBLE_AI: Project[] = [
     locked: true,
     link: "/client-discovery",
   },
+  {
+    title: "Algorithmic Fairness Auditor",
+    description: "Bias and fairness evaluation toolkit supporting disparate impact analysis, parity testing, explainability, and regulatory readiness. Covers quantization-induced disparate impact and real-world criminal justice (COMPAS recidivism). Applies DIR, Cohen's d, FPR/FNR parity, and chi-square testing.",
+    tags: ["Python", "PyTorch", "scikit-learn", "pandas", "matplotlib", "Google Colab"],
+    industries: ["Financial Services", "Criminal Justice", "HR & Talent"],
+    status: "live",
+    locked: true,
+    link: "/algorithmic-fairness",
+  },
+];
+
+// ── Homepage: Governance & Compliance (Section 3) ────────────────────────────
+
+export const GOVERNANCE_COMPLIANCE: Project[] = [
+  {
+    title: "AI Ethics & Governance Tracker",
+    description: "On-demand policy tracker — EU AI Act, NIST AI RMF, ISO 42001, FAIR, AAIA — with clause-level detail, four-pillar framework, and client risk workbook. Private.",
+    tags: ["React", "TypeScript", "Supabase"],
+    industries: ["Enterprise", "Consulting", "All Sectors"],
+    status: "live",
+    locked: true,
+    link: "/ai-governance",
+  },
+  {
+    title: "AI Compliance Monitoring Agent",
+    description: "LangGraph multi-node agent + Python data pipeline + GitHub Actions CI/CD. Computes fairness metrics (DIR, FPR, FNR) against EU AI Act and NIST thresholds, routes on severity, and auto-generates compliance reports and escalation memos — on a weekly schedule.",
+    tags: ["LangGraph", "Python", "GitHub Actions", "Claude Haiku", "Pandas"],
+    industries: ["Financial Services", "Enterprise AI", "Regulated Sectors"],
+    status: "live",
+    locked: true,
+    link: "/compliance-agent",
+  },
+  {
+    title: "Privacy Impact Auditor",
+    description: "AI-specific DPIA tool with dynamic combinatorial risk scoring — risks multiply, not add. Maps 12-question profile to 13 regulations (GDPR, EU AI Act Annex III, NYC LL144, CCPA, Illinois BIPA, Colorado AI Act). Includes differential privacy cost curve and proxy discrimination detection.",
+    tags: ["React", "TypeScript", "GDPR", "EU AI Act", "NYC LL144", "Recharts"],
+    industries: ["Financial Services", "Healthcare", "HR & Talent"],
+    status: "live",
+    locked: true,
+    link: "/privacy-auditor",
+  },
+];
+
+// ── Homepage: Safety & Evaluation (Section 4) ────────────────────────────────
+
+export const SAFETY_EVALUATION: Project[] = [
+  {
+    title: "LLM Safety Eval Framework",
+    description: "Production-grade safety evaluation pipeline for LLMs in regulated financial services. 40 adversarial test cases across 5 risk categories — prompt injection, regulatory hallucination, suitability failures, data leakage, RAG poisoning. Claude-as-judge scoring with Streamlit compliance matrix, run comparison, and multi-model support. Built for pre-deployment assurance against FCA Consumer Duty, MiFID II, GDPR, and MITRE ATLAS.",
+    tags: ["Python", "Claude API", "Streamlit", "YAML", "GitHub Actions", "FCA", "MiFID II", "GDPR", "MITRE ATLAS"],
+    industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
+    status: "live",
+    locked: true,
+    link: "/safety-eval",
+  },
+  {
+    title: "Rogue Agent & Goal Drift Detector",
+    description: "Detects when a finance LLM agent silently drifts from its original goal. After each tool call, cosine similarity between the agent's current intent and original task embedding flags SAFE / DRIFTING / ROGUE. A KPI-pressure memo nudges the agent to omit loss-making product lines — drift is caught at Step 2 before the fabricated report is written. HITL gate + MLflow audit trail. EU AI Act Art.9 · GDPR Art.5 · DORA.",
+    tags: ["Python", "sentence-transformers", "MLflow", "LangGraph", "EU AI Act", "GDPR", "DORA"],
+    industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
+    status: "live",
+    locked: true,
+    link: "/agent-drift",
+  },
+  {
+    title: "Agent Goal Hijacking Demo",
+    description: "Live simulation of OWASP LLM Top 10 2025 #1 — Indirect Prompt Injection. A finance LLM agent is hijacked via a malicious PDF: its goal is silently overwritten, then it exfiltrates 10 customer records using only its own legitimate tools. Two-layer detection (rule-based + Claude Haiku judge), HITL approval flow, and blast radius risk model. EU AI Act Art.9 · DORA · GDPR Art.33.",
+    tags: ["LangGraph", "Claude Haiku", "Python", "React", "TypeScript", "OWASP", "EU AI Act", "DORA"],
+    industries: ["Financial Services", "Regulated AI", "Safety Engineering"],
+    status: "live",
+    locked: true,
+    link: "/agent-hijacking",
+  },
+];
+
+// ── Research & Ventures: Venture Building ────────────────────────────────────
+
+export const RESEARCH_VENTURES_VENTURE: Project[] = [
+  {
+    title: "Larkline",
+    description: "Revenue intelligence and execution platform for agencies combining signal detection, opportunity scoring, relationship intelligence, and revenue operations workflows. Founder-led multi-tenant SaaS: onboarding, signal feeds, opportunity workspaces, relationship intelligence, and revenue reporting.",
+    tags: ["Systems Architecture", "Full Stack Development", "AI Systems Design"],
+    industries: ["Rev Ops", "Agency Ops", "Creator Economy", "SaaS"],
+    status: "building",
+    externalLink: "https://larkline.app",
+  },
+];
+
+// ── Research & Ventures: Applied Research ─────────────────────────────────────
+
+export const RESEARCH_VENTURES_APPLIED: Project[] = [
+  {
+    title: "Gendered Adversarial Robustness — ZIDR Benchmark",
+    description: "First benchmark taxonomy for physical-proximity attacks on AI safety systems. A physically proximate adversary — colleague, authority figure, stranger with local knowledge — can suppress AI-based threat detection before a safety system fires, using no digital exploit. ZIDR (Zero-Interaction Danger Rate) quantifies pre-trigger harm activation absent from all existing safety eval frameworks. 5 attack methods · 4 target layers · zero-interaction probe design.",
+    tags: ["AI Safety", "Adversarial Robustness", "Benchmark Taxonomy", "Python", "Zenodo Preprint"],
+    industries: ["AI Safety Research", "Women's Safety", "Safety Engineering"],
+    status: "live",
+    externalLink: "https://zenodo.org/records/20208521",
+  },
+  {
+    title: "Proxy Discrimination Under Quantization",
+    description: "INT4 quantization widens race-based false positive gaps in recidivism scoring. 14.4% FPR gap at FP32 baseline widens under INT4 — model compression is not a fairness-neutral transform. 6 reproducible notebooks on the public COMPAS dataset. Disparate impact ratio, Cohen's d, FPR/FNR parity, and chi-square testing.",
+    tags: ["AI Fairness", "PyTorch", "scikit-learn", "Python", "pandas", "Google Colab"],
+    industries: ["AI Safety Research", "Criminal Justice", "Financial Services"],
+    status: "live",
+    locked: true,
+    link: "/algorithmic-fairness",
+  },
+];
+
+// ── Legacy exports — kept for backward compatibility ─────────────────────────
+
+export const SAFETY_ENGINEERING: Project[] = [
+  SAFETY_EVALUATION[2], SAFETY_EVALUATION[1], SAFETY_EVALUATION[0],
+];
+
+export const RESPONSIBLE_AI_GOVERNANCE: Project[] = [
+  GOVERNANCE_COMPLIANCE[2], GOVERNANCE_COMPLIANCE[1], GOVERNANCE_COMPLIANCE[0],
+];
+
+export const PRODUCT_SYSTEMS: Project[] = [
+  PRODUCT_INTELLIGENCE_SYSTEMS[1], PRODUCT_INTELLIGENCE_SYSTEMS[2],
+  RESEARCH_VENTURES_VENTURE[0],
+];
+
+// ── Research Lab — Foresight & Society (1) ──────────────────────────────────
+
+export const RESEARCH_LAB_FORESIGHT: Project[] = [
+  {
+    title: "Human Evolution in the Age of AI",
+    description: "A 20-year, evidence-tiered forecast of how AI dependence reshapes five parts of human life — cognition, creativity, discernment, mental health & wellbeing, and work. Three research futures, 19 falsifiable indicators, a policy lever matrix for regulators, and an animated no-controls trajectory. Every claim labeled by evidence tier — what we know, suspect, and imagine.",
+    tags: ["React", "TypeScript", "Recharts", "Forecasting", "Research Synthesis"],
+    industries: ["Policy & Regulation", "Education", "Future of Work"],
+    status: "live",
+    locked: true,
+    link: "/human-evolution",
+  },
+];
+
+// ── Research Lab — Responsible AI (legacy export, kept for page-level use) ────
+
+export const RESEARCH_LAB_RESPONSIBLE_AI: Project[] = [
+  ...RESEARCH_VENTURES_APPLIED,
+  ...ENTERPRISE_ASSESSMENT,
 ];
 
 // ── Research Lab — Sustainable AI (5) ────────────────────────────────────────
@@ -207,17 +256,10 @@ export const RESEARCH_LAB_SUSTAINABLE_AI: Project[] = [
   },
 ];
 
-// ── Research Lab — Product & GTM (1) ─────────────────────────────────────────
+// ── Research Lab — Product & GTM (legacy export) ──────────────────────────────
 
 export const RESEARCH_LAB_PRODUCT: Project[] = [
-  {
-    title: "Product Intelligence Pipeline",
-    description: "AI-powered pipeline integrating Salesforce Cases with Claude to surface product insights at scale. Fintech and Healthtech verticals.",
-    tags: ["Python", "Claude API", "Salesforce", "React"],
-    industries: ["Fintech", "Healthtech", "Product Management"],
-    status: "live",
-    link: "/product-intelligence",
-  },
+  PRODUCT_INTELLIGENCE_SYSTEMS[0],
 ];
 
 // ── Research Lab — Personal (2) ───────────────────────────────────────────────

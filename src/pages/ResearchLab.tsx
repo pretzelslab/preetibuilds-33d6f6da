@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 import { useVisitLogger } from "@/hooks/useVisitLogger";
 import type { Project } from "@/types/project";
 import {
-  RESEARCH_LAB_RESPONSIBLE_AI,
+  RESEARCH_VENTURES_VENTURE,
+  RESEARCH_VENTURES_APPLIED,
   RESEARCH_LAB_SUSTAINABLE_AI,
-  RESEARCH_LAB_PRODUCT,
   RESEARCH_LAB_FORESIGHT,
   RESEARCH_LAB_PERSONAL,
 } from "@/data/projects";
@@ -66,7 +66,7 @@ const ProjectRow = ({ project, index }: { project: Project; index: number }) => 
             {project.locked ? "Preview →" : "View →"}
           </Link>
         )}
-        {project.externalLink && (
+        {!project.link && project.externalLink && (
           <a
             href={project.externalLink}
             target="_blank"
@@ -104,6 +104,27 @@ const StripDivider = () => (
   </div>
 );
 
+const publications = [
+  {
+    domain: "Sustainable AI · Systems",
+    domainCls: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+    title: "Carbon-Aware Inference Router for LLM Systems (CAIR)",
+    authors: "Raghuveeran, P.",
+    year: "2026",
+    doi: "10.5281/zenodo.19934621",
+    href: "https://zenodo.org/records/19934621",
+  },
+  {
+    domain: "AI Safety · Adversarial Robustness",
+    domainCls: "text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/20",
+    title: "Gendered Adversarial Robustness in LLMs — ZIDR Benchmark",
+    authors: "Raghuveeran, P.",
+    year: "2026",
+    doi: "10.5281/zenodo.20208521",
+    href: "https://zenodo.org/records/20208521",
+  },
+];
+
 const ResearchLab = () => {
   useVisitLogger("/research-lab");
 
@@ -114,49 +135,93 @@ const ResearchLab = () => {
           <Link to="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
             ← Back to Portfolio
           </Link>
-          <span className="text-[10px] font-mono tracking-widest uppercase text-muted-foreground/50">systems lab</span>
+          <span className="text-[10px] font-mono tracking-widest uppercase text-muted-foreground/50">research & ventures</span>
         </div>
       </div>
 
       {/* Page header */}
       <div className="max-w-7xl mx-auto px-6 pt-12 pb-8">
         <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50 mb-2">
-          All Tools & Experiments
+          Page 2
         </p>
-        <h1 className="text-xl font-semibold tracking-tight text-foreground mb-2">Systems Lab</h1>
-        <p className="text-sm text-muted-foreground">
-          Additional prototypes, frameworks, and decision support tools spanning product strategy, AI governance, sustainability, foresight, and enterprise transformation.
+        <h1 className="text-xl font-semibold tracking-tight text-foreground mb-2">Research & Ventures</h1>
+        <p className="text-sm text-muted-foreground max-w-2xl">
+          Research, venture building, emerging frameworks, sustainability systems, and long-horizon experimentation.
         </p>
       </div>
 
-      {/* Product & GTM */}
-      <div className="max-w-7xl mx-auto px-6">
+      {/* Venture Building */}
+      <div id="venture-building" className="max-w-7xl mx-auto px-6 scroll-mt-20">
         <SectionHeader
-          label="Product & GTM"
-          subtitle="AI-powered product intelligence and GTM automation pipelines."
+          label="Venture Building"
+          subtitle="Startup and venture projects — evolving commercial platforms built outside of client work."
         />
         <div className="mb-4">
-          {RESEARCH_LAB_PRODUCT.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+          {RESEARCH_VENTURES_VENTURE.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
         </div>
       </div>
 
       <StripDivider />
 
-      {/* Responsible AI & Governance */}
-      <div className="max-w-7xl mx-auto px-6 pt-4">
+      {/* Publications & Preprints */}
+      <div id="publications" className="max-w-7xl mx-auto px-6 pt-4 scroll-mt-20">
         <SectionHeader
-          label="Responsible AI & Governance"
-          subtitle="Adversarial robustness benchmarks, fairness audits, readiness diagnostics, and risk assessment tooling."
+          label="Publications & Preprints"
+          subtitle="Two Zenodo preprints — peer-review pending. DOIs citable."
         />
         <div className="mb-4">
-          {RESEARCH_LAB_RESPONSIBLE_AI.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
+          {publications.map((pub, i) => (
+            <motion.a
+              key={pub.doi}
+              href={pub.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, y: 8 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.06 }}
+              className="group block py-4 border-b border-border/50 last:border-0 no-underline"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2.5 mb-1">
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${pub.domainCls}`}>
+                      {pub.domain}
+                    </span>
+                  </div>
+                  <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors block mb-0.5">
+                    {pub.title}
+                  </span>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    {pub.authors} · Zenodo {pub.year} · DOI: {pub.doi}
+                  </p>
+                </div>
+                <span className="text-xs font-medium text-muted-foreground group-hover:text-primary transition-colors shrink-0 mt-0.5">
+                  View →
+                </span>
+              </div>
+            </motion.a>
+          ))}
+        </div>
+      </div>
+
+      <StripDivider />
+
+      {/* Applied Research */}
+      <div id="applied-research" className="max-w-7xl mx-auto px-6 pt-4 scroll-mt-20">
+        <SectionHeader
+          label="Applied Research"
+          subtitle="Original AI safety and fairness research — adversarial robustness benchmarks, proxy discrimination under model compression, and falsifiable evaluation frameworks."
+        />
+        <div className="mb-4">
+          {RESEARCH_VENTURES_APPLIED.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
         </div>
       </div>
 
       <StripDivider />
 
       {/* Sustainable AI */}
-      <div className="max-w-7xl mx-auto px-6 pt-4">
+      <div id="sustainable-ai" className="max-w-7xl mx-auto px-6 pt-4 scroll-mt-20">
         <SectionHeader
           label="Sustainable AI"
           subtitle="Carbon-aware inference routing, measurement tools, disclosure frameworks, and the carbon-fairness efficiency tradeoff — mapped to CSRD, EU GPAI Art.53, and ISSB S2."
@@ -169,7 +234,7 @@ const ResearchLab = () => {
       <StripDivider />
 
       {/* Foresight & Society */}
-      <div className="max-w-7xl mx-auto px-6 pt-4">
+      <div id="foresight-society" className="max-w-7xl mx-auto px-6 pt-4 scroll-mt-20">
         <SectionHeader
           label="Foresight & Society"
           subtitle="Evidence-tiered forecasting on how AI reshapes human capability — built to be provably wrong, with falsifiable indicators and policy levers."
@@ -181,9 +246,12 @@ const ResearchLab = () => {
 
       <StripDivider />
 
-      {/* Personal Projects */}
-      <div className="max-w-7xl mx-auto px-6 pt-4 pb-12">
-        <SectionHeader label="Personal Projects" />
+      {/* Experimental Systems */}
+      <div id="experimental-systems" className="max-w-7xl mx-auto px-6 pt-4 pb-12 scroll-mt-20">
+        <SectionHeader
+          label="Experimental Systems"
+          subtitle="Personal projects, concept validations, and early-stage experiments."
+        />
         <div className="mb-10">
           {RESEARCH_LAB_PERSONAL.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}
         </div>

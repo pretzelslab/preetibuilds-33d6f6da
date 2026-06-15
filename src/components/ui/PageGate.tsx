@@ -115,20 +115,7 @@ export function PageGate({
   };
 
   if (unlocked) {
-    return (
-      <div style={{ position: "relative", minHeight: "100vh" }}>
-        {children}
-        <button onClick={lock} title="Lock this page" style={{
-          position: "fixed", bottom: 24, right: 24, zIndex: 1000,
-          background: "#0f172a", color: "#fff", border: "none", borderRadius: 50,
-          width: 44, height: 44, fontSize: 18, cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.25)", opacity: 0.7,
-        }}>
-          🔓
-        </button>
-      </div>
-    );
+    return <div style={{ position: "relative", minHeight: "100vh" }}>{children}</div>;
   }
 
   // ── Locked state ─────────────────────────────────────────────────────────────

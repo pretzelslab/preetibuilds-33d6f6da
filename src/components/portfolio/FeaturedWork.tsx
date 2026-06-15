@@ -1,89 +1,109 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { FEATURED_CARDS } from "@/data/projects";
+
+const TEASER_TILES = [
+  {
+    domain: "Venture Building",
+    domainCls: "text-amber-400 bg-amber-500/10 border-amber-500/30",
+    title: "Larkline",
+    desc: "Revenue intelligence and execution platform for agencies — signal detection, opportunity scoring, relationship intelligence, and revenue operations.",
+    href: "https://larkline.app",
+    external: true,
+  },
+  {
+    domain: "Publications",
+    domainCls: "text-violet-400 bg-violet-500/10 border-violet-500/30",
+    title: "Research Preprints",
+    desc: "2 citable Zenodo preprints — Carbon-Aware Inference Router (CAIR) and Gendered Adversarial Robustness (ZIDR Benchmark).",
+    href: "/research-lab",
+    external: false,
+  },
+  {
+    domain: "Applied Research",
+    domainCls: "text-rose-400 bg-rose-500/10 border-rose-500/30",
+    title: "Adversarial Robustness & Fairness",
+    desc: "Original AI safety research — physical-proximity attack taxonomy, proxy discrimination under quantization, falsifiable indicators.",
+    href: "/research-lab",
+    external: false,
+  },
+  {
+    domain: "Sustainable AI",
+    domainCls: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30",
+    title: "Carbon-Aware AI Systems",
+    desc: "Carbon inference routing, footprint calculators, disclosure frameworks, and the carbon-fairness efficiency tradeoff — mapped to CSRD and EU GPAI Art.53.",
+    href: "/research-lab",
+    external: false,
+  },
+];
 
 const container = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.1 } },
+  show: { transition: { staggerChildren: 0.08 } },
 };
 
 const item = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
 const FeaturedWork = () => (
-  <section className="px-6 py-6">
+  <section className="px-6 py-12 border-t border-border/40">
     <div className="max-w-7xl mx-auto">
-      <div className="mb-6">
-        <span className="inline-block font-mono text-[10px] tracking-widest uppercase px-2.5 py-1 rounded bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/40 font-semibold">
-          Applied Research
-        </span>
+      <div className="flex items-end justify-between mb-6 gap-4">
+        <div>
+          <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50 mb-1">
+            Beyond the portfolio
+          </p>
+          <h2 className="text-base font-semibold text-foreground">Research & Ventures</h2>
+          <p className="text-xs text-muted-foreground mt-1 max-w-lg">
+            Research, venture building, sustainability tooling, and long-horizon experimentation.
+          </p>
+        </div>
+        <Link
+          to="/research-lab"
+          className="shrink-0 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+        >
+          Explore all <ArrowRight className="w-3 h-3" />
+        </Link>
       </div>
+
       <motion.div
-        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
         variants={container}
         initial="hidden"
         whileInView="show"
-        viewport={{ once: true, margin: "-60px" }}
+        viewport={{ once: true, margin: "-40px" }}
       >
-        {FEATURED_CARDS.map((card) => (
-          <motion.div
-            key={card.domain}
-            variants={item}
-            className="flex flex-col rounded-xl border border-border bg-card/60 backdrop-blur-sm p-6 hover:border-border/80 transition-colors"
-          >
-            {/* Domain pill */}
-            <span
-              className={`self-start text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full border mb-3 ${card.domainCls}`}
+        {TEASER_TILES.map((tile) => {
+          const inner = (
+            <motion.div
+              key={tile.domain}
+              variants={item}
+              className="flex flex-col rounded-xl border border-border bg-card/50 p-5 hover:border-border/80 transition-colors h-full"
             >
-              {card.domain}
-            </span>
+              <span className={`self-start text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full border mb-3 ${tile.domainCls}`}>
+                {tile.domain}
+              </span>
+              <h3 className="font-semibold text-sm leading-snug mb-2 text-foreground">
+                {tile.title}
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed flex-1">
+                {tile.desc}
+              </p>
+            </motion.div>
+          );
 
-            {/* Title */}
-            <h3 className="font-semibold text-sm leading-snug mb-1.5">
-              {card.title}
-            </h3>
-
-            {/* Problem sentence */}
-            <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
-              {card.problem}
-            </p>
-
-            {/* Stats */}
-            <ul className="space-y-1.5 mb-5 flex-1">
-              {card.stats.map((s) => (
-                <li key={s.value + s.label} className="flex items-baseline gap-1.5 text-xs">
-                  <span className="font-bold text-foreground whitespace-nowrap">
-                    {s.value}
-                  </span>
-                  <span className="text-muted-foreground">{s.label}</span>
-                </li>
-              ))}
-            </ul>
-
-            {/* Tech stack chips */}
-            {card.techStack && (
-              <div className="flex flex-wrap gap-1 mb-4">
-                {card.techStack.map((t) => (
-                  <span key={t} className="text-[10px] font-mono text-slate-500 dark:text-blue-300/60 bg-slate-500/8 dark:bg-blue-500/8 border border-slate-400/15 dark:border-blue-400/20 px-2 py-0.5 rounded">
-                    {t}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* CTA */}
-            <Link
-              to={card.href}
-              className="inline-flex items-center gap-1 text-xs font-medium text-foreground/80 hover:text-foreground transition-colors group"
-            >
-              {card.cta}
-              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+          return tile.external ? (
+            <a key={tile.domain} href={tile.href} target="_blank" rel="noopener noreferrer" className="no-underline">
+              {inner}
+            </a>
+          ) : (
+            <Link key={tile.domain} to={tile.href} className="no-underline">
+              {inner}
             </Link>
-          </motion.div>
-        ))}
+          );
+        })}
       </motion.div>
     </div>
   </section>

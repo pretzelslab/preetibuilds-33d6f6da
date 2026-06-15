@@ -60,7 +60,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/agent-drift":               "Rogue Agent & Goal Drift Detector | Preeti Builds",
   "/carbon-router":             "Carbon-Aware LLM Inference Router | Preeti Builds",
   "/win-loss-intelligence":    "Win/Loss Intelligence | Preeti Builds",
-  "/research-lab":             "Research Lab | Preeti Builds",
+  "/research-lab":             "Research & Ventures | Preeti Builds",
   "/human-evolution":          "Human Evolution in the Age of AI | Preeti Builds",
 };
 
