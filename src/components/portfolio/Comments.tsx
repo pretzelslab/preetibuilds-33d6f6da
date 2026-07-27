@@ -12,7 +12,7 @@ interface Comment {
   created_at: string;
 }
 
-function timeAgo(iso: string) {
+export function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return "just now";

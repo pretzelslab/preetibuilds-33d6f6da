@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 import { IMPLEMENTATION_GUIDES as STATIC_GUIDES } from "./guides";
 import { usePolicyGuides } from "../../hooks/usePolicyGuides";
 import { seedDemoClient, DEMO_CLIENT_ID, seedMediScanClient } from "./demoData";
+import { SectionComments } from "./CommentsPanel";
 
 // Live policy data from Supabase — falls back to static guides while loading or on error
 // Updated synchronously during each render so all sub-components see current data
@@ -1537,7 +1538,10 @@ function AISystemProfileForm({ client, onSave }: { client: Client; onSave: (patc
 
       {/* System Identity */}
       <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 14, paddingBottom: 6, borderBottom: "1px solid #e2e8f0" }}>System Identity</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, paddingBottom: 6, borderBottom: "1px solid #e2e8f0" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em" }}>System Identity</span>
+          <SectionComments clientId={client.id} pageId="phase1-govern-system-identity" label="System Identity" />
+        </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <div>
             <FieldLabel label="AI System Name" required tip="The commercial or internal name of the AI system being assessed. If third-party, use the vendor's product name." />
@@ -1573,7 +1577,10 @@ function AISystemProfileForm({ client, onSave }: { client: Client; onSave: (patc
 
       {/* Governance & Control */}
       <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 14, paddingBottom: 6, borderBottom: "1px solid #e2e8f0" }}>Governance & Control</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, paddingBottom: 6, borderBottom: "1px solid #e2e8f0" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em" }}>Governance & Control</span>
+          <SectionComments clientId={client.id} pageId="phase1-govern-governance-control" label="Governance & Control" />
+        </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <div>
             <FieldLabel label="Model Ownership" required tip="Who built or owns this AI model? This determines whether you are a Provider (built it) or Deployer (using it) under regulations like the EU AI Act — which carry different obligations." />
@@ -1610,7 +1617,10 @@ function AISystemProfileForm({ client, onSave }: { client: Client; onSave: (patc
 
       {/* Scale of Impact */}
       <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 14, paddingBottom: 6, borderBottom: "1px solid #e2e8f0" }}>Scale of Impact</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, paddingBottom: 6, borderBottom: "1px solid #e2e8f0" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em" }}>Scale of Impact</span>
+          <SectionComments clientId={client.id} pageId="phase1-govern-scale-impact" label="Scale of Impact" />
+        </div>
         <div style={{ background: "#fef9c3", border: "1px solid #fde047", borderRadius: 8, padding: "10px 14px", marginBottom: 14, fontSize: 12, color: "#713f12" }}>
           ⚠ Scale matters for risk rating. A 5% bias rate sounds low — but at 15,000 decisions per quarter that is 750 biased decisions. Always think in totals, not percentages.
         </div>
@@ -1632,7 +1642,10 @@ function AISystemProfileForm({ client, onSave }: { client: Client; onSave: (patc
 
       {/* Training Data */}
       <div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 14, paddingBottom: 6, borderBottom: "1px solid #e2e8f0" }}>Training Data</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, paddingBottom: 6, borderBottom: "1px solid #e2e8f0" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em" }}>Training Data</span>
+          <SectionComments clientId={client.id} pageId="phase1-govern-training-data" label="Training Data" />
+        </div>
         <div style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 8, padding: "10px 14px", marginBottom: 14, fontSize: 12, color: "#0369a1" }}>
           ℹ If this is a third-party system, request this information from your vendor. Under EU AI Act Article 10, providers must disclose data governance practices. Deployers have a right to this information.
         </div>
@@ -1656,6 +1669,7 @@ function AISystemProfileForm({ client, onSave }: { client: Client; onSave: (patc
       <div style={{ marginBottom: 20 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4, paddingBottom: 6, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span>Performance & Evaluation <span style={{ fontSize: 9, fontWeight: 700, background: "#ecfeff", color: "#0891b2", border: "1px solid #a5f3fc", borderRadius: 4, padding: "1px 6px", marginLeft: 6, letterSpacing: "0.04em" }}>AIIA — ISO 42001 Cl. 8</span></span>
+          <SectionComments clientId={client.id} pageId="phase1-govern-performance-evaluation" label="Performance & Evaluation" />
         </div>
         <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 14 }}>Required for AI System Impact Assessment (AIIA) under ISO 42001 Clause 8. Enables AIIA export.</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
@@ -1686,7 +1700,10 @@ function AISystemProfileForm({ client, onSave }: { client: Client; onSave: (patc
       <div style={{ marginBottom: 20 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4, paddingBottom: 6, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span>Stakeholder Consultation Log <span style={{ fontSize: 9, fontWeight: 700, background: "#ecfeff", color: "#0891b2", border: "1px solid #a5f3fc", borderRadius: 4, padding: "1px 6px", marginLeft: 6 }}>AIIA — ISO 42001 Cl. 8.2</span></span>
-          <button onClick={addStakeholder} style={{ background: "#f0f9ff", color: "#0369a1", border: "1px solid #bae6fd", borderRadius: 7, padding: "4px 12px", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>+ Add</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <SectionComments clientId={client.id} pageId="phase1-govern-stakeholder-log" label="Stakeholder Consultation Log" />
+            <button onClick={addStakeholder} style={{ background: "#f0f9ff", color: "#0369a1", border: "1px solid #bae6fd", borderRadius: 7, padding: "4px 12px", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>+ Add</button>
+          </div>
         </div>
         <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 12 }}>Record everyone consulted as part of this AI system assessment — internal and external.</div>
         {stakeholders.length === 0
@@ -1901,7 +1918,7 @@ function ClientDetailView({ client, onBack, onSelectPolicy, onOpenRiskRegister, 
   const sof = SIGN_OFF_CONFIG[thisClient.signOffStatus];
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 32px" }}>
+    <div data-comments-container style={{ maxWidth: 900, margin: "0 auto", padding: "28px 32px" }}>
       <Breadcrumb items={[{ label: "All Clients", onClick: onBack }, { label: thisClient.name }]} />
 
       <div style={{ margin: "20px 0 20px" }}>
@@ -2017,7 +2034,8 @@ function ClientDetailView({ client, onBack, onSelectPolicy, onOpenRiskRegister, 
                     <ProgressBar pct={pct} color={stub.color} />
                     <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>{done}/{total} applicable questions · {guide?.areas.length || 0} areas</div>
                   </div>
-                  <div style={{ display: "flex", gap: 8 }}>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <SectionComments clientId={client.id} pageId={`phase2-map-overview-framework-${pid}`} label={stub.name} />
                     {stub.hasGuide
                       ? <button onClick={() => onSelectPolicy(pid)} style={{ background: "#0f172a", color: "#fff", border: "none", borderRadius: 7, padding: "7px 16px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>Open Workbook →</button>
                       : <span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic" }}>Guide coming soon</span>}
@@ -2039,7 +2057,10 @@ function ClientDetailView({ client, onBack, onSelectPolicy, onOpenRiskRegister, 
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {/* Risk summary card */}
             <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "20px 24px" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 14 }}>Risk Register Summary</div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em" }}>Risk Register Summary</span>
+                <SectionComments clientId={thisClient.id} pageId="phase3-measure-overview-summary" label="Risk Register Summary" />
+              </div>
               {risks.length === 0 ? (
                 <div style={{ fontSize: 13, color: "#94a3b8", fontStyle: "italic", marginBottom: 16 }}>
                   No risks identified yet. Open the Risk Register to start assessing.
@@ -2355,7 +2376,10 @@ function Phase5Monitor({ client }: { client: Client }) {
 
       {/* Section 1: Review Schedule */}
       <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 11, padding: "16px 20px" }}>
-        <div style={{ fontSize: 12, fontWeight: 800, color: "#0f172a", marginBottom: 12 }}>📅 Review Schedule</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <span style={{ fontSize: 12, fontWeight: 800, color: "#0f172a" }}>📅 Review Schedule</span>
+          <SectionComments clientId={client.id} pageId="phase5-monitor-review-schedule" label="Review Schedule" />
+        </div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <div style={{ flex: 1, minWidth: 150 }}>
             <label style={{ fontSize: 10, fontWeight: 700, color: "#64748b", display: "block", marginBottom: 4, textTransform: "uppercase" }}>Frequency</label>
@@ -2381,8 +2405,11 @@ function Phase5Monitor({ client }: { client: Client }) {
       {/* Section 2: Monitoring KPIs */}
       <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 11, padding: "16px 20px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <div style={{ fontSize: 12, fontWeight: 800, color: "#0f172a" }}>📊 Monitoring KPIs</div>
-          <button onClick={addKpi} style={{ fontSize: 11, fontWeight: 600, color: "#6366f1", background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>+ Add KPI</button>
+          <span style={{ fontSize: 12, fontWeight: 800, color: "#0f172a" }}>📊 Monitoring KPIs</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <SectionComments clientId={client.id} pageId="phase5-monitor-kpis" label="Monitoring KPIs" />
+            <button onClick={addKpi} style={{ fontSize: 11, fontWeight: 600, color: "#6366f1", background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>+ Add KPI</button>
+          </div>
         </div>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
@@ -2434,7 +2461,10 @@ function Phase5Monitor({ client }: { client: Client }) {
 
       {/* Section 3: Drift Triggers */}
       <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 11, padding: "16px 20px" }}>
-        <div style={{ fontSize: 12, fontWeight: 800, color: "#0f172a", marginBottom: 4 }}>⚡ Drift Triggers</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+          <span style={{ fontSize: 12, fontWeight: 800, color: "#0f172a" }}>⚡ Drift Triggers</span>
+          <SectionComments clientId={client.id} pageId="phase5-monitor-drift-triggers" label="Drift Triggers" />
+        </div>
         <div style={{ fontSize: 11, color: "#64748b", marginBottom: 12 }}>Check any condition that has occurred since the last review — this drives the re-assessment decision below.</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {data.triggers.map(trigger => (
@@ -2467,7 +2497,10 @@ function Phase5Monitor({ client }: { client: Client }) {
             <div style={{ fontSize: 12, fontWeight: 800, color: "#0f172a" }}>📋 Change Log</div>
             <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>Record material changes to the AI system since the last review.</div>
           </div>
-          <button onClick={addChange} style={{ fontSize: 11, fontWeight: 600, color: "#6366f1", background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>+ Add Entry</button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <SectionComments clientId={client.id} pageId="phase5-monitor-change-log" label="Change Log" />
+            <button onClick={addChange} style={{ fontSize: 11, fontWeight: 600, color: "#6366f1", background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>+ Add Entry</button>
+          </div>
         </div>
         {data.changes.length === 0 ? (
           <div style={{ fontSize: 12, color: "#94a3b8", textAlign: "center", padding: "18px 0" }}>No changes recorded yet</div>
@@ -2510,7 +2543,10 @@ function Phase5Monitor({ client }: { client: Client }) {
 
       {/* Section 5: Re-assessment Decision */}
       <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 11, padding: "16px 20px" }}>
-        <div style={{ fontSize: 12, fontWeight: 800, color: "#0f172a", marginBottom: 12 }}>✅ Re-assessment Decision</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <span style={{ fontSize: 12, fontWeight: 800, color: "#0f172a" }}>✅ Re-assessment Decision</span>
+          <SectionComments clientId={client.id} pageId="phase5-monitor-decision" label="Re-assessment Decision" />
+        </div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
           {(["Continue Monitoring", "Targeted Review", "Full Re-assessment", "Escalate"] as ReviewDecision[]).map(d => {
             const c = DECISION_COLORS[d];
@@ -2627,7 +2663,7 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient, onPhaseSe
   })();
 
   return (
-    <div style={{ maxWidth: 960, margin: "0 auto", padding: "28px 32px" }}>
+    <div data-comments-container style={{ maxWidth: 960, margin: "0 auto", padding: "28px 32px" }}>
       <Breadcrumb items={[{ label: "All Clients", onClick: onBackToClient }, { label: client.name, onClick: onBack }, { label: stub.name }]} />
 
       {/* Compact phase strip — navigate between phases from within the workbook */}
@@ -2717,25 +2753,30 @@ function DiscoveryWorkbook({ client, policyId, onBack, onBackToClient, onPhaseSe
                 </div>
               )}
             <div ref={el => { areaRefs.current[areaIdx] = el; }} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 11, overflow: "hidden" }}>
-              <button onClick={() => setOpenArea(isOpen ? null : areaIdx)}
-                style={{ width: "100%", background: isOpen ? "#f0f4ff" : "#fff", border: "none", padding: "13px 18px", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 12, borderBottom: isOpen ? "1px solid #c7d2fe" : "none" }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#6366f1", minWidth: 26 }}>{String(areaIdx + 1).padStart(2, "0")}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{area.area}</div>
-                  <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{area.stakeholder} · {area.regulatoryRef}</div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: area.priority === "High" ? "#dc2626" : area.priority === "Medium" ? "#a16207" : "#15803d", background: area.priority === "High" ? "#fef2f2" : area.priority === "Medium" ? "#fefce8" : "#f0fdf4", borderRadius: 5, padding: "2px 7px" }}>{area.priority}</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 90 }}>
-                    <div style={{ width: 55, height: 4, background: isOpen ? "#334155" : "#e2e8f0", borderRadius: 99, overflow: "hidden", display: "flex" }}>
-                      <div style={{ width: `${pct}%`, height: "100%", background: pct === 100 ? "#15803d" : stub.color, borderRadius: 99, flexShrink: 0 }} />
-                      {touched > 0 && <div style={{ width: `${Math.round((touched / total) * 100)}%`, height: "100%", background: "#f59e0b", flexShrink: 0 }} />}
-                    </div>
-                    <span style={{ fontSize: 10, color: isOpen ? "#94a3b8" : "#64748b", fontWeight: 600 }}>{done}/{total}{touched > 0 && <span style={{ color: "#f59e0b" }}> +{touched}</span>}</span>
+              <div style={{ display: "flex", alignItems: "stretch", background: isOpen ? "#f0f4ff" : "#fff", borderBottom: isOpen ? "1px solid #c7d2fe" : "none" }}>
+                <button onClick={() => setOpenArea(isOpen ? null : areaIdx)}
+                  style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", padding: "13px 18px", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#6366f1", minWidth: 26 }}>{String(areaIdx + 1).padStart(2, "0")}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{area.area}</div>
+                    <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{area.stakeholder} · {area.regulatoryRef}</div>
                   </div>
-                  <span style={{ fontSize: 13, color: isOpen ? "#94a3b8" : "#64748b" }}>{isOpen ? "▾" : "▸"}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: area.priority === "High" ? "#dc2626" : area.priority === "Medium" ? "#a16207" : "#15803d", background: area.priority === "High" ? "#fef2f2" : area.priority === "Medium" ? "#fefce8" : "#f0fdf4", borderRadius: 5, padding: "2px 7px" }}>{area.priority}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 90 }}>
+                      <div style={{ width: 55, height: 4, background: isOpen ? "#334155" : "#e2e8f0", borderRadius: 99, overflow: "hidden", display: "flex" }}>
+                        <div style={{ width: `${pct}%`, height: "100%", background: pct === 100 ? "#15803d" : stub.color, borderRadius: 99, flexShrink: 0 }} />
+                        {touched > 0 && <div style={{ width: `${Math.round((touched / total) * 100)}%`, height: "100%", background: "#f59e0b", flexShrink: 0 }} />}
+                      </div>
+                      <span style={{ fontSize: 10, color: isOpen ? "#94a3b8" : "#64748b", fontWeight: 600 }}>{done}/{total}{touched > 0 && <span style={{ color: "#f59e0b" }}> +{touched}</span>}</span>
+                    </div>
+                    <span style={{ fontSize: 13, color: isOpen ? "#94a3b8" : "#64748b" }}>{isOpen ? "▾" : "▸"}</span>
+                  </div>
+                </button>
+                <div style={{ display: "flex", alignItems: "center", padding: "0 16px 0 2px" }}>
+                  <SectionComments clientId={client.id} pageId={`phase2-workbook-${policyId}-area-${areaIdx}`} label={area.area} />
                 </div>
-              </button>
+              </div>
 
               {isOpen && (
                 <div style={{ padding: "18px 22px", background: "#fafafa" }}>
@@ -3167,7 +3208,7 @@ function RiskRegisterView({ client, onBack, onBackToClients, onNextPhase }: {
   const sel: React.CSSProperties = { ...ipt, background: "#fff", cursor: "pointer" };
 
   return (
-    <div style={{ maxWidth: 1040, margin: "0 auto", padding: "28px 32px" }}>
+    <div data-comments-container style={{ maxWidth: 1040, margin: "0 auto", padding: "28px 32px" }}>
       <Breadcrumb items={[
         { label: "All Clients", onClick: onBackToClients },
         { label: client.name, onClick: onBack },
@@ -3278,6 +3319,7 @@ function RiskRegisterView({ client, onBack, onBackToClients, onNextPhase }: {
                   <RiskLevelBadge l={risk.residualLikelihood} i={risk.residualImpact} />
                   <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 5, background: sCfg.bg, color: sCfg.text, border: `1px solid ${sCfg.border}`, whiteSpace: "nowrap", flexShrink: 0 }}>{risk.status}</span>
                   {overdue && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 5, background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca", whiteSpace: "nowrap", flexShrink: 0 }}>⚠ Overdue</span>}
+                  <SectionComments clientId={client.id} pageId={`phase3-risk-register-risk-${risk.id}`} label={risk.riskId || "Risk"} />
                   <span style={{ fontSize: 12, color: "#94a3b8", flexShrink: 0 }}>{isOpen ? "▲" : "▼"}</span>
                 </div>
 
@@ -3714,7 +3756,10 @@ function Phase4Report({ client, onExportFull }: { client: Client; onExportFull: 
 
       {/* Risk Summary */}
       <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "20px 24px" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 14 }}>Risk Summary (Residual)</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em" }}>Risk Summary (Residual)</span>
+          <SectionComments clientId={client.id} pageId="phase4-report-risk-summary" label="Risk Summary (Residual)" />
+        </div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           {(["Critical", "High", "Medium", "Low"] as RiskLevel[]).map(lvl => {
             const cfg = RISK_LEVEL_CONFIG[lvl];
@@ -3740,8 +3785,11 @@ function Phase4Report({ client, onExportFull }: { client: Client; onExportFull: 
       {/* Applicable Frameworks & Key Obligations */}
       {client.activePolicies.length > 0 && (
         <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "20px 24px" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 14 }}>
-            Applicable Frameworks & Key Obligations
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+              Applicable Frameworks & Key Obligations
+            </span>
+            <SectionComments clientId={client.id} pageId="phase4-report-frameworks-obligations" label="Applicable Frameworks & Key Obligations" />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {client.activePolicies.map(pid => {
@@ -3788,7 +3836,10 @@ function Phase4Report({ client, onExportFull }: { client: Client; onExportFull: 
 
       {/* Executive Summary */}
       <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "20px 24px" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>Executive Summary</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em" }}>Executive Summary</span>
+          <SectionComments clientId={client.id} pageId="phase4-report-exec-summary" label="Executive Summary" />
+        </div>
         <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 10, fontStyle: "italic", lineHeight: 1.5, background: "#f8fafc", padding: "8px 12px", borderRadius: 7, border: "1px solid #e2e8f0" }}>
           Auto-generated: {autoSummary}
         </div>
@@ -3804,8 +3855,11 @@ function Phase4Report({ client, onExportFull }: { client: Client; onExportFull: 
       {/* Top Findings */}
       {critHighRisks.length > 0 && (
         <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "20px 24px" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 14 }}>
-            Top Findings — Critical & High Risks
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+              Top Findings — Critical & High Risks
+            </span>
+            <SectionComments clientId={client.id} pageId="phase4-report-top-findings" label="Top Findings" />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {critHighRisks.map((r, idx) => {
@@ -3846,8 +3900,11 @@ function Phase4Report({ client, onExportFull }: { client: Client; onExportFull: 
       {/* Remediation Roadmap */}
       {roadmap.length > 0 && (
         <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "20px 24px" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 14 }}>
-            Remediation Roadmap
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+              Remediation Roadmap
+            </span>
+            <SectionComments clientId={client.id} pageId="phase4-report-remediation-roadmap" label="Remediation Roadmap" />
           </div>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
@@ -3885,7 +3942,10 @@ function Phase4Report({ client, onExportFull }: { client: Client; onExportFull: 
 
       {/* Sign-off */}
       <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, padding: "20px 24px" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 14 }}>Sign-off</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.07em" }}>Sign-off</span>
+          <SectionComments clientId={client.id} pageId="phase4-report-signoff" label="Sign-off" />
+        </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
           <div>
             <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 5 }}>Prepared by</label>
