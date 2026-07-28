@@ -1,0 +1,246 @@
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { Check, Lock } from "lucide-react";
+
+type StepKey = "overview" | "command-center" | "evaluations" | "safety-policy" | "observability";
+
+interface Step {
+  key: StepKey;
+  label: string;
+  heading: string;
+  blurb: string;
+  screenshot: { src: string; alt: string; caption: string; width: number; height: number };
+  continueLabel: string | null;
+}
+
+const STEPS: Step[] = [
+  {
+    key: "overview",
+    label: "Overview",
+    heading: "Platform overview",
+    blurb: "Platform-wide workspace map and local/deterministic framing.",
+    screenshot: {
+      src: "/images/projects/ai-platform/platform-overview.png",
+      alt: "AI Platform Engineering Lab overview showing a sidebar and a grid of connected workspace modules.",
+      caption: "A connected map of specialist AI platform workspaces.",
+      width: 1440, height: 1000,
+    },
+    continueLabel: "Continue to Command Center",
+  },
+  {
+    key: "command-center",
+    label: "Command Center",
+    heading: "Command Center",
+    blurb: "An operational view that brings signals, assets, risks, and approvals together.",
+    screenshot: {
+      src: "/images/projects/ai-platform/command-center.png",
+      alt: "Command Center dashboard showing platform health, active incidents, approval decisions, and operational risks.",
+      caption: "A command-center view connects platform operations and decision context.",
+      width: 1440, height: 1100,
+    },
+    continueLabel: "Continue to Evaluations",
+  },
+  {
+    key: "evaluations",
+    label: "Evaluations",
+    heading: "Evaluations Workbench",
+    blurb: "Deterministic prompt evaluation cases and criteria.",
+    screenshot: {
+      src: "/images/projects/ai-platform/evaluations-workbench.png",
+      alt: "Evaluation workbench showing a prompt under test, enterprise test cases, risk labels, and scorecard criteria.",
+      caption: "Deterministic evaluation cases make review criteria visible before deployment decisions.",
+      width: 1440, height: 1000,
+    },
+    continueLabel: "Continue to Safety Policy",
+  },
+  {
+    key: "safety-policy",
+    label: "Safety Policy",
+    heading: "Safety & Policy Engine",
+    blurb: "Policy evaluation, control mapping, and remediation guidance.",
+    screenshot: {
+      src: "/images/projects/ai-platform/safety-policy-engine.png",
+      alt: "Safety and Policy Engine showing a selected AI asset, policy rules, control mapping, and remediation guidance.",
+      caption: "Policy review stays connected to assets, controls, and remediation guidance.",
+      width: 1440, height: 1000,
+    },
+    continueLabel: "Continue to Observability",
+  },
+  {
+    key: "observability",
+    label: "Observability",
+    heading: "Runtime Observability",
+    blurb: "Deterministic runtime traces, safety interventions, drift, and incident context.",
+    screenshot: {
+      src: "/images/projects/ai-platform/runtime-observability.png",
+      alt: "Runtime observability view showing deterministic traces, health indicators, safety interventions, drift signals, and active incidents.",
+      caption: "Runtime review brings trace signals, safety interventions, and incident context into one view.",
+      width: 1440, height: 1200,
+    },
+    continueLabel: null,
+  },
+];
+
+// Progressive fade for locked tabs — floor kept high enough to stay legible.
+const LOCK_OPACITY = [0.6, 0.45, 0.35, 0.3];
+
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mq.matches);
+    const onChange = () => setReduced(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+  return reduced;
+}
+
+export function AIPlatformWalkthrough() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [maxUnlocked, setMaxUnlocked] = useState(0);
+  const [announcement, setAnnouncement] = useState("");
+  const [loadedSteps, setLoadedSteps] = useState<Set<StepKey>>(new Set());
+  const reducedMotion = usePrefersReducedMotion();
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollAndFocusPanel = () => {
+    requestAnimationFrame(() => {
+      panelRef.current?.scrollIntoView({
+        behavior: reducedMotion ? "auto" : "smooth",
+        block: "start",
+      });
+      panelRef.current?.focus();
+    });
+  };
+
+  const handleContinue = (index: number) => {
+    const next = index + 1;
+    if (next >= STEPS.length) return;
+    setMaxUnlocked((m) => Math.max(m, next));
+    setActiveIndex(next);
+    setAnnouncement(`${STEPS[next].label} unlocked.`);
+    scrollAndFocusPanel();
+  };
+
+  const handleTabClick = (index: number) => {
+    if (index > maxUnlocked) return; // locked — no-op
+    setActiveIndex(index);
+  };
+
+  const handleTabKeyDown = (e: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let next: number | null = null;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      next = index === maxUnlocked ? 0 : index + 1;
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      next = index === 0 ? maxUnlocked : index - 1;
+    } else if (e.key === "Home") {
+      next = 0;
+    } else if (e.key === "End") {
+      next = maxUnlocked;
+    } else {
+      return;
+    }
+    e.preventDefault();
+    // next is always within [0, maxUnlocked] by construction — locked tabs are unreachable.
+    setActiveIndex(next);
+    tabRefs.current[next]?.focus();
+  };
+
+  const step = STEPS[activeIndex];
+  const imageLoaded = loadedSteps.has(step.key);
+
+  return (
+    <div>
+      <div aria-live="polite" className="sr-only">{announcement}</div>
+
+      <div
+        role="tablist"
+        aria-label="AI Platform Engineering Lab walkthrough"
+        className="flex flex-wrap gap-2 mb-5"
+      >
+        {STEPS.map((s, i) => {
+          const locked = i > maxUnlocked;
+          const completed = i < maxUnlocked;
+          const active = i === activeIndex;
+          const lockDistance = i - maxUnlocked;
+          const opacity = locked ? LOCK_OPACITY[Math.min(lockDistance - 1, LOCK_OPACITY.length - 1)] : 1;
+
+          return (
+            <button
+              key={s.key}
+              ref={(el) => { tabRefs.current[i] = el; }}
+              type="button"
+              role="tab"
+              id={`ai-platform-tab-${s.key}`}
+              aria-controls={`ai-platform-panel-${s.key}`}
+              aria-selected={active}
+              aria-disabled={locked}
+              tabIndex={locked ? -1 : active ? 0 : -1}
+              onClick={() => handleTabClick(i)}
+              onKeyDown={(e) => handleTabKeyDown(e, i)}
+              style={{ opacity }}
+              className={[
+                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-opacity motion-reduce:transition-none duration-300",
+                active
+                  ? "bg-blue-500/15 border-blue-500/40 text-blue-500"
+                  : locked
+                    ? "bg-muted/20 border-border/40 text-muted-foreground cursor-not-allowed"
+                    : "bg-muted/10 border-border/60 text-foreground hover:border-border cursor-pointer",
+              ].join(" ")}
+            >
+              {locked && <Lock className="w-3 h-3" aria-hidden="true" />}
+              {completed && !active && <Check className="w-3 h-3" aria-hidden="true" />}
+              {s.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <div
+        ref={panelRef}
+        role="tabpanel"
+        id={`ai-platform-panel-${step.key}`}
+        aria-labelledby={`ai-platform-tab-${step.key}`}
+        tabIndex={-1}
+        className="focus:outline-none"
+      >
+        <h3 className="text-base font-semibold mb-1">{step.heading}</h3>
+        <p className="text-sm text-muted-foreground leading-relaxed mb-3">{step.blurb}</p>
+
+        <figure className="my-2">
+          <div
+            className="relative rounded-xl border border-border/60 overflow-hidden bg-muted/10"
+            style={{ aspectRatio: `${step.screenshot.width} / ${step.screenshot.height}` }}
+          >
+            {!imageLoaded && (
+              <div className="absolute inset-0 animate-pulse motion-reduce:animate-none bg-muted/30" aria-hidden="true" />
+            )}
+            <img
+              src={step.screenshot.src}
+              alt={step.screenshot.alt}
+              width={step.screenshot.width}
+              height={step.screenshot.height}
+              loading="lazy"
+              onLoad={() => setLoadedSteps((prev) => new Set(prev).add(step.key))}
+              className={`w-full h-auto block transition-opacity motion-reduce:transition-none duration-300 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
+            />
+          </div>
+          <figcaption className="mt-2 text-xs text-muted-foreground leading-relaxed">
+            {step.screenshot.caption}
+          </figcaption>
+        </figure>
+
+        {step.continueLabel && (
+          <button
+            type="button"
+            onClick={() => handleContinue(activeIndex)}
+            className="mt-2 inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+          >
+            {step.continueLabel} →
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}

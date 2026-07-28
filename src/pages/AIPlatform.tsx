@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { DiagonalWatermark } from "@/components/ui/DiagonalWatermark";
 import { useVisitLogger } from "@/hooks/useVisitLogger";
+import { AIPlatformWalkthrough } from "@/components/ai-platform/Walkthrough";
 
 const TECH_STACK = ["TypeScript", "React", "Next.js", "Tailwind CSS", "Node test runner", "Playwright"];
 
@@ -16,26 +17,6 @@ const KEY_CAPABILITIES = [
 ];
 
 const SCREENSHOT_NOTE = "Screens shown here are from a deterministic portfolio demonstration, not live enterprise activity.";
-
-function Screenshot({
-  src, alt, caption, width, height,
-}: { src: string; alt: string; caption: string; width: number; height: number }) {
-  return (
-    <figure className="my-4">
-      <div className="rounded-xl border border-border/60 overflow-hidden bg-muted/10">
-        <img
-          src={src}
-          alt={alt}
-          width={width}
-          height={height}
-          loading="lazy"
-          className="w-full h-auto block"
-        />
-      </div>
-      <figcaption className="mt-2 text-xs text-muted-foreground leading-relaxed">{caption}</figcaption>
-    </figure>
-  );
-}
 
 function SectionHeading({ children }: { children: ReactNode }) {
   return <h2 className="text-xl font-semibold mb-3 mt-10">{children}</h2>;
@@ -73,15 +54,6 @@ export default function AIPlatform() {
             for design, testing, governance, runtime review, and decision-making.
           </p>
         </div>
-
-        <Screenshot
-          src="/images/projects/ai-platform/platform-overview.png"
-          alt="AI Platform Engineering Lab overview showing a sidebar and a grid of connected workspace modules."
-          caption="A connected map of specialist AI platform workspaces."
-          width={1440}
-          height={1000}
-        />
-        <p className="text-xs text-muted-foreground/70 italic -mt-2 mb-8">{SCREENSHOT_NOTE}</p>
 
         {/* Overview */}
         <SectionHeading>Overview</SectionHeading>
@@ -128,13 +100,6 @@ export default function AIPlatform() {
             </li>
           ))}
         </ul>
-        <Screenshot
-          src="/images/projects/ai-platform/command-center.png"
-          alt="Command Center dashboard showing platform health, active incidents, approval decisions, and operational risks."
-          caption="A command-center view connects platform operations and decision context."
-          width={1440}
-          height={1100}
-        />
 
         {/* Architecture (expandable) */}
         <div className="mt-10">
@@ -153,34 +118,15 @@ export default function AIPlatform() {
           </Accordion>
         </div>
 
-        {/* Selected workspace highlights */}
-        <SectionHeading>Selected workspace highlights</SectionHeading>
-        <p className="text-muted-foreground leading-relaxed mb-2">
-          Deterministic evaluation and policy workspaces give reviewers concrete evidence of product
-          depth beyond the platform map.
-        </p>
-        <Screenshot
-          src="/images/projects/ai-platform/evaluations-workbench.png"
-          alt="Evaluation workbench showing a prompt under test, enterprise test cases, risk labels, and scorecard criteria."
-          caption="Deterministic evaluation cases make review criteria visible before deployment decisions."
-          width={1440}
-          height={1000}
-        />
-        <Screenshot
-          src="/images/projects/ai-platform/safety-policy-engine.png"
-          alt="Safety and Policy Engine showing a selected AI asset, policy rules, control mapping, and remediation guidance."
-          caption="Policy review stays connected to assets, controls, and remediation guidance."
-          width={1440}
-          height={1000}
-        />
-
         {/* Interactive demonstration */}
         <SectionHeading>Interactive demonstration</SectionHeading>
-        <p className="text-muted-foreground leading-relaxed">
-          Use the platform overview to orient visitors, then follow one path through evaluation, policy,
-          runtime observation, and executive review. Guided walkthrough and demonstration modes provide
-          optional structure for visitors who want a deeper tour.
+        <p className="text-muted-foreground leading-relaxed mb-2">
+          Use the platform overview to orient yourself, then step through evaluation, policy, and
+          runtime review in order. Each stage unlocks the next once you've seen it — a guided tour
+          rather than an all-at-once dump of screens.
         </p>
+        <p className="text-xs text-muted-foreground/70 italic mb-5">{SCREENSHOT_NOTE}</p>
+        <AIPlatformWalkthrough />
 
         {/* Implementation notes (expandable) */}
         <div className="mt-10">
@@ -188,19 +134,12 @@ export default function AIPlatform() {
             <AccordionItem value="implementation">
               <AccordionTrigger className="text-sm font-semibold">Implementation notes</AccordionTrigger>
               <AccordionContent>
-                <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   The experience is built as a local TypeScript, React, and Next.js application with
                   deterministic fixtures and browser-based presentation state. This approach makes
                   walkthroughs repeatable and lets reviewers inspect relationships without representing
                   simulated values as live operational data.
                 </p>
-                <Screenshot
-                  src="/images/projects/ai-platform/runtime-observability.png"
-                  alt="Runtime observability view showing deterministic traces, health indicators, safety interventions, drift signals, and active incidents."
-                  caption="Runtime review brings trace signals, safety interventions, and incident context into one view."
-                  width={1440}
-                  height={1200}
-                />
               </AccordionContent>
             </AccordionItem>
           </Accordion>
