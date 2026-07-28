@@ -32,6 +32,7 @@ import CarbonRouter from "./pages/CarbonRouter";
 import WinLossIntelligence from "./pages/WinLossIntelligence";
 import ResearchLab from "./pages/ResearchLab";
 import HumanEvolution from "./pages/HumanEvolution";
+import AIPlatform from "./pages/AIPlatform";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/win-loss-intelligence":    "Win/Loss Intelligence | Preeti Builds",
   "/research-lab":             "Research & Ventures | Preeti Builds",
   "/human-evolution":          "Human Evolution in the Age of AI | Preeti Builds",
+  "/ai-platform":              "AI Platform Engineering Lab | Preeti Builds",
 };
 
 const RouteTitle = () => {
@@ -129,6 +131,7 @@ const App = () => (
             <Route path="/win-loss-intelligence" element={<WinLossIntelligence />} />
             <Route path="/research-lab" element={<ResearchLab />} />
             <Route path="/human-evolution" element={<HumanEvolution />} />
+            <Route path="/ai-platform" element={<AIPlatform />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

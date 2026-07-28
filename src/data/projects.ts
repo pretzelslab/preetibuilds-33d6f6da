@@ -59,6 +59,14 @@ export const ENTERPRISE_ASSESSMENT: Project[] = [
     locked: true,
     link: "/algorithmic-fairness",
   },
+  {
+    title: "AI Platform Engineering Lab",
+    description: "An enterprise AI platform concept made tangible through connected, inspectable workflows for design, testing, governance, runtime review, and decision-making. Deterministic, local portfolio demonstration — not a live production deployment.",
+    tags: ["TypeScript", "React", "Next.js", "Tailwind CSS", "Playwright"],
+    industries: ["Enterprise AI", "Platform Engineering", "AI Governance"],
+    status: "live",
+    link: "/ai-platform",
+  },
 ];
 
 // ── Homepage: Governance & Compliance (Section 3) ────────────────────────────
