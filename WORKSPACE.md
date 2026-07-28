@@ -2,44 +2,30 @@
 
 ## Repository purpose
 
-Isolated working repository for the AI Platform portfolio case study.
+`preetibuilds` is the production connected portfolio repository. Vercel auto-deploys from `main` on every push, so changes merged here are live changes.
 
-## Approved active working path
+## Development workflow
 
-`C:\Preeti\Personal projects\AI-Platform`
+Development should occur in isolated repositories or dedicated branches, not built directly against `main`. Work is brought into `preetibuilds` through a controlled promotion process onto a dedicated branch.
 
-## Protected source application
+## Production approval requirement
 
-`C:\Preeti\Codex\AI Platform` must not be accessed or modified.
+Production changes require validation (build, TypeScript, ESLint, responsive, and behavioral checks) and explicit approval before merge and push to `main`. Never merge or push without that explicit approval.
 
-## Protected original portfolio repository
+## Promotion branches
 
-`C:\Preeti\Personal projects\preetibuilds` must not be used for active AI Platform portfolio editing.
-
-## Active branch
-
-`preview/session-2026-07-28-ai-platform`
-
-## Required session preflight
-
-Every Claude or Codex session must verify the repository path, branch, HEAD, and worktree status before making changes.
-
-## Repository separation
-
-The AI Platform source application and the AI Platform portfolio case study are separate repositories and must never be treated as the same workspace.
+Promotion work must occur on a dedicated branch (e.g. `promotion/<feature>-<date>`), never directly on `main`.
 
 ## Portfolio Page Contract
 
-AI Platform must reuse the established portfolio project detail layout.
+AI Platform must follow established portfolio page conventions.
 
-Canonical project pages and shared components are the source of truth.
+Canonical portfolio pages and shared components define layout, typography, spacing, navigation, disclosures, technology rendering, and responsive behavior — they are the source of truth.
 
-Project specific wrappers, duplicate navigation, typography changes, disclosure treatments, and width rules require explicit approval.
+Project specific wrappers, duplicate navigation, custom disclosure treatments, typography deviations, and unrequested visual changes require explicit approval.
 
-Admin or local review mode exposes all content.
+Local development or admin mode exposes all AI Platform tabs and screenshots.
 
-Public mode controls fading, locking, and staged disclosure.
+Public production mode may apply progressive locking, fading, and staged disclosure.
 
 Every implementation handoff must compare the rendered page against at least two canonical portfolio projects.
-
-Unrequested visual enhancements are prohibited.

@@ -57,6 +57,13 @@ export default function AIPlatform() {
             An enterprise AI platform concept made tangible through connected, inspectable workflows
             for design, testing, governance, runtime review, and decision-making.
           </Prose>
+          <div className="flex flex-wrap gap-1.5 pt-3">
+            {TECH_STACK.map((t) => (
+              <span key={t} className="text-[11px] font-mono px-2 py-0.5 rounded border border-border/50 text-muted-foreground bg-muted/20">
+                {t}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Overview */}
@@ -146,16 +153,6 @@ export default function AIPlatform() {
           represent the validated demonstration state. The demonstration should not be interpreted as
           evidence of live customer usage.
         </Prose>
-
-        {/* Technology */}
-        <SectionHeading>Technology</SectionHeading>
-        <div className="flex flex-wrap gap-1.5 mb-2">
-          {TECH_STACK.map((t) => (
-            <span key={t} className="text-[11px] font-mono px-2 py-0.5 rounded border border-border/50 text-muted-foreground bg-muted/20">
-              {t}
-            </span>
-          ))}
-        </div>
 
       </div>
     </div>
