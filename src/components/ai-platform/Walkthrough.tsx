@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Check, Lock } from "lucide-react";
+import { ScreenshotStage } from "./ScreenshotStage";
+import { EvaluationsDemo } from "./EvaluationsDemo";
+import { SafetyPolicyDemo } from "./SafetyPolicyDemo";
 
 type StepKey = "overview" | "command-center" | "evaluations" | "safety-policy" | "observability";
 
@@ -8,7 +11,7 @@ interface Step {
   label: string;
   heading: string;
   blurb: string;
-  screenshot: { src: string; alt: string; caption: string; width: number; height: number };
+  screenshot?: { src: string; alt: string; caption: string; width: number; height: number };
   continueLabel: string | null;
 }
 
@@ -43,26 +46,14 @@ const STEPS: Step[] = [
     key: "evaluations",
     label: "Evaluations",
     heading: "Evaluations Workbench",
-    blurb: "Deterministic prompt evaluation cases and criteria.",
-    screenshot: {
-      src: "/images/projects/ai-platform/evaluations-workbench.png",
-      alt: "Evaluation workbench showing a prompt under test, enterprise test cases, risk labels, and scorecard criteria.",
-      caption: "Deterministic evaluation cases make review criteria visible before deployment decisions.",
-      width: 1440, height: 1000,
-    },
+    blurb: "Deterministic prompt evaluation cases and criteria — try it below.",
     continueLabel: "Continue to Safety Policy",
   },
   {
     key: "safety-policy",
     label: "Safety Policy",
     heading: "Safety & Policy Engine",
-    blurb: "Policy evaluation, control mapping, and remediation guidance.",
-    screenshot: {
-      src: "/images/projects/ai-platform/safety-policy-engine.png",
-      alt: "Safety and Policy Engine showing a selected AI asset, policy rules, control mapping, and remediation guidance.",
-      caption: "Policy review stays connected to assets, controls, and remediation guidance.",
-      width: 1440, height: 1000,
-    },
+    blurb: "Policy evaluation, control mapping, and remediation guidance — try it below.",
     continueLabel: "Continue to Observability",
   },
   {
@@ -99,7 +90,6 @@ export function AIPlatformWalkthrough() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [maxUnlocked, setMaxUnlocked] = useState(0);
   const [announcement, setAnnouncement] = useState("");
-  const [loadedSteps, setLoadedSteps] = useState<Set<StepKey>>(new Set());
   const reducedMotion = usePrefersReducedMotion();
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -148,7 +138,6 @@ export function AIPlatformWalkthrough() {
   };
 
   const step = STEPS[activeIndex];
-  const imageLoaded = loadedSteps.has(step.key);
 
   return (
     <div>
@@ -183,7 +172,7 @@ export function AIPlatformWalkthrough() {
               className={[
                 "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-opacity motion-reduce:transition-none duration-300",
                 active
-                  ? "bg-blue-500/15 border-blue-500/40 text-blue-500"
+                  ? "bg-primary/10 border-primary/40 text-primary"
                   : locked
                     ? "bg-muted/20 border-border/40 text-muted-foreground cursor-not-allowed"
                     : "bg-muted/10 border-border/60 text-foreground hover:border-border cursor-pointer",
@@ -198,44 +187,34 @@ export function AIPlatformWalkthrough() {
       </div>
 
       <div
+        key={step.key}
         ref={panelRef}
         role="tabpanel"
         id={`ai-platform-panel-${step.key}`}
         aria-labelledby={`ai-platform-tab-${step.key}`}
         tabIndex={-1}
-        className="focus:outline-none"
+        className="focus:outline-none animate-in fade-in slide-in-from-bottom-1 duration-300 motion-reduce:animate-none"
       >
         <h3 className="text-base font-semibold mb-1">{step.heading}</h3>
         <p className="text-sm text-muted-foreground leading-relaxed mb-3">{step.blurb}</p>
 
-        <figure className="my-2">
-          <div
-            className="relative rounded-xl border border-border/60 overflow-hidden bg-muted/10"
-            style={{ aspectRatio: `${step.screenshot.width} / ${step.screenshot.height}` }}
-          >
-            {!imageLoaded && (
-              <div className="absolute inset-0 animate-pulse motion-reduce:animate-none bg-muted/30" aria-hidden="true" />
-            )}
-            <img
-              src={step.screenshot.src}
-              alt={step.screenshot.alt}
-              width={step.screenshot.width}
-              height={step.screenshot.height}
-              loading="lazy"
-              onLoad={() => setLoadedSteps((prev) => new Set(prev).add(step.key))}
-              className={`w-full h-auto block transition-opacity motion-reduce:transition-none duration-300 ${imageLoaded ? "opacity-100" : "opacity-0"}`}
-            />
-          </div>
-          <figcaption className="mt-2 text-xs text-muted-foreground leading-relaxed">
-            {step.screenshot.caption}
-          </figcaption>
-        </figure>
+        {step.screenshot && (
+          <ScreenshotStage
+            src={step.screenshot.src}
+            alt={step.screenshot.alt}
+            caption={step.screenshot.caption}
+            width={step.screenshot.width}
+            height={step.screenshot.height}
+          />
+        )}
+        {step.key === "evaluations" && <EvaluationsDemo />}
+        {step.key === "safety-policy" && <SafetyPolicyDemo />}
 
         {step.continueLabel && (
           <button
             type="button"
             onClick={() => handleContinue(activeIndex)}
-            className="mt-2 inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+            className="mt-4 inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             {step.continueLabel} →
           </button>
