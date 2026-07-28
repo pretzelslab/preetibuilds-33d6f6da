@@ -6,7 +6,7 @@ import { DiagonalWatermark } from "@/components/ui/DiagonalWatermark";
 import { useVisitLogger } from "@/hooks/useVisitLogger";
 import { AIPlatformWalkthrough } from "@/components/ai-platform/Walkthrough";
 
-const TECH_STACK = ["TypeScript", "React", "Next.js", "Tailwind CSS", "Node test runner", "Playwright"];
+const TECH_STACK = ["TypeScript", "React", "Vite", "Tailwind CSS", "Vitest"];
 
 const KEY_CAPABILITIES = [
   "Explore registered AI workspaces and the relationships between them.",
@@ -23,7 +23,7 @@ function SectionHeading({ children }: { children: ReactNode }) {
 }
 
 function Prose({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <p className={`text-sm text-muted-foreground leading-relaxed max-w-2xl ${className}`}>{children}</p>;
+  return <p className={`text-sm text-muted-foreground leading-relaxed ${className}`}>{children}</p>;
 }
 
 export default function AIPlatform() {
@@ -49,11 +49,11 @@ export default function AIPlatform() {
             Portfolio Case Study · Enterprise AI Platform
           </div>
           <h1 className="text-3xl font-bold tracking-tight mb-3">AI Platform Engineering Lab</h1>
-          <p className="text-lg text-foreground/90 leading-relaxed mb-3 max-w-2xl">
+          <p className="text-lg text-foreground/90 leading-relaxed mb-3 max-w-3xl">
             A deterministic interactive demonstration connecting AI design, evaluation, governance,
             operations, evidence, and executive decision workflows.
           </p>
-          <Prose>
+          <Prose className="max-w-3xl">
             An enterprise AI platform concept made tangible through connected, inspectable workflows
             for design, testing, governance, runtime review, and decision-making.
           </Prose>
@@ -96,7 +96,7 @@ export default function AIPlatform() {
           reviewers explore how platform engineering, governance, operations, and leadership decisions
           can fit together.
         </Prose>
-        <ul className="space-y-2 mb-2 max-w-2xl">
+        <ul className="space-y-2 mb-2">
           {KEY_CAPABILITIES.map((c) => (
             <li key={c} className="flex items-start gap-2 text-sm text-muted-foreground leading-relaxed">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500/60 shrink-0 mt-1.5" />
@@ -111,7 +111,7 @@ export default function AIPlatform() {
             <AccordionItem value="architecture">
               <AccordionTrigger className="text-sm font-semibold">Architecture &amp; system design</AccordionTrigger>
               <AccordionContent>
-                <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   The application uses a shared shell and validated registries to compose specialist
                   workspaces. Domain-specific records preserve the meaning of evaluations, policies,
                   evidence, approvals, incidents, and decisions, while explicit URLs and metadata make
@@ -134,43 +134,27 @@ export default function AIPlatform() {
 
         {/* Limitations and disclosures */}
         <SectionHeading>Limitations &amp; disclosures</SectionHeading>
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/[0.04] p-5 max-w-2xl">
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
-            Scope &amp; data disclosure
-          </p>
-          <p className="text-sm text-foreground/90 leading-relaxed">
-            This project is a portfolio demonstration built with deterministic, simulated data. Its
-            workflows demonstrate enterprise AI platform concepts across design, evaluation, governance,
-            operations, evidence, and decisions. It is not connected to live enterprise systems and is
-            not presented as a deployed production SaaS platform. Validation evidence applies to frozen
-            source baseline <code className="font-mono text-xs">25fc287f</code>, and the screenshots
-            represent the validated demonstration state. The demonstration should not be interpreted as
-            evidence of live customer usage.
-          </p>
-        </div>
+        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+          Scope &amp; data disclosure
+        </p>
+        <Prose>
+          This project is a portfolio demonstration built with deterministic, simulated data. Its
+          workflows demonstrate enterprise AI platform concepts across design, evaluation, governance,
+          operations, evidence, and decisions. It is not connected to live enterprise systems and is
+          not presented as a deployed production SaaS platform. Validation evidence applies to frozen
+          source baseline <code className="font-mono text-xs">25fc287f</code>, and the screenshots
+          represent the validated demonstration state. The demonstration should not be interpreted as
+          evidence of live customer usage.
+        </Prose>
 
         {/* Technology */}
         <SectionHeading>Technology</SectionHeading>
         <div className="flex flex-wrap gap-1.5 mb-2">
           {TECH_STACK.map((t) => (
-            <span key={t} className="text-[10px] font-mono text-slate-500 dark:text-blue-300/60 bg-slate-500/8 dark:bg-blue-500/8 border border-slate-400/15 dark:border-blue-400/20 px-2 py-0.5 rounded">
+            <span key={t} className="text-[11px] font-mono px-2 py-0.5 rounded border border-border/50 text-muted-foreground bg-muted/20">
               {t}
             </span>
           ))}
-        </div>
-
-        {/* CTA */}
-        <div className="mt-12 rounded-xl border border-border/60 bg-muted/10 p-6 text-center">
-          <p className="text-sm text-foreground/90 leading-relaxed mb-4 max-w-2xl mx-auto">
-            Explore the workflows to see how a deterministic platform demonstration can make AI delivery,
-            governance, and operational context more concrete.
-          </p>
-          <Link
-            to="/#projects"
-            className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors no-underline"
-          >
-            ← Back to Portfolio
-          </Link>
         </div>
 
       </div>

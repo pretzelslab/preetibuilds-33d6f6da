@@ -6,15 +6,17 @@ interface ScreenshotStageProps {
   caption: string;
   width: number;
   height: number;
+  startRevealed?: boolean;
 }
 
 // Presents a white application screenshot inside a dark, charcoal "device stage"
 // so it doesn't glare against the portfolio's dark theme. Dimmed by default;
 // clears on hover, keyboard focus, or the explicit "View details" toggle —
-// never falls back to raw full-brightness white-on-black.
-export function ScreenshotStage({ src, alt, caption, width, height }: ScreenshotStageProps) {
+// never falls back to raw full-brightness white-on-black. In admin/local review
+// mode, startRevealed skips the dimming so nothing is hidden by default.
+export function ScreenshotStage({ src, alt, caption, width, height, startRevealed = false }: ScreenshotStageProps) {
   const [loaded, setLoaded] = useState(false);
-  const [revealed, setRevealed] = useState(false);
+  const [revealed, setRevealed] = useState(startRevealed);
 
   return (
     <figure className="my-2">

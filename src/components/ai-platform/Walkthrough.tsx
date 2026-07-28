@@ -74,6 +74,10 @@ const STEPS: Step[] = [
 // Progressive fade for locked tabs — floor kept high enough to stay legible.
 const LOCK_OPACITY = [0.6, 0.45, 0.35, 0.3];
 
+// Admin/local review mode: same convention used by PageGate.tsx and Tracker.tsx —
+// the local dev server exposes everything with no progressive locking or fading.
+const isAdmin = import.meta.env.DEV;
+
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
   useEffect(() => {
@@ -86,13 +90,35 @@ function usePrefersReducedMotion() {
   return reduced;
 }
 
+function stepIndexFromHash(): number | null {
+  const key = window.location.hash.replace("#", "").trim();
+  if (!key) return null;
+  const index = STEPS.findIndex((s) => s.key === key);
+  return index === -1 ? null : index;
+}
+
 export function AIPlatformWalkthrough() {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [maxUnlocked, setMaxUnlocked] = useState(0);
+  const [maxUnlocked, setMaxUnlocked] = useState(isAdmin ? STEPS.length - 1 : 0);
   const [announcement, setAnnouncement] = useState("");
   const reducedMotion = usePrefersReducedMotion();
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const panelRef = useRef<HTMLDivElement | null>(null);
+  const maxUnlockedRef = useRef(maxUnlocked);
+  maxUnlockedRef.current = maxUnlocked;
+
+  // URL hashes can open any stage in admin mode; in public mode a hash can only
+  // jump to a stage that's already unlocked — it never bypasses progressive locking.
+  useEffect(() => {
+    const openFromHash = () => {
+      const index = stepIndexFromHash();
+      if (index === null) return;
+      setActiveIndex(isAdmin ? index : Math.min(index, maxUnlockedRef.current));
+    };
+    openFromHash();
+    window.addEventListener("hashchange", openFromHash);
+    return () => window.removeEventListener("hashchange", openFromHash);
+  }, []);
 
   const scrollAndFocusPanel = () => {
     requestAnimationFrame(() => {
@@ -205,6 +231,7 @@ export function AIPlatformWalkthrough() {
             caption={step.screenshot.caption}
             width={step.screenshot.width}
             height={step.screenshot.height}
+            startRevealed={isAdmin}
           />
         )}
         {step.key === "evaluations" && <EvaluationsDemo />}
