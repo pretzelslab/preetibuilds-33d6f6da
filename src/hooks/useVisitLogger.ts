@@ -3,16 +3,22 @@ import { govDb } from "@/lib/supabase-governance";
 
 const OWNER_KEY = "pl_session_access";
 
-async function getLocation(): Promise<{ city: string | null; country: string | null }> {
+// Approximate city/region/country from Vercel's own edge geolocation headers
+// (read server-side in api/geo.ts) — no browser location permission, no
+// third-party lookup, no IP address stored. Resolves to nulls wherever the
+// headers aren't present (local dev, non-Vercel hosting, or a lookup failure).
+async function getLocation(): Promise<{ city: string | null; region: string | null; country: string | null }> {
   try {
-    const res = await fetch("https://ipapi.co/json/", { signal: AbortSignal.timeout(4000) });
+    const res = await fetch("/api/geo", { signal: AbortSignal.timeout(4000) });
+    if (!res.ok) throw new Error("geo lookup failed");
     const data = await res.json();
     return {
       city: data.city || null,
-      country: data.country_name || null,
+      region: data.region || null,
+      country: data.country || null,
     };
   } catch {
-    return { city: null, country: null };
+    return { city: null, region: null, country: null };
   }
 }
 
@@ -42,12 +48,13 @@ export function useVisitLogger(page: string) {
       return;
     }
 
-    getLocation().then(({ city, country }) => {
+    getLocation().then(({ city, region, country }) => {
       govDb.from("visit_logs").insert({
         page,
         referrer: getSource(),
         user_agent: navigator.userAgent || null,
         city,
+        region,
         country,
       }).then(() => {
         sessionStorage.setItem(sessionKey, "1");
