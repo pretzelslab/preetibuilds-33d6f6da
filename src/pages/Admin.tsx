@@ -23,6 +23,7 @@ interface Visit {
   city: string | null;
   region: string | null;
   country: string | null;
+  is_test: boolean;
 }
 
 // City takes priority, country is the fallback, "Unknown" when neither is captured.
@@ -1076,6 +1077,7 @@ export default function Admin() {
     govDb
       .from("visit_logs")
       .select("*")
+      .eq("is_test", false)
       .order("visited_at", { ascending: false })
       .limit(200)
       .then(({ data }) => {
@@ -1116,6 +1118,7 @@ export default function Admin() {
     govDb
       .from("visit_logs")
       .select("*", { count: "exact" })
+      .eq("is_test", false)
       .order("visited_at", { ascending: false })
       .order("id", { ascending: false })
       .range(from, to)
