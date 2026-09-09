@@ -1054,6 +1054,7 @@ export default function Admin() {
   const [recentVisits, setRecentVisits] = useState<Visit[]>([]);
   const [recentTotal, setRecentTotal] = useState(0);
   const [recentLoading, setRecentLoading] = useState(true);
+  const [recentError, setRecentError] = useState<string | null>(null);
 
   // Mark this browser as owner (suppresses self-visit logging in useVisitLogger)
   // only once actually unlocked — otherwise any anonymous visitor who merely
@@ -1118,8 +1119,14 @@ export default function Admin() {
       .order("visited_at", { ascending: false })
       .order("id", { ascending: false })
       .range(from, to)
-      .then(({ data, count }) => {
+      .then(({ data, count, error }) => {
         if (cancelled) return;
+        if (error) {
+          setRecentError(error.message);
+          setRecentLoading(false);
+          return;
+        }
+        setRecentError(null);
         setRecentVisits((data ?? []) as Visit[]);
         setRecentTotal(count ?? 0);
         setRecentLoading(false);
@@ -1203,7 +1210,9 @@ export default function Admin() {
       <div className="grid grid-cols-2 gap-x-4 gap-y-3">
         <div>
           <p className="text-[10px] text-muted-foreground mb-0.5">Total visits</p>
-          <p className="text-xl font-bold leading-none">{visits.length}</p>
+          <p className="text-xl font-bold leading-none">
+            {recentLoading ? "…" : recentError ? "—" : recentTotal}
+          </p>
         </div>
         <div>
           <p className="text-[10px] text-muted-foreground mb-0.5">Top source</p>
@@ -1218,11 +1227,17 @@ export default function Admin() {
           <p className="text-xl font-bold leading-none">{new Set(visits.map(v => v.page)).size}</p>
         </div>
       </div>
+      <p className="text-[9px] text-muted-foreground/50 -mt-1">
+        Total visits is an exact count. Top source, Mobile, and Pages are based on the latest 200 visits only.
+      </p>
+      {recentError && (
+        <p className="text-[9px] text-rose-500/80 -mt-1">Total visits failed to load: {recentError}</p>
+      )}
 
       {/* 7-day chart */}
       {visits.length > 0 && (
         <div>
-          <p className="text-[10px] font-semibold mb-2 text-muted-foreground uppercase tracking-wide">Last 7 days</p>
+          <p className="text-[10px] font-semibold mb-2 text-muted-foreground uppercase tracking-wide">Last 7 days · latest 200</p>
           <ResponsiveContainer width="100%" height={80}>
             <BarChart data={chartData} barSize={14} margin={{ top: 0, right: 0, left: -32, bottom: 0 }}>
               <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
