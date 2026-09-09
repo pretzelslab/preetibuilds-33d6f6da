@@ -28,14 +28,22 @@ const PAGE_CODES: Record<string, string> = {
 
 function pageKey(key: string): string { return `pl_access_${key}`; }
 
+// localStorage writes don't trigger a re-render in other components (and the
+// native `storage` event only fires in *other* tabs, not this one) — without
+// this, useGateUnlocked() would return whatever it read on first render and
+// never update, even after the user actually unlocks.
+const GATE_CHANGE_EVENT = "pagegate:change";
+
 function safeGet(key: string): string | null {
   try { return localStorage.getItem(key); } catch { return null; }
 }
 function safeSet(key: string, value: string): void {
   try { localStorage.setItem(key, value); } catch {}
+  window.dispatchEvent(new Event(GATE_CHANGE_EVENT));
 }
 function safeRemove(key: string): void {
   try { localStorage.removeItem(key); } catch {}
+  window.dispatchEvent(new Event(GATE_CHANGE_EVENT));
 }
 
 function isUnlocked(page: string): boolean {
@@ -55,8 +63,16 @@ export function PreviewShell({ children }: { children: ReactNode }) {
 // Pass the same pageId used in <PageGate pageId="..."> to check that specific page.
 // No arg = check master key only.
 export function useGateUnlocked(pageId = ""): boolean {
-  if (pageId) return isUnlocked(pageId);
-  return safeGet(MASTER_KEY) === "1";
+  const check = () => (pageId ? isUnlocked(pageId) : safeGet(MASTER_KEY) === "1");
+  const [unlocked, setUnlocked] = useState(check);
+  useEffect(() => {
+    const onChange = () => setUnlocked(check());
+    onChange();
+    window.addEventListener(GATE_CHANGE_EVENT, onChange);
+    return () => window.removeEventListener(GATE_CHANGE_EVENT, onChange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageId]);
+  return unlocked;
 }
 
 // ── PageGate ───────────────────────────────────────────────────────────────────
