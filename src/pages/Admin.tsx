@@ -23,8 +23,16 @@ interface Visit {
   city: string | null;
   region: string | null;
   country: string | null;
-  is_test: boolean;
 }
+
+// Confirmed diagnostic/test rows from the 2026-09-08/09 geo-access verification
+// work. Excluded by id (not an `is_test` column — the live schema has none)
+// so they stay in the DB per the no-deletion instruction while disappearing
+// from every analytics surface that reads these two queries.
+const EXCLUDED_VISIT_IDS = [
+  "3bd1759f-d5bc-4e24-8ebf-8349f8a67bcf",
+  "bcefab34-ed23-49d9-af04-0abb2be74deb",
+];
 
 // City takes priority, country is the fallback, "Unknown" when neither is captured.
 // Historical rows logged before geolocation existed simply have both fields null.
@@ -1077,7 +1085,7 @@ export default function Admin() {
     govDb
       .from("visit_logs")
       .select("*")
-      .eq("is_test", false)
+      .not("id", "in", `(${EXCLUDED_VISIT_IDS.join(",")})`)
       .order("visited_at", { ascending: false })
       .limit(200)
       .then(({ data }) => {
@@ -1118,7 +1126,7 @@ export default function Admin() {
     govDb
       .from("visit_logs")
       .select("*", { count: "exact" })
-      .eq("is_test", false)
+      .not("id", "in", `(${EXCLUDED_VISIT_IDS.join(",")})`)
       .order("visited_at", { ascending: false })
       .order("id", { ascending: false })
       .range(from, to)
