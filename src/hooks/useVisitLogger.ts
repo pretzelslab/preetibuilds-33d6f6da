@@ -56,8 +56,12 @@ export function useVisitLogger(page: string) {
         city,
         region,
         country,
-      }).then(() => {
+      }).then(({ error }) => {
+        // Mark the page as logged for this session either way — a retry on
+        // next reload can't distinguish "failed" from "already recorded" and
+        // would risk duplicate rows once the underlying issue is fixed.
         sessionStorage.setItem(sessionKey, "1");
+        if (error) console.error("[visit_logs insert failed]", error.message);
       });
     });
   }, [page]);
