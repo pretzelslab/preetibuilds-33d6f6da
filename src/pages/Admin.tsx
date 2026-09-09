@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { govDb } from "@/lib/supabase-governance";
 import { PageGate } from "@/components/ui/PageGate";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   getCustomGPUs, saveCustomGPUs,
   getCustomRegions, saveCustomRegions,
@@ -19,7 +21,17 @@ interface Visit {
   user_agent: string | null;
   visited_at: string;
   city: string | null;
+  region: string | null;
   country: string | null;
+}
+
+// City takes priority, country is the fallback, "Unknown" when neither is captured.
+// Historical rows logged before geolocation existed simply have both fields null.
+function formatLocation(v: Pick<Visit, "city" | "country">): string {
+  if (v.city && v.country) return `${v.city}, ${v.country}`;
+  if (v.city) return v.city;
+  if (v.country) return v.country;
+  return "Unknown";
 }
 
 function parseSource(referrer: string | null): string {
@@ -1026,9 +1038,17 @@ export default function Admin() {
   const [newCount, setNewCount] = useState(0);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [hideSelfReferrals, setHideSelfReferrals] = useState(false);
-  const [visitsPage, setVisitsPage] = useState(1);
   const [visitLogOpen, setVisitLogOpen] = useState(false);
+  const isMobile = useIsMobile();
   const PAGE_SIZE = 10;
+
+  // Recent visits — independently paginated (server-side range + exact count)
+  // so pagination covers every stored row, not just the capped 200-row fetch
+  // used for the stats/chart above.
+  const [recentPage, setRecentPage] = useState(1);
+  const [recentVisits, setRecentVisits] = useState<Visit[]>([]);
+  const [recentTotal, setRecentTotal] = useState(0);
+  const [recentLoading, setRecentLoading] = useState(true);
 
   // Admin page only renders when PageGate is unlocked — mark as owner to suppress self-visit logging
   useEffect(() => {
@@ -1072,6 +1092,30 @@ export default function Admin() {
       });
   }, []);
 
+  // Recent visits pagination — fetches exactly one page (10 rows) plus an
+  // exact total count, so Previous/Next always reflects every stored visit.
+  // Secondary order on `id` breaks ties when two visits share a timestamp,
+  // keeping page boundaries stable across navigation.
+  useEffect(() => {
+    let cancelled = false;
+    setRecentLoading(true);
+    const from = (recentPage - 1) * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    govDb
+      .from("visit_logs")
+      .select("*", { count: "exact" })
+      .order("visited_at", { ascending: false })
+      .order("id", { ascending: false })
+      .range(from, to)
+      .then(({ data, count }) => {
+        if (cancelled) return;
+        setRecentVisits((data ?? []) as Visit[]);
+        setRecentTotal(count ?? 0);
+        setRecentLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [recentPage]);
+
   function markSeen() {
     try { localStorage.setItem(LAST_SEEN_KEY, String(visits.length)); } catch {}
     setNewCount(0);
@@ -1106,8 +1150,10 @@ export default function Admin() {
     .filter(v => filter === "all" || v.page === filter)
     .filter(v => !hideSelfReferrals || !isSelfReferral(v));
 
-  const pagedVisits = filtered.slice(0, visitsPage * PAGE_SIZE);
-  const hasMore = filtered.length > visitsPage * PAGE_SIZE;
+  // Recent visits pagination — derived from the exact server-side count above.
+  const recentTotalPages = Math.max(1, Math.ceil(recentTotal / PAGE_SIZE));
+  const recentRangeStart = recentTotal === 0 ? 0 : (recentPage - 1) * PAGE_SIZE + 1;
+  const recentRangeEnd = Math.min(recentPage * PAGE_SIZE, recentTotal);
 
   const sourceCounts = visits.reduce<Record<string, number>>((acc, v) => {
     const s = parseSource(v.referrer);
@@ -1138,6 +1184,132 @@ export default function Admin() {
       <span style={{ fontSize: 32 }}>🔒</span>
       <span style={{ fontSize: 13, fontFamily: "monospace", color: "hsl(var(--muted-foreground))" }}>Admin · Restricted</span>
     </div>
+  );
+
+  const sidebarContent = (
+    <>
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+        <div>
+          <p className="text-[10px] text-muted-foreground mb-0.5">Total visits</p>
+          <p className="text-xl font-bold leading-none">{visits.length}</p>
+        </div>
+        <div>
+          <p className="text-[10px] text-muted-foreground mb-0.5">Top source</p>
+          <p className="text-sm font-bold leading-none">{Object.entries(sourceCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—"}</p>
+        </div>
+        <div>
+          <p className="text-[10px] text-muted-foreground mb-0.5">Mobile</p>
+          <p className="text-xl font-bold leading-none">{visits.filter(v => parseDevice(v.user_agent) === "Mobile").length}</p>
+        </div>
+        <div>
+          <p className="text-[10px] text-muted-foreground mb-0.5">Pages</p>
+          <p className="text-xl font-bold leading-none">{new Set(visits.map(v => v.page)).size}</p>
+        </div>
+      </div>
+
+      {/* 7-day chart */}
+      {visits.length > 0 && (
+        <div>
+          <p className="text-[10px] font-semibold mb-2 text-muted-foreground uppercase tracking-wide">Last 7 days</p>
+          <ResponsiveContainer width="100%" height={80}>
+            <BarChart data={chartData} barSize={14} margin={{ top: 0, right: 0, left: -32, bottom: 0 }}>
+              <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} allowDecimals={false} />
+              <Tooltip content={<ChartTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }} />
+              <Bar dataKey="visits" radius={[3, 3, 0, 0]}>
+                {chartData.map((entry, i) => (
+                  <Cell key={i} fill={entry.visits > 0 ? "hsl(var(--primary))" : "hsl(var(--muted))"} opacity={entry.visits > 0 ? 0.85 : 0.25} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Recent visits — paginated, 10 per page, newest first */}
+      <div>
+        <p className="text-[10px] font-semibold mb-2 text-muted-foreground uppercase tracking-wide">Recent visits</p>
+        {recentLoading ? (
+          <p className="text-[10px] text-muted-foreground/50">Loading…</p>
+        ) : recentTotal === 0 ? (
+          <p className="text-[10px] text-muted-foreground/50">No visits yet.</p>
+        ) : (
+          <>
+            <div className="space-y-1">
+              {recentVisits.map(v => {
+                const pageName = PAGE_LABELS[v.page] ?? v.page;
+                const location = formatLocation(v);
+                return (
+                  <div key={v.id} className="flex items-center gap-1 text-[10px] min-w-0">
+                    <span className="text-foreground/65 whitespace-nowrap shrink-0 font-mono">{timeAgo(v.visited_at)}</span>
+                    <span className="text-muted-foreground/40 shrink-0">·</span>
+                    <span className="font-medium text-foreground/85 truncate flex-1 min-w-0" title={pageName}>{pageName}</span>
+                    <span className="text-muted-foreground/40 shrink-0">·</span>
+                    <span className="text-foreground/60 whitespace-nowrap shrink-0">{location}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/30">
+              <button
+                onClick={() => setRecentPage(p => Math.max(1, p - 1))}
+                disabled={recentPage <= 1}
+                className="text-[10px] font-medium px-1.5 py-0.5 rounded border border-border/40 text-muted-foreground hover:text-foreground hover:border-blue-500/30 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-muted-foreground disabled:hover:border-border/40 transition-colors"
+              >
+                ← Prev
+              </button>
+              <span className="text-[9px] text-muted-foreground/60 font-mono">
+                {recentRangeStart}–{recentRangeEnd} of {recentTotal}
+              </span>
+              <button
+                onClick={() => setRecentPage(p => Math.min(recentTotalPages, p + 1))}
+                disabled={recentPage >= recentTotalPages}
+                className="text-[10px] font-medium px-1.5 py-0.5 rounded border border-border/40 text-muted-foreground hover:text-foreground hover:border-blue-500/30 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-muted-foreground disabled:hover:border-border/40 transition-colors"
+              >
+                Next →
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Access codes */}
+      <div>
+        <p className="text-[10px] font-semibold mb-2 text-muted-foreground uppercase tracking-wide">Access codes</p>
+        <div className="space-y-1">
+          {[
+            { page: "Master (all pages)", code: "PRL2026", master: true },
+            { page: "Research",           code: "RSC2026" },
+            { page: "Carbon Depth",       code: "CDX2026" },
+            { page: "AI Readiness",       code: "ARD2026" },
+            { page: "Fairness Auditor",   code: "FAR2026" },
+            { page: "Carbon-Fairness",    code: "CFR2026" },
+            { page: "Client Discovery",   code: "CLN2026" },
+            { page: "Sustainability Fwk", code: "SFW2026" },
+            { page: "AI Webinar",         code: "WBN2026" },
+            { page: "Privacy Auditor",    code: "PRI2026" },
+            { page: "LLM Safety Eval",    code: "SE1" },
+            { page: "Carbon Time Travel", code: "CTT2026" },
+            { page: "Melodic",            code: "MEL2026" },
+            { page: "Admin",              code: "ADM2026" },
+          ].map(({ page, code, master }) => (
+            <div key={code} className="flex items-center justify-between gap-1">
+              <span className={`text-[10px] truncate ${master ? "text-blue-500 dark:text-blue-400 font-medium" : "text-muted-foreground"}`}>{page}</span>
+              <button
+                onClick={() => navigator.clipboard.writeText(code)}
+                className={`font-mono text-[9px] px-1 py-0.5 rounded border transition-colors shrink-0 ${master ? "border-blue-500/30 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20" : "border-border/40 bg-muted/30 text-foreground hover:border-blue-500/30 hover:text-blue-500"}`}
+                title="Copy"
+              >{code}</button>
+            </div>
+          ))}
+        </div>
+        <p className="text-[9px] text-muted-foreground/30 mt-2">Click to copy</p>
+      </div>
+
+      {/* Carbon Data Manager */}
+      <CarbonDataManager />
+    </>
   );
 
   return (
@@ -1171,120 +1343,28 @@ export default function Admin() {
           </div>
         )}
 
-        {/* ── Main grid: 3/4 backlog | 1/4 sidebar ─────────────────────────── */}
-        <div className="grid grid-cols-4 items-start">
-
-          {/* LEFT 3/4 — Project Backlog table */}
-          <div className="col-span-3 pr-6">
+        {/* ── Main layout: backlog | draggable divider | analytics sidebar ─── */}
+        {isMobile ? (
+          // Narrow screens: stack full-width, no drag handle, no sticky sidebar.
+          <div className="flex flex-col gap-8">
             <BacklogViewer />
+            <div className="space-y-6 border-t border-border/60 pt-6">
+              {sidebarContent}
+            </div>
           </div>
-
-          {/* RIGHT 1/4 — Analytics sidebar */}
-          <div className="col-span-1 space-y-6 sticky top-16 self-start border-l border-border/60 pl-6">
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-              <div>
-                <p className="text-[10px] text-muted-foreground mb-0.5">Total visits</p>
-                <p className="text-xl font-bold leading-none">{visits.length}</p>
+        ) : (
+          <ResizablePanelGroup direction="horizontal" autoSaveId="admin-analytics-layout">
+            <ResizablePanel defaultSize={75} minSize={50} className="pr-6">
+              <BacklogViewer />
+            </ResizablePanel>
+            <ResizableHandle withHandle className="cursor-col-resize mx-0" />
+            <ResizablePanel defaultSize={25} minSize={15} maxSize={45} className="pl-6">
+              <div className="space-y-6 sticky top-16 self-start">
+                {sidebarContent}
               </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground mb-0.5">Top source</p>
-                <p className="text-sm font-bold leading-none">{Object.entries(sourceCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—"}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground mb-0.5">Mobile</p>
-                <p className="text-xl font-bold leading-none">{visits.filter(v => parseDevice(v.user_agent) === "Mobile").length}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground mb-0.5">Pages</p>
-                <p className="text-xl font-bold leading-none">{new Set(visits.map(v => v.page)).size}</p>
-              </div>
-            </div>
-
-            {/* 7-day chart */}
-            {visits.length > 0 && (
-              <div>
-                <p className="text-[10px] font-semibold mb-2 text-muted-foreground uppercase tracking-wide">Last 7 days</p>
-                <ResponsiveContainer width="100%" height={80}>
-                  <BarChart data={chartData} barSize={14} margin={{ top: 0, right: 0, left: -32, bottom: 0 }}>
-                    <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} allowDecimals={false} />
-                    <Tooltip content={<ChartTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }} />
-                    <Bar dataKey="visits" radius={[3, 3, 0, 0]}>
-                      {chartData.map((entry, i) => (
-                        <Cell key={i} fill={entry.visits > 0 ? "hsl(var(--primary))" : "hsl(var(--muted))"} opacity={entry.visits > 0 ? 0.85 : 0.25} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-
-            {/* Recent visits — compact */}
-            <div>
-              <p className="text-[10px] font-semibold mb-2 text-muted-foreground uppercase tracking-wide">Recent visits</p>
-              {loading ? (
-                <p className="text-[10px] text-muted-foreground/50">Loading…</p>
-              ) : visits.length === 0 ? (
-                <p className="text-[10px] text-muted-foreground/50">No visits yet.</p>
-              ) : (
-                <div className="space-y-1">
-                  {visits.slice(0, 10).map(v => {
-                    const pageName = PAGE_LABELS[v.page] ?? v.page;
-                    const location = v.city ?? v.country ?? "—";
-                    return (
-                      <div key={v.id} className="flex items-center gap-1 text-[10px] min-w-0">
-                        <span className="text-foreground/65 whitespace-nowrap shrink-0 font-mono">{timeAgo(v.visited_at)}</span>
-                        <span className="text-muted-foreground/40 shrink-0">·</span>
-                        <span className="font-medium text-foreground/85 truncate flex-1 min-w-0" title={pageName}>{pageName}</span>
-                        <span className="text-muted-foreground/40 shrink-0">·</span>
-                        <span className="text-foreground/60 whitespace-nowrap shrink-0">{location}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Access codes */}
-            <div>
-              <p className="text-[10px] font-semibold mb-2 text-muted-foreground uppercase tracking-wide">Access codes</p>
-              <div className="space-y-1">
-                {[
-                  { page: "Master (all pages)", code: "PRL2026", master: true },
-                  { page: "Research",           code: "RSC2026" },
-                  { page: "Carbon Depth",       code: "CDX2026" },
-                  { page: "AI Readiness",       code: "ARD2026" },
-                  { page: "Fairness Auditor",   code: "FAR2026" },
-                  { page: "Carbon-Fairness",    code: "CFR2026" },
-                  { page: "Client Discovery",   code: "CLN2026" },
-                  { page: "Sustainability Fwk", code: "SFW2026" },
-                  { page: "AI Webinar",         code: "WBN2026" },
-                  { page: "Privacy Auditor",    code: "PRI2026" },
-                  { page: "LLM Safety Eval",    code: "SE1" },
-                  { page: "Carbon Time Travel", code: "CTT2026" },
-                  { page: "Melodic",            code: "MEL2026" },
-                  { page: "Admin",              code: "ADM2026" },
-                ].map(({ page, code, master }) => (
-                  <div key={code} className="flex items-center justify-between gap-1">
-                    <span className={`text-[10px] truncate ${master ? "text-blue-500 dark:text-blue-400 font-medium" : "text-muted-foreground"}`}>{page}</span>
-                    <button
-                      onClick={() => navigator.clipboard.writeText(code)}
-                      className={`font-mono text-[9px] px-1 py-0.5 rounded border transition-colors shrink-0 ${master ? "border-blue-500/30 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20" : "border-border/40 bg-muted/30 text-foreground hover:border-blue-500/30 hover:text-blue-500"}`}
-                      title="Copy"
-                    >{code}</button>
-                  </div>
-                ))}
-              </div>
-              <p className="text-[9px] text-muted-foreground/30 mt-2">Click to copy</p>
-            </div>
-
-            {/* Carbon Data Manager */}
-            <CarbonDataManager />
-
-          </div>{/* end sidebar */}
-        </div>{/* end grid */}
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        )}
 
       </div>
     </div>
