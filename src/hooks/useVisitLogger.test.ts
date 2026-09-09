@@ -22,6 +22,27 @@ function mockGeoFetch(ok: boolean, body?: Record<string, unknown>) {
   );
 }
 
+// Unlike mockGeoFetch(false), which rejects immediately, this never resolves
+// on its own — it only rejects once the request's AbortSignal actually fires,
+// so the timeout test below exercises the real 4000ms bound via fake timers
+// instead of assuming the abort happens.
+function mockGeoFetchHangsUntilAborted() {
+  global.fetch = vi.fn().mockImplementation((_url: string, opts: { signal: AbortSignal }) =>
+    new Promise((_resolve, reject) => {
+      opts.signal.addEventListener("abort", () =>
+        reject(new DOMException("The operation was aborted.", "AbortError"))
+      );
+    })
+  );
+}
+
+function mockInsertSequence(results: Array<{ error: { message: string } | null }>) {
+  const insert = vi.fn();
+  for (const r of results) insert.mockResolvedValueOnce(r);
+  (govDb.from as ReturnType<typeof vi.fn>).mockReturnValue({ insert });
+  return insert;
+}
+
 describe("logVisit", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -83,5 +104,38 @@ describe("logVisit", () => {
     expect(insert).toHaveBeenCalledWith(
       expect.objectContaining({ page: "page-geo-fail", city: null, region: null, country: null })
     );
+  });
+
+  it("still records the visit once the geolocation request actually hits its 4000ms timeout", async () => {
+    vi.useFakeTimers();
+    mockGeoFetchHangsUntilAborted();
+    const insert = mockInsert({ error: null });
+
+    const resultPromise = logVisit("page-real-timeout");
+    await vi.advanceTimersByTimeAsync(4000);
+    const result = await resultPromise;
+
+    expect(result).toBe(true);
+    expect(insert).toHaveBeenCalledWith(
+      expect.objectContaining({ page: "page-real-timeout", city: null, region: null, country: null })
+    );
+    vi.useRealTimers();
+  });
+
+  it("succeeds on a later attempt after an earlier attempt for the same page failed", async () => {
+    mockGeoFetch(true, { city: "Austin", region: "TX", country: "US" });
+    const insert = mockInsertSequence([
+      { error: { message: "temporary failure" } },
+      { error: null },
+    ]);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const first = await logVisit("page-retry-later");
+    expect(first).toBe(false); // not marked done — caller leaves it eligible to retry
+
+    const second = await logVisit("page-retry-later");
+    expect(second).toBe(true); // the earlier failure didn't leave inFlight stuck
+
+    expect(insert).toHaveBeenCalledTimes(2);
   });
 });
