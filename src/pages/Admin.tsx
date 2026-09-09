@@ -1,10 +1,9 @@
-import { useEffect, useState, useRef, type FormEvent } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { govDb } from "@/lib/supabase-governance";
 import { PageGate, useGateUnlocked } from "@/components/ui/PageGate";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -1048,31 +1047,6 @@ export default function Admin() {
   // ANY visitor who loaded /admin, before they ever entered an access code.
   const unlocked = useGateUnlocked("admin");
 
-  // Real authorization boundary. PageGate's access code is only a UI-level
-  // speed bump (see comment above); the govDb reads/mutations below are
-  // additionally gated on this because that's what visit_logs' RLS policies
-  // actually check (supabase/admin-auth-authorization.sql, NOT yet applied
-  // live) — an anon or non-admin authenticated session gets zero rows back
-  // regardless of what this component asks for.
-  const { isAuthenticated: authed, loading: authLoading, signIn, signOut, user } = useAdminAuth();
-  const [signInEmail, setSignInEmail] = useState("");
-  const [signInPassword, setSignInPassword] = useState("");
-  const [signInError, setSignInError] = useState<string | null>(null);
-  const [signingIn, setSigningIn] = useState(false);
-
-  async function handleSignIn(e: FormEvent) {
-    e.preventDefault();
-    setSigningIn(true);
-    setSignInError(null);
-    const error = await signIn(signInEmail, signInPassword);
-    setSigningIn(false);
-    if (error) {
-      setSignInError(error);
-      return;
-    }
-    setSignInPassword("");
-  }
-
   // Recent visits — independently paginated (server-side range + exact count)
   // so pagination covers every stored row, not just the capped 200-row fetch
   // used for the stats/chart above.
@@ -1086,9 +1060,9 @@ export default function Admin() {
   // loaded /admin without entering a code would opt their browser out of
   // visitor tracking for good.
   useEffect(() => {
-    if (!unlocked || !authed) return;
+    if (!unlocked) return;
     try { localStorage.setItem("pl_session_access", "1"); } catch {}
-  }, [unlocked, authed]);
+  }, [unlocked]);
 
   // Update browser tab title to show new visit count (like an unread badge)
   useEffect(() => {
@@ -1097,7 +1071,7 @@ export default function Admin() {
   }, [newCount]);
 
   useEffect(() => {
-    if (!unlocked || !authed) { setLoading(false); return; }
+    if (!unlocked) { setLoading(false); return; }
     govDb
       .from("visit_logs")
       .select("*")
@@ -1126,14 +1100,14 @@ export default function Admin() {
         }
         setLoading(false);
       });
-  }, [unlocked, authed]);
+  }, [unlocked]);
 
   // Recent visits pagination — fetches exactly one page (10 rows) plus an
   // exact total count, so Previous/Next always reflects every stored visit.
   // Secondary order on `id` breaks ties when two visits share a timestamp,
   // keeping page boundaries stable across navigation.
   useEffect(() => {
-    if (!unlocked || !authed) { setRecentLoading(false); return; }
+    if (!unlocked) { setRecentLoading(false); return; }
     let cancelled = false;
     setRecentLoading(true);
     const from = (recentPage - 1) * PAGE_SIZE;
@@ -1151,7 +1125,7 @@ export default function Admin() {
         setRecentLoading(false);
       });
     return () => { cancelled = true; };
-  }, [recentPage, unlocked, authed]);
+  }, [recentPage, unlocked]);
 
   function markSeen() {
     try { localStorage.setItem(LAST_SEEN_KEY, String(visits.length)); } catch {}
@@ -1160,7 +1134,6 @@ export default function Admin() {
 
   async function deleteVisit(id: string) {
     setDeleteError(null);
-    if (!authed) { setDeleteError("Sign in required to delete visit records."); return; }
     const { error } = await govDb.from("visit_logs").delete().eq("id", id);
     if (error) {
       setDeleteError(`Delete failed: ${error.message} — check Supabase RLS policy for visit_logs DELETE.`);
@@ -1171,7 +1144,6 @@ export default function Admin() {
 
   async function deleteSelected(ids: string[]) {
     setDeleteError(null);
-    if (!authed) { setDeleteError("Sign in required to delete visit records."); return; }
     const { error } = await govDb.from("visit_logs").delete().in("id", ids);
     if (error) {
       setDeleteError(`Delete failed: ${error.message} — check Supabase RLS policy for visit_logs DELETE.`);
@@ -1227,45 +1199,6 @@ export default function Admin() {
 
   const sidebarContent = (
     <>
-      {!authed ? (
-        <div className="space-y-2">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Analytics</p>
-          {authLoading ? (
-            <p className="text-[10px] text-muted-foreground/50">Checking session…</p>
-          ) : (
-            <form onSubmit={handleSignIn} className="space-y-2">
-              <p className="text-[10px] text-muted-foreground">Sign in to view visitor analytics.</p>
-              <input
-                type="email"
-                required
-                autoComplete="username"
-                placeholder="Email"
-                value={signInEmail}
-                onChange={e => setSignInEmail(e.target.value)}
-                className="w-full text-[11px] px-2 py-1.5 rounded border border-border/40 bg-background"
-              />
-              <input
-                type="password"
-                required
-                autoComplete="current-password"
-                placeholder="Password"
-                value={signInPassword}
-                onChange={e => setSignInPassword(e.target.value)}
-                className="w-full text-[11px] px-2 py-1.5 rounded border border-border/40 bg-background"
-              />
-              {signInError && <p className="text-[10px] text-rose-500">{signInError}</p>}
-              <button
-                type="submit"
-                disabled={signingIn}
-                className="w-full text-[11px] font-medium px-2 py-1.5 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 transition-colors"
-              >
-                {signingIn ? "Signing in…" : "Sign in"}
-              </button>
-            </form>
-          )}
-        </div>
-      ) : (
-      <>
       {/* Stats */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-3">
         <div>
@@ -1351,8 +1284,6 @@ export default function Admin() {
           </>
         )}
       </div>
-      </>
-      )}
 
       {/* Access codes */}
       <div>
@@ -1409,15 +1340,6 @@ export default function Admin() {
               </button>
             )}
             <span className="text-[10px] font-mono text-primary/50">Admin · Visitor Log</span>
-            {authed && (
-              <button
-                onClick={() => signOut()}
-                className="text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
-                title={user?.email ?? undefined}
-              >
-                Sign out
-              </button>
-            )}
           </div>
         </div>
       </div>
