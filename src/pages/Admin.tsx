@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { govDb } from "@/lib/supabase-governance";
-import { PageGate } from "@/components/ui/PageGate";
+import { PageGate, useGateUnlocked } from "@/components/ui/PageGate";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -1041,6 +1041,11 @@ export default function Admin() {
   const [visitLogOpen, setVisitLogOpen] = useState(false);
   const isMobile = useIsMobile();
   const PAGE_SIZE = 10;
+  // PageGate only controls what JSX renders — it does not stop hooks in this
+  // component from running. Without this check, visit_logs (page, referrer,
+  // city/region/country, user_agent) was being fetched into browser state for
+  // ANY visitor who loaded /admin, before they ever entered an access code.
+  const unlocked = useGateUnlocked("admin");
 
   // Recent visits — independently paginated (server-side range + exact count)
   // so pagination covers every stored row, not just the capped 200-row fetch
@@ -1050,10 +1055,14 @@ export default function Admin() {
   const [recentTotal, setRecentTotal] = useState(0);
   const [recentLoading, setRecentLoading] = useState(true);
 
-  // Admin page only renders when PageGate is unlocked — mark as owner to suppress self-visit logging
+  // Mark this browser as owner (suppresses self-visit logging in useVisitLogger)
+  // only once actually unlocked — otherwise any anonymous visitor who merely
+  // loaded /admin without entering a code would opt their browser out of
+  // visitor tracking for good.
   useEffect(() => {
+    if (!unlocked) return;
     try { localStorage.setItem("pl_session_access", "1"); } catch {}
-  }, []);
+  }, [unlocked]);
 
   // Update browser tab title to show new visit count (like an unread badge)
   useEffect(() => {
@@ -1062,6 +1071,7 @@ export default function Admin() {
   }, [newCount]);
 
   useEffect(() => {
+    if (!unlocked) { setLoading(false); return; }
     govDb
       .from("visit_logs")
       .select("*")
@@ -1090,13 +1100,14 @@ export default function Admin() {
         }
         setLoading(false);
       });
-  }, []);
+  }, [unlocked]);
 
   // Recent visits pagination — fetches exactly one page (10 rows) plus an
   // exact total count, so Previous/Next always reflects every stored visit.
   // Secondary order on `id` breaks ties when two visits share a timestamp,
   // keeping page boundaries stable across navigation.
   useEffect(() => {
+    if (!unlocked) { setRecentLoading(false); return; }
     let cancelled = false;
     setRecentLoading(true);
     const from = (recentPage - 1) * PAGE_SIZE;
@@ -1114,7 +1125,7 @@ export default function Admin() {
         setRecentLoading(false);
       });
     return () => { cancelled = true; };
-  }, [recentPage]);
+  }, [recentPage, unlocked]);
 
   function markSeen() {
     try { localStorage.setItem(LAST_SEEN_KEY, String(visits.length)); } catch {}
