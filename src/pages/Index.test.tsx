@@ -20,6 +20,7 @@ vi.mock("@/lib/supabase-governance", () => ({
 }));
 
 const OWNER_KEY = "pl_session_access";
+const OWNER_EXCLUSION_KEY = "pl_owner_exclusion";
 
 function mockInsert(result: { error: { message: string } | null }) {
   const insert = vi.fn().mockResolvedValue(result);
@@ -68,6 +69,7 @@ describe("Index — owner re-activation timing", () => {
     await new Promise((r) => setTimeout(r, 20));
 
     expect(localStorage.getItem(OWNER_KEY)).toBe("1");
+    expect(localStorage.getItem(OWNER_EXCLUSION_KEY)).toBe("1");
     expect(insert).not.toHaveBeenCalled();
   });
 
@@ -79,5 +81,6 @@ describe("Index — owner re-activation timing", () => {
     await waitFor(() => expect(insert).toHaveBeenCalledTimes(1));
 
     expect(localStorage.getItem(OWNER_KEY)).toBeNull();
+    expect(localStorage.getItem(OWNER_EXCLUSION_KEY)).toBeNull();
   });
 });

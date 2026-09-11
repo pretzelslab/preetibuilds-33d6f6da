@@ -216,4 +216,43 @@ describe("useVisitLogger (owner exclusion)", () => {
 
     expect(localStorage.getItem(OWNER_KEY)).toBeNull();
   });
+
+  // The two tests below exercise the pl_owner_exclusion / pl_session_access
+  // split (src/lib/ownerExclusion.ts) through the real hook, complementing
+  // the direct unit coverage in src/lib/ownerExclusion.test.ts.
+  const OWNER_EXCLUSION_KEY = "pl_owner_exclusion";
+
+  it("does not log when only the legacy master key is set, and backfills the new owner-exclusion key", async () => {
+    localStorage.setItem(OWNER_KEY, "1"); // legacy key only — pre-migration browser state
+    mockGeoFetch(true, { city: "Austin", region: "TX", country: "US" });
+    const insert = mockInsert({ error: null });
+
+    renderHook(() => useVisitLogger("page-legacy-backfill"));
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(insert).not.toHaveBeenCalled();
+    expect(localStorage.getItem(OWNER_EXCLUSION_KEY)).toBe("1");
+  });
+
+  it("keeps excluding the owner via the new key after the legacy key is later removed (post-migration)", async () => {
+    localStorage.setItem(OWNER_KEY, "1");
+    mockGeoFetch(true, { city: "Austin", region: "TX", country: "US" });
+    const insert = mockInsert({ error: null });
+
+    // First mount backfills pl_owner_exclusion from the legacy key.
+    const first = renderHook(() => useVisitLogger("page-migrated"));
+    await new Promise((r) => setTimeout(r, 0));
+    first.unmount();
+    expect(localStorage.getItem(OWNER_EXCLUSION_KEY)).toBe("1");
+
+    // Simulates the legacy key being cleared afterward (e.g. by a lock
+    // action doing its legitimate job) via direct storage manipulation —
+    // not a reintroduction of the old doLock() bug into production code.
+    localStorage.removeItem(OWNER_KEY);
+
+    renderHook(() => useVisitLogger("page-migrated-2"));
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(insert).not.toHaveBeenCalled();
+  });
 });

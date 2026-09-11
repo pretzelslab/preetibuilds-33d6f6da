@@ -12,6 +12,7 @@ import AIGovernanceTracker from "./Tracker";
 vi.mock("@/lib/supabase-governance", () => ({ govDb: { from: vi.fn() } }));
 
 const OWNER_KEY = "pl_session_access";
+const OWNER_EXCLUSION_KEY = "pl_owner_exclusion";
 
 function mockInsert(result: { error: { message: string } | null } = { error: null }) {
   const insert = vi.fn().mockResolvedValue(result);
@@ -82,6 +83,10 @@ describe("AI Governance Tracker — real Lock page button (4caada4 verification)
     fireEvent.click(screen.getByText("Unlock →"));
 
     expect(screen.getByTitle("Lock page")).toBeInTheDocument(); // back to the unlocked main view
+    // Re-entering the master code through Tracker's own unlock UI must also
+    // (re-)establish the standalone analytics exclusion key, not just the
+    // portfolio master-unlock key.
+    expect(localStorage.getItem(OWNER_EXCLUSION_KEY)).toBe("1");
   });
 
   it("2. owner-exclusion flag remains intact after clicking Lock page (the actual bug)", () => {

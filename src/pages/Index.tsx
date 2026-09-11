@@ -9,6 +9,7 @@ import About from "@/components/portfolio/About";
 import Contact from "@/components/portfolio/Contact";
 import Footer from "@/components/portfolio/Footer";
 import { useVisitLogger } from "@/hooks/useVisitLogger";
+import { markOwnerExcluded } from "@/lib/ownerExclusion";
 
 const BackToTop = () => {
   const [visible, setVisible] = useState(false);
@@ -48,6 +49,7 @@ const Index = () => {
     const hash = window.location.hash.replace("#", "").toUpperCase().trim();
     if (hash === MASTER_CODE) {
       try { localStorage.setItem(OWNER_KEY, "1"); } catch {}
+      markOwnerExcluded();
       window.history.replaceState(null, "", window.location.pathname + window.location.search);
     }
   }, []);

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 import { POLICY_DIGESTS, type CriticalPoint, type Misconception } from "./digests";
 import { IMPLEMENTATION_GUIDES } from "./guides";
+import { markOwnerExcluded } from "@/lib/ownerExclusion";
 
 // ─── PREVIEW MODE ─────────────────────────────────────────────────────────────
 // Automatically enabled on Lovable's hosted URL (*.lovable.app).
@@ -3220,6 +3221,7 @@ export default function AIGovernanceTracker() {
   const tryUnlock = () => {
     if (unlockCode.toUpperCase().trim() === "PRL2026") {
       try { localStorage.setItem("pl_session_access", "1"); } catch {}
+      markOwnerExcluded();
       setUnlocked(true); setShowUnlockModal(false); setUnlockCode(""); setVisitorAccess(true);
     } else {
       setUnlockError(true); setTimeout(() => setUnlockError(false), 800); setUnlockCode("");
@@ -3228,10 +3230,13 @@ export default function AIGovernanceTracker() {
 
   const doLock = () => {
     // Deliberately does NOT remove "pl_session_access" — that key is the
-    // site-wide master PageGate unlock flag AND the owner-exclusion flag
-    // useVisitLogger checks on every page. This button only previews the
+    // site-wide master PageGate unlock flag. This button only previews the
     // locked/visitor view of THIS page; it must not relock every other
-    // gated page or cause the owner's own browsing to start being logged.
+    // gated page. Analytics owner-exclusion now lives on its own key
+    // (pl_owner_exclusion, see src/lib/ownerExclusion.ts) that this
+    // function never touches at all, so — unlike before — there's no way
+    // for this button to affect the owner's own visit-logging exclusion,
+    // even indirectly.
     try { sessionStorage.removeItem("pl_visitor_access"); } catch {}
     setUnlocked(false); setVisitorAccess(false);
   };

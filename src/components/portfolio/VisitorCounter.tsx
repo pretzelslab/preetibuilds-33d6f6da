@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { motion, useSpring, useTransform } from "framer-motion";
 import { Eye } from "lucide-react";
 import { govDb } from "@/lib/supabase-governance";
+import { isOwnerExcluded } from "@/lib/ownerExclusion";
 
 const SESSION_KEY = "pv_counted";
-const OWNER_KEY   = "pl_session_access";
 
 const AnimatedNumber = ({ value }: { value: number }) => {
   const spring  = useSpring(0, { stiffness: 50, damping: 20 });
@@ -17,7 +17,7 @@ const VisitorCounter = ({ page = "/" }: { page?: string }) => {
   const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
-    const isOwner   = !!localStorage.getItem(OWNER_KEY);
+    const isOwner   = isOwnerExcluded();
     const counted   = !!sessionStorage.getItem(SESSION_KEY + page);
 
     async function track() {

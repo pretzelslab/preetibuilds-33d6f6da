@@ -1,5 +1,6 @@
 import { useState, useEffect, ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { markOwnerExcluded } from "@/lib/ownerExclusion";
 
 // ── Access code registry ───────────────────────────────────────────────────────
 // PRL2026 = master (unlocks everything — Preeti only)
@@ -100,6 +101,7 @@ export function PageGate({
     if (!hash) return;
     if (hash === MASTER_CODE) {
       safeSet(MASTER_KEY, "1");
+      markOwnerExcluded();
       setUnlocked(true);
     } else if (pageId && hash === PAGE_CODES[pageId]) {
       safeSet(pageKey(pageId), "1");
@@ -112,6 +114,7 @@ export function PageGate({
     const entered = code.toUpperCase().trim();
     if (entered === MASTER_CODE) {
       safeSet(MASTER_KEY, "1");
+      markOwnerExcluded();
       setUnlocked(true);
     } else if (pageId && PAGE_CODES[pageId] && entered === PAGE_CODES[pageId]) {
       safeSet(pageKey(pageId), "1");

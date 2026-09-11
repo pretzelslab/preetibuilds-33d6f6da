@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { govDb } from "@/lib/supabase-governance";
-
-const OWNER_KEY = "pl_session_access";
+import { isOwnerExcluded } from "@/lib/ownerExclusion";
 
 // Approximate city/region/country from Vercel's own edge geolocation headers
 // (read server-side in api/geo.ts) — no browser location permission, no
@@ -71,7 +70,7 @@ export function useVisitLogger(page: string) {
     const hostname = window.location.hostname;
     if (hostname === "localhost" || hostname === "127.0.0.1") return;
 
-    const isOwner = !!localStorage.getItem(OWNER_KEY);
+    const isOwner = isOwnerExcluded();
     const sessionKey = `vl_${page}`;
     const alreadyLogged = !!sessionStorage.getItem(sessionKey);
     if (isOwner || alreadyLogged) return;
