@@ -3227,7 +3227,11 @@ export default function AIGovernanceTracker() {
   };
 
   const doLock = () => {
-    try { localStorage.removeItem("pl_session_access"); } catch {}
+    // Deliberately does NOT remove "pl_session_access" — that key is the
+    // site-wide master PageGate unlock flag AND the owner-exclusion flag
+    // useVisitLogger checks on every page. This button only previews the
+    // locked/visitor view of THIS page; it must not relock every other
+    // gated page or cause the owner's own browsing to start being logged.
     try { sessionStorage.removeItem("pl_visitor_access"); } catch {}
     setUnlocked(false); setVisitorAccess(false);
   };

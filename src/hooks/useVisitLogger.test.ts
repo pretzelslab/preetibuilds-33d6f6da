@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { renderHook, waitFor, cleanup } from "@testing-library/react";
 import { govDb } from "@/lib/supabase-governance";
-import { logVisit } from "./useVisitLogger";
+import { logVisit, useVisitLogger } from "./useVisitLogger";
 
 vi.mock("@/lib/supabase-governance", () => ({
   govDb: { from: vi.fn() },
@@ -137,5 +138,82 @@ describe("logVisit", () => {
     expect(second).toBe(true); // the earlier failure didn't leave inFlight stuck
 
     expect(insert).toHaveBeenCalledTimes(2);
+  });
+});
+
+// Owner-exclusion behavior lives in the useVisitLogger hook itself (isOwner
+// check), not in logVisit — these mount the real hook to exercise it.
+// jsdom's default test hostname is "localhost", which useVisitLogger skips
+// unconditionally regardless of owner status, so hostname is stubbed to a
+// real deployed-looking host to actually exercise the isOwner branch.
+function stubHostname(hostname: string) {
+  const original = window.location;
+  Object.defineProperty(window, "location", {
+    configurable: true,
+    value: { ...original, hostname, hash: "", search: "" },
+  });
+  return () => Object.defineProperty(window, "location", { configurable: true, value: original });
+}
+
+describe("useVisitLogger (owner exclusion)", () => {
+  const OWNER_KEY = "pl_session_access";
+  let restoreLocation: () => void;
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    localStorage.clear();
+    sessionStorage.clear();
+    restoreLocation = stubHostname("preetibuilds-33d6f6da.vercel.app");
+  });
+
+  afterEach(() => {
+    cleanup();
+    restoreLocation();
+  });
+
+  it("does not log a visit when the owner flag is already set (owner excluded)", async () => {
+    localStorage.setItem(OWNER_KEY, "1");
+    mockGeoFetch(true, { city: "Austin", region: "TX", country: "US" });
+    const insert = mockInsert({ error: null });
+
+    renderHook(() => useVisitLogger("page-owner"));
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("logs a visit for an ordinary visitor with no owner flag set", async () => {
+    mockGeoFetch(true, { city: "Austin", region: "TX", country: "US" });
+    const insert = mockInsert({ error: null });
+
+    renderHook(() => useVisitLogger("page-visitor"));
+    await waitFor(() => expect(insert).toHaveBeenCalledTimes(1));
+
+    expect(insert).toHaveBeenCalledWith(expect.objectContaining({ page: "page-visitor" }));
+  });
+
+  it("keeps excluding the owner across a simulated reload (flag persists in localStorage, not component state)", async () => {
+    localStorage.setItem(OWNER_KEY, "1");
+    mockGeoFetch(true, { city: "Austin", region: "TX", country: "US" });
+    const insert = mockInsert({ error: null });
+
+    const first = renderHook(() => useVisitLogger("page-reload"));
+    await new Promise((r) => setTimeout(r, 0));
+    first.unmount(); // simulates navigating away / reloading
+
+    renderHook(() => useVisitLogger("page-reload"));
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("opening a page alone (no unlock action) never sets the owner flag itself", async () => {
+    mockGeoFetch(true, { city: "Austin", region: "TX", country: "US" });
+    mockInsert({ error: null });
+
+    renderHook(() => useVisitLogger("page-no-selfset"));
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(localStorage.getItem(OWNER_KEY)).toBeNull();
   });
 });

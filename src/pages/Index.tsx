@@ -38,9 +38,12 @@ const MASTER_CODE = "PRL2026";
 const OWNER_KEY = "pl_session_access";
 
 const Index = () => {
-  useVisitLogger("/");
-
-  // Owner re-activation: visiting /#PRL2026 re-sets the owner key in case localStorage was cleared
+  // Owner re-activation: visiting /#PRL2026 re-sets the owner key in case
+  // localStorage was cleared. Declared (and thus effect-flushed) before
+  // useVisitLogger below — React runs passive effects in the order their
+  // hooks are called, so if this ran after useVisitLogger's own effect,
+  // that effect would already have read the (still-missing) owner flag
+  // and started logging this exact page load before the flag landed.
   useEffect(() => {
     const hash = window.location.hash.replace("#", "").toUpperCase().trim();
     if (hash === MASTER_CODE) {
@@ -48,6 +51,8 @@ const Index = () => {
       window.history.replaceState(null, "", window.location.pathname + window.location.search);
     }
   }, []);
+
+  useVisitLogger("/");
 
   return (
     <main className="min-h-screen bg-background text-foreground">
