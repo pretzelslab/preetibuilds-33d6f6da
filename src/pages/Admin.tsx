@@ -1055,6 +1055,12 @@ export default function Admin() {
   // city/region/country, user_agent) was being fetched into browser state for
   // ANY visitor who loaded /admin, before they ever entered an access code.
   const unlocked = useGateUnlocked("admin");
+  // Master-code-specific unlock state, distinct from `unlocked` above.
+  // useGateUnlocked() with no pageId checks ONLY the master key — unlike
+  // useGateUnlocked("admin"), it is NOT also true for the page-specific
+  // ADM2026 code. A collaborator holding only ADM2026 must never be treated
+  // as the portfolio owner (see the owner-marking effect below).
+  const isMasterUnlocked = useGateUnlocked();
 
   // Recent visits — independently paginated (server-side range + exact count)
   // so pagination covers every stored row, not just the capped 200-row fetch
@@ -1065,14 +1071,20 @@ export default function Admin() {
   const [recentLoading, setRecentLoading] = useState(true);
   const [recentError, setRecentError] = useState<string | null>(null);
 
-  // Mark this browser as owner (suppresses self-visit logging in useVisitLogger)
-  // only once actually unlocked — otherwise any anonymous visitor who merely
-  // loaded /admin without entering a code would opt their browser out of
-  // visitor tracking for good.
+  // UI-state only now (see src/lib/ownerExclusion.ts) — actual analytics
+  // exclusion is decided server-side from the signed owner cookie, which
+  // api/verify-master-code.ts already sets on a successful master-code
+  // verification. This effect just keeps the legacy localStorage flag in
+  // sync for any UI that still reads it, and — critically — only fires on
+  // isMasterUnlocked, NOT the broader `unlocked` (which is also true for a
+  // collaborator who only has the page-specific ADM2026 code). Using
+  // `unlocked` here previously meant an ADM2026 holder's browser got
+  // flagged as "owner" too, which is wrong: only a successful master-code
+  // verification may ever establish owner identity.
   useEffect(() => {
-    if (!unlocked) return;
+    if (!isMasterUnlocked) return;
     try { localStorage.setItem("pl_session_access", "1"); } catch {}
-  }, [unlocked]);
+  }, [isMasterUnlocked]);
 
   // Update browser tab title to show new visit count (like an unread badge)
   useEffect(() => {

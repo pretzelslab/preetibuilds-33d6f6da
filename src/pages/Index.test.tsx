@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, cleanup, waitFor } from "@testing-library/react";
-import { govDb } from "@/lib/supabase-governance";
 import Index from "./Index";
 
 // Heavy/animated children aren't relevant to the owner-reactivation timing
@@ -15,24 +14,15 @@ vi.mock("@/components/portfolio/About", () => ({ default: () => null }));
 vi.mock("@/components/portfolio/Contact", () => ({ default: () => null }));
 vi.mock("@/components/portfolio/Footer", () => ({ default: () => null }));
 
-vi.mock("@/lib/supabase-governance", () => ({
-  govDb: { from: vi.fn() },
-}));
-
 const OWNER_KEY = "pl_session_access";
 const OWNER_EXCLUSION_KEY = "pl_owner_exclusion";
 
-function mockInsert(result: { error: { message: string } | null }) {
-  const insert = vi.fn().mockResolvedValue(result);
-  (govDb.from as ReturnType<typeof vi.fn>).mockReturnValue({ insert });
-  return insert;
-}
-
-function mockGeoFetch() {
-  global.fetch = vi.fn().mockResolvedValue({
-    ok: true,
-    json: () => Promise.resolve({ city: "Austin", region: "TX", country: "US" }),
-  });
+// useVisitLogger no longer talks to Supabase directly — it posts to
+// api/portfolio-analytics.ts. Mock fetch instead of govDb.
+function mockFetch() {
+  const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({ recorded: true }) });
+  global.fetch = fetchMock;
+  return fetchMock;
 }
 
 function stubLocation(hostname: string, hash: string) {
@@ -51,7 +41,6 @@ describe("Index — homepage visit logging (owner-reactivation hash removed)", (
     vi.restoreAllMocks();
     localStorage.clear();
     sessionStorage.clear();
-    mockGeoFetch();
   });
 
   afterEach(() => {
@@ -64,10 +53,11 @@ describe("Index — homepage visit logging (owner-reactivation hash removed)", (
     // any hash-reading effect at all, so this hash is just an ordinary
     // (ignored) URL fragment now.
     restoreLocation = stubLocation("preetibuilds-33d6f6da.vercel.app", "#TESTCODE");
-    const insert = mockInsert({ error: null });
+    const fetchMock = mockFetch();
 
     render(<Index />);
-    await waitFor(() => expect(insert).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(fetchMock).toHaveBeenCalledWith("/api/portfolio-analytics", expect.anything());
 
     expect(localStorage.getItem(OWNER_KEY)).toBeNull();
     expect(localStorage.getItem(OWNER_EXCLUSION_KEY)).toBeNull();
@@ -75,12 +65,26 @@ describe("Index — homepage visit logging (owner-reactivation hash removed)", (
 
   it("still logs an ordinary homepage visit (no hash, no owner flag)", async () => {
     restoreLocation = stubLocation("preetibuilds-33d6f6da.vercel.app", "");
-    const insert = mockInsert({ error: null });
+    const fetchMock = mockFetch();
 
     render(<Index />);
-    await waitFor(() => expect(insert).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
 
     expect(localStorage.getItem(OWNER_KEY)).toBeNull();
     expect(localStorage.getItem(OWNER_EXCLUSION_KEY)).toBeNull();
+  });
+
+  it("first ever homepage load on a browser with a valid owner cookie is skipped server-side — this test documents that the client sends the request either way and the server is what decides", async () => {
+    // Regression guard for the exact gap the audit found: the client has no
+    // way to know in advance whether this browser has a valid owner cookie
+    // (HttpOnly — invisible to JS), so it must always ask. This test
+    // exists to keep that "always ask" behavior from silently regressing
+    // back into a client-side pre-check.
+    restoreLocation = stubLocation("preetibuilds-33d6f6da.vercel.app", "");
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({ recorded: false, reason: "owner" }) });
+    global.fetch = fetchMock;
+
+    render(<Index />);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
   });
 });

@@ -3,6 +3,7 @@ import { render, screen, fireEvent, cleanup, waitFor } from "@testing-library/re
 import { MemoryRouter } from "react-router-dom";
 import { govDb } from "@/lib/supabase-governance";
 import { verifyMasterCode } from "@/lib/masterCode";
+import { markOwnerExcluded } from "@/lib/ownerExclusion";
 import MelodicFramework from "./MelodicFramework";
 
 // Melodic's admin-mode PIN used to be a hardcoded secret literal, checked
@@ -11,6 +12,7 @@ import MelodicFramework from "./MelodicFramework";
 // covers only that swap, not song browsing/request moderation itself.
 vi.mock("@/lib/supabase-governance", () => ({ govDb: { from: vi.fn() } }));
 vi.mock("@/lib/masterCode", () => ({ verifyMasterCode: vi.fn() }));
+vi.mock("@/lib/ownerExclusion", () => ({ markOwnerExcluded: vi.fn() }));
 vi.mock("@/components/portfolio/Comments", () => ({ default: () => null }));
 vi.mock("@/components/portfolio/VisitorCounter", () => ({ default: () => null }));
 
@@ -66,9 +68,10 @@ describe("MelodicFramework — admin PIN now verified server-side", () => {
 
     await waitFor(() => expect(verifyMasterCode).toHaveBeenCalledWith("wrong"));
     expect(screen.queryByText("Admin mode")).not.toBeInTheDocument();
+    expect(markOwnerExcluded).not.toHaveBeenCalled();
   });
 
-  it("valid master code enters admin mode", async () => {
+  it("valid master code enters admin mode and marks owner-exclusion UI state", async () => {
     (verifyMasterCode as ReturnType<typeof vi.fn>).mockResolvedValue(true);
     renderMelodic();
 
@@ -76,5 +79,11 @@ describe("MelodicFramework — admin PIN now verified server-side", () => {
     fireEvent.click(screen.getByText("→"));
 
     await waitFor(() => expect(screen.getByText("Admin mode")).toBeInTheDocument());
+    // Audit-flagged gap: this path used to enter admin mode without ever
+    // calling markOwnerExcluded(). Server-side owner-cookie establishment
+    // (via verifyMasterCode's own call) is authoritative regardless, but
+    // the UI-state flag should stay consistent with the other three
+    // master-code entry points.
+    expect(markOwnerExcluded).toHaveBeenCalledTimes(1);
   });
 });

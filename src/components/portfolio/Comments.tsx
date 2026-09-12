@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { govDb } from "@/lib/supabase-governance";
 import { verifyMasterCode } from "@/lib/masterCode";
+import { markOwnerExcluded } from "@/lib/ownerExclusion";
 
 interface Comment {
   id: string;
@@ -98,7 +99,11 @@ export default function Comments({ hideAdminPin = false }: { hideAdminPin?: bool
 
   async function tryAdmin(e: React.FormEvent) {
     e.preventDefault();
-    if (await verifyMasterCode(pinInput)) { setAdminMode(true); setPinInput(""); }
+    // verifyMasterCode's own server call (api/verify-master-code.ts) already
+    // establishes the authoritative owner session cookie on success —
+    // markOwnerExcluded() here is UI-state only, kept in sync for
+    // consistency with the other three master-code entry points.
+    if (await verifyMasterCode(pinInput)) { markOwnerExcluded(); setAdminMode(true); setPinInput(""); }
     else { setPinInput(""); setError("Wrong PIN"); }
   }
 

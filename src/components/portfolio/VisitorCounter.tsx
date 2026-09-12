@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, useSpring, useTransform } from "framer-motion";
 import { Eye } from "lucide-react";
-import { govDb } from "@/lib/supabase-governance";
-import { isOwnerExcluded } from "@/lib/ownerExclusion";
 
 const SESSION_KEY = "pv_counted";
 
@@ -17,22 +15,34 @@ const VisitorCounter = ({ page = "/" }: { page?: string }) => {
   const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
-    const isOwner   = isOwnerExcluded();
-    const counted   = !!sessionStorage.getItem(SESSION_KEY + page);
+    // Never touch production page_views from a local dev checkout — matches
+    // the same guard useVisitLogger uses. Without this, `npm run dev` would
+    // increment the real deployed counter, since .env.local points at the
+    // same Supabase project as Preview/Production.
+    const hostname = window.location.hostname;
+    if (hostname === "localhost" || hostname === "127.0.0.1") return;
+
+    // Increment at most once per tab session per page — but always ask the
+    // server for the current count so the displayed number stays fresh on
+    // every mount. The server alone decides (via its signed owner cookie)
+    // whether an increment we ask for actually happens; this component has
+    // no owner-exclusion logic of its own.
+    const alreadyIncremented = !!sessionStorage.getItem(SESSION_KEY + page);
 
     async function track() {
-      // Increment only if not owner and not already counted this session
-      if (!isOwner && !counted) {
-        await govDb.rpc("increment_page_view", { p_page: page });
-        sessionStorage.setItem(SESSION_KEY + page, "1");
+      try {
+        const res = await fetch("/api/portfolio-analytics", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ kind: "pageview", page, increment: !alreadyIncremented }),
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!alreadyIncremented) sessionStorage.setItem(SESSION_KEY + page, "1");
+        if (typeof data?.count === "number") setCount(data.count);
+      } catch {
+        // Silent — the counter just won't render this mount, nothing to retry.
       }
-      // Always fetch and display the current count
-      const { data } = await govDb
-        .from("page_views")
-        .select("count")
-        .eq("page", page)
-        .single();
-      if (data) setCount(data.count);
     }
 
     track();

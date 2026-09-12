@@ -1,47 +1,27 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, waitFor, cleanup } from "@testing-library/react";
-import { govDb } from "@/lib/supabase-governance";
 import { logVisit, useVisitLogger } from "./useVisitLogger";
 
-vi.mock("@/lib/supabase-governance", () => ({
-  govDb: { from: vi.fn() },
-}));
+// The browser no longer talks to Supabase directly for this at all — every
+// write goes through api/portfolio-analytics.ts, mocked here via fetch.
+// Owner-exclusion is no longer decided client-side (see
+// src/lib/ownerExclusion.ts) — these tests reflect that: there is no
+// "owner flag" to pre-seed anymore, only server-response shapes to mock.
 
-// Each test uses its own page id (== its own sessionKey) so the module-level
-// inFlight guard in useVisitLogger.ts can't leak state between tests.
-function mockInsert(result: { error: { message: string } | null }) {
-  const insert = vi.fn().mockResolvedValue(result);
-  (govDb.from as ReturnType<typeof vi.fn>).mockReturnValue({ insert });
-  return insert;
-}
-
-function mockGeoFetch(ok: boolean, body?: Record<string, unknown>) {
-  global.fetch = vi.fn().mockImplementation(() =>
-    ok
-      ? Promise.resolve({ ok: true, json: () => Promise.resolve(body) })
-      : Promise.reject(new DOMException("The operation was aborted.", "AbortError"))
+function mockFetch(response: { ok: boolean; status?: number; body?: unknown }) {
+  const fetchMock = vi.fn().mockImplementation(() =>
+    response.ok
+      ? Promise.resolve({ ok: true, json: () => Promise.resolve(response.body) })
+      : Promise.resolve({ ok: false, status: response.status ?? 500, json: () => Promise.resolve(response.body) })
   );
+  global.fetch = fetchMock;
+  return fetchMock;
 }
 
-// Unlike mockGeoFetch(false), which rejects immediately, this never resolves
-// on its own — it only rejects once the request's AbortSignal actually fires,
-// so the timeout test below exercises the real 4000ms bound via fake timers
-// instead of assuming the abort happens.
-function mockGeoFetchHangsUntilAborted() {
-  global.fetch = vi.fn().mockImplementation((_url: string, opts: { signal: AbortSignal }) =>
-    new Promise((_resolve, reject) => {
-      opts.signal.addEventListener("abort", () =>
-        reject(new DOMException("The operation was aborted.", "AbortError"))
-      );
-    })
-  );
-}
-
-function mockInsertSequence(results: Array<{ error: { message: string } | null }>) {
-  const insert = vi.fn();
-  for (const r of results) insert.mockResolvedValueOnce(r);
-  (govDb.from as ReturnType<typeof vi.fn>).mockReturnValue({ insert });
-  return insert;
+function mockFetchRejects() {
+  const fetchMock = vi.fn().mockRejectedValue(new Error("network down"));
+  global.fetch = fetchMock;
+  return fetchMock;
 }
 
 describe("logVisit", () => {
@@ -49,103 +29,65 @@ describe("logVisit", () => {
     vi.restoreAllMocks();
   });
 
-  it("records a successful visit with geolocation and returns true", async () => {
-    mockGeoFetch(true, { city: "Austin", region: "TX", country: "US" });
-    const insert = mockInsert({ error: null });
+  it("posts to the portfolio-analytics endpoint and returns handled+recorded on success", async () => {
+    const fetchMock = mockFetch({ ok: true, body: { recorded: true } });
 
     const result = await logVisit("page-success");
 
-    expect(result).toBe(true);
-    expect(insert).toHaveBeenCalledTimes(1);
-    expect(insert).toHaveBeenCalledWith(
-      expect.objectContaining({ page: "page-success", city: "Austin", region: "TX", country: "US" })
-    );
+    expect(result).toEqual({ handled: true, recorded: true });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe("/api/portfolio-analytics");
+    const body = JSON.parse((init as RequestInit).body as string);
+    expect(body).toMatchObject({ kind: "visit", page: "page-success" });
   });
 
-  it("leaves a failed insert eligible for a later attempt instead of marking it done", async () => {
-    mockGeoFetch(true, { city: "Austin", region: "TX", country: "US" });
-    const insert = mockInsert({ error: { message: "column visit_logs.region does not exist" } });
+  it("treats an owner-skip response as handled but not recorded", async () => {
+    mockFetch({ ok: true, body: { recorded: false, reason: "owner" } });
+
+    const result = await logVisit("page-owner");
+
+    expect(result).toEqual({ handled: true, recorded: false });
+  });
+
+  it("treats a non-ok response as unhandled, eligible for a later retry", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockFetch({ ok: false, status: 502, body: { recorded: false, reason: "error" } });
 
     const result = await logVisit("page-fail");
 
-    expect(result).toBe(false); // caller must NOT write sessionStorage on this outcome
-    expect(insert).toHaveBeenCalledTimes(1); // failure isn't retried automatically — no loop
-    expect(errorSpy).toHaveBeenCalledWith(
-      "[visit_logs insert failed]",
-      "column visit_logs.region does not exist"
-    );
+    expect(result).toEqual({ handled: false, recorded: false });
+    expect(errorSpy).toHaveBeenCalled();
   });
 
-  it("does not double-insert when called again while the first attempt is still in flight", async () => {
-    mockGeoFetch(true, { city: "Austin", region: "TX", country: "US" });
-    const insert = mockInsert({ error: null });
+  it("treats a network error as unhandled, eligible for a later retry", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockFetchRejects();
+
+    const result = await logVisit("page-network-fail");
+
+    expect(result).toEqual({ handled: false, recorded: false });
+    expect(errorSpy).toHaveBeenCalled();
+  });
+
+  it("does not double-post when called again while the first attempt is still in flight", async () => {
+    let resolveFetch: (v: unknown) => void;
+    const fetchMock = vi.fn().mockImplementation(
+      () => new Promise((resolve) => { resolveFetch = resolve; })
+    );
+    global.fetch = fetchMock;
 
     const first = logVisit("page-dup");
     const second = logVisit("page-dup"); // fired before `first` has resolved
 
-    const [firstResult, secondResult] = await Promise.all([first, second]);
+    expect(await second).toEqual({ handled: false, recorded: false }); // rejected purely for being concurrent
 
-    expect(firstResult).toBe(true);
-    expect(secondResult).toBe(false); // rejected purely for being concurrent, not a real failure
-    expect(insert).toHaveBeenCalledTimes(1);
-  });
-
-  it("still records the visit (with null location) when the geolocation lookup fails", async () => {
-    // Simulates api/geo.ts being unreachable or aborting via the 4000ms
-    // AbortSignal.timeout in getLocation() — that bound is fixed in source
-    // and isn't re-tested here with a real 4s wait; this checks the fallback
-    // path it triggers, which is what determines whether the visit is lost.
-    mockGeoFetch(false);
-    const insert = mockInsert({ error: null });
-
-    const result = await logVisit("page-geo-fail");
-
-    expect(result).toBe(true);
-    expect(insert).toHaveBeenCalledWith(
-      expect.objectContaining({ page: "page-geo-fail", city: null, region: null, country: null })
-    );
-  });
-
-  it("still records the visit once the geolocation request actually hits its 4000ms timeout", async () => {
-    vi.useFakeTimers();
-    mockGeoFetchHangsUntilAborted();
-    const insert = mockInsert({ error: null });
-
-    const resultPromise = logVisit("page-real-timeout");
-    await vi.advanceTimersByTimeAsync(4000);
-    const result = await resultPromise;
-
-    expect(result).toBe(true);
-    expect(insert).toHaveBeenCalledWith(
-      expect.objectContaining({ page: "page-real-timeout", city: null, region: null, country: null })
-    );
-    vi.useRealTimers();
-  });
-
-  it("succeeds on a later attempt after an earlier attempt for the same page failed", async () => {
-    mockGeoFetch(true, { city: "Austin", region: "TX", country: "US" });
-    const insert = mockInsertSequence([
-      { error: { message: "temporary failure" } },
-      { error: null },
-    ]);
-    vi.spyOn(console, "error").mockImplementation(() => {});
-
-    const first = await logVisit("page-retry-later");
-    expect(first).toBe(false); // not marked done — caller leaves it eligible to retry
-
-    const second = await logVisit("page-retry-later");
-    expect(second).toBe(true); // the earlier failure didn't leave inFlight stuck
-
-    expect(insert).toHaveBeenCalledTimes(2);
+    resolveFetch!({ ok: true, json: () => Promise.resolve({ recorded: true }) });
+    expect(await first).toEqual({ handled: true, recorded: true });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
 
-// Owner-exclusion behavior lives in the useVisitLogger hook itself (isOwner
-// check), not in logVisit — these mount the real hook to exercise it.
-// jsdom's default test hostname is "localhost", which useVisitLogger skips
-// unconditionally regardless of owner status, so hostname is stubbed to a
-// real deployed-looking host to actually exercise the isOwner branch.
 function stubHostname(hostname: string) {
   const original = window.location;
   Object.defineProperty(window, "location", {
@@ -155,8 +97,7 @@ function stubHostname(hostname: string) {
   return () => Object.defineProperty(window, "location", { configurable: true, value: original });
 }
 
-describe("useVisitLogger (owner exclusion)", () => {
-  const OWNER_KEY = "pl_session_access";
+describe("useVisitLogger", () => {
   let restoreLocation: () => void;
 
   beforeEach(() => {
@@ -171,88 +112,77 @@ describe("useVisitLogger (owner exclusion)", () => {
     restoreLocation();
   });
 
-  it("does not log a visit when the owner flag is already set (owner excluded)", async () => {
-    localStorage.setItem(OWNER_KEY, "1");
-    mockGeoFetch(true, { city: "Austin", region: "TX", country: "US" });
-    const insert = mockInsert({ error: null });
+  it("never calls the server on localhost", async () => {
+    restoreLocation();
+    restoreLocation = stubHostname("localhost");
+    const fetchMock = mockFetch({ ok: true, body: { recorded: true } });
 
-    renderHook(() => useVisitLogger("page-owner"));
+    renderHook(() => useVisitLogger("page-localhost"));
     await new Promise((r) => setTimeout(r, 0));
 
-    expect(insert).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("logs a visit for an ordinary visitor with no owner flag set", async () => {
-    mockGeoFetch(true, { city: "Austin", region: "TX", country: "US" });
-    const insert = mockInsert({ error: null });
+  it("calls the server for an ordinary page load — there is no client-side owner gate anymore", async () => {
+    const fetchMock = mockFetch({ ok: true, body: { recorded: true } });
 
     renderHook(() => useVisitLogger("page-visitor"));
-    await waitFor(() => expect(insert).toHaveBeenCalledTimes(1));
-
-    expect(insert).toHaveBeenCalledWith(expect.objectContaining({ page: "page-visitor" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
   });
 
-  it("keeps excluding the owner across a simulated reload (flag persists in localStorage, not component state)", async () => {
-    localStorage.setItem(OWNER_KEY, "1");
-    mockGeoFetch(true, { city: "Austin", region: "TX", country: "US" });
-    const insert = mockInsert({ error: null });
+  it("still calls the server even when the legacy pl_owner_exclusion flag is set — that flag no longer gates anything client-side", async () => {
+    localStorage.setItem("pl_owner_exclusion", "1");
+    const fetchMock = mockFetch({ ok: true, body: { recorded: false, reason: "owner" } });
 
-    const first = renderHook(() => useVisitLogger("page-reload"));
-    await new Promise((r) => setTimeout(r, 0));
-    first.unmount(); // simulates navigating away / reloading
-
-    renderHook(() => useVisitLogger("page-reload"));
-    await new Promise((r) => setTimeout(r, 0));
-
-    expect(insert).not.toHaveBeenCalled();
+    renderHook(() => useVisitLogger("page-legacy-flag-present"));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
   });
 
-  it("opening a page alone (no unlock action) never sets the owner flag itself", async () => {
-    mockGeoFetch(true, { city: "Austin", region: "TX", country: "US" });
-    mockInsert({ error: null });
+  it("marks sessionStorage as seen once the server gives a definitive answer, even when it was an owner-skip", async () => {
+    const fetchMock = mockFetch({ ok: true, body: { recorded: false, reason: "owner" } });
 
-    renderHook(() => useVisitLogger("page-no-selfset"));
-    await new Promise((r) => setTimeout(r, 0));
-
-    expect(localStorage.getItem(OWNER_KEY)).toBeNull();
-  });
-
-  // The two tests below exercise the pl_owner_exclusion / pl_session_access
-  // split (src/lib/ownerExclusion.ts) through the real hook, complementing
-  // the direct unit coverage in src/lib/ownerExclusion.test.ts.
-  const OWNER_EXCLUSION_KEY = "pl_owner_exclusion";
-
-  it("does not log when only the legacy master key is set, and backfills the new owner-exclusion key", async () => {
-    localStorage.setItem(OWNER_KEY, "1"); // legacy key only — pre-migration browser state
-    mockGeoFetch(true, { city: "Austin", region: "TX", country: "US" });
-    const insert = mockInsert({ error: null });
-
-    renderHook(() => useVisitLogger("page-legacy-backfill"));
-    await new Promise((r) => setTimeout(r, 0));
-
-    expect(insert).not.toHaveBeenCalled();
-    expect(localStorage.getItem(OWNER_EXCLUSION_KEY)).toBe("1");
-  });
-
-  it("keeps excluding the owner via the new key after the legacy key is later removed (post-migration)", async () => {
-    localStorage.setItem(OWNER_KEY, "1");
-    mockGeoFetch(true, { city: "Austin", region: "TX", country: "US" });
-    const insert = mockInsert({ error: null });
-
-    // First mount backfills pl_owner_exclusion from the legacy key.
-    const first = renderHook(() => useVisitLogger("page-migrated"));
-    await new Promise((r) => setTimeout(r, 0));
+    const first = renderHook(() => useVisitLogger("page-owner-session-dedup"));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     first.unmount();
-    expect(localStorage.getItem(OWNER_EXCLUSION_KEY)).toBe("1");
 
-    // Simulates the legacy key being cleared afterward (e.g. by a lock
-    // action doing its legitimate job) via direct storage manipulation —
-    // not a reintroduction of the old doLock() bug into production code.
-    localStorage.removeItem(OWNER_KEY);
-
-    renderHook(() => useVisitLogger("page-migrated-2"));
+    renderHook(() => useVisitLogger("page-owner-session-dedup"));
     await new Promise((r) => setTimeout(r, 0));
 
-    expect(insert).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1); // not called again this tab session
+  });
+
+  it("does NOT mark sessionStorage as seen on a failed request, so a later mount retries", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const fetchMock = mockFetch({ ok: false, status: 502, body: {} });
+
+    const first = renderHook(() => useVisitLogger("page-retry-eligible"));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    first.unmount();
+
+    renderHook(() => useVisitLogger("page-retry-eligible"));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+  });
+
+  it("skips self-referrals from other portfolio pages without calling the server", async () => {
+    restoreLocation();
+    const original = window.location;
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { ...original, hostname: "preetibuilds-33d6f6da.vercel.app", hash: "", search: "" },
+    });
+    Object.defineProperty(document, "referrer", {
+      configurable: true,
+      value: "https://preetibuilds-33d6f6da.vercel.app/some-other-page",
+    });
+    const fetchMock = mockFetch({ ok: true, body: { recorded: true } });
+
+    renderHook(() => useVisitLogger("page-self-referral"));
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(sessionStorage.getItem("vl_page-self-referral")).toBe("1");
+
+    Object.defineProperty(document, "referrer", { configurable: true, value: "" });
+    restoreLocation = () => Object.defineProperty(window, "location", { configurable: true, value: original });
   });
 });

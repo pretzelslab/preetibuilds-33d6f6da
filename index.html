@@ -3,14 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-V7H8XFTNE8"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-V7H8XFTNE8');
-    </script>
+    <!-- Google Analytics is intentionally NOT loaded here. It is loaded
+         conditionally from React (see src/components/GoogleAnalyticsLoader.tsx
+         and src/lib/ga.ts) only after confirming, server-side, that this
+         browser is not the portfolio owner — see api/owner-status.ts. -->
     <title>Preeti Builds</title>
     <meta name="description" content="Responsible AI tools and governance frameworks for practitioners — built by Preeti.">
     <meta name="author" content="Preeti" />

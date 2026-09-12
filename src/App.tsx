@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { useEffect } from "react";
+import GoogleAnalyticsLoader from "@/components/GoogleAnalyticsLoader";
 import Index from "./pages/Index";
 import MedLog from "./pages/MedLog";
 import GTMTechStack from "./pages/GTMTechStack";
@@ -104,6 +105,7 @@ const App = () => (
         <BrowserRouter>
           <RouteTitle />
           <CopyProtection />
+          <GoogleAnalyticsLoader />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/medlog" element={<MedLog />} />

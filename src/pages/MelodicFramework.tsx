@@ -9,6 +9,7 @@ import { govDb } from "@/lib/supabase-governance";
 import { PageGate } from "@/components/ui/PageGate";
 import { DiagonalWatermark } from "@/components/ui/DiagonalWatermark";
 import { verifyMasterCode } from "@/lib/masterCode";
+import { markOwnerExcluded } from "@/lib/ownerExclusion";
 
 const YT_API_KEY = import.meta.env.VITE_YT_API_KEY as string;
 
@@ -1451,7 +1452,11 @@ export default function MelodicFramework() {
 
   async function tryAdmin(e: React.FormEvent) {
     e.preventDefault();
-    if (await verifyMasterCode(pinInput)) { setAdminMode(true); setPinInput(""); setPinError(false); }
+    // verifyMasterCode's own server call (api/verify-master-code.ts) already
+    // establishes the authoritative owner session cookie on success —
+    // markOwnerExcluded() here is UI-state only, kept in sync for
+    // consistency with the other three master-code entry points.
+    if (await verifyMasterCode(pinInput)) { markOwnerExcluded(); setAdminMode(true); setPinInput(""); setPinError(false); }
     else { setPinInput(""); setPinError(true); setTimeout(() => setPinError(false), 2000); }
   }
 
