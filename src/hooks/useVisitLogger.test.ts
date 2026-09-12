@@ -130,12 +130,16 @@ describe("useVisitLogger", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
   });
 
-  it("still calls the server even when the legacy pl_owner_exclusion flag is set — that flag no longer gates anything client-side", async () => {
+  // Layer 1 was reinstated after 7822bb0: the client flag short-circuits the
+  // request entirely. The server cookie stays authoritative for every browser
+  // that does NOT have the flag — see the Layer 1 describe block below.
+  it("does not call the server when pl_owner_exclusion is set — Layer 1 short-circuit", async () => {
     localStorage.setItem("pl_owner_exclusion", "1");
     const fetchMock = mockFetch({ ok: true, body: { recorded: false, reason: "owner" } });
 
     renderHook(() => useVisitLogger("page-legacy-flag-present"));
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    await new Promise(r => setTimeout(r, 20));
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("marks sessionStorage as seen once the server gives a definitive answer, even when it was an owner-skip", async () => {
@@ -256,5 +260,67 @@ describe("retractPendingVisit", () => {
     mockFetchRejects();
 
     await expect(retractPendingVisit()).resolves.toBeUndefined();
+  });
+});
+
+// ── Layer 1 ───────────────────────────────────────────────────────────────────
+// The client-side owner short-circuit re-added on top of 7822bb0. The server
+// cookie (Layer 2) remains authoritative for anyone who gets past this; these
+// tests only prove the local flag stops the request being made at all, and
+// that it never suppresses a normal visitor.
+describe("useVisitLogger — Layer 1 client owner short-circuit", () => {
+  let restoreLocation: () => void;
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    localStorage.clear();
+    sessionStorage.clear();
+    restoreLocation = stubHostname("preetibuilds-33d6f6da.vercel.app");
+  });
+  afterEach(() => {
+    cleanup();
+    restoreLocation();
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+
+  it("sends no analytics request when pl_owner_exclusion is set", async () => {
+    const fetchMock = mockFetch({ ok: true, body: { recorded: true, id: "x" } });
+    localStorage.setItem("pl_owner_exclusion", "1");
+
+    renderHook(() => useVisitLogger("/layer1-owner"));
+
+    await new Promise(r => setTimeout(r, 20));
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("also short-circuits on the legacy pl_session_access key (migration path)", async () => {
+    const fetchMock = mockFetch({ ok: true, body: { recorded: true, id: "x" } });
+    localStorage.setItem("pl_session_access", "1");
+
+    renderHook(() => useVisitLogger("/layer1-legacy"));
+
+    await new Promise(r => setTimeout(r, 20));
+    expect(fetchMock).not.toHaveBeenCalled();
+    // Backfilled onto the new key so a later page-Lock cannot revoke exclusion.
+    expect(localStorage.getItem("pl_owner_exclusion")).toBe("1");
+  });
+
+  it("still sends the request for a normal visitor with no owner flag", async () => {
+    const fetchMock = mockFetch({ ok: true, body: { recorded: true, id: "x" } });
+
+    renderHook(() => useVisitLogger("/layer1-visitor"));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/portfolio-analytics");
+  });
+
+  it("leaves the server as the authority — Layer 1 absent still defers to the server's owner skip", async () => {
+    const fetchMock = mockFetch({ ok: true, body: { recorded: false, reason: "owner" } });
+
+    renderHook(() => useVisitLogger("/layer2-still-authoritative"));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(sessionStorage.getItem("vl_/layer2-still-authoritative")).toBe("1");
   });
 });

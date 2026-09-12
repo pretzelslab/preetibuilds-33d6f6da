@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
@@ -13,26 +13,11 @@ import {
 } from "@/lib/carbonCustomData";
 import { GPU_PRESETS, REGION_ZONES, STATIC_INTENSITY } from "@/data/carbonDepthData";
 import type { CustomGPU, CustomRegion } from "@/lib/carbonCustomData";
+import { excludeOwnerVisits, type AnalyticsVisit } from "@/lib/analyticsExclusion";
 
-interface Visit {
-  id: string;
-  page: string;
-  referrer: string | null;
-  user_agent: string | null;
-  visited_at: string;
-  city: string | null;
-  region: string | null;
-  country: string | null;
-}
-
-// Confirmed diagnostic/test rows from the 2026-09-08/09 geo-access verification
-// work. Excluded by id (not an `is_test` column — the live schema has none)
-// so they stay in the DB per the no-deletion instruction while disappearing
-// from every analytics surface that reads these two queries.
-const EXCLUDED_VISIT_IDS = [
-  "3bd1759f-d5bc-4e24-8ebf-8349f8a67bcf",
-  "bcefab34-ed23-49d9-af04-0abb2be74deb",
-];
+// Row shape is owned by src/lib/analyticsExclusion.ts so the exclusion filter
+// and every consumer here are guaranteed to agree on the available fields.
+type Visit = AnalyticsVisit;
 
 // City takes priority, country is the fallback, "Unknown" when neither is captured.
 // Historical rows logged before geolocation existed simply have both fields null.
@@ -1041,7 +1026,9 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 }
 
 export default function Admin() {
-  const [visits, setVisits] = useState<Visit[]>([]);
+  // Raw rows exactly as stored. Never rendered or counted directly — every
+  // consumer below reads `visits`, the excluded-filtered view of this.
+  const [allVisits, setAllVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [newCount, setNewCount] = useState(0);
@@ -1066,10 +1053,16 @@ export default function Admin() {
   // so pagination covers every stored row, not just the capped 200-row fetch
   // used for the stats/chart above.
   const [recentPage, setRecentPage] = useState(1);
-  const [recentVisits, setRecentVisits] = useState<Visit[]>([]);
-  const [recentTotal, setRecentTotal] = useState(0);
   const [recentLoading, setRecentLoading] = useState(true);
   const [recentError, setRecentError] = useState<string | null>(null);
+
+  // ── The single exclusion point (Layer 3) ────────────────────────────────
+  // Everything below — Recent Visits, Total visits, Top source, Mobile,
+  // Pages, the 7-day chart, location strings, the visit-log table and all
+  // pagination arithmetic — derives from this one array. Nothing reads
+  // `allVisits` directly, so a row cannot be hidden from one surface while
+  // still counting towards another.
+  const visits = useMemo(() => excludeOwnerVisits(allVisits), [allVisits]);
 
   // UI-state only now (see src/lib/ownerExclusion.ts) — actual analytics
   // exclusion is decided server-side from the signed owner cookie, which
@@ -1092,70 +1085,76 @@ export default function Admin() {
     return () => { document.title = "Admin | Preeti Builds"; };
   }, [newCount]);
 
+  // One fetch, one filter, one dataset.
+  //
+  // This previously ran as two independent queries: a 200-row capped fetch for
+  // the stats/chart, and a server-side range + exact count for Recent Visits.
+  // Owner exclusion cannot be applied consistently across that split — the
+  // exact count would keep counting a row that Recent Visits had filtered out,
+  // so the same visit would vanish from the list while still inflating Total
+  // Visits. Fetching every row once and filtering it in a single place makes
+  // that divergence structurally impossible, and removes the 200-row cap that
+  // used to limit Top source / Mobile / Pages / the 7-day chart.
+  //
+  // Paged at the PostgREST maximum (1000) rather than assuming one request
+  // returns everything. Secondary order on `id` breaks ties when two visits
+  // share a timestamp, keeping page boundaries stable.
   useEffect(() => {
-    if (!unlocked) { setLoading(false); return; }
-    govDb
-      .from("visit_logs")
-      .select("*")
-      .not("id", "in", `(${EXCLUDED_VISIT_IDS.join(",")})`)
-      .order("visited_at", { ascending: false })
-      .limit(200)
-      .then(({ data }) => {
-        if (data) {
-          setVisits(data as Visit[]);
-          try {
-            const last = parseInt(localStorage.getItem(LAST_SEEN_KEY) ?? "0", 10);
-            const diff = data.length - last;
-            const count = diff > 0 ? diff : 0;
-            setNewCount(count);
-            // Browser notification when new visitors detected
-            if (count > 0 && "Notification" in window) {
-              Notification.requestPermission().then(permission => {
-                if (permission === "granted") {
-                  new Notification("preetibuilds", {
-                    body: `${count} new visitor${count > 1 ? "s" : ""} since you last checked.`,
-                    icon: "/favicon.ico",
-                  });
-                }
-              });
-            }
-          } catch {}
-        }
-        setLoading(false);
-      });
-  }, [unlocked]);
-
-  // Recent visits pagination — fetches exactly one page (10 rows) plus an
-  // exact total count, so Previous/Next always reflects every stored visit.
-  // Secondary order on `id` breaks ties when two visits share a timestamp,
-  // keeping page boundaries stable across navigation.
-  useEffect(() => {
-    if (!unlocked) { setRecentLoading(false); return; }
+    if (!unlocked) { setLoading(false); setRecentLoading(false); return; }
     let cancelled = false;
+    setLoading(true);
     setRecentLoading(true);
-    const from = (recentPage - 1) * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-    govDb
-      .from("visit_logs")
-      .select("*", { count: "exact" })
-      .not("id", "in", `(${EXCLUDED_VISIT_IDS.join(",")})`)
-      .order("visited_at", { ascending: false })
-      .order("id", { ascending: false })
-      .range(from, to)
-      .then(({ data, count, error }) => {
+
+    (async () => {
+      const CHUNK = 1000;
+      const rows: Visit[] = [];
+      for (let offset = 0; ; offset += CHUNK) {
+        const { data, error } = await govDb
+          .from("visit_logs")
+          .select("*")
+          .order("visited_at", { ascending: false })
+          .order("id", { ascending: false })
+          .range(offset, offset + CHUNK - 1);
         if (cancelled) return;
         if (error) {
           setRecentError(error.message);
+          setLoading(false);
           setRecentLoading(false);
           return;
         }
-        setRecentError(null);
-        setRecentVisits((data ?? []) as Visit[]);
-        setRecentTotal(count ?? 0);
-        setRecentLoading(false);
-      });
+        rows.push(...((data ?? []) as Visit[]));
+        if (!data || data.length < CHUNK) break;
+      }
+      if (cancelled) return;
+
+      setRecentError(null);
+      setAllVisits(rows);
+      setLoading(false);
+      setRecentLoading(false);
+
+      // New-visitor badge counts only visits that survive exclusion, so the
+      // owner's own browsing never raises it.
+      try {
+        const visible = excludeOwnerVisits(rows);
+        const last = parseInt(localStorage.getItem(LAST_SEEN_KEY) ?? "0", 10);
+        const diff = visible.length - last;
+        const count = diff > 0 ? diff : 0;
+        setNewCount(count);
+        if (count > 0 && "Notification" in window) {
+          Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+              new Notification("preetibuilds", {
+                body: `${count} new visitor${count > 1 ? "s" : ""} since you last checked.`,
+                icon: "/favicon.ico",
+              });
+            }
+          });
+        }
+      } catch {}
+    })();
+
     return () => { cancelled = true; };
-  }, [recentPage, unlocked]);
+  }, [unlocked]);
 
   function markSeen() {
     try { localStorage.setItem(LAST_SEEN_KEY, String(visits.length)); } catch {}
@@ -1169,7 +1168,7 @@ export default function Admin() {
       setDeleteError(`Delete failed: ${error.message} — check Supabase RLS policy for visit_logs DELETE.`);
       return;
     }
-    setVisits(v => v.filter(x => x.id !== id));
+    setAllVisits(v => v.filter(x => x.id !== id));
   }
 
   async function deleteSelected(ids: string[]) {
@@ -1179,7 +1178,7 @@ export default function Admin() {
       setDeleteError(`Delete failed: ${error.message} — check Supabase RLS policy for visit_logs DELETE.`);
       return;
     }
-    setVisits(v => v.filter(x => !ids.includes(x.id)));
+    setAllVisits(v => v.filter(x => !ids.includes(x.id)));
   }
 
   const SELF_DOMAINS = ["preetibuilds-33d6f6da.vercel.app", "preetibuilds.vercel.app"];
@@ -1191,10 +1190,16 @@ export default function Admin() {
     .filter(v => filter === "all" || v.page === filter)
     .filter(v => !hideSelfReferrals || !isSelfReferral(v));
 
-  // Recent visits pagination — derived from the exact server-side count above.
+  // Recent visits pagination — sliced from the same filtered array that feeds
+  // every total, so the list and the counts can never disagree.
+  const recentTotal = visits.length;
   const recentTotalPages = Math.max(1, Math.ceil(recentTotal / PAGE_SIZE));
-  const recentRangeStart = recentTotal === 0 ? 0 : (recentPage - 1) * PAGE_SIZE + 1;
-  const recentRangeEnd = Math.min(recentPage * PAGE_SIZE, recentTotal);
+  // Clamp so exclusion shrinking the dataset can never strand the view on a
+  // page that no longer exists (which would render an empty list).
+  const safePage = Math.min(Math.max(1, recentPage), recentTotalPages);
+  const recentVisits = visits.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const recentRangeStart = recentTotal === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1;
+  const recentRangeEnd = Math.min(safePage * PAGE_SIZE, recentTotal);
 
   const sourceCounts = visits.reduce<Record<string, number>>((acc, v) => {
     const s = parseSource(v.referrer);
@@ -1251,7 +1256,7 @@ export default function Admin() {
         </div>
       </div>
       <p className="text-[9px] text-muted-foreground/50 -mt-1">
-        Total visits is an exact count. Top source, Mobile, and Pages are based on the latest 200 visits only.
+        Exact counts over every stored visit. Owner visits are excluded from all figures on this page.
       </p>
       {recentError && (
         <p className="text-[9px] text-rose-500/80 -mt-1">Total visits failed to load: {recentError}</p>
@@ -1260,7 +1265,7 @@ export default function Admin() {
       {/* 7-day chart */}
       {visits.length > 0 && (
         <div>
-          <p className="text-[10px] font-semibold mb-2 text-muted-foreground uppercase tracking-wide">Last 7 days · latest 200</p>
+          <p className="text-[10px] font-semibold mb-2 text-muted-foreground uppercase tracking-wide">Last 7 days</p>
           <ResponsiveContainer width="100%" height={80}>
             <BarChart data={chartData} barSize={14} margin={{ top: 0, right: 0, left: -32, bottom: 0 }}>
               <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
@@ -1302,8 +1307,8 @@ export default function Admin() {
             </div>
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/30">
               <button
-                onClick={() => setRecentPage(p => Math.max(1, p - 1))}
-                disabled={recentPage <= 1}
+                onClick={() => setRecentPage(Math.max(1, safePage - 1))}
+                disabled={safePage <= 1}
                 className="text-[10px] font-medium px-1.5 py-0.5 rounded border border-border/40 text-muted-foreground hover:text-foreground hover:border-blue-500/30 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-muted-foreground disabled:hover:border-border/40 transition-colors"
               >
                 ← Prev
@@ -1312,8 +1317,8 @@ export default function Admin() {
                 {recentRangeStart}–{recentRangeEnd} of {recentTotal}
               </span>
               <button
-                onClick={() => setRecentPage(p => Math.min(recentTotalPages, p + 1))}
-                disabled={recentPage >= recentTotalPages}
+                onClick={() => setRecentPage(Math.min(recentTotalPages, safePage + 1))}
+                disabled={safePage >= recentTotalPages}
                 className="text-[10px] font-medium px-1.5 py-0.5 rounded border border-border/40 text-muted-foreground hover:text-foreground hover:border-blue-500/30 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-muted-foreground disabled:hover:border-border/40 transition-colors"
               >
                 Next →

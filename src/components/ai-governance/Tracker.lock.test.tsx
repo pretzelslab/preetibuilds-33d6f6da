@@ -129,16 +129,25 @@ describe("AI Governance Tracker — real Lock page button (4caada4 verification)
     expect(result.current).toBe(true);
   });
 
-  it("4. subsequent navigation as owner still calls the server — the server, not this browser, decides whether it's recorded", async () => {
+  it("4. Lock independence: after locking the page, navigating on still sends no analytics request — owner exclusion survived the Lock", async () => {
     localStorage.setItem(OWNER_KEY, "1");
-    const fetchMock = mockAnalyticsFetch(false); // server would respond {recorded:false, reason:"owner"} for a real owner cookie
+    const fetchMock = mockAnalyticsFetch(false);
     renderTracker();
 
     fireEvent.click(screen.getByTitle("Lock page"));
 
-    renderHook(() => useVisitLogger("page-after-tracker-lock")); // simulates navigating elsewhere as owner
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-    expect(fetchMock).toHaveBeenCalledWith("/api/portfolio-analytics", expect.anything());
+    // Lock is a per-page preview of the visitor view (4caada4): it touches
+    // neither the site-wide master unlock nor anything analytics-related.
+    expect(localStorage.getItem("pl_session_access")).toBe("1");
+
+    renderHook(() => useVisitLogger("page-after-tracker-lock")); // navigating elsewhere as owner
+    await new Promise(r => setTimeout(r, 20));
+
+    // Layer 1 short-circuited the visit before it reached the network, and the
+    // dedicated owner-analytics key (71645c7's split) is now backfilled — so a
+    // later Lock still cannot revoke exclusion.
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(localStorage.getItem("pl_owner_exclusion")).toBe("1");
   });
 
   it("5. an ordinary visitor (no owner flag ever set) still logs normally — regression check", async () => {
@@ -175,7 +184,7 @@ describe("Owner exclusion across remounts — same-process vs. a real restart", 
     restoreLocation();
   });
 
-  it("full app remount (same JS process, storage retained): stays unlocked, and a subsequent visit-log call still goes through the server", async () => {
+  it("full app remount (same JS process, storage retained): stays unlocked, and owner exclusion still suppresses the visit", async () => {
     localStorage.setItem(OWNER_KEY, "1");
     const fetchMock = mockAnalyticsFetch(false);
 
@@ -187,7 +196,8 @@ describe("Owner exclusion across remounts — same-process vs. a real restart", 
     expect(screen.getByTitle("Lock page")).toBeInTheDocument();
 
     renderHook(() => useVisitLogger("page-after-full-remount"));
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    await new Promise(r => setTimeout(r, 20));
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("module-level reset (closest achievable proxy to an actual browser restart): still posts to the server analytics endpoint, no in-memory carryover needed since owner status is never held in memory", async () => {

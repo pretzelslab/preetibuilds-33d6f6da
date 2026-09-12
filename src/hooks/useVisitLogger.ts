@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { isOwnerExcluded } from "@/lib/ownerExclusion";
 
 function getSource(): string | null {
   const params = new URLSearchParams(window.location.search);
@@ -101,6 +102,15 @@ export function useVisitLogger(page: string) {
     const hostname = window.location.hostname;
     if (hostname === "localhost" || hostname === "127.0.0.1") return;
 
+    // ── Layer 1: client-side owner short-circuit ──────────────────────────
+    // A browser that already knows it is the owner never sends the request at
+    // all. This is deliberately NOT the authority — the server still decides
+    // for anyone who gets past here (Layer 2, below) — it is a first line of
+    // defence so owner exclusion does not depend on a single mechanism. The
+    // two fail independently: this survives a cleared cookie, the server
+    // cookie survives cleared localStorage.
+    if (isOwnerExcluded()) return;
+
     const sessionKey = `vl_${page}`;
     const alreadyLogged = !!sessionStorage.getItem(sessionKey);
     if (alreadyLogged) return;
@@ -115,9 +125,12 @@ export function useVisitLogger(page: string) {
       return;
     }
 
-    // No client-side owner check here by design — server owner
-    // verification (the signed pl_owner cookie, checked in
-    // api/portfolio-analytics.ts) is authoritative. This always asks.
+    // ── Layer 2: server owner verification ────────────────────────────────
+    // Authoritative. The signed, HttpOnly pl_owner cookie is checked in
+    // api/portfolio-analytics.ts, which alone decides whether a row is
+    // written. Layer 1 above is an optimisation and a redundancy, never a
+    // replacement — a browser that clears localStorage but keeps its cookie
+    // is still excluded here.
     logVisit(page).then(({ handled }) => {
       if (handled) sessionStorage.setItem(sessionKey, "1");
     });
