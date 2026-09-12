@@ -7,6 +7,14 @@ import { shouldLoadGA, loadGA } from "@/lib/ga";
 // (never track the owner) reasoning.
 export default function GoogleAnalyticsLoader() {
   useEffect(() => {
+    // /owner must never trigger GA, before or after authentication — reading
+    // this directly (rather than depending on react-router) also means a
+    // real navigation to "/" after a successful /owner verification (see
+    // src/pages/Owner.tsx) re-mounts this component fresh, so the
+    // post-auth case is covered by the owner-status check below, not by
+    // this path check having "expired".
+    if (window.location.pathname === "/owner") return;
+
     let cancelled = false;
     shouldLoadGA().then((load) => {
       if (load && !cancelled) loadGA();

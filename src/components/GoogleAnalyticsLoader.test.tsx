@@ -32,4 +32,20 @@ describe("GoogleAnalyticsLoader — GA initialization is gated on server-verifie
     const { container } = render(<GoogleAnalyticsLoader />);
     expect(container.textContent).toBe("");
   });
+
+  it("never even asks the server on /owner, before or after authentication", async () => {
+    (shouldLoadGA as ReturnType<typeof vi.fn>).mockResolvedValue(true);
+    const originalLocation = window.location;
+    // @ts-expect-error -- jsdom's location is configurable for this exact purpose
+    delete window.location;
+    window.location = { ...originalLocation, pathname: "/owner" } as Location;
+
+    render(<GoogleAnalyticsLoader />);
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(shouldLoadGA).not.toHaveBeenCalled();
+    expect(loadGA).not.toHaveBeenCalled();
+
+    window.location = originalLocation;
+  });
 });

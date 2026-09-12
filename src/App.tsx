@@ -34,6 +34,7 @@ import WinLossIntelligence from "./pages/WinLossIntelligence";
 import ResearchLab from "./pages/ResearchLab";
 import HumanEvolution from "./pages/HumanEvolution";
 import AIPlatform from "./pages/AIPlatform";
+import Owner from "./pages/Owner";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/research-lab":             "Research & Ventures | Preeti Builds",
   "/human-evolution":          "Human Evolution in the Age of AI | Preeti Builds",
   "/ai-platform":              "AI Platform Engineering Lab | Preeti Builds",
+  "/owner":                    "Owner Access | Preeti Builds",
 };
 
 const RouteTitle = () => {
@@ -134,6 +136,7 @@ const App = () => (
             <Route path="/research-lab" element={<ResearchLab />} />
             <Route path="/human-evolution" element={<HumanEvolution />} />
             <Route path="/ai-platform" element={<AIPlatform />} />
+            <Route path="/owner" element={<Owner />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

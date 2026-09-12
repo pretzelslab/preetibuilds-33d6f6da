@@ -10,7 +10,7 @@
 // PORTFOLIO_OWNER_TOKEN itself (HMAC is one-way).
 
 export const OWNER_COOKIE_NAME = "pl_owner";
-export const OWNER_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 180; // 180 days
+export const OWNER_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365; // 1 year
 
 function toHex(bytes: ArrayBuffer): string {
   return Array.from(new Uint8Array(bytes))
