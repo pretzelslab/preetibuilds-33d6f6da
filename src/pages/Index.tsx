@@ -9,7 +9,6 @@ import About from "@/components/portfolio/About";
 import Contact from "@/components/portfolio/Contact";
 import Footer from "@/components/portfolio/Footer";
 import { useVisitLogger } from "@/hooks/useVisitLogger";
-import { markOwnerExcluded } from "@/lib/ownerExclusion";
 
 const BackToTop = () => {
   const [visible, setVisible] = useState(false);
@@ -35,25 +34,12 @@ const BackToTop = () => {
   );
 };
 
-const MASTER_CODE = "PRL2026";
-const OWNER_KEY = "pl_session_access";
-
 const Index = () => {
-  // Owner re-activation: visiting /#PRL2026 re-sets the owner key in case
-  // localStorage was cleared. Declared (and thus effect-flushed) before
-  // useVisitLogger below — React runs passive effects in the order their
-  // hooks are called, so if this ran after useVisitLogger's own effect,
-  // that effect would already have read the (still-missing) owner flag
-  // and started logging this exact page load before the flag landed.
-  useEffect(() => {
-    const hash = window.location.hash.replace("#", "").toUpperCase().trim();
-    if (hash === MASTER_CODE) {
-      try { localStorage.setItem(OWNER_KEY, "1"); } catch {}
-      markOwnerExcluded();
-      window.history.replaceState(null, "", window.location.pathname + window.location.search);
-    }
-  }, []);
-
+  // Owner re-activation no longer happens via a URL hash shortcut — the
+  // master code must never appear in a URL. To re-establish owner state
+  // after localStorage is cleared, enter the code through a visible input
+  // (any PageGate-protected page, or the AI Governance Tracker's own unlock
+  // modal) — both now verify server-side via src/lib/masterCode.ts.
   useVisitLogger("/");
 
   return (

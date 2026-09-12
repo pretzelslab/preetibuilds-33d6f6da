@@ -1316,7 +1316,7 @@ export default function Admin() {
         <p className="text-[10px] font-semibold mb-2 text-muted-foreground uppercase tracking-wide">Access codes</p>
         <div className="space-y-1">
           {[
-            { page: "Master (all pages)", code: "PRL2026", master: true },
+            { page: "Master (all pages)", code: null as string | null, master: true },
             { page: "Research",           code: "RSC2026" },
             { page: "Carbon Depth",       code: "CDX2026" },
             { page: "AI Readiness",       code: "ARD2026" },
@@ -1331,13 +1331,20 @@ export default function Admin() {
             { page: "Melodic",            code: "MEL2026" },
             { page: "Admin",              code: "ADM2026" },
           ].map(({ page, code, master }) => (
-            <div key={code} className="flex items-center justify-between gap-1">
+            <div key={page} className="flex items-center justify-between gap-1">
               <span className={`text-[10px] truncate ${master ? "text-blue-500 dark:text-blue-400 font-medium" : "text-muted-foreground"}`}>{page}</span>
-              <button
-                onClick={() => navigator.clipboard.writeText(code)}
-                className={`font-mono text-[9px] px-1 py-0.5 rounded border transition-colors shrink-0 ${master ? "border-blue-500/30 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20" : "border-border/40 bg-muted/30 text-foreground hover:border-blue-500/30 hover:text-blue-500"}`}
-                title="Copy"
-              >{code}</button>
+              {code ? (
+                <button
+                  onClick={() => navigator.clipboard.writeText(code)}
+                  className="font-mono text-[9px] px-1 py-0.5 rounded border transition-colors shrink-0 border-border/40 bg-muted/30 text-foreground hover:border-blue-500/30 hover:text-blue-500"
+                  title="Copy"
+                >{code}</button>
+              ) : (
+                <span
+                  className="font-mono text-[9px] px-1 py-0.5 rounded border shrink-0 border-blue-500/30 bg-blue-500/10 text-blue-500"
+                  title="Verified server-side — enter it on any locked page"
+                >server-verified</span>
+              )}
             </div>
           ))}
         </div>

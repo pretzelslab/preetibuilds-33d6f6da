@@ -1,11 +1,13 @@
 import { useState, useEffect, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { markOwnerExcluded } from "@/lib/ownerExclusion";
+import { verifyMasterCode } from "@/lib/masterCode";
 
 // ── Access code registry ───────────────────────────────────────────────────────
-// PRL2026 = master (unlocks everything — Preeti only)
+// Master code (unlocks everything — Preeti only) is verified server-side via
+// src/lib/masterCode.ts / api/verify-master-code.ts — never stored here, and
+// never accepted via URL hash (see the hash effect below).
 // Page codes = selective access, share one at a time with specific visitors
-const MASTER_CODE = "PRL2026";
 const MASTER_KEY  = "pl_session_access";
 
 const PAGE_CODES: Record<string, string> = {
@@ -95,29 +97,28 @@ export function PageGate({
   const [shaking, setShaking]   = useState(false);
   const [showInput, setShowInput] = useState(false);
 
-  // Hash-based unlock: /carbon-depth#PRL2026 or /carbon-depth#CDX2026
+  // Hash-based unlock for page-specific codes only: /carbon-depth#CDX2026.
+  // The master code is never accepted via URL hash — see tryUnlock below.
   useEffect(() => {
     const hash = window.location.hash.replace("#", "").toUpperCase().trim();
     if (!hash) return;
-    if (hash === MASTER_CODE) {
-      safeSet(MASTER_KEY, "1");
-      markOwnerExcluded();
-      setUnlocked(true);
-    } else if (pageId && hash === PAGE_CODES[pageId]) {
+    if (pageId && hash === PAGE_CODES[pageId]) {
       safeSet(pageKey(pageId), "1");
       setUnlocked(true);
     }
-    if (hash) window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
   }, [pageId]);
 
-  const tryUnlock = () => {
+  const tryUnlock = async () => {
     const entered = code.toUpperCase().trim();
-    if (entered === MASTER_CODE) {
+    if (pageId && PAGE_CODES[pageId] && entered === PAGE_CODES[pageId]) {
+      safeSet(pageKey(pageId), "1");
+      setUnlocked(true);
+      return;
+    }
+    if (await verifyMasterCode(entered)) {
       safeSet(MASTER_KEY, "1");
       markOwnerExcluded();
-      setUnlocked(true);
-    } else if (pageId && PAGE_CODES[pageId] && entered === PAGE_CODES[pageId]) {
-      safeSet(pageKey(pageId), "1");
       setUnlocked(true);
     } else {
       setError(true); setShaking(true);

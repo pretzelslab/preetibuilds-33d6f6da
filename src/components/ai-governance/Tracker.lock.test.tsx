@@ -4,12 +4,17 @@ import { MemoryRouter } from "react-router-dom";
 import { govDb } from "@/lib/supabase-governance";
 import { useVisitLogger } from "@/hooks/useVisitLogger";
 import { useGateUnlocked } from "@/components/ui/PageGate";
+import { verifyMasterCode } from "@/lib/masterCode";
 import AIGovernanceTracker from "./Tracker";
 
 // Focused local verification of the 4caada4 fix, using the REAL Tracker
 // component and its actual "Lock page" button — not a reimplementation of
 // doLock() in isolation. No live DB writes anywhere: govDb.from is mocked.
 vi.mock("@/lib/supabase-governance", () => ({ govDb: { from: vi.fn() } }));
+// The master code is now verified server-side (src/lib/masterCode.ts calls
+// api/verify-master-code.ts) — mocked directly so these tests don't need to
+// know about that network call's shape.
+vi.mock("@/lib/masterCode", () => ({ verifyMasterCode: vi.fn() }));
 
 const OWNER_KEY = "pl_session_access";
 const OWNER_EXCLUSION_KEY = "pl_owner_exclusion";
@@ -63,7 +68,8 @@ describe("AI Governance Tracker — real Lock page button (4caada4 verification)
     restoreLocation();
   });
 
-  it("1. visibly locks the page, and can unlock again with the master code", () => {
+  it("1. visibly locks the page, and can unlock again with a server-verified master code", async () => {
+    (verifyMasterCode as ReturnType<typeof vi.fn>).mockResolvedValue(true);
     localStorage.setItem(OWNER_KEY, "1");
     renderTracker();
 
@@ -77,16 +83,33 @@ describe("AI Governance Tracker — real Lock page button (4caada4 verification)
     expect(screen.getByText("Explore Policy Grid →")).toBeInTheDocument();
     expect(screen.queryByTitle("Lock page")).not.toBeInTheDocument();
 
-    // Re-unlock via the gate's "Owner login" link + master code.
+    // Re-unlock via the gate's "Owner login" link + master code, now
+    // verified server-side rather than compared to a client-side literal.
     fireEvent.click(screen.getByText("Owner login"));
-    fireEvent.change(screen.getByPlaceholderText("Access code"), { target: { value: "PRL2026" } });
+    fireEvent.change(screen.getByPlaceholderText("Access code"), { target: { value: "TESTCODE" } });
     fireEvent.click(screen.getByText("Unlock →"));
 
-    expect(screen.getByTitle("Lock page")).toBeInTheDocument(); // back to the unlocked main view
+    await waitFor(() => expect(screen.getByTitle("Lock page")).toBeInTheDocument()); // back to the unlocked main view
+    expect(verifyMasterCode).toHaveBeenCalledWith("TESTCODE");
     // Re-entering the master code through Tracker's own unlock UI must also
     // (re-)establish the standalone analytics exclusion key, not just the
     // portfolio master-unlock key.
     expect(localStorage.getItem(OWNER_EXCLUSION_KEY)).toBe("1");
+  });
+
+  it("1b. a server rejection of the entered code keeps the page locked", async () => {
+    (verifyMasterCode as ReturnType<typeof vi.fn>).mockResolvedValue(false);
+    localStorage.setItem(OWNER_KEY, "1");
+    renderTracker();
+
+    fireEvent.click(screen.getByTitle("Lock page"));
+    fireEvent.click(screen.getByText("Owner login"));
+    fireEvent.change(screen.getByPlaceholderText("Access code"), { target: { value: "WRONGCODE" } });
+    fireEvent.click(screen.getByText("Unlock →"));
+
+    await waitFor(() => expect(verifyMasterCode).toHaveBeenCalledWith("WRONGCODE"));
+    expect(screen.queryByTitle("Lock page")).not.toBeInTheDocument();
+    expect(localStorage.getItem(OWNER_EXCLUSION_KEY)).toBeNull();
   });
 
   it("2. owner-exclusion flag remains intact after clicking Lock page (the actual bug)", () => {

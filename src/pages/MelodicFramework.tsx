@@ -8,6 +8,7 @@ import Comments from "@/components/portfolio/Comments";
 import { govDb } from "@/lib/supabase-governance";
 import { PageGate } from "@/components/ui/PageGate";
 import { DiagonalWatermark } from "@/components/ui/DiagonalWatermark";
+import { verifyMasterCode } from "@/lib/masterCode";
 
 const YT_API_KEY = import.meta.env.VITE_YT_API_KEY as string;
 
@@ -1098,9 +1099,6 @@ function AddSongForm({
   );
 }
 
-// ── Admin PIN ─────────────────────────────────────────────────────────────────
-const ADMIN_PIN = "PRL2026";
-
 interface SongRequest {
   id: string;
   raaga_id: string;
@@ -1451,9 +1449,9 @@ export default function MelodicFramework() {
     }));
   }
 
-  function tryAdmin(e: React.FormEvent) {
+  async function tryAdmin(e: React.FormEvent) {
     e.preventDefault();
-    if (pinInput === ADMIN_PIN) { setAdminMode(true); setPinInput(""); setPinError(false); }
+    if (await verifyMasterCode(pinInput)) { setAdminMode(true); setPinInput(""); setPinError(false); }
     else { setPinInput(""); setPinError(true); setTimeout(() => setPinError(false), 2000); }
   }
 

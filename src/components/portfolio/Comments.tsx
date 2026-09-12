@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { govDb } from "@/lib/supabase-governance";
-
-const ADMIN_PIN = "PRL2026";
+import { verifyMasterCode } from "@/lib/masterCode";
 
 interface Comment {
   id: string;
@@ -97,9 +96,9 @@ export default function Comments({ hideAdminPin = false }: { hideAdminPin?: bool
     await load();
   }
 
-  function tryAdmin(e: React.FormEvent) {
+  async function tryAdmin(e: React.FormEvent) {
     e.preventDefault();
-    if (pinInput === ADMIN_PIN) { setAdminMode(true); setPinInput(""); }
+    if (await verifyMasterCode(pinInput)) { setAdminMode(true); setPinInput(""); }
     else { setPinInput(""); setError("Wrong PIN"); }
   }
 

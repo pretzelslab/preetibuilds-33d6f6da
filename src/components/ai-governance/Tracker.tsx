@@ -4,6 +4,7 @@ import * as XLSX from "xlsx";
 import { POLICY_DIGESTS, type CriticalPoint, type Misconception } from "./digests";
 import { IMPLEMENTATION_GUIDES } from "./guides";
 import { markOwnerExcluded } from "@/lib/ownerExclusion";
+import { verifyMasterCode } from "@/lib/masterCode";
 
 // ─── PREVIEW MODE ─────────────────────────────────────────────────────────────
 // Automatically enabled on Lovable's hosted URL (*.lovable.app).
@@ -3218,8 +3219,8 @@ export default function AIGovernanceTracker() {
     setVisitorAccess(true);
   };
 
-  const tryUnlock = () => {
-    if (unlockCode.toUpperCase().trim() === "PRL2026") {
+  const tryUnlock = async () => {
+    if (await verifyMasterCode(unlockCode.toUpperCase().trim())) {
       try { localStorage.setItem("pl_session_access", "1"); } catch {}
       markOwnerExcluded();
       setUnlocked(true); setShowUnlockModal(false); setUnlockCode(""); setVisitorAccess(true);

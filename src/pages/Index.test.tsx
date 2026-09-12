@@ -44,7 +44,7 @@ function stubLocation(hostname: string, hash: string) {
   return () => Object.defineProperty(window, "location", { configurable: true, value: original });
 }
 
-describe("Index — owner re-activation timing", () => {
+describe("Index — homepage visit logging (owner-reactivation hash removed)", () => {
   let restoreLocation: () => void;
 
   beforeEach(() => {
@@ -59,18 +59,18 @@ describe("Index — owner re-activation timing", () => {
     restoreLocation();
   });
 
-  it("sets the owner flag before useVisitLogger checks it, so visiting /#PRL2026 on a fresh browser does NOT log that visit", async () => {
-    restoreLocation = stubLocation("preetibuilds-33d6f6da.vercel.app", "#PRL2026");
+  it("a master-code-shaped hash on the homepage is inert — no owner flag is set, and the visit still logs normally", async () => {
+    // The master code must never appear in a URL — Index.tsx no longer has
+    // any hash-reading effect at all, so this hash is just an ordinary
+    // (ignored) URL fragment now.
+    restoreLocation = stubLocation("preetibuilds-33d6f6da.vercel.app", "#TESTCODE");
     const insert = mockInsert({ error: null });
 
     render(<Index />);
+    await waitFor(() => expect(insert).toHaveBeenCalledTimes(1));
 
-    // Give the async logVisit chain a chance to run if it were (incorrectly) triggered.
-    await new Promise((r) => setTimeout(r, 20));
-
-    expect(localStorage.getItem(OWNER_KEY)).toBe("1");
-    expect(localStorage.getItem(OWNER_EXCLUSION_KEY)).toBe("1");
-    expect(insert).not.toHaveBeenCalled();
+    expect(localStorage.getItem(OWNER_KEY)).toBeNull();
+    expect(localStorage.getItem(OWNER_EXCLUSION_KEY)).toBeNull();
   });
 
   it("still logs an ordinary homepage visit (no hash, no owner flag)", async () => {
