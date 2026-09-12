@@ -6,18 +6,22 @@ import { OWNER_COOKIE_NAME, signOwnerCookieValue } from "../../../api/_lib/owner
 vi.mock("@supabase/supabase-js", () => ({ createClient: vi.fn() }));
 
 function mockGovDb() {
-  const insert = vi.fn().mockResolvedValue({ error: null });
+  const insertSingle = vi.fn().mockResolvedValue({ data: { id: "new-row-id" }, error: null });
+  const insertSelect = vi.fn().mockReturnValue({ single: insertSingle });
+  const insert = vi.fn().mockReturnValue({ select: insertSelect });
+  const deleteEq = vi.fn().mockResolvedValue({ error: null });
+  const del = vi.fn().mockReturnValue({ eq: deleteEq });
   const rpc = vi.fn().mockResolvedValue({ error: null });
   const single = vi.fn().mockResolvedValue({ data: { count: 7 } });
   const eq = vi.fn().mockReturnValue({ single });
   const select = vi.fn().mockReturnValue({ eq });
   const from = vi.fn((table: string) => {
-    if (table === "visit_logs") return { insert };
+    if (table === "visit_logs") return { insert, delete: del };
     if (table === "page_views") return { select };
     throw new Error(`unexpected table: ${table}`);
   });
   (createClient as ReturnType<typeof vi.fn>).mockReturnValue({ from, rpc });
-  return { insert, rpc, select, eq, single };
+  return { insert, insertSelect, insertSingle, del, deleteEq, rpc, select, eq, single };
 }
 
 function postRequest(body: unknown, cookie?: string) {
@@ -83,14 +87,14 @@ describe("api/portfolio-analytics — the one authoritative analytics write gate
       expect(insert).not.toHaveBeenCalled();
     });
 
-    it("no cookie — inserts into visit_logs and returns recorded:true", async () => {
+    it("no cookie — inserts into visit_logs and returns recorded:true with the new row's id", async () => {
       const { insert } = mockGovDb();
 
       const res = await handler(
         postRequest({ kind: "visit", page: "/carbon-fairness", referrer: "https://google.com", userAgent: "TestAgent/1.0" })
       );
 
-      expect(await res.json()).toEqual({ recorded: true });
+      expect(await res.json()).toEqual({ recorded: true, id: "new-row-id" });
       expect(insert).toHaveBeenCalledWith(
         expect.objectContaining({ page: "/carbon-fairness", referrer: "https://google.com", user_agent: "TestAgent/1.0" })
       );
@@ -103,7 +107,7 @@ describe("api/portfolio-analytics — the one authoritative analytics write gate
         postRequest({ kind: "visit", page: "/x" }, `${OWNER_COOKIE_NAME}=not-a-valid-signed-value`)
       );
 
-      expect(await res.json()).toEqual({ recorded: true });
+      expect(await res.json()).toEqual({ recorded: true, id: "new-row-id" });
       expect(insert).toHaveBeenCalledTimes(1);
     });
 
@@ -128,13 +132,74 @@ describe("api/portfolio-analytics — the one authoritative analytics write gate
     });
 
     it("insert failure returns recorded:false reason:error, 502", async () => {
-      const { insert } = mockGovDb();
-      insert.mockResolvedValue({ error: { message: "boom" } });
+      const { insertSingle } = mockGovDb();
+      insertSingle.mockResolvedValue({ data: null, error: { message: "boom" } });
 
       const res = await handler(postRequest({ kind: "visit", page: "/x" }));
 
       expect(res.status).toBe(502);
       expect(await res.json()).toEqual({ recorded: false, reason: "error" });
+    });
+  });
+
+  // Covers the gap found 2026-09-12: a protected page's useVisitLogger call
+  // always runs on mount, before the visitor can possibly have entered the
+  // master code (PageGate only controls what JSX renders, not which hooks
+  // already fired earlier in the same render). retractPendingVisit() (see
+  // src/hooks/useVisitLogger.ts) calls this endpoint right after the browser
+  // becomes provably the owner, to delete exactly that one row.
+  describe("kind: retract", () => {
+    it("rejects a missing/empty id", async () => {
+      const { del } = mockGovDb();
+      const cookie = await ownerCookieHeader();
+
+      const res = await handler(postRequest({ kind: "retract" }, cookie));
+
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ retracted: false, reason: "error" });
+      expect(del).not.toHaveBeenCalled();
+    });
+
+    it("no owner cookie — refuses, deletes nothing", async () => {
+      const { del } = mockGovDb();
+
+      const res = await handler(postRequest({ kind: "retract", id: "row-1" }));
+
+      expect(await res.json()).toEqual({ retracted: false, reason: "not-owner" });
+      expect(del).not.toHaveBeenCalled();
+    });
+
+    it("tampered cookie — refuses, deletes nothing", async () => {
+      const { del } = mockGovDb();
+
+      const res = await handler(
+        postRequest({ kind: "retract", id: "row-1" }, `${OWNER_COOKIE_NAME}=not-a-valid-signed-value`)
+      );
+
+      expect(await res.json()).toEqual({ retracted: false, reason: "not-owner" });
+      expect(del).not.toHaveBeenCalled();
+    });
+
+    it("valid owner cookie — deletes exactly the given id, returns retracted:true", async () => {
+      const { del, deleteEq } = mockGovDb();
+      const cookie = await ownerCookieHeader();
+
+      const res = await handler(postRequest({ kind: "retract", id: "row-1" }, cookie));
+
+      expect(await res.json()).toEqual({ retracted: true });
+      expect(del).toHaveBeenCalledTimes(1);
+      expect(deleteEq).toHaveBeenCalledWith("id", "row-1");
+    });
+
+    it("delete failure returns retracted:false reason:error, 502", async () => {
+      const { deleteEq } = mockGovDb();
+      deleteEq.mockResolvedValue({ error: { message: "boom" } });
+      const cookie = await ownerCookieHeader();
+
+      const res = await handler(postRequest({ kind: "retract", id: "row-1" }, cookie));
+
+      expect(res.status).toBe(502);
+      expect(await res.json()).toEqual({ retracted: false, reason: "error" });
     });
   });
 

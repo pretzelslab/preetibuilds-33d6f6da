@@ -2,6 +2,7 @@ import { useState, useEffect, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { markOwnerExcluded } from "@/lib/ownerExclusion";
 import { verifyMasterCode } from "@/lib/masterCode";
+import { retractPendingVisit } from "@/hooks/useVisitLogger";
 
 // ── Access code registry ───────────────────────────────────────────────────────
 // Master code (unlocks everything — Preeti only) is verified server-side via
@@ -119,6 +120,7 @@ export function PageGate({
     if (await verifyMasterCode(entered)) {
       safeSet(MASTER_KEY, "1");
       markOwnerExcluded();
+      retractPendingVisit();
       setUnlocked(true);
     } else {
       setError(true); setShaking(true);

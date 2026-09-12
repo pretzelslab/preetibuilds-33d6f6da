@@ -16,6 +16,18 @@ const OWNED_DOMAINS = ["preetibuilds-33d6f6da.vercel.app", "preetibuilds.vercel.
 // double-request).
 const inFlight = new Set<string>();
 
+// A protected page's useVisitLogger call always runs on mount, before the
+// visitor has had any chance to enter the master code — PageGate only
+// controls what JSX is *displayed*, it has no power over a hook that already
+// fired earlier in the same render. So the very first visit on a brand-new
+// browser's very first protected page can be inserted before ownership is
+// provable. This map remembers that inserted row's id (keyed by the actual
+// browser path, not the caller-supplied `page` string, since that string is
+// inconsistently formatted with/without a leading slash across pages) so it
+// can be retracted a moment later if this same tab turns out to be the
+// owner. Not persisted — a real new visitor's row is meant to stay recorded.
+const pendingVisitIds = new Map<string, string>();
+
 // Exported standalone so it can be unit-tested without mounting a component.
 // Posts to the one authoritative server analytics endpoint
 // (api/portfolio-analytics.ts) — the browser never talks to Supabase
@@ -48,12 +60,39 @@ export async function logVisit(page: string): Promise<{ handled: boolean; record
       return { handled: false, recorded: false };
     }
     const data = await res.json();
+    if (data?.recorded === true && typeof data?.id === "string") {
+      pendingVisitIds.set(window.location.pathname, data.id);
+    }
     return { handled: true, recorded: data?.recorded === true };
   } catch (err) {
     console.error("[portfolio-analytics] visit request errored", err);
     return { handled: false, recorded: false };
   } finally {
     inFlight.delete(sessionKey);
+  }
+}
+
+// Called from every master-code entry point (PageGate, Tracker, Comments)
+// right after a successful verifyMasterCode() — i.e. right after this
+// browser becomes provably the owner. If the page currently on screen
+// already logged a visit moments ago (necessarily while still unproven),
+// this deletes that exact row. No-ops if there's nothing pending, or if the
+// server disagrees that this browser is the owner (it always re-checks the
+// cookie itself — this function cannot delete anything on its own say-so).
+export async function retractPendingVisit(): Promise<void> {
+  const path = window.location.pathname;
+  const id = pendingVisitIds.get(path);
+  if (!id) return;
+  pendingVisitIds.delete(path);
+  try {
+    await fetch("/api/portfolio-analytics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kind: "retract", id }),
+    });
+  } catch {
+    // Best-effort — same failure mode as any other network hiccup in this
+    // file; nothing more to retry against.
   }
 }
 

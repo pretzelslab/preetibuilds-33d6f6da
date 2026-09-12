@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { useVisitLogger } from "@/hooks/useVisitLogger";
+import { useVisitLogger, logVisit } from "@/hooks/useVisitLogger";
 import { verifyMasterCode } from "@/lib/masterCode";
 import { PageGate } from "./PageGate";
 
@@ -115,6 +115,41 @@ describe("PageGate — owner exclusion vs. page-specific visitor codes", () => {
     // sticky locked-state banner text, present throughout the whole locked
     // state regardless of whether the code input is expanded.
     expect(screen.getByText("Preview · Enter code for full access")).toBeInTheDocument();
+  });
+
+  // Covers the gap found 2026-09-12: this exact page's useVisitLogger call
+  // always runs on mount, before the visitor can possibly have entered the
+  // master code (PageGate only controls what JSX renders, not which hooks
+  // already fired earlier in the same render) — so a brand-new browser's
+  // very first visit to a protected page can be recorded before ownership
+  // is provable. A successful unlock must retract that one row.
+  it("a successful master-code unlock retracts a visit already logged for this exact page", async () => {
+    (verifyMasterCode as ReturnType<typeof vi.fn>).mockResolvedValue(true);
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ recorded: true, id: "row-x" }),
+    });
+    global.fetch = fetchMock;
+
+    // Simulate what useVisitLogger already did on mount, before the visitor
+    // touched anything: this exact page got logged and its id remembered.
+    await logVisit(window.location.pathname);
+
+    renderGate();
+    fireEvent.click(screen.getByText("Enter code"));
+    fireEvent.change(screen.getByPlaceholderText("Access code"), { target: { value: "TESTCODE" } });
+    fireEvent.click(screen.getByText("Unlock"));
+
+    await waitFor(() => {
+      const retractCall = fetchMock.mock.calls.find(
+        ([, init]) => JSON.parse((init as RequestInit).body as string).kind === "retract"
+      );
+      expect(retractCall).toBeTruthy();
+    });
+    const [, retractInit] = fetchMock.mock.calls.find(
+      ([, init]) => JSON.parse((init as RequestInit).body as string).kind === "retract"
+    )!;
+    expect(JSON.parse((retractInit as RequestInit).body as string)).toEqual({ kind: "retract", id: "row-x" });
   });
 
   it("the master code is never accepted via URL hash", () => {

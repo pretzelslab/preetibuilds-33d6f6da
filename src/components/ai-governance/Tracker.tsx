@@ -4,6 +4,7 @@ import * as XLSX from "xlsx";
 import { POLICY_DIGESTS, type CriticalPoint, type Misconception } from "./digests";
 import { IMPLEMENTATION_GUIDES } from "./guides";
 import { markOwnerExcluded } from "@/lib/ownerExclusion";
+import { retractPendingVisit } from "@/hooks/useVisitLogger";
 import { verifyMasterCode } from "@/lib/masterCode";
 
 // ─── PREVIEW MODE ─────────────────────────────────────────────────────────────
@@ -3223,6 +3224,7 @@ export default function AIGovernanceTracker() {
     if (await verifyMasterCode(unlockCode.toUpperCase().trim())) {
       try { localStorage.setItem("pl_session_access", "1"); } catch {}
       markOwnerExcluded();
+      retractPendingVisit();
       setUnlocked(true); setShowUnlockModal(false); setUnlockCode(""); setVisitorAccess(true);
     } else {
       setUnlockError(true); setTimeout(() => setUnlockError(false), 800); setUnlockCode("");

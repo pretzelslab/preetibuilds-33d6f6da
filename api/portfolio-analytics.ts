@@ -38,7 +38,17 @@ type VisitBody = { kind: "visit"; page: string; referrer?: string | null; userAg
 // dedup (sessionStorage) while still asking for a fresh display count on
 // every mount — false means "just tell me the current count, don't bump it".
 type PageviewBody = { kind: "pageview"; page: string; increment?: boolean };
-type AnalyticsBody = VisitBody | PageviewBody;
+// Lets a browser that just became owner undo the one visit_logs row that
+// necessarily had to be inserted before it could prove ownership (see
+// src/hooks/useVisitLogger.ts's retractPendingVisit — the gap this closes:
+// a protected page's useVisitLogger call always runs on mount, before the
+// visitor has had any chance to enter the master code, since PageGate only
+// controls what JSX is *displayed*, not which hooks already fired earlier
+// in the same render). Only ever deletes the exact row id the server itself
+// handed back from that earlier insert — never a client-supplied page/time
+// guess — and only when the caller's pl_owner cookie is valid right now.
+type RetractBody = { kind: "retract"; id: string };
+type AnalyticsBody = VisitBody | PageviewBody | RetractBody;
 
 async function currentPageViewCount(govDb: ReturnType<typeof getGovDb>, page: string): Promise<number | null> {
   const { data } = await govDb.from("page_views").select("count").eq("page", page).single();
@@ -63,6 +73,35 @@ export default async function handler(req: Request): Promise<Response> {
     });
   }
 
+  if (body?.kind === "retract") {
+    if (typeof body.id !== "string" || !body.id) {
+      return new Response(JSON.stringify({ retracted: false, reason: "error" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const isOwnerForRetract = await isOwnerRequest(req, process.env.PORTFOLIO_OWNER_TOKEN);
+    if (!isOwnerForRetract) {
+      // Not authorized to delete anything — silently refuse rather than
+      // error, since a normal visitor's browser can also call this endpoint
+      // shape and there is nothing wrong with that request, just nothing to do.
+      return new Response(JSON.stringify({ retracted: false, reason: "not-owner" }), {
+        headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+      });
+    }
+    const { error } = await getGovDb().from("visit_logs").delete().eq("id", body.id);
+    if (error) {
+      console.error("[visit_logs retract failed]", error.message);
+      return new Response(JSON.stringify({ retracted: false, reason: "error" }), {
+        status: 502,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    return new Response(JSON.stringify({ retracted: true }), {
+      headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+    });
+  }
+
   if (!body || typeof body.page !== "string" || !body.page || (body.kind !== "visit" && body.kind !== "pageview")) {
     return new Response(JSON.stringify({ recorded: false, reason: "error" }), {
       status: 400,
@@ -80,12 +119,12 @@ export default async function handler(req: Request): Promise<Response> {
       });
     }
     const { city, region, country } = readGeo(req);
-    const { error } = await govDb.from("visit_logs").insert({
+    const { data, error } = await govDb.from("visit_logs").insert({
       page: body.page,
       referrer: typeof body.referrer === "string" ? body.referrer : null,
       user_agent: typeof body.userAgent === "string" ? body.userAgent : null,
       city, region, country,
-    });
+    }).select("id").single();
     if (error) {
       console.error("[visit_logs insert failed]", error.message);
       return new Response(JSON.stringify({ recorded: false, reason: "error" }), {
@@ -93,7 +132,7 @@ export default async function handler(req: Request): Promise<Response> {
         headers: { "Content-Type": "application/json" },
       });
     }
-    return new Response(JSON.stringify({ recorded: true }), {
+    return new Response(JSON.stringify({ recorded: true, id: (data as { id: string } | null)?.id ?? null }), {
       headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
     });
   }

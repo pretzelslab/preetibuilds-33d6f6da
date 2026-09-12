@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, waitFor, cleanup } from "@testing-library/react";
-import { logVisit, useVisitLogger } from "./useVisitLogger";
+import { logVisit, useVisitLogger, retractPendingVisit } from "./useVisitLogger";
 
 // The browser no longer talks to Supabase directly for this at all — every
 // write goes through api/portfolio-analytics.ts, mocked here via fetch.
@@ -184,5 +184,77 @@ describe("useVisitLogger", () => {
 
     Object.defineProperty(document, "referrer", { configurable: true, value: "" });
     restoreLocation = () => Object.defineProperty(window, "location", { configurable: true, value: original });
+  });
+});
+
+function stubPathname(pathname: string) {
+  const original = window.location;
+  Object.defineProperty(window, "location", {
+    configurable: true,
+    value: { ...original, pathname, hostname: original.hostname || "preetibuilds-33d6f6da.vercel.app", hash: "", search: "" },
+  });
+  return () => Object.defineProperty(window, "location", { configurable: true, value: original });
+}
+
+// Covers the gap found 2026-09-12: a protected page's useVisitLogger call
+// always runs on mount, before the visitor can possibly have entered the
+// master code yet (PageGate only controls what JSX renders, not which hooks
+// already fired earlier in the same render). So the very first visit on a
+// brand-new browser's first protected page can be recorded before ownership
+// is provable. retractPendingVisit() is what PageGate/Tracker/Comments call
+// right after a successful verifyMasterCode(), to undo exactly that one row.
+describe("retractPendingVisit", () => {
+  let restorePath: () => void;
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    restorePath = stubPathname("/some-protected-page");
+  });
+
+  afterEach(() => {
+    restorePath();
+  });
+
+  it("does nothing when this page never recorded a visit", async () => {
+    const fetchMock = vi.fn();
+    global.fetch = fetchMock;
+
+    await retractPendingVisit();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("retracts the exact id the server returned for this page's visit, then clears it", async () => {
+    const fetchMock = mockFetch({ ok: true, body: { recorded: true, id: "row-123" } });
+    await logVisit("/some-protected-page");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    await retractPendingVisit();
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const [url, init] = fetchMock.mock.calls[1];
+    expect(url).toBe("/api/portfolio-analytics");
+    expect(JSON.parse((init as RequestInit).body as string)).toEqual({ kind: "retract", id: "row-123" });
+
+    // Second call: nothing left pending, so no third request.
+    await retractPendingVisit();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not retract when the visit response carried no id (e.g. an owner-skip)", async () => {
+    const fetchMock = mockFetch({ ok: true, body: { recorded: false, reason: "owner" } });
+    await logVisit("/some-protected-page");
+
+    await retractPendingVisit();
+
+    expect(fetchMock).toHaveBeenCalledTimes(1); // only the original logVisit call
+  });
+
+  it("swallows a network failure during retraction — best-effort, nothing to retry against", async () => {
+    mockFetch({ ok: true, body: { recorded: true, id: "row-456" } });
+    await logVisit("/some-protected-page");
+    mockFetchRejects();
+
+    await expect(retractPendingVisit()).resolves.toBeUndefined();
   });
 });
