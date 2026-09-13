@@ -3,6 +3,7 @@ import { render, screen, fireEvent, cleanup, waitFor } from "@testing-library/re
 import { MemoryRouter } from "react-router-dom";
 import { verifyMasterCode } from "@/lib/masterCode";
 import { markOwnerExcluded } from "@/lib/ownerExclusion";
+import { stubWindowLocation, restoreWindowLocation } from "@/test/locationStub";
 import Owner from "./Owner";
 
 // Master code verification is server-side (api/verify-master-code.ts) —
@@ -27,15 +28,12 @@ describe("Owner page — dedicated /owner entry point", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     localStorage.clear();
-    originalLocation = window.location;
-    // @ts-expect-error -- jsdom's location is configurable for this exact purpose
-    delete window.location;
-    window.location = { ...originalLocation, href: "http://localhost/owner" } as Location;
+    originalLocation = stubWindowLocation({ href: "http://localhost/owner" });
   });
 
   afterEach(() => {
     cleanup();
-    window.location = originalLocation;
+    restoreWindowLocation(originalLocation);
   });
 
   it("on a correct master code: sets the local unlock flag, marks owner-excluded, and navigates to /", async () => {
