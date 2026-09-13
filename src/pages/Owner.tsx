@@ -28,7 +28,13 @@ export default function Owner() {
     setSubmitting(true);
     setError(false);
 
-    const valid = await verifyMasterCode(code.toUpperCase().trim());
+    // Sent exactly as entered. The master code is a server-side secret
+    // compared byte-for-byte in api/verify-master-code.ts — it is NOT a
+    // human-friendly page code. The .toUpperCase().trim() that used to be
+    // here was page-code normalization (see PageGate's PAGE_CODES) copied
+    // onto this path, and it made any mixed-case PORTFOLIO_MASTER_CODE
+    // impossible to authenticate with from this page.
+    const valid = await verifyMasterCode(code);
     if (valid) {
       try { localStorage.setItem(MASTER_KEY, "1"); } catch { /* storage unavailable — cookie is still authoritative */ }
       markOwnerExcluded();

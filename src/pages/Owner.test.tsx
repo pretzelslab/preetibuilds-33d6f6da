@@ -44,7 +44,11 @@ describe("Owner page — dedicated /owner entry point", () => {
     fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
     await waitFor(() => expect(window.location.href).toBe("/"));
-    expect(verifyMasterCode).toHaveBeenCalledWith("CORRECTCODE");
+    // Was asserting "CORRECTCODE" — i.e. it pinned the uppercasing that broke
+    // production owner login on 2026-09-13 for any mixed-case master code.
+    // The secret is compared byte-for-byte server-side, so it must arrive
+    // exactly as typed. See src/lib/masterCodeCasing.test.ts.
+    expect(verifyMasterCode).toHaveBeenCalledWith("correctcode");
     expect(localStorage.getItem(MASTER_KEY)).toBe("1");
     expect(markOwnerExcluded).toHaveBeenCalledTimes(1);
   });

@@ -3221,7 +3221,12 @@ export default function AIGovernanceTracker() {
   };
 
   const tryUnlock = async () => {
-    if (await verifyMasterCode(unlockCode.toUpperCase().trim())) {
+    // Sent exactly as entered — the master code is compared byte-for-byte
+    // server-side (api/verify-master-code.ts). This modal only ever accepts
+    // the master code (there is no page code for it), so the page-code
+    // normalization that used to be here served no purpose and made any
+    // mixed-case PORTFOLIO_MASTER_CODE impossible to authenticate with.
+    if (await verifyMasterCode(unlockCode)) {
       try { localStorage.setItem("pl_session_access", "1"); } catch {}
       markOwnerExcluded();
       retractPendingVisit();

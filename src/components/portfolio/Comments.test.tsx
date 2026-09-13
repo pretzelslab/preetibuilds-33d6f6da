@@ -64,4 +64,21 @@ describe("Comments — admin PIN now verified server-side", () => {
     // still stay consistent with the other three master-code entry points.
     expect(markOwnerExcluded).toHaveBeenCalledTimes(1);
   });
+
+  // Comments never normalized the input, so this is a pin rather than a fix —
+  // it locks in the behavior that Owner/PageGate/Tracker were corrected to
+  // match on 2026-09-13. See src/lib/masterCodeCasing.test.ts for why the
+  // server requires the secret byte-for-byte.
+  it("sends a mixed-case master code unchanged", async () => {
+    const MIXED_CASE_SECRET = "Tz7Kq4Mx9Rb2Wv"; // throwaway fixture, never a real code
+    (verifyMasterCode as ReturnType<typeof vi.fn>).mockResolvedValue(true);
+    render(<Comments />);
+
+    fireEvent.change(screen.getByPlaceholderText("Admin PIN"), { target: { value: MIXED_CASE_SECRET } });
+    fireEvent.click(screen.getByText("→"));
+
+    await waitFor(() => expect(verifyMasterCode).toHaveBeenCalled());
+    expect(verifyMasterCode).toHaveBeenCalledWith(MIXED_CASE_SECRET);
+    expect(verifyMasterCode).not.toHaveBeenCalledWith(MIXED_CASE_SECRET.toUpperCase());
+  });
 });

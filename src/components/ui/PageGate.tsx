@@ -111,13 +111,21 @@ export function PageGate({
   }, [pageId]);
 
   const tryUnlock = async () => {
+    // Two different kinds of secret share this one input, and they must be
+    // treated differently:
+    //   • Page codes (CDX2026) are human-friendly, shared verbally/by link,
+    //     and compared right here — they stay case-insensitive and trimmed.
+    //   • The master code is a server-side secret compared byte-for-byte in
+    //     api/verify-master-code.ts, so it must be sent exactly as entered.
+    //     Normalizing it made any mixed-case PORTFOLIO_MASTER_CODE
+    //     impossible to authenticate with.
     const entered = code.toUpperCase().trim();
     if (pageId && PAGE_CODES[pageId] && entered === PAGE_CODES[pageId]) {
       safeSet(pageKey(pageId), "1");
       setUnlocked(true);
       return;
     }
-    if (await verifyMasterCode(entered)) {
+    if (await verifyMasterCode(code)) {
       safeSet(MASTER_KEY, "1");
       markOwnerExcluded();
       retractPendingVisit();
