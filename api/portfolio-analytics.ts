@@ -1,7 +1,7 @@
 export const config = { runtime: "edge" };
 
 import { createClient } from "@supabase/supabase-js";
-import { isOwnerRequest } from "./_lib/ownerCookie";
+import { isOwnerRequest } from "./_lib/ownerCookie.js";
 
 // The one authoritative gate for every portfolio analytics write
 // (visit_logs inserts, page_views increments). The browser no longer talks

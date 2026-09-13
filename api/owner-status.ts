@@ -1,6 +1,6 @@
 export const config = { runtime: "edge" };
 
-import { isOwnerRequest } from "./_lib/ownerCookie";
+import { isOwnerRequest } from "./_lib/ownerCookie.js";
 
 // Lets client code (the GA4 loader) ask "is this browser the owner" without
 // ever exposing the cookie value or the signing secret — the response is a

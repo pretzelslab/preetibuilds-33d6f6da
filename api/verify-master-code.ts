@@ -1,6 +1,6 @@
 export const config = { runtime: "edge" };
 
-import { buildOwnerSetCookie, constantTimeEqual, signOwnerCookieValue } from "./_lib/ownerCookie";
+import { buildOwnerSetCookie, constantTimeEqual, signOwnerCookieValue } from "./_lib/ownerCookie.js";
 
 // Verifies the portfolio owner's master code server-side so the value never
 // ships in client source or the built frontend. Compared only against
