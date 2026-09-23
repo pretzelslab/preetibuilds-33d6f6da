@@ -109,18 +109,14 @@ function GeoPipelinePreview() {
           </div>
         </div>
 
-        <div className="relative rounded-xl border border-border/60 overflow-hidden mb-6">
-          <div className="bg-muted/10 px-5 py-4">
-            <p className="text-xs font-semibold mb-1">Feature importance — Random Forest</p>
-            <p className="text-[10px] text-muted-foreground mb-4">Which of 4 signals the model actually leaned on to predict population.</p>
-            <div className="blur-sm space-y-2">
-              <div className="h-6 w-[85%] rounded bg-muted/40" />
-              <div className="h-6 w-[45%] rounded bg-muted/40" />
-              <div className="h-6 w-[25%] rounded bg-muted/40" />
-              <div className="h-6 w-[22%] rounded bg-muted/40" />
-            </div>
+        <div className="mb-6">
+          <SectionLabel>03 · What the model did</SectionLabel>
+          <div className="rounded-xl border border-border/60 bg-muted/10 p-5">
+            <p className="text-xs text-muted-foreground mb-1">
+              Which of 4 signals the model actually leaned on to predict population:
+            </p>
+            <FeatureImportanceChart />
           </div>
-          <DiagonalWatermark />
         </div>
 
         <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 text-xs text-muted-foreground">
