@@ -36,6 +36,7 @@ import HumanEvolution from "./pages/HumanEvolution";
 import AIPlatform from "./pages/AIPlatform";
 import Owner from "./pages/Owner";
 import GeoPipeline from "./pages/GeoPipeline";
+import GtmAiReadiness from "./pages/GtmAiReadiness";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +70,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/ai-platform":              "AI Platform Engineering Lab | Preeti Builds",
   "/owner":                    "Owner Access | Preeti Builds",
   "/geo-pipeline":             "Geo Pipeline: QGIS + Python | Preeti Builds",
+  "/gtm-ai-readiness":         "CRM Data Readiness Scan | Preeti Builds",
 };
 
 const RouteTitle = () => {
@@ -140,6 +142,7 @@ const App = () => (
             <Route path="/ai-platform" element={<AIPlatform />} />
             <Route path="/owner" element={<Owner />} />
             <Route path="/geo-pipeline" element={<GeoPipeline />} />
+            <Route path="/gtm-ai-readiness" element={<GtmAiReadiness />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

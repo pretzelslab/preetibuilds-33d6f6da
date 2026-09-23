@@ -27,6 +27,52 @@ export const PRODUCT_INTELLIGENCE_SYSTEMS: Project[] = [
     status: "live",
     link: "/gtm-techstack",
   },
+  {
+    title: "CRM Data Readiness Scan",
+    description: "Scores a sales team's CRM data hygiene and flags which common AI use cases that data is ready for, and what to fix first.",
+    tags: ["AI readiness", "CRM data quality", "RevOps"],
+    status: "building",
+    link: "/gtm-ai-readiness",
+    highlights: [
+      "Privacy-first: runs locally, read-only, no CRM data leaves the machine",
+      "Deterministic scoring across 7 data dimensions, 316 tests",
+      "Measures cross-system joinability instead of consolidating data",
+      "Fail-safe: autonomous CRM writes never rated ready without human review",
+      "Dual output: plain-English summary for leaders, detail table for RevOps",
+      "CRM-agnostic adapter layer; Salesforce read-only connector in progress",
+    ],
+    repoLink: "TODO", // placeholder per request — replace with the real GitHub URL once gtm-trust-kernel is public
+    expandedContent: {
+      what: [
+        "A free check a sales team runs on their own CRM before buying AI sales tools.",
+        "It says, use case by use case: ready, use with caution, or not ready. It also says why and what to fix.",
+        "It runs on your laptop, only reads data, and nothing leaves your machine.",
+      ],
+      why: [
+        "Companies buy AI sales tools and they quietly underperform. The usual cause is messy data, not the AI.",
+        "Common problems: close dates already in the past, deals with no logged activity, and a CRM and email tool that don't agree on who's who.",
+        "No vendor tells you upfront which share of your pipeline lacks the data AI needs. This does.",
+      ],
+      how: [
+        "It reads samples from the CRM and connected tools, but never merges them.",
+        "It scores 7 areas (coverage, freshness, hygiene, history, cross-system match, and more) with plain math. No AI is used in scoring, so results are repeatable.",
+        "Leaders get a plain-English summary. Ops teams get the detailed table.",
+        "Built-in safety rule: AI writing into the CRM is never marked ready unless a person checks every change.",
+      ],
+      useCase: [
+        "A VP of Sales is about to sign for an AI forecasting tool. The check takes minutes.",
+        "It shows a big chunk of open deals have stale close dates, so forecasting AI would just be guessing.",
+        "They fix the data first, or buy a tool that fits what they actually have. That saves the money and the awkward QBR.",
+      ],
+      biggerPicture: [
+        "This is the front door to the Deal Review Copilot, a trust layer where AI suggestions to the CRM are checked, logged, and reversible.",
+      ],
+    },
+    // Real "healthy" fixture screenshots (source: gtm-trust-kernel/packages/readiness) — used in the
+    // /gtm-ai-readiness PageGate preview (src/pages/GtmAiReadiness.tsx), not by this card list.
+    previewImage: "/images/projects/gtm-ai-readiness/readiness-report-healthy.png",
+    previewImageDetail: "/images/projects/gtm-ai-readiness/readiness-report-healthy-detail.png",
+  },
 ];
 
 // ── Homepage: Enterprise Assessment & Decision Systems (Section 2) ────────────

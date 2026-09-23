@@ -1347,6 +1347,7 @@ export default function Admin() {
             { page: "Carbon Time Travel", code: "CTT2026" },
             { page: "Geo Pipeline",       code: "GEO2026" },
             { page: "Melodic",            code: "MEL2026" },
+            { page: "CRM Data Readiness Scan", code: "GTM2026" },
             { page: "Admin",              code: "ADM2026" },
           ].map(({ page, code, master }) => (
             <div key={page} className="flex items-center justify-between gap-1">
