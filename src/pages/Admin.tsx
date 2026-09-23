@@ -1345,6 +1345,7 @@ export default function Admin() {
             { page: "Privacy Auditor",    code: "PRI2026" },
             { page: "LLM Safety Eval",    code: "SE1" },
             { page: "Carbon Time Travel", code: "CTT2026" },
+            { page: "Geo Pipeline",       code: "GEO2026" },
             { page: "Melodic",            code: "MEL2026" },
             { page: "Admin",              code: "ADM2026" },
           ].map(({ page, code, master }) => (

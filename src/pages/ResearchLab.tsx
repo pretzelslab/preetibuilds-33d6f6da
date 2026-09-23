@@ -211,7 +211,7 @@ const ResearchLab = () => {
       <div id="applied-research" className="max-w-7xl mx-auto px-6 pt-4 scroll-mt-20">
         <SectionHeader
           label="Applied Research"
-          subtitle="Original AI safety and fairness research — adversarial robustness benchmarks, proxy discrimination under model compression, and falsifiable evaluation frameworks."
+          subtitle="Original AI safety and fairness research, plus hands-on applied pipelines — adversarial robustness benchmarks, proxy discrimination under model compression, geospatial ML, and falsifiable evaluation frameworks."
         />
         <div className="mb-4">
           {RESEARCH_VENTURES_APPLIED.map((p, i) => <ProjectRow key={p.title} project={p} index={i} />)}

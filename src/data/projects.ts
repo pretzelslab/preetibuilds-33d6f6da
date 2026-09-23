@@ -158,6 +158,15 @@ export const RESEARCH_VENTURES_APPLIED: Project[] = [
     externalLink: "https://zenodo.org/records/20208521",
   },
   {
+    title: "Geo Pipeline: QGIS + Python",
+    description: "A complete geospatial ML pipeline built as a hands-on skill exercise: QGIS shapefile export, GeoPandas feature engineering with equal-area reprojection, and a scikit-learn Random Forest trained to predict population from four simple signals. R² = 0.51 on 177 countries; GDP is the dominant signal at 56% importance, more than land area and centroid position combined.",
+    tags: ["Python", "GeoPandas", "scikit-learn", "QGIS", "Random Forest", "Matplotlib"],
+    industries: ["Geospatial Analytics", "Environmental Data", "Data Engineering"],
+    status: "live",
+    locked: true,
+    link: "/geo-pipeline",
+  },
+  {
     title: "Proxy Discrimination Under Quantization",
     description: "INT4 quantization widens race-based false positive gaps in recidivism scoring. 14.4% FPR gap at FP32 baseline widens under INT4 — model compression is not a fairness-neutral transform. 6 reproducible notebooks on the public COMPAS dataset. Disparate impact ratio, Cohen's d, FPR/FNR parity, and chi-square testing.",
     tags: ["AI Fairness", "PyTorch", "scikit-learn", "Python", "pandas", "Google Colab"],

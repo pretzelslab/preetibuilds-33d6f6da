@@ -28,6 +28,7 @@ const PAGE_CODES: Record<string, string> = {
   "agent-hijacking":           "AC42026",
   "win-loss":                  "WLI2026",
   "human-evolution":           "HEV2026",
+  "geo-pipeline":              "GEO2026",
 };
 
 function pageKey(key: string): string { return `pl_access_${key}`; }
