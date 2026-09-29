@@ -30,6 +30,7 @@ const PAGE_CODES: Record<string, string> = {
   "human-evolution":           "HEV2026",
   "geo-pipeline":              "GEO2026",
   "gtm-ai-readiness":          "GTM2026",
+  "ai-value-lab":              "AVL2026",
 };
 
 function pageKey(key: string): string { return `pl_access_${key}`; }

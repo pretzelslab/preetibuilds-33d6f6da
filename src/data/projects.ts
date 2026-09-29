@@ -113,6 +113,16 @@ export const ENTERPRISE_ASSESSMENT: Project[] = [
     status: "live",
     link: "/ai-platform",
   },
+  {
+    title: "AI Value Lab",
+    description: "A decision support framework that estimates where AI creates business value, how much workflow scope is feasible today, what should remain human, and what additional value could become reachable when missing evidence is validated.",
+    tags: ["Python", "Streamlit", "pytest", "AI value", "Decision support"],
+    industries: ["Enterprise Workflows", "Payroll", "IT Service Desk", "Contract Review"],
+    status: "live",
+    locked: true,
+    link: "/ai-value-lab",
+    repoLink: "https://github.com/pretzelslab/ai-value-lab",
+  },
 ];
 
 // ── Homepage: Governance & Compliance (Section 3) ────────────────────────────
