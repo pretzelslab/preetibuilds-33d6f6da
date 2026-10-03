@@ -1,3 +1,7 @@
+-- SUPERSEDED (2026-10-02): access now goes only through api/workbook-comments.ts
+-- (service-role key, per-comment edit tokens). Do NOT re-run the anon policies
+-- or grants below — apply supabase/workbook-comments-lockdown.sql instead.
+--
 -- Client Workbook comments (per client + phase/page thread)
 -- Run in: mfhjopfnmtujjyojokeg.supabase.co > SQL Editor
 --

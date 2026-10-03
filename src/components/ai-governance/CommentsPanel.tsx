@@ -81,10 +81,13 @@ function CommentRow({ comment, onEdit, onDelete }: {
         <span style={{ fontSize: 10, color: "#94a3b8" }}>
           {timeAgo(comment.createdAt)}{edited && " · edited"}
         </span>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={() => { setDraft(comment.text); setEditing(true); }} aria-label="Edit comment" title="Edit" style={iconBtnStyle}>✎</button>
-          <button onClick={() => onDelete(comment.id)} aria-label="Delete comment" title="Delete" style={iconBtnStyle}>✕</button>
-        </div>
+        {/* Only the comment's creator (holds its edit token) or the owner. */}
+        {comment.canModify && (
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => { setDraft(comment.text); setEditing(true); }} aria-label="Edit comment" title="Edit" style={iconBtnStyle}>✎</button>
+            <button onClick={() => onDelete(comment.id)} aria-label="Delete comment" title="Delete" style={iconBtnStyle}>✕</button>
+          </div>
+        )}
       </div>
     </div>
   );
