@@ -9,10 +9,14 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
     hmr: {
-      overlay: false,
+      overlay: true,
     },
     proxy: {
-      "/api": {
+      // Regex key (leading "^"): proxy API calls to the local function server,
+      // but NOT /api/_lib/* — those are shared source modules (e.g.
+      // api/_lib/pageCodes.ts imported by PageGate) that Vite itself must serve
+      // in dev. Proxying them blanked the whole app.
+      "^/api/(?!_lib/)": {
         target: "http://localhost:3002",
         changeOrigin: true,
       },

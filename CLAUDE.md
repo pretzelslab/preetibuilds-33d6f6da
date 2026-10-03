@@ -17,7 +17,10 @@
 1. `git status` — commit or discard any unstaged files (stray files committed here must NOT use `[skip ci]`)
 2. `git log --oneline -3` — confirm tip commit has NO `[skip ci]`
 3. If tip has `[skip ci]`, amend it: `git commit --amend -m "message without skip ci"`
-4. Then push — no force-push unless absolutely required (force-push may not trigger Vercel webhook)
+4. `npm test` and `npm run build` — both green
+5. `npm run smoke:dev` — starts the dev server, headless-loads `/` and `/admin` in Chrome, fails if `#root` is empty or any module request fails. Catches dev-only breakage that build + tests cannot (e.g. the 2026-10-02 blank page: the Vite `/api` proxy swallowing `api/_lib/pageCodes.ts`). Needs local Chrome (`CHROME_PATH` to override).
+6. Then push — no force-push unless absolutely required (force-push may not trigger Vercel webhook)
+7. The local `.git/hooks/pre-push` hook (not versioned) runs `git pull --rebase`, `npm run build` and `npm run smoke:dev`. The rebase step refuses to run with unstaged changes — stash them first.
 
 ### Hosting
 - Primary: Vercel → https://preetibuilds-33d6f6da.vercel.app
