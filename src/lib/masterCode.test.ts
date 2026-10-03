@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { verifyMasterCode } from "./masterCode";
 import verifyMasterCodeHandler from "../../api/verify-master-code";
 import { OWNER_COOKIE_NAME, verifyOwnerCookieValue } from "../../api/_lib/ownerCookie";
+import { PAGE_CODES } from "../../api/_lib/pageCodes";
 
 describe("api/verify-master-code handler — the only place the real code is compared", () => {
   afterEach(() => vi.unstubAllEnvs());
@@ -46,6 +47,34 @@ describe("api/verify-master-code handler — the only place the real code is com
     );
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ valid: false });
+  });
+
+  // Page codes ship in the public bundle, so a master code equal to one of
+  // them must never authenticate — even if the env var is misconfigured that way.
+  describe("page-code collision", () => {
+    it("rejects a code equal to a page code even when PORTFOLIO_MASTER_CODE is set to it, and sets no cookie", async () => {
+      vi.stubEnv("PORTFOLIO_MASTER_CODE", PAGE_CODES.admin);
+      vi.stubEnv("PORTFOLIO_OWNER_TOKEN", "OWNERTOKEN123");
+      const res = await verifyMasterCodeHandler(postRequest({ code: PAGE_CODES.admin }));
+      expect(await res.json()).toEqual({ valid: false });
+      expect(res.headers.get("Set-Cookie")).toBeNull();
+    });
+
+    it("rejects every registered page code, whatever the casing/whitespace", async () => {
+      for (const pageCode of Object.values(PAGE_CODES)) {
+        for (const variant of [pageCode, pageCode.toLowerCase(), ` ${pageCode} `]) {
+          vi.stubEnv("PORTFOLIO_MASTER_CODE", variant);
+          const res = await verifyMasterCodeHandler(postRequest({ code: variant }));
+          expect(await res.json()).toEqual({ valid: false });
+        }
+      }
+    });
+
+    it("still accepts a real (non-page) master code", async () => {
+      vi.stubEnv("PORTFOLIO_MASTER_CODE", "TESTCODE");
+      const res = await verifyMasterCodeHandler(postRequest({ code: "TESTCODE" }));
+      expect(await res.json()).toEqual({ valid: true });
+    });
   });
 
   // A successful master-code verification is now also the mechanism that

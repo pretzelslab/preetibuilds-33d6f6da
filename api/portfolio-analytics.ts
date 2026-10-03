@@ -2,6 +2,7 @@ export const config = { runtime: "edge" };
 
 import { createClient } from "@supabase/supabase-js";
 import { isOwnerRequest } from "./_lib/ownerCookie.js";
+import { getAdminDb } from "./_lib/adminDb.js";
 
 // The one authoritative gate for every portfolio analytics write
 // (visit_logs inserts, page_views increments). The browser no longer talks
@@ -10,11 +11,11 @@ import { isOwnerRequest } from "./_lib/ownerCookie.js";
 // server-side, from the signed pl_owner cookie — never from anything the
 // client claims about itself.
 //
-// RLS on visit_logs/page_views is UNCHANGED in this step (still anon
-// insert/update) — this endpoint uses the same public anon key the client
-// used to use directly. Removing that RLS grant is a separate, explicitly
-// deferred migration; this step only removes the client-side code paths
-// that could reach it.
+// visit_logs RLS is insert-only for anon (no SELECT/DELETE), so the insert
+// (which reads back the new row's id) and the owner retract both use the
+// service-role client from api/_lib/adminDb.ts, failing closed if it isn't
+// configured. page_views reads/increments are unchanged and still use the
+// public anon key.
 
 function getGovDb() {
   const url = process.env.VITE_GOV_SUPABASE_URL as string;
@@ -89,7 +90,15 @@ export default async function handler(req: Request): Promise<Response> {
         headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
       });
     }
-    const { error } = await getGovDb().from("visit_logs").delete().eq("id", body.id);
+    const adminDb = getAdminDb();
+    if (!adminDb) {
+      console.error("[visit_logs retract] service-role client not configured");
+      return new Response(JSON.stringify({ retracted: false, reason: "error" }), {
+        status: 503,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const { error } = await adminDb.from("visit_logs").delete().eq("id", body.id);
     if (error) {
       console.error("[visit_logs retract failed]", error.message);
       return new Response(JSON.stringify({ retracted: false, reason: "error" }), {
@@ -118,8 +127,16 @@ export default async function handler(req: Request): Promise<Response> {
         headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
       });
     }
+    const adminDb = getAdminDb();
+    if (!adminDb) {
+      console.error("[visit_logs insert] service-role client not configured");
+      return new Response(JSON.stringify({ recorded: false, reason: "error" }), {
+        status: 503,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
     const { city, region, country } = readGeo(req);
-    const { data, error } = await govDb.from("visit_logs").insert({
+    const { data, error } = await adminDb.from("visit_logs").insert({
       page: body.page,
       referrer: typeof body.referrer === "string" ? body.referrer : null,
       user_agent: typeof body.userAgent === "string" ? body.userAgent : null,

@@ -1,6 +1,7 @@
 export const config = { runtime: "edge" };
 
 import { buildOwnerSetCookie, constantTimeEqual, signOwnerCookieValue } from "./_lib/ownerCookie.js";
+import { isPageCode } from "./_lib/pageCodes.js";
 
 // Verifies the portfolio owner's master code server-side so the value never
 // ships in client source or the built frontend. Compared only against
@@ -32,7 +33,15 @@ export default async function handler(req: Request): Promise<Response> {
   }
 
   const masterCode = process.env.PORTFOLIO_MASTER_CODE;
-  const valid = typeof code === "string" && !!masterCode && constantTimeEqual(code, masterCode);
+  // A page code ships in the public bundle, so it can never double as the
+  // master code — even if PORTFOLIO_MASTER_CODE is misconfigured to equal one,
+  // this fails closed rather than handing out owner sessions to anyone who
+  // reads the bundle.
+  const valid =
+    typeof code === "string" &&
+    !!masterCode &&
+    !isPageCode(code) &&
+    constantTimeEqual(code, masterCode);
 
   const headers: Record<string, string> = { "Content-Type": "application/json", "Cache-Control": "no-store" };
 

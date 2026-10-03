@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { govDb } from "@/lib/supabase-governance";
+import { adminCall } from "@/lib/adminApi";
 import { PageGate, useGateUnlocked } from "@/components/ui/PageGate";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -1055,6 +1055,10 @@ export default function Admin() {
   const [recentPage, setRecentPage] = useState(1);
   const [recentLoading, setRecentLoading] = useState(true);
   const [recentError, setRecentError] = useState<string | null>(null);
+  // True when /api/admin refused for lack of an owner session — e.g. the page
+  // was unlocked with only the page-specific admin code. Visit data is
+  // master-code-only; the page shell still renders.
+  const [masterRequired, setMasterRequired] = useState(false);
 
   // ── The single exclusion point (Layer 3) ────────────────────────────────
   // Everything below — Recent Visits, Total visits, Top source, Mobile,
@@ -1109,25 +1113,29 @@ export default function Admin() {
       const CHUNK = 1000;
       const rows: Visit[] = [];
       for (let offset = 0; ; offset += CHUNK) {
-        const { data, error } = await govDb
-          .from("visit_logs")
-          .select("*")
-          .order("visited_at", { ascending: false })
-          .order("id", { ascending: false })
-          .range(offset, offset + CHUNK - 1);
+        // Served by api/admin.ts (owner cookie + service-role key) — anon RLS
+        // on visit_logs is insert-only. Same ordering/chunking server-side.
+        const result = await adminCall<Visit[]>({ action: "visits.list", offset });
         if (cancelled) return;
-        if (error) {
-          setRecentError(error.message);
+        if (!result.ok) {
+          if (result.error === "master-code-required") {
+            setMasterRequired(true);
+            setRecentError(null);
+          } else {
+            setRecentError("server error");
+          }
           setLoading(false);
           setRecentLoading(false);
           return;
         }
-        rows.push(...((data ?? []) as Visit[]));
-        if (!data || data.length < CHUNK) break;
+        const data = result.data ?? [];
+        rows.push(...data);
+        if (data.length < CHUNK) break;
       }
       if (cancelled) return;
 
       setRecentError(null);
+      setMasterRequired(false);
       setAllVisits(rows);
       setLoading(false);
       setRecentLoading(false);
@@ -1161,24 +1169,26 @@ export default function Admin() {
     setNewCount(0);
   }
 
-  async function deleteVisit(id: string) {
+  async function deleteVisits(ids: string[]): Promise<boolean> {
     setDeleteError(null);
-    const { error } = await govDb.from("visit_logs").delete().eq("id", id);
-    if (error) {
-      setDeleteError(`Delete failed: ${error.message} — check Supabase RLS policy for visit_logs DELETE.`);
-      return;
+    const result = await adminCall({ action: "visits.delete", ids });
+    if (!result.ok) {
+      setDeleteError(
+        result.error === "master-code-required"
+          ? "Delete failed: master code required."
+          : "Delete failed: server error — see Vercel function logs for /api/admin."
+      );
+      return false;
     }
-    setAllVisits(v => v.filter(x => x.id !== id));
+    return true;
+  }
+
+  async function deleteVisit(id: string) {
+    if (await deleteVisits([id])) setAllVisits(v => v.filter(x => x.id !== id));
   }
 
   async function deleteSelected(ids: string[]) {
-    setDeleteError(null);
-    const { error } = await govDb.from("visit_logs").delete().in("id", ids);
-    if (error) {
-      setDeleteError(`Delete failed: ${error.message} — check Supabase RLS policy for visit_logs DELETE.`);
-      return;
-    }
-    setAllVisits(v => v.filter(x => !ids.includes(x.id)));
+    if (await deleteVisits(ids)) setAllVisits(v => v.filter(x => !ids.includes(x.id)));
   }
 
   const SELF_DOMAINS = ["preetibuilds-33d6f6da.vercel.app", "preetibuilds.vercel.app"];
@@ -1239,7 +1249,7 @@ export default function Admin() {
         <div>
           <p className="text-[10px] text-muted-foreground mb-0.5">Total visits</p>
           <p className="text-xl font-bold leading-none">
-            {recentLoading ? "…" : recentError ? "—" : recentTotal}
+            {recentLoading ? "…" : recentError || masterRequired ? "—" : recentTotal}
           </p>
         </div>
         <div>
@@ -1260,6 +1270,11 @@ export default function Admin() {
       </p>
       {recentError && (
         <p className="text-[9px] text-rose-500/80 -mt-1">Total visits failed to load: {recentError}</p>
+      )}
+      {masterRequired && (
+        <p className="text-[9px] text-amber-600/90 -mt-1" data-testid="visits-master-required">
+          Master code required to view the visitor log.
+        </p>
       )}
 
       {/* 7-day chart */}

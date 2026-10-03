@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { markOwnerExcluded } from "@/lib/ownerExclusion";
 import { verifyMasterCode } from "@/lib/masterCode";
 import { retractPendingVisit } from "@/hooks/useVisitLogger";
+import { PAGE_CODES } from "../../../api/_lib/pageCodes";
 
 // ── Access code registry ───────────────────────────────────────────────────────
 // Master code (unlocks everything — Preeti only) is verified server-side via
@@ -11,27 +12,9 @@ import { retractPendingVisit } from "@/hooks/useVisitLogger";
 // Page codes = selective access, share one at a time with specific visitors
 const MASTER_KEY  = "pl_session_access";
 
-const PAGE_CODES: Record<string, string> = {
-  "research":                  "RSC2026",
-  "carbon-depth":              "CDX2026",
-  "ai-readiness":              "ARD2026",
-  "fairness":                  "FAR2026",
-  "carbon-fairness":           "CFR2026",
-  "client-discovery":          "CLN2026",
-  "melodic":                   "MEL2026",
-  "admin":                     "ADM2026",
-  "sustainability-framework":  "SFW2026",
-  "ai-sustainability-webinar": "WBN2026",
-  "privacy-auditor":           "PRI2026",
-  "safety-eval":               "SE1",
-  "carbon-time-travel":        "CTT2026",
-  "agent-hijacking":           "AC42026",
-  "win-loss":                  "WLI2026",
-  "human-evolution":           "HEV2026",
-  "geo-pipeline":              "GEO2026",
-  "gtm-ai-readiness":          "GTM2026",
-  "ai-value-lab":              "AVL2026",
-};
+// Single source of truth shared with the server (api/verify-master-code.ts).
+// Re-exported so tests can reference codes by page id rather than literals.
+export { PAGE_CODES };
 
 function pageKey(key: string): string { return `pl_access_${key}`; }
 

@@ -44,6 +44,7 @@ describe("api/portfolio-analytics — the one authoritative analytics write gate
   beforeEach(() => {
     vi.stubEnv("VITE_GOV_SUPABASE_URL", "https://example.supabase.co");
     vi.stubEnv("VITE_GOV_SUPABASE_ANON_KEY", "anon-key");
+    vi.stubEnv("GOV_SUPABASE_SERVICE_ROLE_KEY", "service-role-key");
     vi.stubEnv("PORTFOLIO_OWNER_TOKEN", "OWNERTOKEN");
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
@@ -241,6 +242,50 @@ describe("api/portfolio-analytics — the one authoritative analytics write gate
 
       expect(res.status).toBe(502);
       expect(await res.json()).toEqual({ recorded: false, reason: "error", count: 7 });
+    });
+  });
+
+  // visit_logs RLS is insert-only for anon, with no SELECT — and the insert
+  // reads back the new id — so insert + retract must use the service-role
+  // client, and must refuse outright rather than fall back to the anon key.
+  describe("service-role client for visit_logs", () => {
+    it("creates the visit_logs insert client with the service-role key", async () => {
+      mockGovDb();
+      await handler(postRequest({ kind: "visit", page: "/x" }));
+      expect(createClient).toHaveBeenCalledWith(
+        "https://example.supabase.co",
+        "service-role-key",
+        expect.anything()
+      );
+    });
+
+    it("insert fails closed (503, nothing inserted) when the service-role key is missing", async () => {
+      vi.stubEnv("GOV_SUPABASE_SERVICE_ROLE_KEY", "");
+      const { insert } = mockGovDb();
+      const res = await handler(postRequest({ kind: "visit", page: "/x" }));
+      expect(res.status).toBe(503);
+      expect(await res.json()).toEqual({ recorded: false, reason: "error" });
+      expect(insert).not.toHaveBeenCalled();
+    });
+
+    it("retract fails closed (503, nothing deleted) when the service-role key is missing", async () => {
+      vi.stubEnv("GOV_SUPABASE_SERVICE_ROLE_KEY", "");
+      const { del } = mockGovDb();
+      const res = await handler(postRequest({ kind: "retract", id: "row-1" }, await ownerCookieHeader()));
+      expect(res.status).toBe(503);
+      expect(await res.json()).toEqual({ retracted: false, reason: "error" });
+      expect(del).not.toHaveBeenCalled();
+    });
+
+    it("pageview counting still uses the anon key", async () => {
+      mockGovDb();
+      await handler(postRequest({ kind: "pageview", page: "/x", increment: true }));
+      expect(createClient).toHaveBeenCalledWith("https://example.supabase.co", "anon-key");
+      expect(createClient).not.toHaveBeenCalledWith(
+        expect.anything(),
+        "service-role-key",
+        expect.anything()
+      );
     });
   });
 });

@@ -9,6 +9,7 @@ import { govDb } from "@/lib/supabase-governance";
 import { PageGate } from "@/components/ui/PageGate";
 import { DiagonalWatermark } from "@/components/ui/DiagonalWatermark";
 import { verifyMasterCode } from "@/lib/masterCode";
+import { adminCall } from "@/lib/adminApi";
 import { markOwnerExcluded } from "@/lib/ownerExclusion";
 
 const YT_API_KEY = import.meta.env.VITE_YT_API_KEY as string;
@@ -1117,14 +1118,20 @@ function AdminPanel({ raagas, onApprove }: { raagas: Raaga[]; onApprove: (raaaga
   const [requests, setRequests] = useState<SongRequest[]>([]);
   const [editRaaga, setEditRaaga] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [adminError, setAdminError] = useState<string | null>(null);
+
+  // Pending queue + approve/reject go through api/admin.ts (owner cookie +
+  // service-role key). Anon RLS only allows reading approved songs and
+  // submitting new requests.
+  function reportAdminError(error: "master-code-required" | "failed") {
+    setAdminError(error === "master-code-required" ? "Master code required." : "Action failed — try again.");
+  }
 
   async function load() {
     setLoading(true);
-    const { data } = await govDb.from("melodic_song_requests")
-      .select("*")
-      .eq("status", "pending")
-      .order("created_at", { ascending: false });
-    setRequests((data as SongRequest[]) || []);
+    const result = await adminCall<SongRequest[]>({ action: "songs.pending" });
+    if (result.ok) { setRequests(result.data); setAdminError(null); }
+    else { setRequests([]); reportAdminError(result.error); }
     setLoading(false);
   }
 
@@ -1132,7 +1139,8 @@ function AdminPanel({ raagas, onApprove }: { raagas: Raaga[]; onApprove: (raaaga
 
   async function approve(req: SongRequest) {
     const raaagaId = editRaaga[req.id] || req.raaga_id;
-    await govDb.from("melodic_song_requests").update({ status: "approved", raaga_id: raaagaId }).eq("id", req.id);
+    const result = await adminCall({ action: "songs.approve", id: req.id, raagaId: raaagaId });
+    if (!result.ok) { reportAdminError(result.error); return; }
     const song: Song = {
       id: `${raaagaId}-db-${req.id.slice(0, 8)}`,
       title: req.title,
@@ -1148,7 +1156,8 @@ function AdminPanel({ raagas, onApprove }: { raagas: Raaga[]; onApprove: (raaaga
   }
 
   async function reject(id: string) {
-    await govDb.from("melodic_song_requests").update({ status: "rejected" }).eq("id", id);
+    const result = await adminCall({ action: "songs.reject", id });
+    if (!result.ok) { reportAdminError(result.error); return; }
     await load();
   }
 
@@ -1163,7 +1172,8 @@ function AdminPanel({ raagas, onApprove }: { raagas: Raaga[]; onApprove: (raaaga
         </button>
       </div>
       {loading && <p className="text-xs text-muted-foreground">Loading…</p>}
-      {!loading && requests.length === 0 && (
+      {adminError && <p className="text-xs text-rose-500">{adminError}</p>}
+      {!loading && !adminError && requests.length === 0 && (
         <p className="text-xs text-muted-foreground">No pending requests.</p>
       )}
       {!loading && requests.map(req => (

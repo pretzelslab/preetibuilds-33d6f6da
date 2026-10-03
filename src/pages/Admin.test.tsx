@@ -5,15 +5,15 @@ import Admin from "./Admin";
 
 // Audit-flagged bug: Admin's owner-marking effect used to key off
 // useGateUnlocked("admin"), which is ALSO true for a collaborator who only
-// has the page-specific ADM2026 code — silently opting their browser out of
+// has the page-specific admin code — silently opting their browser out of
 // analytics too. This file verifies the fix: only a master-code unlock
 // (the site-wide pl_session_access key) may set that flag; a page-specific
 // code unlock must not.
 //
 // Heavy, irrelevant-to-this-bug rendering surfaces (charts, resizable
 // panels, mobile detection) are stubbed out; govDb is a generic
-// auto-resolving chain so whichever exact query shape Admin.tsx uses
-// resolves safely without needing to be individually replicated here.
+// auto-resolving chain so any remaining direct query resolves safely, and
+// fetch (for /api/admin) is stubbed per test.
 vi.mock("recharts", () => ({
   BarChart: ({ children }: { children?: unknown }) => <div>{children as React.ReactNode}</div>,
   Bar: () => null,
@@ -57,16 +57,33 @@ function renderAdmin() {
 const MASTER_KEY = "pl_session_access";
 const PAGE_KEY = "pl_access_admin";
 
+const VISIT_ID = "3f2b8c1e-9a4d-4e6f-8b7a-1c2d3e4f5a6b";
+
+function stubAdminApi(status: number, body: unknown) {
+  const fetchMock = vi.fn().mockResolvedValue(
+    new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } })
+  );
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+}
+
+function adminCalls(fetchMock: ReturnType<typeof vi.fn>) {
+  return fetchMock.mock.calls
+    .filter(([url]) => url === "/api/admin")
+    .map(([, init]) => JSON.parse((init as RequestInit).body as string));
+}
+
 describe("Admin — owner identity must come only from the master code, never a page-specific code", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     localStorage.clear();
     sessionStorage.clear();
+    stubAdminApi(401, { ok: false, error: "master-code-required" });
   });
 
   afterEach(() => cleanup());
 
-  it("a page-specific ADM2026 unlock does not establish (or preserve) owner identity", async () => {
+  it("a page-specific admin-code unlock does not establish (or preserve) owner identity", async () => {
     localStorage.setItem(PAGE_KEY, "1"); // page-specific code only — deliberately not the master key
     renderAdmin();
 
@@ -83,7 +100,7 @@ describe("Admin — owner identity must come only from the master code, never a 
     await waitFor(() => expect(localStorage.getItem(MASTER_KEY)).toBe("1"));
   });
 
-  it("an already-master-unlocked browser does not lose owner identity merely because ADM2026 is also present", async () => {
+  it("an already-master-unlocked browser does not lose owner identity merely because the admin page code is also present", async () => {
     localStorage.setItem(MASTER_KEY, "1");
     localStorage.setItem(PAGE_KEY, "1");
     renderAdmin();
@@ -91,5 +108,54 @@ describe("Admin — owner identity must come only from the master code, never a 
     await new Promise((r) => setTimeout(r, 20));
 
     expect(localStorage.getItem(MASTER_KEY)).toBe("1");
+  });
+});
+
+// visit_logs is no longer readable with the anon key — the visitor log is
+// served by /api/admin, which only accepts the server-minted owner cookie.
+describe("Admin — visitor log via /api/admin", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  it("reads visits through /api/admin, not the anon Supabase client", async () => {
+    localStorage.setItem(MASTER_KEY, "1");
+    const fetchMock = stubAdminApi(200, { ok: true, data: [] });
+    renderAdmin();
+    await waitFor(() => expect(adminCalls(fetchMock)).toContainEqual({ action: "visits.list", offset: 0 }));
+  });
+
+  it("page-code-only unlock: server says master code required → shows the note, no error", async () => {
+    localStorage.setItem(PAGE_KEY, "1");
+    stubAdminApi(401, { ok: false, error: "master-code-required" });
+    const { findByTestId, queryByText } = renderAdmin();
+    expect(await findByTestId("visits-master-required")).toHaveTextContent("Master code required");
+    expect(queryByText(/failed to load/i)).toBeNull();
+  });
+
+  it("master unlock with a valid owner session: no master-code note", async () => {
+    localStorage.setItem(MASTER_KEY, "1");
+    const fetchMock = stubAdminApi(200, {
+      ok: true,
+      data: [{ id: VISIT_ID, page: "/", referrer: null, user_agent: null, visited_at: new Date().toISOString(), city: null, region: null, country: null }],
+    });
+    const { queryByTestId } = renderAdmin();
+    await waitFor(() => expect(adminCalls(fetchMock).length).toBeGreaterThan(0));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(queryByTestId("visits-master-required")).toBeNull();
+  });
+
+  it("locked page: never calls /api/admin", async () => {
+    const fetchMock = stubAdminApi(200, { ok: true, data: [] });
+    renderAdmin();
+    await new Promise((r) => setTimeout(r, 20));
+    expect(adminCalls(fetchMock)).toEqual([]);
   });
 });

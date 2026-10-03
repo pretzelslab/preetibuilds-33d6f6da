@@ -3,7 +3,7 @@ import { render, screen, fireEvent, cleanup, renderHook, waitFor } from "@testin
 import { MemoryRouter } from "react-router-dom";
 import { useVisitLogger, logVisit } from "@/hooks/useVisitLogger";
 import { verifyMasterCode } from "@/lib/masterCode";
-import { PageGate } from "./PageGate";
+import { PageGate, PAGE_CODES } from "./PageGate";
 
 // Confirms the pl_owner_exclusion / pl_session_access split (approved
 // architecture, session 2026-09-11) at the PageGate layer: a page-specific
@@ -68,7 +68,7 @@ describe("PageGate — owner exclusion vs. page-specific visitor codes", () => {
     renderGate();
 
     fireEvent.click(screen.getByText("Enter code"));
-    fireEvent.change(screen.getByPlaceholderText("Access code"), { target: { value: "RSC2026" } });
+    fireEvent.change(screen.getByPlaceholderText("Access code"), { target: { value: PAGE_CODES.research } });
     fireEvent.click(screen.getByText("Unlock"));
 
     await waitFor(() => expect(screen.getByText("Secret content")).toBeInTheDocument());

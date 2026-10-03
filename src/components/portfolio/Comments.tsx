@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { govDb } from "@/lib/supabase-governance";
 import { verifyMasterCode } from "@/lib/masterCode";
+import { adminCall } from "@/lib/adminApi";
 import { markOwnerExcluded } from "@/lib/ownerExclusion";
 import { retractPendingVisit } from "@/hooks/useVisitLogger";
 
@@ -21,6 +22,10 @@ export function timeAgo(iso: string) {
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
   return `${Math.floor(hrs / 24)}d ago`;
+}
+
+function adminErrorText(error: "master-code-required" | "failed"): string {
+  return error === "master-code-required" ? "Master code required." : "Action failed — try again.";
 }
 
 export default function Comments({ hideAdminPin = false }: { hideAdminPin?: boolean }) {
@@ -47,13 +52,13 @@ export default function Comments({ hideAdminPin = false }: { hideAdminPin?: bool
     if (data) setComments(data as Comment[]);
   }
 
+  // Moderation (pending queue, approve, reply, delete) goes through
+  // api/admin.ts — owner cookie + service-role key. Anon RLS only allows
+  // reading approved comments and inserting new unapproved ones.
   async function loadPending() {
-    const { data } = await govDb
-      .from("portfolio_comments")
-      .select("id, name, message, reply, created_at")
-      .eq("approved", false)
-      .order("created_at", { ascending: false });
-    if (data) setPending(data as Comment[]);
+    const result = await adminCall<Comment[]>({ action: "comments.pending" });
+    if (result.ok) setPending(result.data);
+    else setError(adminErrorText(result.error));
   }
 
   useEffect(() => { load(); }, []);
@@ -79,13 +84,15 @@ export default function Comments({ hideAdminPin = false }: { hideAdminPin?: bool
   }
 
   async function handleApprove(id: string) {
-    await govDb.from("portfolio_comments").update({ approved: true }).eq("id", id);
+    const result = await adminCall({ action: "comments.approve", id });
+    if (!result.ok) { setError(adminErrorText(result.error)); return; }
     await loadPending();
     await load();
   }
 
   async function handleDelete(id: string) {
-    await govDb.from("portfolio_comments").delete().eq("id", id);
+    const result = await adminCall({ action: "comments.delete", id });
+    if (!result.ok) { setError(adminErrorText(result.error)); return; }
     await loadPending();
     await load();
   }
@@ -93,7 +100,8 @@ export default function Comments({ hideAdminPin = false }: { hideAdminPin?: bool
   async function handleReply(id: string) {
     const text = replyText[id]?.trim();
     if (!text) return;
-    await govDb.from("portfolio_comments").update({ reply: text }).eq("id", id);
+    const result = await adminCall({ action: "comments.reply", id, reply: text });
+    if (!result.ok) { setError(adminErrorText(result.error)); return; }
     setReplyText(prev => ({ ...prev, [id]: "" }));
     await load();
   }
