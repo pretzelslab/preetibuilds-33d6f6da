@@ -1,7 +1,9 @@
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowUpRight, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useVisitLogger } from "@/hooks/useVisitLogger";
+import { ReportModal, type ReportView } from "@/components/ReportModal";
 
 // The sample reports are static copies of gtm-trust-kernel's docs/demo files, served as-is from
 // public/demos/crm-readiness-scan/. Re-copy them whenever the demo samples are regenerated
@@ -70,6 +72,16 @@ function ExternalChip({ label, href }: { label: string; href: string }) {
 
 export default function GtmAiReadiness() {
   useVisitLogger("/gtm-ai-readiness");
+  const [view, setView] = useState<ReportView | null>(null);
+  const returnFocusTo = useRef<HTMLElement | null>(null);
+
+  // Plain left-click opens the modal; modified clicks (new tab, new window) and no-JS keep the real href.
+  const openInModal = (title: string, href: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    returnFocusTo.current = e.currentTarget;
+    setView({ title, href });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -106,9 +118,8 @@ export default function GtmAiReadiness() {
         <div className="mt-8">
           <a
             href={PLAIN_REPORT}
-            target="_blank"
-            rel="noopener"
-            aria-label="Open the plain report for the sample CRM in a new tab"
+            onClick={openInModal("Plain-English report: sample CRM", PLAIN_REPORT)}
+            aria-label="Open the plain report for the sample CRM"
             className="block max-w-3xl rounded-xl border border-border/60 bg-muted/10 p-3 hover:border-border transition-colors"
           >
             <img
@@ -127,14 +138,14 @@ export default function GtmAiReadiness() {
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-3xl">
           {QUESTIONS.map((q, i) => (
             <Button key={q.label} asChild variant={i === 0 ? "default" : "outline"} className="justify-start h-auto py-3 whitespace-normal text-left">
-              <a href={q.href} target="_blank" rel="noopener">
+              <a href={q.href} onClick={openInModal(q.label, q.href)}>
                 {q.label}
               </a>
             </Button>
           ))}
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          <a href={FULL_REPORT} target="_blank" rel="noopener" className="underline underline-offset-4 hover:text-foreground transition-colors">
+          <a href={FULL_REPORT} onClick={openInModal("Full technical report", FULL_REPORT)} className="underline underline-offset-4 hover:text-foreground transition-colors">
             Full technical report
           </a>
         </p>
@@ -149,6 +160,7 @@ export default function GtmAiReadiness() {
           {STACK}
         </p>
       </main>
+      <ReportModal view={view} onClose={() => setView(null)} returnFocusTo={returnFocusTo} />
     </div>
   );
 }
