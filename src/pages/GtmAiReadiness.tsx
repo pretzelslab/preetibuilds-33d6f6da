@@ -25,6 +25,9 @@ const QUESTIONS: { label: string; href: string }[] = [
   { label: "See a ‘Can’t tell yet’ case", href: toSection(CANT_TELL_REPORT, "uc-grounded_account_brief") },
 ];
 const GLANCE_IMAGE = `${REPORTS_DIR}/scan-plain-glance.png`;
+const GLANCE_IMAGE_DARK = `${REPORTS_DIR}/scan-plain-glance-dark.png`;
+const GLANCE_ALT =
+  "The top of the plain-English readiness report for a sample CRM: data health by CRM object, counts of AI use cases that are ready, usable with caution or not ready yet, and a ranked Fix this first list.";
 
 // Flip to true once the repository and the npm package are public; the two chips then become links.
 const REPO_PUBLIC = false;
@@ -122,10 +125,18 @@ export default function GtmAiReadiness() {
             aria-label="Open the plain report for the sample CRM"
             className="block max-w-3xl rounded-xl border border-border/60 bg-muted/10 p-3 hover:border-border transition-colors"
           >
+            {/* The site theme is the .dark class on <html> (ThemeToggle), so swap with Tailwind's dark: variant, not prefers-color-scheme. */}
             <img
               src={GLANCE_IMAGE}
-              alt="The top of the plain-English readiness report for a sample CRM: data health by CRM object, counts of AI use cases that are ready, usable with caution or not ready yet, and a ranked Fix this first list."
-              className="w-full h-auto rounded-lg border border-border/40"
+              alt={GLANCE_ALT}
+              className="w-full h-auto rounded-lg border border-border/40 dark:hidden"
+              width={1000}
+              height={1696}
+            />
+            <img
+              src={GLANCE_IMAGE_DARK}
+              alt={GLANCE_ALT}
+              className="hidden dark:block w-full h-auto rounded-lg border border-border/40"
               width={1000}
               height={1696}
             />
