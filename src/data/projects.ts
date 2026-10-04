@@ -35,11 +35,11 @@ export const PRODUCT_INTELLIGENCE_SYSTEMS: Project[] = [
     link: "/gtm-ai-readiness",
     highlights: [
       "Privacy-first: runs locally, read-only, no CRM data leaves the machine",
-      "Deterministic scoring across 7 data dimensions, 316 tests",
+      "Deterministic scoring across 7 data dimensions, about 930 tests",
       "Measures cross-system joinability instead of consolidating data",
       "Fail-safe: autonomous CRM writes never rated ready without human review",
       "Dual output: plain-English summary for leaders, detail table for RevOps",
-      "CRM-agnostic adapter layer; Salesforce read-only connector in progress",
+      "CRM-agnostic adapter layer with a read-only Salesforce connector",
     ],
     repoLink: "TODO", // placeholder per request — replace with the real GitHub URL once gtm-trust-kernel is public
     expandedContent: {
@@ -68,10 +68,9 @@ export const PRODUCT_INTELLIGENCE_SYSTEMS: Project[] = [
         "This is the front door to the Deal Review Copilot, a trust layer where AI suggestions to the CRM are checked, logged, and reversible.",
       ],
     },
-    // Real "healthy" fixture screenshots (source: gtm-trust-kernel/packages/readiness) — used in the
-    // /gtm-ai-readiness PageGate preview (src/pages/GtmAiReadiness.tsx), not by this card list.
-    previewImage: "/images/projects/gtm-ai-readiness/readiness-report-healthy.png",
-    previewImageDetail: "/images/projects/gtm-ai-readiness/readiness-report-healthy-detail.png",
+    // "At a glance" crop of the sample report (static copy of gtm-trust-kernel/docs/demo) — shown on
+    // the /gtm-ai-readiness page (src/pages/GtmAiReadiness.tsx), not by this card list.
+    previewImage: "/demos/crm-readiness-scan/scan-plain-glance.png",
   },
 ];
 
