@@ -1,268 +1,154 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, Gauge, Check } from "lucide-react";
-import { PageGate } from "@/components/ui/PageGate";
-import { DiagonalWatermark } from "@/components/ui/DiagonalWatermark";
+import { ArrowLeft, ArrowUpRight, Gauge } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useVisitLogger } from "@/hooks/useVisitLogger";
-import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 
-const TAGS = ["AI readiness", "CRM data quality", "RevOps"];
+// The sample reports are static copies of gtm-trust-kernel's docs/demo files, served as-is from
+// public/demos/crm-readiness-scan/. Re-copy them whenever the demo samples are regenerated
+// (for example at the next release): the files are byte-identical to the source, never edited here.
+const REPORTS_DIR = "/demos/crm-readiness-scan";
+const PLAIN_REPORT = `${REPORTS_DIR}/scan-plain.html`;
+const FULL_REPORT = `${REPORTS_DIR}/scan.html`;
+const CANT_TELL_REPORT = `${REPORTS_DIR}/scan-notes-not-measured-plain.html`;
 
-const DESCRIPTION =
-  "Scores a sales team's CRM data hygiene and flags which common AI use cases that data is ready for, and what to fix first.";
+// The reports carry stable section ids (data-health, verdict-counts, fix-first, use-cases, heatmap,
+// details), so each button lands on its section with a plain URL fragment. The reports' own :target
+// style outlines the section; keep these ids in step with gtm-trust-kernel's decision view.
+const toSection = (file: string, id: string) => `${file}#${id}`;
 
-// From gtm-trust-kernel/packages/readiness/package.json + root package.json + src/report/cli.ts.
-const STACK = "TypeScript · Node.js (tsx CLI) · Vitest · self-contained HTML reports";
+const QUESTIONS: { label: string; href: string }[] = [
+  { label: "Which data needs cleaning first?", href: toSection(PLAIN_REPORT, "data-health") },
+  { label: "What should we fix first?", href: toSection(PLAIN_REPORT, "fix-first") },
+  { label: "Which AI use cases are ready?", href: toSection(PLAIN_REPORT, "use-cases") },
+  { label: "See a ‘Can’t tell yet’ case", href: toSection(CANT_TELL_REPORT, "uc-grounded_account_brief") },
+];
+const GLANCE_IMAGE = `${REPORTS_DIR}/scan-plain-glance.png`;
 
-const PLAIN_IMAGE_SRC = "/images/projects/gtm-ai-readiness/readiness-report-healthy.png";
-const DETAIL_IMAGE_SRC = "/images/projects/gtm-ai-readiness/readiness-report-healthy-detail.png";
+// Flip to true once the repository and the npm package are public; the two chips then become links.
+const REPO_PUBLIC = false;
+const GITHUB_URL = "https://github.com/pretzelslab/gtm-trust-kernel";
+const NPM_URL = "https://www.npmjs.com/package/gtm-trust-kernel";
 
-// Mirrors STATUS_BADGE.building in src/components/portfolio/Projects.tsx (card badge,
-// driven by the `status` field on this project in src/data/projects.ts) — kept in sync
-// by hand here since this page hardcodes its own copy of the card's content, same as
-// TAGS/DESCRIPTION/HIGHLIGHTS above.
+const HEADLINE = "Faster, cleaner deals start with CRM data your sellers can trust.";
+
+const LINES = [
+  "Scores your CRM data hygiene against each AI use case, so you know what's ready before you roll AI out.",
+  "It reads your CRM, never writes to it, and your CRM records stay on your machine.",
+  "Built for RevOps, sales ops and enablement: every use case gets a plain verdict (ready, use with caution, not ready yet) and a short list of what to fix first.",
+];
+
+const STACK = "TypeScript · Salesforce adapter · approval-gated AI changes with audit log · MIT";
+
 const STATUS_LABEL = "Building";
+// Mirrors STATUS_BADGE.building in src/components/portfolio/Projects.tsx.
 const STATUS_CLASSES = "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20";
 
-const HIGHLIGHTS = [
-  "Privacy-first: runs locally, read-only, no CRM data leaves the machine",
-  "Deterministic scoring across 7 data dimensions, 316 tests",
-  "Measures cross-system joinability instead of consolidating data",
-  "Fail-safe: autonomous CRM writes never rated ready without human review",
-  "Dual output: plain-English summary for leaders, detail table for RevOps",
-  "CRM-agnostic adapter layer; Salesforce read-only connector in progress",
-];
+const CHIP = "inline-flex items-center gap-1.5 text-xs font-mono px-3 py-1.5 rounded-md border";
 
-const SECTIONS: { label: string; items: string[] }[] = [
-  {
-    label: "02 · What this is",
-    items: [
-      "A free check a sales team runs on their own CRM before buying AI sales tools.",
-      "It says, use case by use case: ready, use with caution, or not ready. It also says why and what to fix.",
-      "It runs on your laptop, only reads data, and nothing leaves your machine.",
-    ],
-  },
-  {
-    label: "03 · Why it exists",
-    items: [
-      "Companies buy AI sales tools and they quietly underperform. The usual cause is messy data, not the AI.",
-      "Common problems: close dates already in the past, deals with no logged activity, and a CRM and email tool that don't agree on who's who.",
-      "No vendor tells you upfront which share of your pipeline lacks the data AI needs. This does.",
-    ],
-  },
-  {
-    label: "04 · How it works",
-    items: [
-      "It reads samples from the CRM and connected tools, but never merges them.",
-      "It scores 7 areas (coverage, freshness, hygiene, history, cross-system match, and more) with plain math. No AI is used in scoring, so results are repeatable.",
-      "Leaders get a plain-English summary. Ops teams get the detailed table.",
-      "Built-in safety rule: AI writing into the CRM is never marked ready unless a person checks every change.",
-    ],
-  },
-  {
-    label: "05 · Real-world use case",
-    items: [
-      "A VP of Sales is about to sign for an AI forecasting tool. The check takes minutes.",
-      "It shows a big chunk of open deals have stale close dates, so forecasting AI would just be guessing.",
-      "They fix the data first, or buy a tool that fits what they actually have. That saves the money and the awkward QBR.",
-    ],
-  },
-  {
-    label: "06 · Bigger picture",
-    items: [
-      "This is the front door to the Deal Review Copilot, a trust layer where AI suggestions to the CRM are checked, logged, and reversible.",
-    ],
-  },
-];
-
-// ── Section label ───────────────────────────────────────────────────────────
-function SectionLabel({ children }: { children: string }) {
+function ExternalChip({ label, href }: { label: string; href: string }) {
+  if (REPO_PUBLIC) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`${CHIP} border-border/60 text-foreground hover:border-border transition-colors`}
+      >
+        {label} <ArrowUpRight className="w-3 h-3" />
+      </a>
+    );
+  }
   return (
-    <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50 mb-2">
-      {children}
-    </p>
+    <span
+      aria-disabled="true"
+      className={`${CHIP} border-dashed border-border/50 text-muted-foreground/60 cursor-not-allowed select-none`}
+    >
+      {label} · coming soon
+    </span>
   );
 }
 
-// ── Shared header (title, description, tags) ─────────────────────────────────
-function Header({ preview = false }: { preview?: boolean }) {
-  return (
-    <div className="mb-8">
-      <div className="flex items-center gap-3 mb-3 flex-wrap">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 text-xs font-medium">
-          <Gauge className="w-3 h-3" /> Product Intelligence · CRM Data Readiness
-        </div>
-        <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${STATUS_CLASSES}`}>
-          {STATUS_LABEL}
-        </span>
-        {preview && (
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border bg-blue-500/10 text-blue-600 border-blue-500/20">
-            Preview
-          </span>
-        )}
-      </div>
-      <h1 className="text-3xl font-bold mb-2">CRM Data Readiness Scan</h1>
-      <p className="text-muted-foreground max-w-2xl leading-relaxed">{DESCRIPTION}</p>
-      <p className="text-xs font-mono text-muted-foreground/80 mt-2">
-        <span className="text-muted-foreground/50 uppercase tracking-widest text-[10px] mr-2">Stack</span>
-        {STACK}
-      </p>
-      <div className="flex flex-wrap items-center gap-1.5 mt-3">
-        <span className="text-muted-foreground/50 uppercase tracking-widest text-[10px] font-mono mr-0.5">Topics</span>
-        {TAGS.map(t => (
-          <span key={t} className="text-[10px] font-mono text-slate-500 dark:text-blue-300/60 bg-slate-500/8 dark:bg-blue-500/8 border border-slate-400/15 dark:border-blue-400/20 px-2 py-0.5 rounded">
-            {t}
-          </span>
-        ))}
-      </div>
-      {/* Preview-only: desktop has ~199px of headroom above the fade start here
-          (verified live), enough for 3 compact lines. Mobile has only ~21px —
-          doesn't fit without pushing the header into the fade zone, so hidden there. */}
-      {preview && (
-        <ul className="hidden md:block space-y-1 mt-4">
-          {HIGHLIGHTS.slice(0, 3).map(h => (
-            <li key={h} className="flex gap-2 items-start text-xs text-muted-foreground">
-              <Check className="w-3 h-3 text-blue-500 shrink-0 mt-0.5" />
-              <span>{h}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-// ── Highlights (compact list under header) ────────────────────────────────────
-function Highlights() {
-  return (
-    <div className="mb-9">
-      <SectionLabel>Highlights</SectionLabel>
-      <ul className="space-y-2">
-        {HIGHLIGHTS.map(h => (
-          <li key={h} className="flex gap-2 items-start text-sm text-muted-foreground">
-            <Check className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
-            <span>{h}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-const REPORT_IMAGES: { src: string; alt: string; label: string }[] = [
-  { src: PLAIN_IMAGE_SRC, alt: "GTM AI Readiness plain-English report, healthy fixture", label: "Leader summary" },
-  { src: DETAIL_IMAGE_SRC, alt: "GTM AI Readiness detailed tabular report, healthy fixture", label: "RevOps detail" },
-];
-
-// ── Two report images, side by side on desktop, stacked on mobile ────────────
-// Shared by the locked preview and the unlocked page's "Sample output" section
-// — identical markup both places. Fade (locked preview only) comes entirely
-// from PageGate's mask on its outer container, not from anything here, so the
-// unlocked page renders this with no fade automatically. Each image opens
-// full-size in a shadcn Dialog lightbox (click outside / Esc / the Dialog's
-// own close button all close it — all built into src/components/ui/dialog.tsx
-// already, untouched here).
-function ReportImages({ className = "" }: { className?: string }) {
-  return (
-    <div className={className}>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {REPORT_IMAGES.map(img => (
-          <div key={img.label}>
-            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50 mb-1.5">
-              {img.label}
-            </p>
-            <Dialog>
-              <DialogTrigger asChild>
-                <button
-                  type="button"
-                  className="block w-full rounded-xl border border-border/60 bg-muted/10 p-3 hover:border-border transition-colors"
-                >
-                  <img
-                    src={img.src}
-                    alt={img.alt}
-                    className="w-full aspect-[1488/580] object-cover object-top rounded-lg border border-border/40"
-                  />
-                </button>
-              </DialogTrigger>
-              <DialogContent className="max-w-[95vw] sm:max-w-[90vw] lg:max-w-4xl max-h-[90vh] overflow-auto p-2">
-                <DialogTitle className="sr-only">{img.label} — full size</DialogTitle>
-                <img src={img.src} alt={img.alt} className="w-full h-auto max-h-[85vh] object-contain rounded-md" />
-              </DialogContent>
-            </Dialog>
-          </div>
-        ))}
-      </div>
-      <p className="text-center text-[11px] font-mono text-muted-foreground mt-3">
-        Sample output from a synthetic test fixture.
-      </p>
-    </div>
-  );
-}
-
-// ── Static preview (shown behind PageGate) ───────────────────────────────────
-function GtmAiReadinessPreview() {
-  return (
-    <div className="min-h-screen bg-background">
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border/40">
-        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
-          <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-            ← Back to Portfolio
-          </Link>
-          <span className="text-xs font-mono text-blue-500">Preview</span>
-        </div>
-      </div>
-      <div className="max-w-5xl mx-auto px-6 py-10 md:py-24">
-        <Header preview />
-        <ReportImages className="mt-4 md:mt-10" />
-      </div>
-    </div>
-  );
-}
-
-// ── Main page ─────────────────────────────────────────────────────────────────
 export default function GtmAiReadiness() {
   useVisitLogger("/gtm-ai-readiness");
 
   return (
-    <PageGate pageId="gtm-ai-readiness" backTo="/#projects" previewContent={<GtmAiReadinessPreview />}>
-      <div className="min-h-screen bg-background relative">
-        <DiagonalWatermark />
-
-        <nav className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-md border-border/50">
-          <div className="max-w-5xl mx-auto px-6 py-4">
-            <Link to="/#projects" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Back to Portfolio
-            </Link>
-          </div>
-        </nav>
-
-        <div className="max-w-5xl mx-auto px-6 py-10">
-
-          <Header />
-          <Highlights />
-
-          <div className="mb-9">
-            <SectionLabel>01 · Sample output</SectionLabel>
-            <ReportImages />
-          </div>
-
-          {SECTIONS.map(section => (
-            <div className="mb-9" key={section.label}>
-              <SectionLabel>{section.label}</SectionLabel>
-              <div className="rounded-xl border border-border/60 bg-muted/10 p-5">
-                <ul className="space-y-3">
-                  {section.items.map((item, i) => (
-                    <li key={i} className="flex gap-2.5 items-baseline text-sm leading-relaxed">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ))}
-
+    <div className="min-h-screen bg-background">
+      <nav className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-md border-border/50">
+        <div className="max-w-5xl mx-auto px-6 py-4">
+          <Link
+            to="/#projects"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Portfolio
+          </Link>
         </div>
-      </div>
-    </PageGate>
+      </nav>
+
+      <main className="max-w-5xl mx-auto px-6 py-10 md:py-16">
+        <div className="flex items-center gap-3 mb-4 flex-wrap">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 text-xs font-medium">
+            <Gauge className="w-3 h-3" /> CRM Data Readiness Scan
+          </div>
+          <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${STATUS_CLASSES}`}>
+            {STATUS_LABEL}
+          </span>
+        </div>
+
+        <h1 className="text-3xl md:text-4xl font-bold mb-4 max-w-3xl leading-tight">{HEADLINE}</h1>
+        <div className="space-y-2 max-w-2xl">
+          {LINES.map(line => (
+            <p key={line} className="text-muted-foreground leading-relaxed">
+              {line}
+            </p>
+          ))}
+        </div>
+
+        <div className="mt-8">
+          <a
+            href={PLAIN_REPORT}
+            target="_blank"
+            rel="noopener"
+            aria-label="Open the plain report for the sample CRM in a new tab"
+            className="block max-w-3xl rounded-xl border border-border/60 bg-muted/10 p-3 hover:border-border transition-colors"
+          >
+            <img
+              src={GLANCE_IMAGE}
+              alt="The top of the plain-English readiness report for a sample CRM: data health by CRM object, counts of AI use cases that are ready, usable with caution or not ready yet, and a ranked Fix this first list."
+              className="w-full h-auto rounded-lg border border-border/40"
+              width={1000}
+              height={1696}
+            />
+          </a>
+          <p className="text-[11px] font-mono text-muted-foreground mt-2">
+            Sample output from synthetic test data. Click to open the report.
+          </p>
+        </div>
+
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-3xl">
+          {QUESTIONS.map((q, i) => (
+            <Button key={q.label} asChild variant={i === 0 ? "default" : "outline"} className="justify-start h-auto py-3 whitespace-normal text-left">
+              <a href={q.href} target="_blank" rel="noopener">
+                {q.label}
+              </a>
+            </Button>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          <a href={FULL_REPORT} target="_blank" rel="noopener" className="underline underline-offset-4 hover:text-foreground transition-colors">
+            Full technical report
+          </a>
+        </p>
+
+        <div className="mt-6 flex flex-wrap gap-2">
+          <ExternalChip label="GitHub" href={GITHUB_URL} />
+          <ExternalChip label="npm" href={NPM_URL} />
+        </div>
+
+        <p className="text-xs font-mono text-muted-foreground/80 mt-8">
+          <span className="text-muted-foreground/50 uppercase tracking-widest text-[10px] mr-2">Stack</span>
+          {STACK}
+        </p>
+      </main>
+    </div>
   );
 }
