@@ -78,7 +78,8 @@ describe("Admin — owner identity must come only from the master code, never a 
     vi.restoreAllMocks();
     localStorage.clear();
     sessionStorage.clear();
-    stubAdminApi(401, { ok: false, error: "master-code-required" });
+    // Valid owner session: these tests are about owner-marking, not 401 handling.
+    stubAdminApi(200, { ok: true, data: [] });
   });
 
   afterEach(() => cleanup());
@@ -132,12 +133,33 @@ describe("Admin — visitor log via /api/admin", () => {
     await waitFor(() => expect(adminCalls(fetchMock)).toContainEqual({ action: "visits.list", offset: 0 }));
   });
 
-  it("page-code-only unlock: server says master code required → shows the note, no error", async () => {
+  it("page-code-only unlock: server says master code required → stale flag cleared, gate re-shown", async () => {
     localStorage.setItem(PAGE_KEY, "1");
     stubAdminApi(401, { ok: false, error: "master-code-required" });
-    const { findByTestId, queryByText } = renderAdmin();
-    expect(await findByTestId("visits-master-required")).toHaveTextContent("Master code required");
+    const { findByText, queryByText } = renderAdmin();
+    expect(await findByText("Enter code")).toBeInTheDocument();
+    expect(localStorage.getItem(PAGE_KEY)).toBeNull();
     expect(queryByText(/failed to load/i)).toBeNull();
+  });
+
+  it("stale master unlock (401, no owner cookie): both unlock flags cleared and the code prompt returns", async () => {
+    localStorage.setItem(MASTER_KEY, "1");
+    localStorage.setItem(PAGE_KEY, "1");
+    const fetchMock = stubAdminApi(401, { ok: false, error: "master-code-required" });
+    const { findByText } = renderAdmin();
+    expect(await findByText("Enter code")).toBeInTheDocument();
+    expect(localStorage.getItem(MASTER_KEY)).toBeNull();
+    expect(localStorage.getItem(PAGE_KEY)).toBeNull();
+    // Only one failed call: the page does not keep retrying once locked.
+    expect(adminCalls(fetchMock).length).toBe(1);
+  });
+
+  it("a non-401 failure (server error) leaves the unlock flags alone", async () => {
+    localStorage.setItem(MASTER_KEY, "1");
+    stubAdminApi(502, { ok: false, error: "db-error" });
+    renderAdmin();
+    await new Promise((r) => setTimeout(r, 30));
+    expect(localStorage.getItem(MASTER_KEY)).toBe("1");
   });
 
   it("master unlock with a valid owner session: no master-code note", async () => {
