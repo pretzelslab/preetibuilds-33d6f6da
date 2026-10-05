@@ -30,8 +30,8 @@ export const PRODUCT_INTELLIGENCE_SYSTEMS: Project[] = [
   {
     title: "CRM Data Readiness Scan",
     description: "Scores a sales team's CRM data hygiene and flags which common AI use cases that data is ready for, and what to fix first.",
-    tags: ["AI readiness", "CRM data quality", "RevOps"],
-    status: "building",
+    tags: ["RevOps", "AI readiness", "Salesforce", "Open source"],
+    status: "live",
     link: "/gtm-ai-readiness",
     highlights: [
       "Privacy-first: runs locally, read-only, no CRM data leaves the machine",
@@ -41,7 +41,7 @@ export const PRODUCT_INTELLIGENCE_SYSTEMS: Project[] = [
       "Dual output: plain-English summary for leaders, detail table for RevOps",
       "CRM-agnostic adapter layer with a read-only Salesforce connector",
     ],
-    repoLink: "TODO", // placeholder per request — replace with the real GitHub URL once gtm-trust-kernel is public
+    repoLink: "https://github.com/pretzelslab/gtm-trust-kernel",
     expandedContent: {
       what: [
         "A free check a sales team runs on their own CRM before buying AI sales tools.",
