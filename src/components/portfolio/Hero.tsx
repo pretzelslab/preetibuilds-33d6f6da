@@ -1,4 +1,10 @@
 import { motion } from "framer-motion";
+import {
+  PRODUCT_INTELLIGENCE_SYSTEMS,
+  ENTERPRISE_ASSESSMENT,
+  GOVERNANCE_COMPLIANCE,
+  SAFETY_EVALUATION,
+} from "@/data/projects";
 
 const CREDENTIALS = [
   "Enterprise products, platforms, and transformation programs — 18+ years across B2B SaaS, CRM, and RevOps stacks.",
@@ -7,10 +13,10 @@ const CREDENTIALS = [
   "AI safety & evaluation: 40-case adversarial test suite, agent drift detection — OWASP LLM Top 10 and MITRE ATLAS aligned.",
 ];
 
-const DOMAIN_INDEX = [
+export const DOMAIN_INDEX = [
   {
     label: "Product & Intelligence Systems",
-    count: 3,
+    count: PRODUCT_INTELLIGENCE_SYSTEMS.length,
     anchor: "#product-intelligence",
     desc: "AI-native revenue systems — product intelligence, win/loss, and GTM automation built from 18+ years of enterprise product and RevOps operating experience",
     bullets: ["Product Intelligence Pipeline — Salesforce + Claude at scale", "Win/Loss Intelligence — live root-cause analysis", "GTM Intelligence Pipeline — CRM + pipeline automation"],
@@ -18,7 +24,7 @@ const DOMAIN_INDEX = [
   },
   {
     label: "Enterprise Assessment & Decision Systems",
-    count: 3,
+    count: ENTERPRISE_ASSESSMENT.length,
     anchor: "#enterprise-assessment",
     desc: "Organizational readiness diagnostics, risk management frameworks, and bias evaluation tools for enterprise AI transformation",
     bullets: ["AI Readiness Assessment — 25-question diagnostic", "AI Risk Assessment — 5-phase governance engagement", "Algorithmic Fairness Auditor — disparate impact + parity testing"],
@@ -26,7 +32,7 @@ const DOMAIN_INDEX = [
   },
   {
     label: "Governance & Compliance",
-    count: 3,
+    count: GOVERNANCE_COMPLIANCE.length,
     anchor: "#governance-compliance",
     desc: "Policy governance, privacy impact assessment, and agentic compliance pipelines — built for EU AI Act, GDPR, NIST AI RMF, and ISO 42001",
     bullets: ["AI Ethics & Governance Tracker — EU AI Act · NIST · ISO 42001", "AI Compliance Monitoring Agent — weekly LangGraph pipeline", "Privacy Impact Auditor — DPIA + 13 regulations"],
@@ -34,7 +40,7 @@ const DOMAIN_INDEX = [
   },
   {
     label: "Safety & Evaluation",
-    count: 3,
+    count: SAFETY_EVALUATION.length,
     anchor: "#safety-evaluation",
     desc: "Adversarial testing, red-teaming, agent evaluation, and pre-deployment safety assurance for regulated AI systems",
     bullets: ["LLM Safety Eval — 40 cases, 5 risk categories", "Goal drift detection — SAFE/DRIFTING/ROGUE", "OWASP LLM Top 10 — indirect prompt injection"],
