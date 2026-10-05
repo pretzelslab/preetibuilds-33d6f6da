@@ -3,6 +3,8 @@
 // HttpOnly pl_owner cookie (sent automatically, same-origin); nothing secret
 // is ever passed from here.
 
+import { clearStaleUnlock } from "@/components/ui/PageGate";
+
 export type AdminAction =
   | { action: "visits.list"; offset?: number }
   | { action: "visits.delete"; ids: string[] }
@@ -31,7 +33,11 @@ export async function adminCall<T = undefined>(body: AdminAction): Promise<Admin
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    if (res.status === 401) return { ok: false, error: "master-code-required" };
+    if (res.status === 401) {
+      // The browser believes it is unlocked but has no valid owner session.
+      clearStaleUnlock();
+      return { ok: false, error: "master-code-required" };
+    }
     if (!res.ok) return { ok: false, error: "failed" };
     const json = await res.json();
     if (json?.ok !== true) return { ok: false, error: "failed" };

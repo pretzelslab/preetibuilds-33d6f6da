@@ -36,6 +36,16 @@ function safeRemove(key: string): void {
   window.dispatchEvent(new Event(GATE_CHANGE_EVENT));
 }
 
+// Called when the server rejects an owner-only request (401): the browser's
+// unlock flags say "owner" but it holds no valid pl_owner cookie (cookie
+// expired/cleared, or the master code was rotated). Dropping the flags makes
+// every PageGate mounted on the page fall back to the code prompt instead of
+// silently showing an unlocked page with no data.
+export function clearStaleUnlock(): void {
+  safeRemove(MASTER_KEY);
+  safeRemove(pageKey("admin"));
+}
+
 function isUnlocked(page: string): boolean {
   return safeGet(MASTER_KEY) === "1" || safeGet(pageKey(page)) === "1";
 }
@@ -83,6 +93,14 @@ export function PageGate({
   const [error, setError]       = useState(false);
   const [shaking, setShaking]   = useState(false);
   const [showInput, setShowInput] = useState(false);
+
+  // Follow flag changes made elsewhere (e.g. clearStaleUnlock after a 401) so
+  // the gate re-locks without a reload.
+  useEffect(() => {
+    const onChange = () => setUnlocked(isUnlocked(pageId));
+    window.addEventListener(GATE_CHANGE_EVENT, onChange);
+    return () => window.removeEventListener(GATE_CHANGE_EVENT, onChange);
+  }, [pageId]);
 
   // Hash-based unlock for page-specific codes only: /carbon-depth#CDX2026.
   // The master code is never accepted via URL hash — see tryUnlock below.
