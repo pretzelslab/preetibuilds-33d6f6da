@@ -29,8 +29,8 @@ const GLANCE_IMAGE_DARK = `${REPORTS_DIR}/scan-plain-glance-dark.png`;
 const GLANCE_ALT =
   "The top of the plain-English readiness report for a sample CRM: data health by CRM object, counts of AI use cases that are ready, usable with caution or not ready yet, and a ranked Fix this first list.";
 
-// Flip to true once the repository and the npm package are public; the two chips then become links.
-const REPO_PUBLIC = false;
+// The repository and the npm package are public, so the two chips are real links.
+const REPO_PUBLIC = true;
 const GITHUB_URL = "https://github.com/pretzelslab/gtm-trust-kernel";
 const NPM_URL = "https://www.npmjs.com/package/gtm-trust-kernel";
 
@@ -44,9 +44,10 @@ const LINES = [
 
 const STACK = "TypeScript · Salesforce adapter · approval-gated AI changes with audit log · MIT";
 
-const STATUS_LABEL = "Building";
-// Mirrors STATUS_BADGE.building in src/components/portfolio/Projects.tsx.
-const STATUS_CLASSES = "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20";
+const STATUS_LABEL = "Live";
+// Mirrors STATUS_BADGE.live in src/components/portfolio/Projects.tsx.
+const STATUS_CLASSES = "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
+const TAGS = ["RevOps", "AI readiness", "Salesforce", "Open source", "AI governance", "Human-in-the-loop"];
 
 const CHIP = "inline-flex items-center gap-1.5 text-xs font-mono px-3 py-1.5 rounded-md border";
 
@@ -107,6 +108,9 @@ export default function GtmAiReadiness() {
           <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${STATUS_CLASSES}`}>
             {STATUS_LABEL}
           </span>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border bg-muted text-muted-foreground border-border">
+            Open source · MIT
+          </span>
         </div>
 
         <h1 className="text-3xl md:text-4xl font-bold mb-4 max-w-3xl leading-tight">{HEADLINE}</h1>
@@ -115,6 +119,14 @@ export default function GtmAiReadiness() {
             <p key={line} className="text-muted-foreground leading-relaxed">
               {line}
             </p>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap gap-1.5 mt-5">
+          {TAGS.map(tag => (
+            <span key={tag} className="text-[10px] font-mono text-slate-500 dark:text-blue-300/60 bg-slate-500/8 dark:bg-blue-500/8 border border-slate-400/15 dark:border-blue-400/20 px-2 py-0.5 rounded">
+              {tag}
+            </span>
           ))}
         </div>
 
