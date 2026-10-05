@@ -90,7 +90,7 @@ export default function GtmAiReadiness() {
   return (
     <div className="min-h-screen bg-background">
       <nav className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-md border-border/50">
-        <div className="max-w-5xl mx-auto px-6 py-4">
+        <div className="max-w-[1100px] mx-auto px-6 py-4">
           <Link
             to="/#projects"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -100,7 +100,7 @@ export default function GtmAiReadiness() {
         </div>
       </nav>
 
-      <main className="max-w-5xl mx-auto px-6 py-10 md:py-16">
+      <main className="max-w-[1100px] mx-auto px-6 py-10 md:py-16">
         <div className="flex items-center gap-3 mb-4 flex-wrap">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 text-xs font-medium">
             <Gauge className="w-3 h-3" /> CRM Data Readiness Scan
@@ -113,8 +113,8 @@ export default function GtmAiReadiness() {
           </span>
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-bold mb-4 max-w-3xl leading-tight">{HEADLINE}</h1>
-        <div className="space-y-2 max-w-2xl">
+        <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">{HEADLINE}</h1>
+        <div className="space-y-2">
           {LINES.map(line => (
             <p key={line} className="text-muted-foreground leading-relaxed">
               {line}
@@ -135,20 +135,20 @@ export default function GtmAiReadiness() {
             href={PLAIN_REPORT}
             onClick={openInModal("Plain-English report: sample CRM", PLAIN_REPORT)}
             aria-label="Open the plain report for the sample CRM"
-            className="block max-w-3xl rounded-xl border border-border/60 bg-muted/10 p-3 hover:border-border transition-colors"
+            className="block rounded-xl border border-border/60 bg-muted/10 p-3 hover:border-border transition-colors"
           >
             {/* The site theme is the .dark class on <html> (ThemeToggle), so swap with Tailwind's dark: variant, not prefers-color-scheme. */}
             <img
               src={GLANCE_IMAGE}
               alt={GLANCE_ALT}
-              className="w-full h-auto rounded-lg border border-border/40 dark:hidden"
+              className="w-full max-w-3xl mx-auto h-auto rounded-lg border border-border/40 dark:hidden"
               width={1000}
               height={1696}
             />
             <img
               src={GLANCE_IMAGE_DARK}
               alt={GLANCE_ALT}
-              className="hidden dark:block w-full h-auto rounded-lg border border-border/40"
+              className="hidden dark:block w-full max-w-3xl mx-auto h-auto rounded-lg border border-border/40"
               width={1000}
               height={1696}
             />
@@ -158,7 +158,7 @@ export default function GtmAiReadiness() {
           </p>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-3xl">
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
           {QUESTIONS.map((q, i) => (
             <Button key={q.label} asChild variant={i === 0 ? "default" : "outline"} className="justify-start h-auto py-3 whitespace-normal text-left">
               <a href={q.href} onClick={openInModal(q.label, q.href)}>
