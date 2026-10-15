@@ -42,7 +42,6 @@ function Header({ large }: { large?: boolean }) {
       <div className="flex flex-wrap items-center gap-2">
         <span className={`text-xs font-bold rounded px-2 py-0.5 border ${TONE.green.box} ${TONE.green.text}`}>Phase 1 complete</span>
         <span className="text-xs text-muted-foreground bg-muted/50 border border-border rounded px-2 py-0.5">AI Safety Research</span>
-        <span className="text-xs text-muted-foreground bg-muted/50 border border-border rounded px-2 py-0.5">Preethi Raghuveeran</span>
       </div>
       <h1 className={`${large ? "text-4xl" : "text-3xl"} font-bold text-foreground`}>Crisis Realism Gap</h1>
       <p className="text-muted-foreground max-w-2xl text-base leading-relaxed">
@@ -481,12 +480,34 @@ function Glossary() {
 
 // ─── Preview content (visible without the master code, fades out) ────────────
 
+// Grey placeholder tiles shaped like the key-result tiles. They carry no real
+// numbers or text; they only give the preview enough height for the fade-out.
+function TeaserSkeleton() {
+  return (
+    <div className="space-y-3">
+      <SectionTitle>What we found</SectionTitle>
+      <div aria-hidden="true" className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {[0, 1, 2].map(i => (
+          <div key={i} className="rounded-xl border border-border bg-muted/30 p-3 space-y-3">
+            <div className="h-2.5 w-1/3 rounded bg-muted-foreground/20" />
+            <div className="h-2 w-full rounded bg-muted-foreground/15" />
+            <div className="h-2 w-4/5 rounded bg-muted-foreground/15" />
+            <div className="h-6 w-1/2 rounded bg-muted-foreground/20" />
+            <div className="h-2 w-2/3 rounded bg-muted-foreground/15" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const previewContent = (
   <div className="min-h-screen">
     <div className="max-w-[1100px] mx-auto px-6 pt-10 pb-4 space-y-8 font-sans">
       <Header />
       <AtAGlance />
       <HowItWorks />
+      <TeaserSkeleton />
     </div>
   </div>
 );
@@ -538,11 +559,12 @@ function CrisisRealismGapContent() {
   );
 }
 
-// ─── Export with PageGate (no pageId → master code only) ─────────────────────
+// ─── Export with PageGate (Research pageId: Research code or master code) ───
 
 export default function CrisisRealismGap() {
   return (
-    <PageGate previewContent={previewContent}>
+    // Research project pages share the Research pageId/code.
+    <PageGate pageId="research" previewContent={previewContent}>
       <CrisisRealismGapContent />
     </PageGate>
   );
