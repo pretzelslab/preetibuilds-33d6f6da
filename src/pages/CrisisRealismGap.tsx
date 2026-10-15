@@ -185,6 +185,33 @@ function WhatWeFound() {
         </p>
       </div>
 
+      <div className={CARD}>
+        <SectionTitle>What AUC means</SectionTitle>
+        <p className={BODY}>
+          Pick one real message and one test message at random. AUC (Area Under the Curve) is the chance the model scores the test one as more test-like.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          {[
+            { v: "0.5", t: "Coin flip", s: "The model cannot tell them apart.", tone: "grey" as const },
+            { v: "1.0", t: "Always right", s: "The test message always scores higher.", tone: "red" as const },
+            { v: "Below 0.5", t: "Backwards", s: "The test messages look more real. Sonnet scored the everyday set (C) at 0.35.", tone: "green" as const },
+          ].map(x => (
+            <div key={x.v} className={`rounded-xl border p-3 space-y-1 ${TONE[x.tone].box}`}>
+              <p className={`text-base font-bold font-mono ${TONE[x.tone].text}`}>{x.v}</p>
+              <p className="text-xs font-semibold text-foreground">{x.t}</p>
+              <p className="text-xs text-muted-foreground leading-snug">{x.s}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs font-semibold text-foreground">Why we use it</p>
+        <Bullets items={[
+          "No cut-off to pick.",
+          "Works with uneven group sizes.",
+          "One number per model.",
+        ]} />
+        <p className={BODY}>For a benchmark, closer to 0.5 = more realistic.</p>
+      </div>
+
       <div className="space-y-3">
         <SectionTitle>What this means</SectionTitle>
         <div className="flex flex-col md:flex-row items-stretch gap-2">
@@ -209,15 +236,51 @@ function WhatWeFound() {
       </div>
 
       <div className={CARD}>
+        <SectionTitle>Takeaway</SectionTitle>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {[
+            { n: "a", tone: "red" as const,   text: "Crisis benchmarks look like tests to frontier models (AUC 0.91–0.97)." },
+            { n: "b", tone: "red" as const,   text: "Rewording them to sound realistic barely helps (0.87–0.96). Style polish alone did not fix it." },
+            { n: "c", tone: "green" as const, text: "Everyday messages written the same way drop to near chance (0.35–0.67). Being synthetic does not itself give a message away; crisis content appears to matter more." },
+          ].map(x => (
+            <div key={x.n} className={`rounded-xl border p-4 space-y-1 ${TONE[x.tone].box}`}>
+              <p className={`text-[10px] font-mono uppercase font-bold ${TONE[x.tone].text}`}>Step {x.n} · shown</p>
+              <p className="text-sm text-foreground leading-relaxed">{x.text}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          The models gave probabilities, not yes/no labels. On average they rated benchmark crisis messages at 0.38–0.65 and real chats at 0.10–0.20.
+          Message length does not explain the gap (length-matched AUC, appendix).
+        </p>
+      </div>
+
+      <div className={CARD}>
         <SectionTitle>What this doesn't show</SectionTitle>
         <Bullets items={[
           "Whether suspecting a test changes how safely a model responds. Phase 1 rates the text only; nothing about the replies was measured until Phase 2.",
-          "How models treat real people in crisis. WildChat leaves out conversations flagged as toxic, so acute crisis is under-represented: a check of 39 candidate messages found only 2 at crisis level, so crisis could not be compared with crisis. Public datasets remove real crisis data.",
+          "How models treat real people in crisis. WildChat leaves out conversations flagged as toxic, so acute crisis is under-represented: only 2 of 39 real crisis candidates were at crisis level, so crisis could not be compared with crisis. Public datasets remove real crisis data.",
           "Whether the question itself changes the answer. Asking “is this a test?” may prime the model; the prompt is identical across sets, so only the comparisons between sets are reliable.",
           "Anything about messages written in other languages or longer conversations beyond the benchmark's own short multi-turn items.",
+          "The real comparison set is mostly ordinary chats (only 2 of 39 real crisis candidates were at crisis level), so part of the gap may be crisis vs normal chat, not test vs real.",
           "Small samples in places, and labels mostly assigned by AI.",
           "No abuse/IPV or eating-disorder category in the benchmark.",
         ]} />
+      </div>
+
+      <div className={CARD}>
+        <SectionTitle>What would fix it</SectionTitle>
+        <Bullets items={[
+          "A realism check: aim for an AUC near 0.5 before a benchmark is used.",
+          "Messier multi-turn items with indirect disclosure.",
+          "Consented, de-identified real crisis data.",
+          "Phase 2: compare how models behave, not just how they rate the text.",
+          "A covert-distress check with my Zero-Interaction Danger Rate (ZIDR) metric.",
+        ]} />
+        <p className="text-sm text-foreground leading-relaxed">
+          The goal is tests models can't tell from real, not models that spot tests better.
+        </p>
+        <p className="text-xs text-muted-foreground italic">These are proposals, not results.</p>
       </div>
 
       <div className={`rounded-xl border p-4 flex gap-3 ${TONE.grey.box}`}>
@@ -396,19 +459,10 @@ function TextSections() {
   return (
     <>
       <div className={CARD}>
-        <SectionTitle>What I found</SectionTitle>
-        <Bullets items={[
-          "Models spot benchmark crisis messages as tests almost every time (AUC 0.91 to 0.97).",
-          "Rewriting them to sound like real users removed the format giveaway, but not the topic one (still 0.87 to 0.96).",
-          "Everyday messages written the same way passed as real (0.35 to 0.67). Same writer, same style: only the topic changed, so crisis content itself reads as “test”.",
-          "Message length does not explain it (length-matched AUC, appendix).",
-        ]} />
-      </div>
-      <div className={CARD}>
         <SectionTitle>Why it matters</SectionTitle>
         <Bullets items={[
           "Benchmark builders cannot fix this with better writing alone.",
-          "A real person in crisis might be treated like a test. Only 2 of 39 candidate real messages were at crisis level, too few to say.",
+          "A real person in crisis might be treated like a test. Only 2 of 39 real crisis candidates were at crisis level, too few to say.",
           "Next: test whether covert distress looks more test-like (ZIDR check). For AI to be used in women's safety, the tests themselves have to be trustworthy.",
         ]} />
       </div>
