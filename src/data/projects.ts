@@ -213,6 +213,15 @@ export const RESEARCH_VENTURES_APPLIED: Project[] = [
     externalLink: "https://zenodo.org/records/20208521",
   },
   {
+    title: "Crisis Realism Gap",
+    description: "Phase 1 complete. Can frontier AI models tell a safety test from a real conversation? Four models rated how likely each message was to be a test. Benchmark crisis messages were spotted almost every time (AUC 0.95–1.00), and rewriting them to sound like real users did not remove the giveaway: the crisis topic itself reads as \"test\". Phase 2 asks whether suspecting a test changes the quality of the safety response.",
+    tags: ["AI Safety", "Evaluation Awareness", "Benchmark Validity", "Python", "WildChat"],
+    industries: ["AI Safety Research", "Women's Safety", "Safety Engineering"],
+    status: "building",
+    locked: true,
+    link: "/crisis-realism-gap",
+  },
+  {
     title: "Geo Pipeline: QGIS + Python",
     description: "A complete geospatial ML pipeline built as a hands-on skill exercise: QGIS shapefile export, GeoPandas feature engineering with equal-area reprojection, and a scikit-learn Random Forest trained to predict population from four simple signals. R² = 0.51 on 177 countries; GDP is the dominant signal at 56% importance, more than land area and centroid position combined.",
     tags: ["Python", "GeoPandas", "scikit-learn", "QGIS", "Random Forest", "Matplotlib"],

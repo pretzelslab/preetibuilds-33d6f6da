@@ -38,6 +38,7 @@ import Owner from "./pages/Owner";
 import GeoPipeline from "./pages/GeoPipeline";
 import GtmAiReadiness from "./pages/GtmAiReadiness";
 import AiValueLab from "./pages/AiValueLab";
+import CrisisRealismGap from "./pages/CrisisRealismGap";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +74,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/geo-pipeline":             "Geo Pipeline: QGIS + Python | Preeti Builds",
   "/gtm-ai-readiness":         "CRM Data Readiness Scan | Preeti Builds",
   "/ai-value-lab":             "AI Value Lab | Preeti Builds",
+  "/crisis-realism-gap":       "Crisis Realism Gap | Preeti Builds",
 };
 
 const RouteTitle = () => {
@@ -146,6 +148,7 @@ const App = () => (
             <Route path="/geo-pipeline" element={<GeoPipeline />} />
             <Route path="/gtm-ai-readiness" element={<GtmAiReadiness />} />
             <Route path="/ai-value-lab" element={<AiValueLab />} />
+            <Route path="/crisis-realism-gap" element={<CrisisRealismGap />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
