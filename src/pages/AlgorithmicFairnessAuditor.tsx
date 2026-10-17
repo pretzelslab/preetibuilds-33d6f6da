@@ -9,7 +9,7 @@ import {
 import { QuantizationExplainer } from "@/components/QuantizationExplainer";
 import { PageGate } from "@/components/ui/PageGate";
 import { DiagonalWatermark } from "@/components/ui/DiagonalWatermark";
-import { DIR_THRESHOLD, DIR_FLOOR } from "@/lib/fairnessThresholds";
+import { DIR_THRESHOLD, DIR_FLOOR, DIR_THRESHOLD_NOTE } from "@/lib/fairnessThresholds";
 
 // ── Audit math ────────────────────────────────────────────────────
 
@@ -973,6 +973,7 @@ export default function AlgorithmicFairnessAuditor() {
                         </div>
                       ))}
                     </div>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed mt-2">{DIR_THRESHOLD_NOTE}</p>
                   </div>
 
                   <div className="rounded-lg border border-border/60 bg-muted/10 p-4 space-y-2">
@@ -1022,7 +1023,6 @@ export default function AlgorithmicFairnessAuditor() {
           const dirPass = maxDir <= DIR_THRESHOLD;
           const fprPass = fprGap <= 15;
           const fnrPass = fnrGap <= 15;
-          const usPass = withDir.every(r => r.key === "cauc" || r.newDir >= DIR_FLOOR && r.newDir <= DIR_THRESHOLD);
           const allPass = dirPass && fprPass && fnrPass;
 
           return (
