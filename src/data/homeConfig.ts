@@ -121,12 +121,12 @@ export const GOVERNANCE_TILES: HomeTile[] = [
   {
     title: "Client Risk Workbook", link: "/client-discovery", tags: ["NIST AI RMF", "Risk register", "React"],
     who: "Consultants running AI risk engagements",
-    does: "Five phases (Govern, Map, Measure, Report, Monitor) with a risk register, compliance deadlines and audit fields.",
+    does: "Five-phase engagement workflow on NIST AI RMF (Govern, Map, Measure), extended with Report and Monitor. Includes a risk register, compliance deadlines and audit fields.",
   },
   {
     title: "Weekly Compliance Monitor", link: "/compliance-agent", tags: ["EU AI Act", "NIST AI RMF", "LangGraph"],
     who: "Compliance teams in regulated sectors",
-    does: "LangGraph agent that computes fairness metrics against EU AI Act and NIST thresholds weekly and drafts the compliance report.",
+    does: "LangGraph agent that checks fairness metrics against the 4/5ths rule weekly, maps findings to EU AI Act and NIST AI RMF, and drafts the compliance report.",
   },
 ];
 

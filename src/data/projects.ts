@@ -88,7 +88,7 @@ export const ENTERPRISE_ASSESSMENT: Project[] = [
   },
   {
     title: "AI Risk Assessment",
-    description: "5-phase client engagement tool — Govern, Map, Measure, Report, Monitor — with risk register, compliance deadlines, audit fields, and backup/restore. Private.",
+    description: "Five-phase engagement workflow on NIST AI RMF (Govern, Map, Measure), extended with Report and Monitor. Includes a risk register, compliance deadlines and audit fields.",
     tags: ["React", "TypeScript", "Supabase"],
     industries: ["Enterprise", "Financial Services", "Consulting"],
     status: "live",
@@ -138,7 +138,7 @@ export const GOVERNANCE_COMPLIANCE: Project[] = [
   },
   {
     title: "AI Compliance Monitoring Agent",
-    description: "LangGraph multi-node agent + Python data pipeline + GitHub Actions CI/CD. Computes fairness metrics (DIR, FPR, FNR) against EU AI Act and NIST thresholds, routes on severity, and auto-generates compliance reports and escalation memos — on a weekly schedule.",
+    description: "LangGraph multi-node agent + Python data pipeline + GitHub Actions CI/CD. Computes fairness metrics (DIR, FPR, FNR) against the 4/5ths rule, maps findings to EU AI Act and NIST AI RMF, routes on severity, and auto-generates compliance reports and escalation memos — on a weekly schedule.",
     tags: ["LangGraph", "Python", "GitHub Actions", "Claude Haiku", "Pandas"],
     industries: ["Financial Services", "Enterprise AI", "Regulated Sectors"],
     status: "live",

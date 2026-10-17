@@ -3,6 +3,7 @@ import { useVisitLogger } from "@/hooks/useVisitLogger";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer, Cell } from "recharts";
 import { DiagonalWatermark } from "@/components/ui/DiagonalWatermark";
 import { PageGate } from "@/components/ui/PageGate";
+import { DIR_THRESHOLD } from "@/lib/fairnessThresholds";
 
 const DIR_DATA = [
   { group: "African-American", dir: 1.74, fill: "#ef4444" },
@@ -16,7 +17,7 @@ const PHASES = [
     num: "01",
     title: "Python Data Pipeline",
     subtitle: "pandas · DuckDB · COMPAS dataset",
-    body: "Reads the raw COMPAS recidivism audit dataset. Computes three fairness metrics per demographic group: Disparate Impact Ratio (DIR), False Positive Rate, and False Negative Rate. Checks each metric against EU AI Act, ECOA, and NIST thresholds. Outputs a structured audit_report.json.",
+    body: "Reads the raw COMPAS recidivism audit dataset. Computes three fairness metrics per demographic group: Disparate Impact Ratio (DIR), False Positive Rate, and False Negative Rate. Checks each metric against the 4/5ths rule (US EEOC guidelines) and maps findings to NIST AI RMF and EU AI Act obligations. Outputs a structured audit_report.json.",
     code: `# Key Pandas pattern — groupby + apply
 metrics = (
   df.groupby("race")
@@ -136,7 +137,7 @@ function ComplianceAgentPreview() {
         <div className="relative rounded-xl border border-border/60 overflow-hidden">
           <div className="bg-muted/10 px-5 py-4">
             <p className="text-xs font-semibold mb-1">Pipeline output — Disparate Impact Ratio by group</p>
-            <p className="text-[10px] text-muted-foreground mb-4">African-American DIR 1.74× exceeds EU AI Act 1.25× threshold → DOUBLE-CRITICAL routing</p>
+            <p className="text-[10px] text-muted-foreground mb-4">African-American DIR 1.74× exceeds the 4/5ths rule threshold (1.25×) → DOUBLE-CRITICAL routing</p>
             <div className="blur-sm">
               <div className="h-52 rounded bg-muted/20 flex items-end gap-3 px-6 pb-4">
                 <div className="flex-1 bg-rose-500/40 rounded-t" style={{ height: "85%" }} />
@@ -223,7 +224,7 @@ export default function ComplianceAgent() {
             <p className="text-sm text-muted-foreground leading-relaxed">
               AI governance teams need to audit model fairness on a regular cadence — not just once at deployment.
               But running a full audit (pull data → compute metrics → check thresholds → write report → escalate) manually is slow and inconsistent.
-              This agent automates the entire cycle. Every Monday it runs the audit, checks EU AI Act and NIST thresholds,
+              This agent automates the entire cycle. Every Monday it runs the audit, checks the 4/5ths rule and maps findings to EU AI Act and NIST AI RMF obligations,
               and commits a signed-off compliance report to the repository. If a metric breaches a threshold, an escalation memo is auto-generated
               and addressed to the Chief Risk Officer.
             </p>
@@ -245,7 +246,7 @@ export default function ComplianceAgent() {
           <div className="space-y-3">
             <h2 className="text-base font-semibold">Pipeline output — Disparate Impact Ratio by group</h2>
             <p className="text-xs text-muted-foreground">
-              African-American DIR 1.74× exceeds the EU AI Act 1.25× threshold → agent routes to DOUBLE-CRITICAL → deployment block issued.
+              African-American DIR 1.74× exceeds the 4/5ths rule threshold (1.25×) → agent routes to DOUBLE-CRITICAL → deployment block issued.
             </p>
             <div className="h-52 w-full border border-border/30 rounded-xl p-4 bg-muted/5">
               <ResponsiveContainer width="100%" height="100%">
@@ -257,7 +258,7 @@ export default function ComplianceAgent() {
                     contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8, fontSize: 12 }}
                     formatter={(v: number) => [`${v.toFixed(2)}×`, "DIR"]}
                   />
-                  <ReferenceLine y={1.25} stroke="#f59e0b" strokeDasharray="4 2" label={{ value: "EU AI Act 1.25×", position: "insideTopRight", fontSize: 10, fill: "#f59e0b" }} />
+                  <ReferenceLine y={DIR_THRESHOLD} stroke="#f59e0b" strokeDasharray="4 2" label={{ value: "4/5ths rule 1.25×", position: "insideTopRight", fontSize: 10, fill: "#f59e0b" }} />
                   <Bar dataKey="dir" radius={[4, 4, 0, 0]}>
                     {DIR_DATA.map((entry, i) => <Cell key={i} fill={entry.fill} fillOpacity={0.85} />)}
                   </Bar>

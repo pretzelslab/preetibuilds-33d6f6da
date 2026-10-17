@@ -9,6 +9,7 @@ import {
 import { QuantizationExplainer } from "@/components/QuantizationExplainer";
 import { PageGate } from "@/components/ui/PageGate";
 import { DiagonalWatermark } from "@/components/ui/DiagonalWatermark";
+import { DIR_THRESHOLD, DIR_FLOOR } from "@/lib/fairnessThresholds";
 
 // ── Audit math ────────────────────────────────────────────────────
 
@@ -220,7 +221,7 @@ function ScoreChart({ groupA, groupB, labelA, labelB }: {
 // ── Metric cards ──────────────────────────────────────────────────
 
 function MetricCards({ result }: { result: AuditResult }) {
-  const dirFlagged = result.dir > 1.25;
+  const dirFlagged = result.dir > DIR_THRESHOLD;
   const dMag = Math.abs(result.cohensD);
   const dSize = dMag < 0.2 ? "Negligible" : dMag < 0.5 ? "Small" : dMag < 0.8 ? "Medium" : "Large";
 
@@ -252,7 +253,7 @@ function MetricCards({ result }: { result: AuditResult }) {
 // ── Verdict ───────────────────────────────────────────────────────
 
 function Verdict({ result, context }: { result: AuditResult; context?: string }) {
-  const dirFlagged = result.dir > 1.25;
+  const dirFlagged = result.dir > DIR_THRESHOLD;
   return (
     <div className={`rounded-xl border p-4 ${dirFlagged ? "border-rose-500/20 bg-rose-500/5" : "border-emerald-500/20 bg-emerald-500/5"}`}>
       <p className="text-xs font-semibold mb-2">{dirFlagged ? "⚠ Disparate impact detected" : "✓ No disparate impact detected"}</p>
@@ -370,7 +371,7 @@ function AuditPreview() {
               ))}
             </div>
             <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-4 text-xs text-muted-foreground mb-6">
-              <strong className="text-foreground">Verdict: Deployment blocked.</strong> DIR 1.92× exceeds EU AI Act 1.25× threshold.
+              <strong className="text-foreground">Verdict: Deployment blocked.</strong> DIR 1.92× exceeds the 4/5ths rule threshold (1.25×).
               FPR gap of 29.5pp and FNR gap of 37.6pp both exceed critical thresholds.
               Dual-direction bias: African-Americans overflaged, Hispanic and Other groups underflaged.
             </div>
@@ -455,8 +456,8 @@ function AuditPreview() {
           <>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
               {[
-                { label: "Black DIR", value: "1.81×", sub: "EU threshold 1.25×", flagged: true },
-                { label: "Hispanic DIR", value: "1.71×", sub: "EU threshold 1.25×", flagged: true },
+                { label: "Black DIR", value: "1.81×", sub: "4/5ths rule 1.25×", flagged: true },
+                { label: "Hispanic DIR", value: "1.71×", sub: "4/5ths rule 1.25×", flagged: true },
                 { label: "Asian DIR", value: "1.11×", sub: "within threshold", flagged: false },
                 { label: "Dataset", value: "138k", sub: "HMDA 2022 NY", flagged: false },
               ].map(c => (
@@ -823,7 +824,7 @@ export default function AlgorithmicFairnessAuditor() {
                       <p className="text-xs text-rose-600 font-semibold leading-relaxed">
                         A Black defendant who did not reoffend was {COMPAS_DATA.byRace[0].dir}× more likely to be labelled dangerous.
                       </p>
-                      <p className="text-[10px] text-rose-600/60 mt-1">Legal threshold: 1.25× · This result: {COMPAS_DATA.byRace[0].dir}×</p>
+                      <p className="text-[10px] text-rose-600/60 mt-1">4/5ths rule threshold: 1.25× · This result: {COMPAS_DATA.byRace[0].dir}×</p>
                     </div>
                   </div>
                 </div>
@@ -849,9 +850,9 @@ export default function AlgorithmicFairnessAuditor() {
                             <td className="px-4 py-2 font-medium">{row.race}</td>
                             <td className="px-3 py-2 text-right text-muted-foreground">{row.n.toLocaleString()}</td>
                             <td className="px-3 py-2 text-right text-muted-foreground">{row.recidRate}%</td>
-                            <td className={`px-3 py-2 text-right font-semibold ${row.dir > 1.25 ? "text-rose-500" : "text-foreground"}`}>{row.fpr}%</td>
+                            <td className={`px-3 py-2 text-right font-semibold ${row.dir > DIR_THRESHOLD ? "text-rose-500" : "text-foreground"}`}>{row.fpr}%</td>
                             <td className="px-3 py-2 text-right text-muted-foreground">{row.fnr}%</td>
-                            <td className={`px-3 py-2 text-right font-semibold ${row.dir > 1.25 ? "text-rose-500" : row.dir < 0.8 ? "text-amber-600" : "text-emerald-600"}`}>
+                            <td className={`px-3 py-2 text-right font-semibold ${row.dir > DIR_THRESHOLD ? "text-rose-500" : row.dir < DIR_FLOOR ? "text-amber-600" : "text-emerald-600"}`}>
                               {row.dir.toFixed(2)}×
                             </td>
                           </tr>
@@ -899,7 +900,7 @@ export default function AlgorithmicFairnessAuditor() {
                   <p className="text-xs font-bold text-rose-600 mb-3">Deployment Verdict — 4 Critical Threshold Breaches</p>
                   <div className="space-y-2 mb-3">
                     {[
-                      { check: "DIR — African-American/Caucasian", value: "1.92×", threshold: "≤ 1.25× (EU AI Act)", fail: true },
+                      { check: "DIR — African-American/Caucasian", value: "1.92×", threshold: "≤ 1.25× (4/5ths rule, US EEOC guidelines)", fail: true },
                       { check: "FPR gap — AA vs Other", value: "29.5 pp", threshold: "≤ 15 pp (internal)", fail: true },
                       { check: "FNR gap — Other vs AA", value: "37.6 pp", threshold: "≤ 15 pp (internal)", fail: true },
                       { check: "US 4/5ths — African-American", value: "0.52", threshold: "≥ 0.80 (EEOC)", fail: true },
@@ -913,7 +914,7 @@ export default function AlgorithmicFairnessAuditor() {
                     ))}
                   </div>
                   <p className="text-[10px] text-rose-600/80 leading-relaxed">
-                    COMPAS is blocked under EU AI Act, US 4/5ths Rule, and internal thresholds.
+                    COMPAS is blocked under the US 4/5ths rule and internal thresholds.
                     See the <a href="https://github.com/pretzelslab/ai-safety-research/blob/main/COMPAS_Safety_Eval_Runbook.md" target="_blank" rel="noopener noreferrer" className="underline">Safety Eval Runbook</a> for escalation path and remediation options.
                   </p>
                 </div>
@@ -1018,10 +1019,10 @@ export default function AlgorithmicFairnessAuditor() {
           const maxDir = Math.max(...withDir.map(r => r.newDir));
           const fprGap = Math.round((maxFpr - minFpr) * 10) / 10;
           const fnrGap = Math.round((maxFnr - minFnr) * 10) / 10;
-          const dirPass = maxDir <= 1.25;
+          const dirPass = maxDir <= DIR_THRESHOLD;
           const fprPass = fprGap <= 15;
           const fnrPass = fnrGap <= 15;
-          const usPass = withDir.every(r => r.key === "cauc" || r.newDir >= 0.8 || r.newDir <= 1.25);
+          const usPass = withDir.every(r => r.key === "cauc" || r.newDir >= DIR_FLOOR && r.newDir <= DIR_THRESHOLD);
           const allPass = dirPass && fprPass && fnrPass;
 
           return (
@@ -1092,7 +1093,7 @@ export default function AlgorithmicFairnessAuditor() {
                               <span className="text-muted-foreground/60">{g.fnr}→</span>
                               <span className={g.newFnr > g.fnr ? "text-amber-600 font-bold" : g.newFnr < g.fnr ? "text-emerald-600 font-bold" : "font-semibold"}>{g.newFnr}%</span>
                             </td>
-                            <td className={`px-2 py-2 text-center font-bold text-[11px] ${g.newDir > 1.25 ? "text-rose-500" : g.newDir < 0.8 ? "text-amber-600" : "text-emerald-600"}`}>
+                            <td className={`px-2 py-2 text-center font-bold text-[11px] ${g.newDir > DIR_THRESHOLD ? "text-rose-500" : g.newDir < DIR_FLOOR ? "text-amber-600" : "text-emerald-600"}`}>
                               {g.newDir.toFixed(2)}×
                             </td>
                           </tr>
@@ -1165,7 +1166,7 @@ export default function AlgorithmicFairnessAuditor() {
           const nonWhite = withDir.filter(r => r.key !== "white");
           const maxDir = Math.max(...nonWhite.map(r => r.newDir));
           const totalRisk = Math.round(withDir.reduce((sum, r) => sum + r.riskIncrease, 0) * 10) / 10;
-          const dirPass = nonWhite.filter(r => r.newDir > 1.25 && r.key !== "native").length === 0;
+          const dirPass = nonWhite.filter(r => r.newDir > DIR_THRESHOLD && r.key !== "native").length === 0;
           const allPass = dirPass;
 
           return (
@@ -1181,7 +1182,7 @@ export default function AlgorithmicFairnessAuditor() {
                   Adjust approval leniency per demographic group. Higher leniency approves more applicants —
                   reducing denial rate and DIR, but increasing estimated default risk.
                   The simulator shows whether threshold recalibration alone can bring the model within
-                  EU AI Act limits, and at what financial cost.
+                  4/5ths rule limits, and at what financial cost.
                 </p>
               </div>
 
@@ -1236,7 +1237,7 @@ export default function AlgorithmicFairnessAuditor() {
                               <span className="text-muted-foreground/60">{g.baseDenial}→</span>
                               <span className={g.newDenial < g.baseDenial ? "text-emerald-600 font-bold" : g.newDenial > g.baseDenial ? "text-rose-500 font-bold" : "font-semibold"}>{g.newDenial}%</span>
                             </td>
-                            <td className={`px-2 py-2 text-center font-bold text-[11px] ${g.newDir > 1.25 ? "text-rose-500" : g.newDir < 0.8 ? "text-amber-600" : "text-emerald-600"}`}>
+                            <td className={`px-2 py-2 text-center font-bold text-[11px] ${g.newDir > DIR_THRESHOLD ? "text-rose-500" : g.newDir < DIR_FLOOR ? "text-amber-600" : "text-emerald-600"}`}>
                               {g.key === "white" ? "1.00×" : `${g.newDir.toFixed(2)}×`}
                             </td>
                             <td className={`px-2 py-2 text-center text-[11px] ${g.riskIncrease > 2 ? "text-rose-500 font-semibold" : g.riskIncrease > 0 ? "text-amber-600" : "text-muted-foreground"}`}>
@@ -1251,13 +1252,13 @@ export default function AlgorithmicFairnessAuditor() {
                   {/* Verdict */}
                   <div className={`rounded-xl border p-4 ${allPass ? "border-emerald-500/30 bg-emerald-500/5" : "border-rose-500/30 bg-rose-500/5"}`}>
                     <p className={`text-xs font-bold mb-2 ${allPass ? "text-emerald-600" : "text-rose-600"}`}>
-                      {allPass ? "✓ Within EU AI Act threshold" : "✗ Deployment still blocked"}
+                      {allPass ? "✓ Within 4/5ths threshold" : "✗ Deployment still blocked"}
                     </p>
                     <div className="space-y-1">
                       {[
-                        { label: "Max DIR (ex. Native Am.)", value: `${maxDir.toFixed(2)}×`, threshold: "≤ 1.25×", pass: maxDir <= 1.25 },
-                        { label: "Black DIR", value: `${withDir.find(r => r.key === "black")!.newDir.toFixed(2)}×`, threshold: "≤ 1.25×", pass: withDir.find(r => r.key === "black")!.newDir <= 1.25 },
-                        { label: "Hispanic DIR", value: `${withDir.find(r => r.key === "hispanic")!.newDir.toFixed(2)}×`, threshold: "≤ 1.25×", pass: withDir.find(r => r.key === "hispanic")!.newDir <= 1.25 },
+                        { label: "Max DIR (ex. Native Am.)", value: `${maxDir.toFixed(2)}×`, threshold: "≤ 1.25×", pass: maxDir <= DIR_THRESHOLD },
+                        { label: "Black DIR", value: `${withDir.find(r => r.key === "black")!.newDir.toFixed(2)}×`, threshold: "≤ 1.25×", pass: withDir.find(r => r.key === "black")!.newDir <= DIR_THRESHOLD },
+                        { label: "Hispanic DIR", value: `${withDir.find(r => r.key === "hispanic")!.newDir.toFixed(2)}×`, threshold: "≤ 1.25×", pass: withDir.find(r => r.key === "hispanic")!.newDir <= DIR_THRESHOLD },
                         { label: "Est. total default risk", value: `+${totalRisk} pp`, threshold: "monitor", pass: totalRisk < 3 },
                       ].map(r => (
                         <div key={r.label} className="flex items-center gap-2 text-[11px]">
@@ -1318,7 +1319,7 @@ export default function AlgorithmicFairnessAuditor() {
                   <div className="grid grid-cols-3 gap-4 text-xs text-muted-foreground">
                     {[
                       { step: "01 · The Data", text: "CFPB HMDA 2022 — all conventional home purchase loan applications in New York State, n=138,665 after filtering." },
-                      { step: "02 · The Metric", text: "Denial rate per demographic group. Disparate Impact Ratio = group denial rate ÷ White denial rate. Threshold: 1.25× (EU AI Act)." },
+                      { step: "02 · The Metric", text: "Denial rate per demographic group. Disparate Impact Ratio = group denial rate ÷ White denial rate. Threshold: 1.25× (4/5ths rule)." },
                       { step: "03 · The Test", text: "Income-controlled DIR: does the disparity persist even within the same income bracket? If yes, income doesn't explain the gap." },
                     ].map(s => (
                       <div key={s.step}>
@@ -1353,7 +1354,7 @@ export default function AlgorithmicFairnessAuditor() {
                       <p className="text-xs text-rose-600 font-semibold leading-relaxed">
                         A Black applicant is 1.81× more likely to be denied a mortgage than an equivalent White applicant.
                       </p>
-                      <p className="text-[10px] text-rose-600/60 mt-1">EU AI Act threshold: 1.25× · This result: 1.81×</p>
+                      <p className="text-[10px] text-rose-600/60 mt-1">4/5ths rule threshold: 1.25× · This result: 1.81×</p>
                     </div>
                   </div>
                 </div>
@@ -1380,8 +1381,8 @@ export default function AlgorithmicFairnessAuditor() {
                               {row.lowN && <span className="ml-1.5 text-[10px] text-amber-600">⚠ low n</span>}
                             </td>
                             <td className="px-3 py-2 text-right text-muted-foreground">{row.n.toLocaleString()}</td>
-                            <td className={`px-3 py-2 text-right font-semibold ${row.dir > 1.25 ? "text-rose-500" : "text-foreground"}`}>{row.denialRate}%</td>
-                            <td className={`px-3 py-2 text-right font-bold ${row.dir > 1.25 ? "text-rose-500" : row.dir < 0.8 ? "text-amber-600" : "text-emerald-600"}`}>
+                            <td className={`px-3 py-2 text-right font-semibold ${row.dir > DIR_THRESHOLD ? "text-rose-500" : "text-foreground"}`}>{row.denialRate}%</td>
+                            <td className={`px-3 py-2 text-right font-bold ${row.dir > DIR_THRESHOLD ? "text-rose-500" : row.dir < DIR_FLOOR ? "text-amber-600" : "text-emerald-600"}`}>
                               {row.dir.toFixed(2)}×
                             </td>
                             <td className={`px-3 py-2 text-right ${row.approvalRatio < 0.8 ? "text-rose-500 font-semibold" : "text-muted-foreground"}`}>{row.approvalRatio.toFixed(2)}</td>
@@ -1422,7 +1423,7 @@ export default function AlgorithmicFairnessAuditor() {
                             {row.quartiles.map(q => (
                               <td key={q.q} className="px-3 py-2 text-center">
                                 <span className="block text-[10px] text-muted-foreground">{q.denialRate}%</span>
-                                <span className={`font-bold text-[11px] ${q.dir > 1.25 ? "text-rose-500" : "text-emerald-600"}`}>{q.dir.toFixed(2)}×</span>
+                                <span className={`font-bold text-[11px] ${q.dir > DIR_THRESHOLD ? "text-rose-500" : "text-emerald-600"}`}>{q.dir.toFixed(2)}×</span>
                               </td>
                             ))}
                           </tr>
@@ -1438,8 +1439,8 @@ export default function AlgorithmicFairnessAuditor() {
                   <p className="text-xs font-bold text-rose-600 mb-3">Regulatory Verdict — Mortgage Lending Model</p>
                   <div className="space-y-2 mb-3">
                     {[
-                      { check: "DIR — Black/White",          value: "1.81×",  threshold: "≤ 1.25× (EU AI Act Annex III)", fail: true },
-                      { check: "DIR — Hispanic/White",       value: "1.71×",  threshold: "≤ 1.25× (EU AI Act Annex III)", fail: true },
+                      { check: "DIR — Black/White",          value: "1.81×",  threshold: "≤ 1.25× (4/5ths rule, US EEOC guidelines)", fail: true },
+                      { check: "DIR — Hispanic/White",       value: "1.71×",  threshold: "≤ 1.25× (4/5ths rule, US EEOC guidelines)", fail: true },
                       { check: "DIR — Native American",      value: "2.63×",  threshold: "≤ 1.25× — ⚠ low n (n=456)",    fail: true },
                       { check: "US 4/5ths — Black",          value: "0.91",   threshold: "≥ 0.80 (EEOC)",                 fail: false },
                       { check: "ECOA adverse impact — Black", value: "FLAGGED", threshold: "DIR > 1.25×",                  fail: true },
@@ -1455,7 +1456,7 @@ export default function AlgorithmicFairnessAuditor() {
                   </div>
                   <p className="text-[10px] text-rose-600/80 leading-relaxed">
                     Black and Hispanic applicants face statistically significant denial rate disparities that persist after controlling for income.
-                    EU AI Act Annex III classifies credit scoring as high-risk — this finding triggers a mandatory conformity assessment before deployment.
+                    EU AI Act Annex III classifies credit scoring as high-risk, which requires a conformity assessment before deployment whether or not this cutoff is exceeded. The Act sets no numeric DIR threshold.
                   </p>
                 </div>
 
@@ -1498,7 +1499,7 @@ export default function AlgorithmicFairnessAuditor() {
                       {[
                         { range: "< 0.80×", label: "Fewer denials than White baseline", color: "text-emerald-600" },
                         { range: "0.80–1.25×", label: "Within fair threshold", color: "text-emerald-600" },
-                        { range: "> 1.25×", label: "EU AI Act adverse impact flag", color: "text-rose-500" },
+                        { range: "> 1.25×", label: "4/5ths rule adverse impact flag", color: "text-rose-500" },
                       ].map(r => (
                         <div key={r.range} className="flex items-start gap-2">
                           <span className="font-mono text-[10px] w-20 shrink-0 text-muted-foreground">{r.range}</span>
