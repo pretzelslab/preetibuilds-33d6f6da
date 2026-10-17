@@ -42,3 +42,20 @@
 
 ### Regression checklist — preetibuilds
 After changes, remind user to test: navigation, all project tiles, AI Governance tracker, Client Workbook phases, AI Readiness Assessment, Melodic Framework tile, theme, mobile layout.
+
+## WORKING RULES (added 2026-10-17)
+
+### Never
+- **No file deletions or moves.** No `rm`, `del`, `Remove-Item`, `mv`, `git rm`, `git mv` or `git clean`, and no renames. If something should go, report it and let the user do it.
+- **No `git push`** unless the user's message in that turn says "push".
+- **No bulk staging.** Stage files by name only. Never `git add .`, `git add -A` or `git commit -a`.
+- **Do not touch `src/lib/analyticsExclusion.*` or `ai-time-travel/`.** Do not edit, stage, stash or commit them. Work around them (for example the pre-push hook's `pull --rebase` needs a clean tree, so report that rather than stashing them).
+- **No temp files outside the repo.** Use the session scratchpad directory, never the filesystem root or `/tmp`. Never write to the repo for scratch work.
+
+### Commits
+- Interim commits carry `[skip ci]`. The final commit before a push must not.
+
+### Low-risk vs risky
+- **Low-risk fixes** (typos, copy, type-only changes, unused code, obvious one-line bugs): apply, run `npm run build` and `npm test`, show the diff, then commit locally.
+- **Risky edits** (anything that changes behaviour, auth or access codes, API routes, analytics, config, dependencies, or touches more than a few files) and **all pushes or deploys**: report first, make no edits until the user approves.
+- When unsure which category applies, treat it as risky.
