@@ -269,7 +269,7 @@ function CarbonRouterContent() {
 
 export default function CarbonRouter() {
   return (
-    <PageGate code="SAR2026" previewContent={previewContent}>
+    <PageGate pageId="carbon-router"previewContent={previewContent}>
       <CarbonRouterContent />
     </PageGate>
   );

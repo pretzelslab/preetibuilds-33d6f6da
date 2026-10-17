@@ -358,7 +358,7 @@ function AgentDriftContent() {
 
 export default function AgentDrift() {
   return (
-    <PageGate pageId="agent-drift" code="AGD2026" previewContent={previewContent}>
+    <PageGate pageId="agent-drift"previewContent={previewContent}>
       <AgentDriftContent />
     </PageGate>
   );
