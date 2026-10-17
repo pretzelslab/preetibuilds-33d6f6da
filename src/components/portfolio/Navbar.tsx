@@ -16,8 +16,8 @@ const Navbar = () => (
           Work
         </a>
         {LAB_VISIBLE && (
-          <Link to={LAB_PATH} className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden md:block">
-            Lab
+          <Link to={LAB_PATH} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+            Research
           </Link>
         )}
         <a href="#contact" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden md:block">

@@ -2323,8 +2323,8 @@ function CarbonDepthPage() {
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border/40">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-              ← Back to Portfolio
+            <Link to="/research-lab" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              ← Back to Research
             </Link>
             {referrer?.from && (
               <Link to={referrer.from} className="text-xs text-violet-400 hover:text-violet-300 transition-colors border-l border-border pl-4">

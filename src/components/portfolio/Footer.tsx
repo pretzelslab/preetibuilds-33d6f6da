@@ -20,7 +20,7 @@ const Footer = () => (
         </a>
         {LAB_VISIBLE && (
           <Link to={LAB_PATH} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-            Research &amp; experiments →
+            Research →
           </Link>
         )}
       </div>

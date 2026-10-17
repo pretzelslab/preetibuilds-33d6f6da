@@ -35,8 +35,8 @@ export default function MedLog() {
       {/* Header */}
       <div className="border-b border-border/50 bg-background/80 backdrop-blur sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/#projects" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Back to Portfolio
+          <Link to="/research-lab" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Back to Research
           </Link>
           <a
             href={LIVE_URL}

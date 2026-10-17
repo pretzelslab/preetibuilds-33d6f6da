@@ -5,7 +5,7 @@
 export const LAB_PATH = "/research-lab";
 
 // Show the Lab link in the navbar and footer. The Lab route stays reachable by URL either way.
-export const LAB_VISIBLE = false;
+export const LAB_VISIBLE = true;
 
 export const HERO = {
   name: "Preethi Raghuveeran",

@@ -2010,8 +2010,8 @@ export default function SustainabilityFramework() {
       <div className="max-w-[900px] mx-auto px-6 py-14">
         <DiagonalWatermark />
 
-        <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors mb-6 inline-block print:hidden">
-          ← Back to Portfolio
+        <Link to="/research-lab" className="text-xs text-muted-foreground hover:text-foreground transition-colors mb-6 inline-block print:hidden">
+          ← Back to Research
         </Link>
 
         {/* Header */}

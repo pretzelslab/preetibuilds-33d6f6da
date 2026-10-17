@@ -575,8 +575,8 @@ function CrisisRealismGapContent() {
     <div className="min-h-screen font-sans bg-background text-foreground">
       <div className="max-w-[1100px] mx-auto px-6 py-10 space-y-8">
 
-        <Link to="/#projects" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-medium">
-          ← Back to Portfolio
+        <Link to="/research-lab" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-medium">
+          ← Back to Research
         </Link>
 
         <Header large />

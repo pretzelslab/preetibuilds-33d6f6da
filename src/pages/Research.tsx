@@ -256,8 +256,8 @@ const Research = () => {
       {/* Sticky nav — shown in unlocked state */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border/40">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-          <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-            ← Back to Portfolio
+          <Link to="/research-lab" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+            ← Back to Research
           </Link>
         </div>
       </div>
