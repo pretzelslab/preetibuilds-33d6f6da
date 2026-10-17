@@ -764,7 +764,7 @@ const CarbonTimeTravelInner = () => {
 };
 
 const CarbonTimeTravel = () => {
-  useVisitLogger();
+  useVisitLogger("/carbon-time-travel");
   return (
     <PageGate pageId="carbon-time-travel" previewContent={preview}>
       <CarbonTimeTravelInner />

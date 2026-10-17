@@ -727,7 +727,7 @@ const LLMSafetyEvalInner = () => {
 };
 
 const LLMSafetyEval = () => {
-  useVisitLogger();
+  useVisitLogger("/safety-eval");
   return (
     <PageGate
       pageId="safety-eval"

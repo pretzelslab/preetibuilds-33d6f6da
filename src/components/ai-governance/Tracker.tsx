@@ -2521,7 +2521,8 @@ function GRCBridgeTab({ onSelectAIPolicy }: { onSelectAIPolicy: (p: any) => void
       ...f.keyFacts,
       ...f.aiPathways.map(p => {
         const pol = POLICIES.find(x => x.id === p.policyId);
-        return pol ? pol.name + " " + pol.shortName : p.policyId;
+        const shortName = (pol as { shortName?: string } | undefined)?.shortName;
+        return pol ? pol.name + (shortName ? " " + shortName : "") : p.policyId;
       }),
     ].some(s => s.toLowerCase().includes(q));
     const matchCat = activeCategory === "All" || f.category === activeCategory;

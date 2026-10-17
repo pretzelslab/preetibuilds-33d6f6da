@@ -773,7 +773,8 @@ function StandardsTab() {
   const selClass = "text-xs px-3 py-1.5 rounded-lg border border-border/40 bg-background text-foreground focus:outline-none focus:border-primary/50 cursor-pointer";
 
   return (
-    <div className="space-y-4">
+    // Clicking anywhere outside the table/panel dismisses the selection
+    <div className="space-y-4" onClick={() => setSelected(null)}>
       {/* Stats strip */}
       <div className="flex flex-wrap gap-3">
         {[
@@ -993,8 +994,7 @@ export default function SustainabilityStandards() {
           </div>
         </nav>
 
-        {/* Clicking anywhere outside the table/panel dismisses the selection */}
-        <div className="max-w-[1400px] mx-auto px-6 py-10 space-y-8" onClick={() => setSelected(null)}>
+        <div className="max-w-[1400px] mx-auto px-6 py-10 space-y-8">
 
           {/* Header */}
           <div className="space-y-3">
