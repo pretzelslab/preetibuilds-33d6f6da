@@ -6,6 +6,7 @@ import { IMPLEMENTATION_GUIDES } from "./guides";
 import { markOwnerExcluded } from "@/lib/ownerExclusion";
 import { retractPendingVisit } from "@/hooks/useVisitLogger";
 import { verifyMasterCode } from "@/lib/masterCode";
+import { TRACKER_UNGATED } from "@/data/homeConfig";
 
 // ─── PREVIEW MODE ─────────────────────────────────────────────────────────────
 // Automatically enabled on Lovable's hosted URL (*.lovable.app).
@@ -3202,9 +3203,10 @@ function RegulatoryRadarTab({ policies, onSelectPolicy }: { policies: any[]; onS
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function AIGovernanceTracker() {
   const isLocal = import.meta.env.DEV;
-  const [unlocked, setUnlocked] = useState(() => {
+  const [unlockedState, setUnlocked] = useState(() => {
     try { return localStorage.getItem("pl_session_access") === "1"; } catch { return false; }
   });
+  const unlocked = unlockedState || TRACKER_UNGATED;
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [unlockCode, setUnlockCode] = useState("");
   const [unlockError, setUnlockError] = useState(false);

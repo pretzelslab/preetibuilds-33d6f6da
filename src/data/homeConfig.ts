@@ -39,9 +39,23 @@ export const OPEN_TO = {
 export const RESUME_URL = "/resume.pdf";
 export const RESUME_AVAILABLE = false;
 
+// Pages that open to every visitor without an access code. Only affects PageGate
+// pages; /lab pages stay gated. To re-lock a page, remove its id here.
+// Note: "fairness" (/algorithmic-fairness) also backs the Lab's Proxy Discrimination item.
+export const UNGATED_PAGE_IDS: string[] = [
+  "ai-value-lab", "privacy-auditor", "ai-readiness", "client-discovery",
+  "compliance-agent", "safety-eval", "agent-drift", "agent-hijacking", "fairness",
+];
+
+// The Regulation Tracker has its own gate (not PageGate); true opens all its tabs to visitors.
+export const TRACKER_UNGATED = true;
+
+export type TileStatus = "live" | "preview" | "building";
+
 export type HomeTile = {
   title: string;
   who: string;
+  status?: TileStatus; // badge; defaults to "live"
   does: string;
   link: string;
   tags?: string[]; // max 3; regulation/framework/domain first, tech last
@@ -51,6 +65,8 @@ export type HomeTile = {
 export type CaseCard = {
   title: string;
   kind: "career" | "built";
+  who?: string;
+  status?: TileStatus; // badge; defaults to "live"
   problem?: string;
   action?: string;
   result?: string;
@@ -65,23 +81,23 @@ export const OUTCOMES: CaseCard[] = [
   { title: "[Employer / industry]", kind: "career", problem: "[problem]", action: "[what I did]", result: "[result]", visible: false },
   { title: "[Employer / industry]", kind: "career", problem: "[problem]", action: "[what I did]", result: "[result]", visible: false },
   {
-    title: "Product Intelligence Pipeline", kind: "built", link: "/product-intelligence", visible: true, tags: ["RevOps", "Salesforce", "Claude API"],
+    title: "Product Intelligence Pipeline", kind: "built", link: "/product-intelligence", visible: true, who: "Product and customer-success leaders in fintech and healthtech", tags: ["RevOps", "Salesforce", "Claude API"],
     does: "Connects Salesforce Cases to Claude to surface product signals, customer pain points, feature demand trends and escalation patterns. Built for Fintech and Healthtech.",
   },
   {
-    title: "Win/Loss Intelligence", kind: "built", link: "/win-loss-intelligence", visible: true, tags: ["RevOps", "Win/loss", "Claude API"],
+    title: "Win/Loss Intelligence", kind: "built", link: "/win-loss-intelligence", visible: true, who: "Sales and RevOps leaders", tags: ["RevOps", "Win/loss", "Claude API"],
     does: "Groups deal outcomes into patterns (legal delays, implementation friction, champion instability, competitive displacement) and runs a root-cause analysis per deal. Demo uses 25 synthetic deals.",
   },
   {
-    title: "AI Opportunity Sizer", kind: "built", link: "/ai-value-lab", visible: true, tags: ["AI value", "Decision support", "Streamlit"],
+    title: "AI Opportunity Sizer", kind: "built", link: "/ai-value-lab", visible: true, who: "Operations and transformation leads", tags: ["AI strategy", "Value sizing", "Streamlit"],
     does: "Decision-support framework for where AI can create business value in a workflow, how much scope is feasible today, what should stay human, and what evidence is still missing.",
   },
   {
-    title: "GTM Intelligence Pipeline", kind: "built", link: "/gtm-techstack", visible: true, tags: ["RevOps", "HubSpot", "Python"],
+    title: "GTM Intelligence Pipeline", kind: "built", link: "/gtm-techstack", visible: true, who: "RevOps and marketing-ops teams", tags: ["RevOps", "HubSpot", "Python"],
     does: "Python GTM system covering lead capture, enrichment, scoring, nurture, CRM sync and reporting.",
   },
   {
-    title: "CRM Data Readiness Scan", kind: "built", link: "/gtm-ai-readiness", visible: true, tags: ["RevOps", "Salesforce", "AI readiness"],
+    title: "CRM Data Readiness Scan", kind: "built", link: "/gtm-ai-readiness", visible: true, who: "Sales and RevOps leaders evaluating AI tools", tags: ["RevOps", "Salesforce", "AI readiness"],
     does: "Scores a sales team's CRM data hygiene across 7 dimensions and flags which AI use cases the data is ready for. Runs locally and read-only.",
   },
 ];

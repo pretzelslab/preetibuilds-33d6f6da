@@ -13,6 +13,8 @@ import AIGovernanceTracker from "./Tracker";
 // api/verify-master-code.ts) — mocked directly so these tests don't need to
 // know about that network call's shape.
 vi.mock("@/lib/masterCode", () => ({ verifyMasterCode: vi.fn() }));
+// These tests exercise the locked Tracker; Home ungates it by default.
+vi.mock("@/data/homeConfig", async (orig) => ({ ...(await orig<typeof import("@/data/homeConfig")>()), TRACKER_UNGATED: false }));
 
 const OWNER_KEY = "pl_session_access";
 const OWNER_EXCLUSION_KEY = "pl_owner_exclusion";

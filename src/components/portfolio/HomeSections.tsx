@@ -10,9 +10,16 @@ import {
   RESUME_AVAILABLE,
   type CaseCard,
   type HomeTile,
+  type TileStatus,
 } from "@/data/homeConfig";
 
 const MAX_VISIBLE = 4;
+
+const STATUS_BADGE: Record<TileStatus, { label: string; classes: string }> = {
+  live:     { label: "Live",     classes: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
+  preview:  { label: "Preview",  classes: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20" },
+  building: { label: "Building", classes: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20" },
+};
 
 const SectionHeader = ({ label, subtitle }: { label: string; subtitle?: string }) => (
   <div className="mb-3">
@@ -56,45 +63,51 @@ const TagRow = ({ tags }: { tags?: string[] }) =>
     </div>
   ) : null;
 
-const CaseCardView = ({ c }: { c: CaseCard }) => {
-  const body = (
-    <div className="h-full flex flex-col rounded-xl border border-border/50 bg-card/40 p-4 hover:border-border/80 transition-colors">
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <span className="text-sm font-semibold text-foreground">{c.title}</span>
-        <span className="text-[10px] font-mono text-muted-foreground/60 shrink-0">
-          {c.kind === "career" ? "Career case" : "Built tool"}
-        </span>
+// One tile format for every Home card: title + status badge, Who uses it, What it does, tags, View.
+const TileView = ({ t }: { t: HomeTile }) => {
+  const badge = STATUS_BADGE[t.status ?? "live"];
+  return (
+    <Link to={t.link} className="no-underline block">
+      <div className="h-full flex flex-col rounded-xl border border-border/50 bg-card/40 p-4 hover:border-border/80 transition-colors">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm font-semibold text-foreground">{t.title}</span>
+          <span className={`shrink-0 text-[10px] font-mono px-2 py-0.5 rounded-full border ${badge.classes}`}>{badge.label}</span>
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+          <span className="font-semibold text-foreground/80">Who uses it: </span>{t.who}
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+          <span className="font-semibold text-foreground/80">What it does: </span>{t.does}
+        </p>
+        <TagRow tags={t.tags} />
+        <span className="mt-3 text-xs text-primary">{t.status === "preview" ? "Preview →" : "View →"}</span>
       </div>
-      {c.kind === "career" ? (
-        <dl className="space-y-1.5 text-xs text-muted-foreground leading-relaxed">
-          <div><dt className="inline font-semibold text-foreground/80">Problem: </dt><dd className="inline">{c.problem}</dd></div>
-          <div><dt className="inline font-semibold text-foreground/80">What I did: </dt><dd className="inline">{c.action}</dd></div>
-          <div><dt className="inline font-semibold text-foreground/80">Result: </dt><dd className="inline">{c.result}</dd></div>
-        </dl>
-      ) : (
-        <p className="text-xs text-muted-foreground leading-relaxed">{c.does}</p>
-      )}
-      {c.link && <span className="mt-3 inline-block text-xs text-primary">View →</span>}
-      <TagRow tags={c.tags} />
-    </div>
+    </Link>
   );
-  return c.link ? <Link to={c.link} className="no-underline block">{body}</Link> : body;
 };
 
-const TileView = ({ t }: { t: HomeTile }) => (
-  <Link to={t.link} className="no-underline block">
-    <div className="h-full flex flex-col rounded-xl border border-border/50 bg-card/40 p-4 hover:border-border/80 transition-colors">
-      <span className="text-sm font-semibold text-foreground">{t.title}</span>
-      <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-        <span className="font-semibold text-foreground/80">Who uses it: </span>{t.who}
-      </p>
-      <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-        <span className="font-semibold text-foreground/80">What it does: </span>{t.does}
-      </p>
-      <TagRow tags={t.tags} />
+// Career case cards (hidden until filled in) keep the Problem / What I did / Result layout.
+const CareerCardView = ({ c }: { c: CaseCard }) => (
+  <div className="h-full flex flex-col rounded-xl border border-border/50 bg-card/40 p-4">
+    <div className="flex items-center justify-between gap-2 mb-2">
+      <span className="text-sm font-semibold text-foreground">{c.title}</span>
+      <span className="text-[10px] font-mono text-muted-foreground/60 shrink-0">Career case</span>
     </div>
-  </Link>
+    <dl className="space-y-1.5 text-xs text-muted-foreground leading-relaxed">
+      <div><dt className="inline font-semibold text-foreground/80">Problem: </dt><dd className="inline">{c.problem}</dd></div>
+      <div><dt className="inline font-semibold text-foreground/80">What I did: </dt><dd className="inline">{c.action}</dd></div>
+      <div><dt className="inline font-semibold text-foreground/80">Result: </dt><dd className="inline">{c.result}</dd></div>
+    </dl>
+    <TagRow tags={c.tags} />
+  </div>
 );
+
+const CaseCardView = ({ c }: { c: CaseCard }) =>
+  c.kind === "career" || !c.link ? (
+    <CareerCardView c={c} />
+  ) : (
+    <TileView t={{ title: c.title, who: c.who ?? "", does: c.does ?? "", link: c.link, tags: c.tags, status: c.status }} />
+  );
 
 const HomeSections = () => {
   const outcomes = OUTCOMES.filter((c) => c.visible);
