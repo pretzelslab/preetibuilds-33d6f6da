@@ -11,6 +11,7 @@ vi.mock("@/components/portfolio/FeaturedWork", () => ({ default: () => null }));
 vi.mock("@/components/portfolio/Projects", () => ({ default: () => null }));
 vi.mock("@/components/portfolio/Writing", () => ({ default: () => null }));
 vi.mock("@/components/portfolio/About", () => ({ default: () => null }));
+vi.mock("@/components/portfolio/HomeSections", () => ({ default: () => null }));
 vi.mock("@/components/portfolio/Contact", () => ({ default: () => null }));
 vi.mock("@/components/portfolio/Footer", () => ({ default: () => null }));
 

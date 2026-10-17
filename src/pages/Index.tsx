@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/portfolio/Navbar";
 import Hero from "@/components/portfolio/Hero";
-import CredibilityStrip from "@/components/portfolio/CredibilityStrip";
-import FeaturedWork from "@/components/portfolio/FeaturedWork";
-import Projects from "@/components/portfolio/Projects";
-import Writing from "@/components/portfolio/Writing";
-import About from "@/components/portfolio/About";
+import HomeSections from "@/components/portfolio/HomeSections";
 import Contact from "@/components/portfolio/Contact";
 import Footer from "@/components/portfolio/Footer";
 import { useVisitLogger } from "@/hooks/useVisitLogger";
@@ -14,7 +10,12 @@ const BackToTop = () => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 300);
+    // Appear once the hero has scrolled out of view.
+    const onScroll = () => {
+      const hero = document.getElementById("hero");
+      setVisible(window.scrollY > (hero ? hero.offsetTop + hero.offsetHeight : 300));
+    };
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -46,11 +47,8 @@ const Index = () => {
     <main className="min-h-screen bg-background text-foreground">
       <Navbar />
       <Hero />
-      <CredibilityStrip />
-      <Projects />
-      <About />
+      <HomeSections />
       <Contact />
-      <FeaturedWork />
       <Footer />
       <BackToTop />
     </main>

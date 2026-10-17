@@ -1,138 +1,79 @@
 import { motion } from "framer-motion";
-import {
-  PRODUCT_INTELLIGENCE_SYSTEMS,
-  ENTERPRISE_ASSESSMENT,
-  GOVERNANCE_COMPLIANCE,
-  SAFETY_EVALUATION,
-} from "@/data/projects";
+import { HERO, OPEN_TO, RESUME_URL, RESUME_AVAILABLE } from "@/data/homeConfig";
 
-const CREDENTIALS = [
-  "Enterprise products, platforms, and transformation programs — 18+ years across B2B SaaS, CRM, and RevOps stacks.",
-  "AI-native revenue systems: product intelligence, win/loss analysis, and GTM automation built on enterprise operating experience.",
-  "AI governance and compliance: EU AI Act, GDPR, NIST AI RMF, ISO 42001 — governance tooling, compliance agents, and privacy impact assessment.",
-  "AI safety & evaluation: 40-case adversarial test suite, agent drift detection — OWASP LLM Top 10 and MITRE ATLAS aligned.",
-];
-
-export const DOMAIN_INDEX = [
-  {
-    label: "Product & Intelligence Systems",
-    count: PRODUCT_INTELLIGENCE_SYSTEMS.length,
-    anchor: "#product-intelligence",
-    desc: "AI-native revenue systems — product intelligence, win/loss, and GTM automation built from 18+ years of enterprise product and RevOps operating experience",
-    bullets: ["Product Intelligence Pipeline — Salesforce + Claude at scale", "Win/Loss Intelligence — live root-cause analysis", "GTM Intelligence Pipeline — CRM + pipeline automation"],
-    cls: "text-amber-400 border-amber-500/25 hover:bg-amber-500/5",
-  },
-  {
-    label: "Enterprise Assessment & Decision Systems",
-    count: ENTERPRISE_ASSESSMENT.length,
-    anchor: "#enterprise-assessment",
-    desc: "Organizational readiness diagnostics, risk management frameworks, and bias evaluation tools for enterprise AI transformation",
-    bullets: ["AI Readiness Assessment — 25-question diagnostic", "AI Risk Assessment — 5-phase governance engagement", "Algorithmic Fairness Auditor — disparate impact + parity testing"],
-    cls: "text-emerald-400 border-emerald-500/25 hover:bg-emerald-500/5",
-  },
-  {
-    label: "Governance & Compliance",
-    count: GOVERNANCE_COMPLIANCE.length,
-    anchor: "#governance-compliance",
-    desc: "Policy governance, privacy impact assessment, and agentic compliance pipelines — built for EU AI Act, GDPR, NIST AI RMF, and ISO 42001",
-    bullets: ["AI Ethics & Governance Tracker — EU AI Act · NIST · ISO 42001", "AI Compliance Monitoring Agent — weekly LangGraph pipeline", "Privacy Impact Auditor — DPIA + 13 regulations"],
-    cls: "text-blue-400 border-blue-500/25 hover:bg-blue-500/5",
-  },
-  {
-    label: "Safety & Evaluation",
-    count: SAFETY_EVALUATION.length,
-    anchor: "#safety-evaluation",
-    desc: "Adversarial testing, red-teaming, agent evaluation, and pre-deployment safety assurance for regulated AI systems",
-    bullets: ["LLM Safety Eval — 40 cases, 5 risk categories", "Goal drift detection — SAFE/DRIFTING/ROGUE", "OWASP LLM Top 10 — indirect prompt injection"],
-    cls: "text-violet-400 border-violet-500/25 hover:bg-violet-500/5",
-  },
-];
-
-const Hero = () => (
-  <section className="flex items-start justify-center px-6 pt-20 pb-2">
-    <div className="max-w-7xl w-full">
-      <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 items-stretch">
-
-        {/* Left — name, specializations, tagline, credentials */}
+const Hero = () => {
+  const stats = HERO.stats.filter((s) => s.visible);
+  return (
+    <section id="hero" className="px-6 pt-24 pb-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 items-start">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="flex flex-col"
         >
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
-            <span className="text-gradient text-name-soft">Preethi Raghuveeran</span>
+            <span className="text-gradient text-name-soft">{HERO.name}</span>
           </h1>
+          <p className="text-base sm:text-lg text-foreground/80 mb-4 tracking-tight">{HERO.role}</p>
+          <p className="text-sm text-muted-foreground mb-6 leading-relaxed">{HERO.sub}</p>
 
-          <p className="text-sm text-foreground/60 mb-4 tracking-tight">
-            Product Strategy · Program Leadership · GTM · AI Governance
-          </p>
-
-          <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-            18+ years building enterprise products, transformation programs, CRM ecosystems, and
-            revenue operations platforms. Now focused on AI governance, safety evaluation,
-            product intelligence, and decision intelligence systems.
-          </p>
-          <ul className="space-y-2 mb-5">
-            {CREDENTIALS.map((c) => (
-              <li key={c} className="flex gap-2.5 text-sm text-muted-foreground/80 leading-relaxed">
-                <span className="text-primary shrink-0 mt-0.5">✦</span>
-                <span>{c}</span>
+          <ul className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+            {stats.map((s) => (
+              <li key={s.value} className="rounded-xl border border-border/50 bg-card/40 px-4 py-3">
+                <span className="block text-lg font-bold text-foreground">{s.value}</span>
+                <span className="block text-xs text-muted-foreground leading-relaxed">{s.label}</span>
               </li>
             ))}
           </ul>
-        </motion.div>
 
-        {/* Right — domain index with hover descriptions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.15 }}
-          className="flex flex-col justify-center"
-        >
-          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-3">
-            Portfolio Focus
-          </p>
-          <div className="space-y-2">
-            {DOMAIN_INDEX.map(d => (
-              <motion.a
-                key={d.label}
-                href={d.anchor}
-                initial="rest"
-                whileHover="hover"
-                animate="rest"
-                className={`block rounded-lg border px-3 py-2.5 no-underline transition-colors ${d.cls}`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold">{d.label}</span>
-                  <span className="text-[10px] font-mono text-muted-foreground tabular-nums">{d.count} →</span>
-                </div>
-                <motion.div
-                  variants={{
-                    rest: { height: 0, opacity: 0, marginTop: 0 },
-                    hover: { height: "auto", opacity: 1, marginTop: 4 },
-                  }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="overflow-hidden"
-                >
-                  <p className="text-xs text-muted-foreground leading-relaxed">{d.desc}</p>
-                  <ul className="mt-2 space-y-0.5">
-                    {d.bullets.map(b => (
-                      <li key={b} className="flex items-center gap-1.5 text-[10px] text-muted-foreground/70 font-mono">
-                        <span className="opacity-40">·</span>
-                        <span>{b}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </motion.div>
-              </motion.a>
-            ))}
+          <div className="flex flex-wrap gap-3 text-xs font-mono">
+            <a href="#outcomes" className="px-4 py-1.5 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity no-underline">
+              See my work
+            </a>
+            <a href="#contact" className="px-4 py-1.5 rounded-full border border-border hover:border-primary hover:text-primary transition-colors no-underline">
+              Contact
+            </a>
           </div>
         </motion.div>
 
+        <motion.aside
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.15 }}
+          aria-label={OPEN_TO.heading}
+          className="rounded-xl border border-border/50 bg-card/40 p-5"
+        >
+          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-3">{OPEN_TO.heading}</p>
+          <dl className="space-y-3 text-sm">
+            <div>
+              <dt className="text-xs font-semibold text-foreground/80">Roles</dt>
+              <dd className="text-muted-foreground">{OPEN_TO.roles.join(" · ")}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-semibold text-foreground/80">Location</dt>
+              <dd className="text-muted-foreground">{OPEN_TO.location}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-semibold text-foreground/80">Availability</dt>
+              <dd className="text-muted-foreground">{OPEN_TO.availability}</dd>
+            </div>
+          </dl>
+          <div className="mt-4 flex flex-wrap gap-3 text-xs font-mono">
+            <a href={OPEN_TO.linkedin} target="_blank" rel="noopener noreferrer" className="px-4 py-1.5 rounded-full border border-border hover:border-primary hover:text-primary transition-colors no-underline">
+              LinkedIn
+            </a>
+            {RESUME_AVAILABLE && (
+              <a href={RESUME_URL} download className="px-4 py-1.5 rounded-full border border-border hover:border-primary hover:text-primary transition-colors no-underline">
+                Resume
+              </a>
+            )}
+          </div>
+        </motion.aside>
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export default Hero;
