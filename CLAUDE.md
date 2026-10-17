@@ -49,7 +49,7 @@ After changes, remind user to test: navigation, all project tiles, AI Governance
 - **No file deletions or moves.** No `rm`, `del`, `Remove-Item`, `mv`, `git rm`, `git mv` or `git clean`, and no renames. If something should go, report it and let the user do it.
 - **No `git push`** unless the user's message in that turn says "push".
 - **No bulk staging.** Stage files by name only. Never `git add .`, `git add -A` or `git commit -a`.
-- **Do not touch `src/lib/analyticsExclusion.*` or `ai-time-travel/`.** Do not edit, stage, stash or commit them. Work around them (for example the pre-push hook's `pull --rebase` needs a clean tree, so report that rather than stashing them).
+- **Do not touch `ai-time-travel/`.** Do not edit, stage, stash or commit it. Work around it (for example the pre-push hook's `pull --rebase` needs a clean tree, so report that rather than stashing it).
 - **No temp files outside the repo.** Use the session scratchpad directory, never the filesystem root or `/tmp`. Never write to the repo for scratch work.
 
 ### Commits
