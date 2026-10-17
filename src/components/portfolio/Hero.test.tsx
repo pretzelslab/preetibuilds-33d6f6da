@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import Hero from "./Hero";
-import { HERO } from "@/data/homeConfig";
+import { HERO, CORE_STRENGTHS, OPEN_TO } from "@/data/homeConfig";
 
 // Render every motion.* element as its plain tag; the animation props are irrelevant here.
 vi.mock("framer-motion", () => {
@@ -16,14 +16,15 @@ vi.mock("framer-motion", () => {
 });
 
 describe("Hero", () => {
-  it("shows the role line and every visible stat", () => {
+  it("shows the role line, stat card and core strengths", () => {
     render(<Hero />);
     expect(screen.getByText(HERO.role)).toBeTruthy();
-    HERO.stats.filter((s) => s.visible).forEach((s) => expect(screen.getByText(s.value)).toBeTruthy());
+    expect(screen.getByText(HERO.statCard.value)).toBeTruthy();
+    CORE_STRENGTHS.forEach((t) => expect(screen.getByText(t)).toBeTruthy());
   });
 
-  it("hides stats flagged invisible", () => {
+  it("does not render the Open to card while OPEN_TO_VISIBLE is false", () => {
     render(<Hero />);
-    expect(screen.queryAllByRole("listitem").length).toBe(HERO.stats.filter((s) => s.visible).length);
+    expect(screen.queryByText(OPEN_TO.availability)).toBeNull();
   });
 });

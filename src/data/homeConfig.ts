@@ -11,13 +11,21 @@ export const HERO = {
   name: "Preethi Raghuveeran",
   role: "Program & GTM leader. Applied AI governance. Vancouver.",
   sub: "18+ years running enterprise products, transformation programs and RevOps platforms. I build working governance tools so risk and compliance teams can see what AI controls look like in practice.",
-  stats: [
-    { value: "18+ years", label: "enterprise product, program and CRM/RevOps delivery", visible: true },
-    { value: "18 regulations", label: "tracked in a live AI governance tracker", visible: true },
-    // TODO: career outcome, e.g. "$XM ARR programs" / "XX-person global teams"
-    { value: "", label: "", visible: false },
-  ],
+  // Right-column stat card.
+  statCard: { value: "18+ years", label: "enterprise product, program and RevOps delivery" },
+
 };
+
+// The "Open to" card is not rendered while this is false.
+export const OPEN_TO_VISIBLE = false;
+
+export const CORE_STRENGTHS = [
+  "Program delivery",
+  "GTM & RevOps",
+  "Cross-functional leadership",
+  "Salesforce / CRM",
+  "AI risk & compliance (EU AI Act, NIST, ISO 42001)",
+];
 
 export const OPEN_TO = {
   heading: "Open to",
