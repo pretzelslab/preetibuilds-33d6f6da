@@ -8,6 +8,8 @@ import {
 } from "./analyticsExclusion";
 
 const OWNER_DESKTOP_UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36";
+const OWNER_DESKTOP_UA_PRE_UPDATE =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36";
 const OWNER_IPHONE_UA =
   "Mozilla/5.0 (iPhone; CPU iPhone OS 26_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/120.0.6099.119 Mobile/15E148 Safari/604.1";
@@ -51,6 +53,14 @@ describe("isExcludedAnalyticsVisit — owner rows", () => {
     expect(
       isExcludedAnalyticsVisit(
         visit({ city: "Vancouver", country: "Canada", user_agent: OWNER_IPHONE_UA })
+      )
+    ).toBe(true);
+  });
+
+  it("still excludes the pre-update desktop build (152), kept during rotation", () => {
+    expect(
+      isExcludedAnalyticsVisit(
+        visit({ city: "Vancouver", country: "Canada", region: null, user_agent: OWNER_DESKTOP_UA_PRE_UPDATE })
       )
     ).toBe(true);
   });
