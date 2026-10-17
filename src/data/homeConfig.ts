@@ -44,6 +44,7 @@ export type HomeTile = {
   who: string;
   does: string;
   link: string;
+  tags?: string[]; // max 3; regulation/framework/domain first, tech last
   visible?: boolean;
 };
 
@@ -55,6 +56,7 @@ export type CaseCard = {
   result?: string;
   does?: string;
   link?: string;
+  tags?: string[]; // max 3; regulation/framework/domain first, tech last
   visible: boolean;
 };
 
@@ -63,50 +65,50 @@ export const OUTCOMES: CaseCard[] = [
   { title: "[Employer / industry]", kind: "career", problem: "[problem]", action: "[what I did]", result: "[result]", visible: false },
   { title: "[Employer / industry]", kind: "career", problem: "[problem]", action: "[what I did]", result: "[result]", visible: false },
   {
-    title: "Product Intelligence Pipeline", kind: "built", link: "/product-intelligence", visible: true,
+    title: "Product Intelligence Pipeline", kind: "built", link: "/product-intelligence", visible: true, tags: ["RevOps", "Salesforce", "Claude API"],
     does: "Connects Salesforce Cases to Claude to surface product signals, customer pain points, feature demand trends and escalation patterns. Built for Fintech and Healthtech.",
   },
   {
-    title: "Win/Loss Intelligence", kind: "built", link: "/win-loss-intelligence", visible: true,
+    title: "Win/Loss Intelligence", kind: "built", link: "/win-loss-intelligence", visible: true, tags: ["RevOps", "Win/loss", "Claude API"],
     does: "Groups deal outcomes into patterns (legal delays, implementation friction, champion instability, competitive displacement) and runs a root-cause analysis per deal. Demo uses 25 synthetic deals.",
   },
   {
-    title: "AI Opportunity Sizer", kind: "built", link: "/ai-value-lab", visible: true,
+    title: "AI Opportunity Sizer", kind: "built", link: "/ai-value-lab", visible: true, tags: ["AI value", "Decision support", "Streamlit"],
     does: "Decision-support framework for where AI can create business value in a workflow, how much scope is feasible today, what should stay human, and what evidence is still missing.",
   },
   {
-    title: "GTM Intelligence Pipeline", kind: "built", link: "/gtm-techstack", visible: true,
+    title: "GTM Intelligence Pipeline", kind: "built", link: "/gtm-techstack", visible: true, tags: ["RevOps", "HubSpot", "Python"],
     does: "Python GTM system covering lead capture, enrichment, scoring, nurture, CRM sync and reporting.",
   },
   {
-    title: "CRM Data Readiness Scan", kind: "built", link: "/gtm-ai-readiness", visible: true,
+    title: "CRM Data Readiness Scan", kind: "built", link: "/gtm-ai-readiness", visible: true, tags: ["RevOps", "Salesforce", "AI readiness"],
     does: "Scores a sales team's CRM data hygiene across 7 dimensions and flags which AI use cases the data is ready for. Runs locally and read-only.",
   },
 ];
 
 export const GOVERNANCE_TILES: HomeTile[] = [
   {
-    title: "Regulation Tracker (18)", link: "/ai-governance",
+    title: "Regulation Tracker (18)", link: "/ai-governance", tags: ["EU AI Act", "NIST AI RMF", "ISO 42001"],
     who: "AI governance, legal and compliance leads",
     does: "Clause-level tracking of the EU AI Act, NIST AI RMF, ISO 42001 and more in one place.",
   },
   {
-    title: "AI DPIA Builder", link: "/privacy-auditor",
+    title: "AI DPIA Builder", link: "/privacy-auditor", tags: ["GDPR", "EU AI Act", "NYC LL144"],
     who: "Privacy and legal teams",
     does: "Maps a 12-question AI system profile to 13 regulations, with combinatorial risk scoring.",
   },
   {
-    title: "AI Readiness Check", link: "/ai-readiness",
+    title: "AI Readiness Check", link: "/ai-readiness", tags: ["NIST AI RMF", "EU AI Act", "ISO 42001"],
     who: "Leadership teams and consultants",
     does: "25 questions across Strategy, Data, Technology, People and Governance, scored into a report with prioritised gaps.",
   },
   {
-    title: "Client Risk Workbook", link: "/client-discovery",
+    title: "Client Risk Workbook", link: "/client-discovery", tags: ["NIST AI RMF", "Risk register", "React"],
     who: "Consultants running AI risk engagements",
     does: "Five phases (Govern, Map, Measure, Report, Monitor) with a risk register, compliance deadlines and audit fields.",
   },
   {
-    title: "Weekly Compliance Monitor", link: "/compliance-agent",
+    title: "Weekly Compliance Monitor", link: "/compliance-agent", tags: ["EU AI Act", "NIST AI RMF", "LangGraph"],
     who: "Compliance teams in regulated sectors",
     does: "LangGraph agent that computes fairness metrics against EU AI Act and NIST thresholds weekly and drafts the compliance report.",
   },
@@ -114,22 +116,22 @@ export const GOVERNANCE_TILES: HomeTile[] = [
 
 export const ASSURANCE_TILES: HomeTile[] = [
   {
-    title: "Pre-Launch AI Safety Test", link: "/safety-eval",
+    title: "Pre-Launch AI Safety Test", link: "/safety-eval", tags: ["FCA", "MiFID II", "GDPR"],
     who: "Teams deploying LLMs in regulated finance",
     does: "40 adversarial test cases across 5 risk categories, scored by Claude as judge.",
   },
   {
-    title: "Agent Drift Monitor", link: "/agent-drift",
+    title: "Agent Drift Monitor", link: "/agent-drift", tags: ["EU AI Act", "GDPR", "DORA"],
     who: "Teams running LLM agents",
     does: "Flags SAFE / DRIFTING / ROGUE by comparing each tool call's intent to the original task.",
   },
   {
-    title: "Prompt-Injection Red-Team Test", link: "/agent-hijacking",
+    title: "Prompt-Injection Red-Team Test", link: "/agent-hijacking", tags: ["OWASP LLM Top 10", "EU AI Act", "DORA"],
     who: "Security and AI risk reviewers",
     does: "Simulates OWASP LLM Top 10 #1 (indirect prompt injection) against a finance agent, with two-layer detection and a human approval step.",
   },
   {
-    title: "Fairness Audit: COMPAS case study", link: "/algorithmic-fairness",
+    title: "Fairness Audit: COMPAS case study", link: "/algorithmic-fairness", tags: ["4/5ths rule", "Disparate impact", "COMPAS"],
     who: "Model risk and fairness reviewers",
     does: "Disparate impact, FPR/FNR parity and chi-square testing applied to the COMPAS recidivism data. Full notebook in the Lab.",
   },

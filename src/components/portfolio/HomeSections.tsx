@@ -44,9 +44,21 @@ function Capped<T>({ items, render, id }: { items: T[]; render: (item: T) => Rea
   );
 }
 
+// Single non-wrapping row; the parent card is a flex column so this sits at the bottom.
+const TagRow = ({ tags }: { tags?: string[] }) =>
+  tags && tags.length > 0 ? (
+    <div className="mt-auto pt-3 flex flex-nowrap gap-1.5 overflow-hidden">
+      {tags.slice(0, 3).map((tag) => (
+        <span key={tag} className="shrink-0 whitespace-nowrap text-[10px] font-mono text-slate-600 dark:text-blue-300/70 bg-slate-500/10 dark:bg-blue-500/10 border border-slate-400/25 dark:border-blue-400/20 px-2 py-0.5 rounded">
+          {tag}
+        </span>
+      ))}
+    </div>
+  ) : null;
+
 const CaseCardView = ({ c }: { c: CaseCard }) => {
   const body = (
-    <div className="h-full rounded-xl border border-border/50 bg-card/40 p-4 hover:border-border/80 transition-colors">
+    <div className="h-full flex flex-col rounded-xl border border-border/50 bg-card/40 p-4 hover:border-border/80 transition-colors">
       <div className="flex items-center justify-between gap-2 mb-2">
         <span className="text-sm font-semibold text-foreground">{c.title}</span>
         <span className="text-[10px] font-mono text-muted-foreground/60 shrink-0">
@@ -63,6 +75,7 @@ const CaseCardView = ({ c }: { c: CaseCard }) => {
         <p className="text-xs text-muted-foreground leading-relaxed">{c.does}</p>
       )}
       {c.link && <span className="mt-3 inline-block text-xs text-primary">View →</span>}
+      <TagRow tags={c.tags} />
     </div>
   );
   return c.link ? <Link to={c.link} className="no-underline block">{body}</Link> : body;
@@ -70,7 +83,7 @@ const CaseCardView = ({ c }: { c: CaseCard }) => {
 
 const TileView = ({ t }: { t: HomeTile }) => (
   <Link to={t.link} className="no-underline block">
-    <div className="h-full rounded-xl border border-border/50 bg-card/40 p-4 hover:border-border/80 transition-colors">
+    <div className="h-full flex flex-col rounded-xl border border-border/50 bg-card/40 p-4 hover:border-border/80 transition-colors">
       <span className="text-sm font-semibold text-foreground">{t.title}</span>
       <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
         <span className="font-semibold text-foreground/80">Who uses it: </span>{t.who}
@@ -78,6 +91,7 @@ const TileView = ({ t }: { t: HomeTile }) => (
       <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
         <span className="font-semibold text-foreground/80">What it does: </span>{t.does}
       </p>
+      <TagRow tags={t.tags} />
     </div>
   </Link>
 );
