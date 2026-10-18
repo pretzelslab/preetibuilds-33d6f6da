@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowLeft, BarChart3, Calendar, Heart, Shield, Stethoscope, Users, ExternalLink } from "lucide-react";
 import { useVisitLogger } from "@/hooks/useVisitLogger";
+import { PageGate } from "@/components/ui/PageGate";
 
 const LIVE_URL = "https://pretzelslab.github.io/medlog";
 
@@ -31,6 +32,7 @@ const TYPE_COLORS: Record<string, string> = {
 export default function MedLog() {
   useVisitLogger("/medlog");
   return (
+    <PageGate pageId="medlog">
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border/50 bg-background/80 backdrop-blur sticky top-0 z-10">
@@ -159,5 +161,6 @@ export default function MedLog() {
 
       </div>
     </div>
+    </PageGate>
   );
 }

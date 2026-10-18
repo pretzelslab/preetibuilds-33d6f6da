@@ -45,13 +45,10 @@ export const RESUME_AVAILABLE = false;
 // Pages that open to every visitor without an access code. Only affects PageGate
 // pages; /lab pages stay gated. To re-lock a page, remove its id here.
 // Note: "fairness" (/algorithmic-fairness) also backs the Lab's Proxy Discrimination item.
-export const UNGATED_PAGE_IDS: string[] = [
-  "ai-value-lab", "privacy-auditor", "ai-readiness", "client-discovery",
-  "compliance-agent", "safety-eval", "agent-drift", "agent-hijacking", "fairness",
-];
+export const UNGATED_PAGE_IDS: string[] = [];
 
 // The Regulation Tracker has its own gate (not PageGate); true opens all its tabs to visitors.
-export const TRACKER_UNGATED = true;
+export const TRACKER_UNGATED = false;
 
 export type TileStatus = "live" | "preview" | "building";
 
