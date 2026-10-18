@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Github, Linkedin } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
-import { LAB_PATH, LAB_VISIBLE } from "@/data/homeConfig";
+import { LAB_PATH, LAB_NAV_VISIBLE } from "@/data/homeConfig";
 
 const CONTACT_EMAIL = "chinmayipriti@gmail.com";
 
@@ -15,7 +15,7 @@ const Navbar = () => (
         <a href="#outcomes" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden md:block">
           Work
         </a>
-        {LAB_VISIBLE && (
+        {LAB_NAV_VISIBLE && (
           <Link to={LAB_PATH} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
             Research
           </Link>

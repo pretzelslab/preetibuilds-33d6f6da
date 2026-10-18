@@ -7,6 +7,9 @@ export const LAB_PATH = "/research-lab";
 // Show the Lab link in the navbar and footer. The Lab route stays reachable by URL either way.
 export const LAB_VISIBLE = true;
 
+// Show the Research link in the navbar. The footer link follows LAB_VISIBLE only.
+export const LAB_NAV_VISIBLE = false;
+
 export const HERO = {
   name: "Preethi Raghuveeran",
   role: "Program & GTM leader. Applied AI governance. Vancouver.",
