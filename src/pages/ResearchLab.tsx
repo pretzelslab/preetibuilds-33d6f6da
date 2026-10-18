@@ -169,6 +169,9 @@ const ResearchLab = () => {
           label="Publications & Preprints"
           subtitle="Two Zenodo preprints — peer-review pending. DOIs citable."
         />
+        <Link to="/research" className="inline-block mb-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+          Publications &amp; write-ups →
+        </Link>
         <div className="mb-4">
           {publications.map((pub, i) => (
             <motion.a

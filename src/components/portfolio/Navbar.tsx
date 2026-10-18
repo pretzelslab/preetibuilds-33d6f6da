@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Github, Linkedin } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
+import { LAB_PATH, LAB_NAV_VISIBLE } from "@/data/homeConfig";
 
 const CONTACT_EMAIL = "chinmayipriti@gmail.com";
 
@@ -11,12 +12,14 @@ const Navbar = () => (
         preethi<span className="text-primary">.</span>builds
       </a>
       <div className="flex items-center gap-4">
-        <a href="#about" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden md:block">
-          About
+        <a href="#outcomes" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden md:block">
+          Work
         </a>
-        <Link to="/research-lab" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden md:block">
-          Research & Ventures
-        </Link>
+        {LAB_NAV_VISIBLE && (
+          <Link to={LAB_PATH} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+            Research
+          </Link>
+        )}
         <a href="#contact" className="text-xs text-muted-foreground hover:text-foreground transition-colors hidden md:block">
           Contact
         </a>

@@ -4,6 +4,7 @@ import { markOwnerExcluded } from "@/lib/ownerExclusion";
 import { verifyMasterCode } from "@/lib/masterCode";
 import { retractPendingVisit } from "@/hooks/useVisitLogger";
 import { PAGE_CODES } from "../../../api/_lib/pageCodes";
+import { UNGATED_PAGE_IDS } from "@/data/homeConfig";
 
 // ── Access code registry ───────────────────────────────────────────────────────
 // Master code (unlocks everything — Preeti only) is verified server-side via
@@ -47,6 +48,7 @@ export function clearStaleUnlock(): void {
 }
 
 function isUnlocked(page: string): boolean {
+  if (page && UNGATED_PAGE_IDS.includes(page)) return true;
   return safeGet(MASTER_KEY) === "1" || safeGet(pageKey(page)) === "1";
 }
 

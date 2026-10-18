@@ -16,6 +16,8 @@ import AIGovernanceTracker from "@/components/ai-governance/Tracker";
 // here as still case-insensitive — they are human-friendly strings compared
 // in the browser, not server-side secrets.
 vi.mock("@/lib/masterCode", () => ({ verifyMasterCode: vi.fn() }));
+// These tests exercise the locked Tracker; Home ungates it by default.
+vi.mock("@/data/homeConfig", async (orig) => ({ ...(await orig<typeof import("@/data/homeConfig")>()), TRACKER_UNGATED: false }));
 vi.mock("@/lib/ownerExclusion", () => ({
   markOwnerExcluded: vi.fn(),
   isOwnerExcluded: vi.fn(() => false),

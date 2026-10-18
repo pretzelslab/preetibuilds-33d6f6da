@@ -701,10 +701,10 @@ const CarbonTimeTravelInner = () => {
     <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-5xl mx-auto px-6 py-10">
         <Link
-          to="/"
+          to="/research-lab"
           className="text-xs text-muted-foreground hover:text-foreground transition-colors mb-6 inline-block"
         >
-          ← Back to portfolio
+          ← Back to Research
         </Link>
 
         {/* Page header */}
@@ -764,7 +764,7 @@ const CarbonTimeTravelInner = () => {
 };
 
 const CarbonTimeTravel = () => {
-  useVisitLogger();
+  useVisitLogger("/carbon-time-travel");
   return (
     <PageGate pageId="carbon-time-travel" previewContent={preview}>
       <CarbonTimeTravelInner />

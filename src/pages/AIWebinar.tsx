@@ -2249,18 +2249,6 @@ export default function AIWebinar() {
           <EmailDraft />
         </div>
 
-        {/* Go to top */}
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          title="Back to top"
-          style={{
-            position: "fixed", bottom: 80, right: 24, zIndex: 999,
-            background: "#1e293b", color: "#94a3b8", border: "1px solid #334155",
-            borderRadius: 50, width: 40, height: 40, fontSize: 16, cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.3)", opacity: 0.8,
-          }}
-        >↑</button>
       </div>
     </PageGate>
   );

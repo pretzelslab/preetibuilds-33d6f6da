@@ -88,7 +88,7 @@ export const ENTERPRISE_ASSESSMENT: Project[] = [
   },
   {
     title: "AI Risk Assessment",
-    description: "5-phase client engagement tool — Govern, Map, Measure, Report, Monitor — with risk register, compliance deadlines, audit fields, and backup/restore. Private.",
+    description: "Five-phase engagement workflow on NIST AI RMF (Govern, Map, Measure), extended with Report and Monitor. Includes a risk register, compliance deadlines and audit fields.",
     tags: ["React", "TypeScript", "Supabase"],
     industries: ["Enterprise", "Financial Services", "Consulting"],
     status: "live",
@@ -138,7 +138,7 @@ export const GOVERNANCE_COMPLIANCE: Project[] = [
   },
   {
     title: "AI Compliance Monitoring Agent",
-    description: "LangGraph multi-node agent + Python data pipeline + GitHub Actions CI/CD. Computes fairness metrics (DIR, FPR, FNR) against EU AI Act and NIST thresholds, routes on severity, and auto-generates compliance reports and escalation memos — on a weekly schedule.",
+    description: "LangGraph multi-node agent + Python data pipeline + GitHub Actions CI/CD. Computes fairness metrics (DIR, FPR, FNR) against the 4/5ths rule, maps findings to EU AI Act and NIST AI RMF, routes on severity, and auto-generates compliance reports and escalation memos — on a weekly schedule.",
     tags: ["LangGraph", "Python", "GitHub Actions", "Claude Haiku", "Pandas"],
     industries: ["Financial Services", "Enterprise AI", "Regulated Sectors"],
     status: "live",
@@ -211,6 +211,15 @@ export const RESEARCH_VENTURES_APPLIED: Project[] = [
     industries: ["AI Safety Research", "Women's Safety", "Safety Engineering"],
     status: "live",
     externalLink: "https://zenodo.org/records/20208521",
+  },
+  {
+    title: "Crisis Realism Gap",
+    description: "Phase 1 complete. Can frontier AI models tell a safety test from a real conversation? Four models rated how likely each message was to be a test. Benchmark crisis messages were spotted almost every time (AUC 0.95–1.00), and rewriting them to sound like real users did not remove the giveaway: the crisis topic itself reads as \"test\". Phase 2 asks whether suspecting a test changes the quality of the safety response.",
+    tags: ["AI Safety", "Evaluation Awareness", "Benchmark Validity", "Python", "WildChat"],
+    industries: ["AI Safety Research", "Women's Safety", "Safety Engineering"],
+    status: "building",
+    locked: true,
+    link: "/crisis-realism-gap",
   },
   {
     title: "Geo Pipeline: QGIS + Python",

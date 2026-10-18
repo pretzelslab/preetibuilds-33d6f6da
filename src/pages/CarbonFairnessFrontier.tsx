@@ -293,7 +293,7 @@ function CarbonPreview() {
     <div className="min-h-screen bg-background">
       <div className="sticky top-10 z-40 bg-background/95 backdrop-blur border-b border-border/40">
         <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
-          <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors">← Back to Portfolio</Link>
+          <Link to="/research-lab" className="text-xs text-muted-foreground hover:text-foreground transition-colors">← Back to Research</Link>
           <span className="text-xs font-mono text-emerald-600">Preview</span>
         </div>
       </div>
@@ -405,8 +405,8 @@ export default function CarbonFairnessFrontier() {
         {/* Nav */}
         <nav className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-md border-border/50">
           <div className="max-w-7xl mx-auto px-6 py-4">
-            <Link to="/#projects" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Back to Portfolio
+            <Link to="/research-lab" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="w-4 h-4" /> Back to Research
             </Link>
           </div>
         </nav>

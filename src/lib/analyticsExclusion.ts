@@ -66,8 +66,8 @@ export const OWNER_SIGNATURES: OwnerSignature[] = [
     city: "Vancouver",
     country: "Canada",
     userAgent:
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
-    note: "Owner desktop — Windows/Chrome 152, geo via ipapi.co (production build)",
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+    note: "Owner desktop — Windows/Chrome 153, geo via ipapi.co (production build)",
   },
   {
     // Same machine, different geo shape: "Burnaby / BC / CA" (ISO country code,
@@ -77,8 +77,24 @@ export const OWNER_SIGNATURES: OwnerSignature[] = [
     country: "CA",
     region: "BC",
     userAgent:
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36",
+    note: "Owner desktop — Windows/Chrome 153, geo via Vercel headers (preview build)",
+  },
+  {
+    // Previous desktop build, kept until confirmed fully rotated out.
+    city: "Vancouver",
+    country: "Canada",
+    userAgent:
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
-    note: "Owner desktop — Windows/Chrome 152, geo via Vercel headers (preview build)",
+    note: "Owner desktop — Windows/Chrome 152 (pre-update)",
+  },
+  {
+    city: "Burnaby",
+    country: "CA",
+    region: "BC",
+    userAgent:
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    note: "Owner desktop — Windows/Chrome 152 (pre-update), geo via Vercel headers",
   },
   {
     city: "Vancouver",

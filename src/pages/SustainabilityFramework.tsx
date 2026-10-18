@@ -2010,8 +2010,8 @@ export default function SustainabilityFramework() {
       <div className="max-w-[900px] mx-auto px-6 py-14">
         <DiagonalWatermark />
 
-        <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors mb-6 inline-block print:hidden">
-          ← Back to Portfolio
+        <Link to="/research-lab" className="text-xs text-muted-foreground hover:text-foreground transition-colors mb-6 inline-block print:hidden">
+          ← Back to Research
         </Link>
 
         {/* Header */}
@@ -2096,21 +2096,6 @@ export default function SustainabilityFramework() {
           <PresentationDeck answers={submitted ? answers : undefined} result={submitted ? result : undefined} />
         </div>
       </div>
-
-      {/* Go-to-top button */}
-      <button
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        title="Back to top"
-        style={{
-          position: "fixed", bottom: 80, right: 24, zIndex: 999,
-          background: "#1e293b", color: "#94a3b8", border: "1px solid #334155",
-          borderRadius: 50, width: 40, height: 40, fontSize: 16, cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.3)", opacity: 0.8,
-        }}
-      >
-        ↑
-      </button>
     </PageGate>
   );
 }

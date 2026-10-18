@@ -25,6 +25,9 @@ export const PAGE_CODES: Record<string, string> = {
   "geo-pipeline":              "GEO2026",
   "gtm-ai-readiness":          "GTM2026",
   "ai-value-lab":              "AVL2026",
+  "agent-drift":               "AGD2026",
+  "carbon-router":             "SAR2026",
+  "medlog":                    "MED2026",
 };
 
 // Case-insensitive on purpose: PageGate upper-cases/trims page-code input, so

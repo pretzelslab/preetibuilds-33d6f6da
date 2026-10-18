@@ -1,5 +1,7 @@
 import VisitorCounter from "./VisitorCounter";
 import { Linkedin } from "lucide-react";
+import { Link } from "react-router-dom";
+import { LAB_PATH, LAB_VISIBLE } from "@/data/homeConfig";
 
 const Footer = () => (
   <footer className="border-t py-8 px-6">
@@ -16,6 +18,11 @@ const Footer = () => (
         >
           <Linkedin className="w-3 h-3" /> LinkedIn
         </a>
+        {LAB_VISIBLE && (
+          <Link to={LAB_PATH} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+            Research →
+          </Link>
+        )}
       </div>
       <VisitorCounter />
     </div>

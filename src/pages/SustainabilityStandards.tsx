@@ -773,7 +773,8 @@ function StandardsTab() {
   const selClass = "text-xs px-3 py-1.5 rounded-lg border border-border/40 bg-background text-foreground focus:outline-none focus:border-primary/50 cursor-pointer";
 
   return (
-    <div className="space-y-4">
+    // Clicking anywhere outside the table/panel dismisses the selection
+    <div className="space-y-4" onClick={() => setSelected(null)}>
       {/* Stats strip */}
       <div className="flex flex-wrap gap-3">
         {[
@@ -982,8 +983,8 @@ export default function SustainabilityStandards() {
         {/* Nav */}
         <nav className="sticky top-10 z-40 border-b bg-background/95 backdrop-blur border-border/40">
           <div className="max-w-[1400px] mx-auto px-6 py-3 flex items-center gap-4">
-            <Link to="/#projects" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-              ← Back to Portfolio
+            <Link to="/research-lab" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              ← Back to Research
             </Link>
             {referrer?.from && (
               <Link to={referrer.from} className="text-xs text-violet-400 hover:text-violet-300 transition-colors border-l border-border pl-4">
@@ -993,8 +994,7 @@ export default function SustainabilityStandards() {
           </div>
         </nav>
 
-        {/* Clicking anywhere outside the table/panel dismisses the selection */}
-        <div className="max-w-[1400px] mx-auto px-6 py-10 space-y-8" onClick={() => setSelected(null)}>
+        <div className="max-w-[1400px] mx-auto px-6 py-10 space-y-8">
 
           {/* Header */}
           <div className="space-y-3">

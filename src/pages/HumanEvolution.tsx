@@ -101,8 +101,8 @@ export default function HumanEvolution() {
         {/* Nav */}
         <nav className="sticky top-0 z-50 border-b bg-background/90 backdrop-blur-md border-border/50">
           <div className="w-full px-6 lg:px-12 py-4">
-            <Link to="/#projects" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Back to Portfolio
+            <Link to="/research-lab" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="w-4 h-4" /> Back to Research
             </Link>
           </div>
         </nav>

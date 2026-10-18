@@ -106,8 +106,8 @@ function CarbonRouterContent() {
     <div className="dark min-h-screen font-sans" style={{ background: '#0f172a', color: '#f1f5f9' }}>
       <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
 
-        <Link to="/#projects" className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors font-medium">
-          ← Back to Portfolio
+        <Link to="/research-lab" className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors font-medium">
+          ← Back to Research
         </Link>
 
         {/* Header */}
@@ -269,7 +269,7 @@ function CarbonRouterContent() {
 
 export default function CarbonRouter() {
   return (
-    <PageGate code="SAR2026" previewContent={previewContent}>
+    <PageGate pageId="carbon-router"previewContent={previewContent}>
       <CarbonRouterContent />
     </PageGate>
   );
