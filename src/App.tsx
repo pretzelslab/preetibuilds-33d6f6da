@@ -1,3 +1,4 @@
+import ScrollControl from "@/components/ScrollControl";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -116,6 +117,7 @@ const App = () => (
           <RouteTitle />
           <CopyProtection />
           <GoogleAnalyticsLoader />
+          <ScrollControl />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/medlog" element={<MedLog />} />
